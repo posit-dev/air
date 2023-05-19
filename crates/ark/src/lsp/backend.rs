@@ -20,7 +20,7 @@ use parking_lot::Mutex;
 use regex::Regex;
 use serde_json::Value;
 use stdext::*;
-use tokio::net::TcpStream;
+use tokio::net::TcpListener;
 use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::request::GotoImplementationParams;
 use tower_lsp::lsp_types::request::GotoImplementationResponse;
