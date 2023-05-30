@@ -34,10 +34,7 @@ lazy_static! {
 
 }
 
-fn compute_point(
-    point: Point,
-    text: &str,
-) -> Point {
+fn compute_point(point: Point, text: &str) -> Point {
     // figure out where the newlines in this edit are
     let newline_indices: Vec<_> = text.match_indices('\n').collect();
     let num_newlines = newline_indices.len();
@@ -73,10 +70,7 @@ pub struct Document {
 }
 
 impl std::fmt::Debug for Document {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Document")
             .field("contents", &self.contents)
             .field("ast", &self.ast)
@@ -109,10 +103,7 @@ impl Document {
         }
     }
 
-    pub fn on_did_change(
-        &mut self,
-        params: &DidChangeTextDocumentParams,
-    ) -> Result<i32> {
+    pub fn on_did_change(&mut self, params: &DidChangeTextDocumentParams) -> Result<i32> {
         // Add pending changes.
         self.pending.push(params.clone());
 
@@ -158,10 +149,7 @@ impl Document {
         Ok(version)
     }
 
-    fn update(
-        &mut self,
-        change: &TextDocumentContentChangeEvent,
-    ) -> Result<()> {
+    fn update(&mut self, change: &TextDocumentContentChangeEvent) -> Result<()> {
         // Extract edit range. Nothing to do if there wasn't an edit.
         let range = match change.range {
             Some(r) => r,
