@@ -41,6 +41,7 @@ use crate::lsp::definitions::goto_definition;
 use crate::lsp::diagnostics;
 use crate::lsp::documents::Document;
 use crate::lsp::documents::DOCUMENT_INDEX;
+use crate::lsp::errors;
 use crate::lsp::globals;
 use crate::lsp::help_proxy;
 use crate::lsp::hover::hover;
@@ -120,11 +121,13 @@ impl LanguageServer for Backend {
         // instance to be created, but we only want to run this initialization once per R
         // session.
         if !self.lsp_initialized {
-            let r_module_info = r_lock! {
-                modules::initialize().unwrap()
-            };
-            // start R help server proxy
-            help_proxy::start(r_module_info.help_server_port);
+            r_lock! {
+                let r_module_info = modules::initialize().unwrap();
+                // start R help server proxy
+                help_proxy::start(r_module_info.help_server_port);
+                // set up the global error handler (after support function initialization)
+                errors::initialize();
+            }
         }
 
         // initialize the set of known workspaces
