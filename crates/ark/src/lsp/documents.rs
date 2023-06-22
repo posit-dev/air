@@ -118,26 +118,56 @@ impl Document {
         if let Some(old_version) = self.version {
             let new_version = params.text_document.version;
             if new_version > old_version + 1 {
-                log::info!("on_did_change(): received out-of-order document changes; deferring");
+                log::info!("on_did_change(): received out-of-order document changes; currently at {}; deferring {}", old_version, new_version);
                 return Ok(old_version);
             }
         }
 
-        // Get pending updates, sort by version, and then apply them one-by-one.
+        // Get pending updates, sort by version, and then apply as many as we can.
         self.pending.sort_by(|lhs, rhs| {
             let lhs = lhs.text_document.version;
             let rhs = rhs.text_document.version;
             lhs.cmp(&rhs)
         });
 
-        // Get the maximum version.
-        let version = self.pending.last().unwrap().text_document.version;
+        // Apply as many changes as we can, bailing if we hit a non consecutive change.
+        let pending = std::mem::take(&mut self.pending);
 
-        // Take the changes, and apply them one-by-one.
-        let changes = std::mem::take(&mut self.pending);
+        // We know there is at least 1 consecutive change to apply so that can serve
+        // as the initial version since we don't always have a `self.version`.
+        let mut loc = 0;
+        let mut version = pending.first().unwrap().text_document.version - 1;
+
+        for candidate in pending.iter() {
+            let new_version = candidate.text_document.version;
+
+            if new_version > version + 1 {
+                // Not consecutive!
+                log::info!(
+                    "on_did_change(): applying changes [{}, {}]; deferring still out-of-order change {}.",
+                    pending.first().unwrap().text_document.version,
+                    version,
+                    new_version
+                );
+                break;
+            }
+
+            loc += 1;
+            version = new_version;
+        }
+
+        // Split into the actual changes we can apply and the remaining pending changes.
+        let (changes, pending) = pending.split_at(loc);
+
+        // We will still have to apply these later (if any).
+        self.pending = pending.to_vec();
+
+        // Apply the changes one-by-one.
         for change in changes {
-            for event in change.content_changes {
-                if let Err(error) = self.update(&event) {
+            let content_changes = &change.content_changes;
+
+            for event in content_changes {
+                if let Err(error) = self.update(event) {
                     log::error!("error updating document: {}", error);
                 }
             }
