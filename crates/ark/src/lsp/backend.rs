@@ -41,12 +41,9 @@ use crate::lsp::definitions::goto_definition;
 use crate::lsp::diagnostics;
 use crate::lsp::documents::Document;
 use crate::lsp::documents::DOCUMENT_INDEX;
-use crate::lsp::errors;
 use crate::lsp::globals;
-use crate::lsp::help_proxy;
 use crate::lsp::hover::hover;
 use crate::lsp::indexer;
-use crate::lsp::modules;
 use crate::lsp::signature_help::signature_help;
 use crate::lsp::symbols;
 use crate::request::Request;
@@ -80,7 +77,6 @@ pub struct Backend {
     pub workspace: Arc<Mutex<Workspace>>,
     #[allow(dead_code)]
     pub shell_request_tx: Sender<Request>,
-    pub lsp_initialized: bool,
 }
 
 impl Backend {
@@ -115,20 +111,6 @@ impl Backend {
 impl LanguageServer for Backend {
     async fn initialize(&self, params: InitializeParams) -> Result<InitializeResult> {
         backend_trace!(self, "initialize({:#?})", params);
-
-        // Initialize our support functions if this is the first run of the LSP
-        // server. A Positron front-end reload will trigger a new LSP server
-        // instance to be created, but we only want to run this initialization once per R
-        // session.
-        if !self.lsp_initialized {
-            r_lock! {
-                let r_module_info = modules::initialize().unwrap();
-                // start R help server proxy
-                help_proxy::start(r_module_info.help_server_port);
-                // set up the global error handler (after support function initialization)
-                errors::initialize();
-            }
-        }
 
         // initialize the set of known workspaces
         let mut workspace = self.workspace.lock();
@@ -594,7 +576,6 @@ pub async fn start_lsp(
     address: String,
     shell_request_tx: Sender<Request>,
     comm_manager_tx: Sender<CommEvent>,
-    lsp_initialized: bool,
 ) {
     #[cfg(feature = "runtime-agnostic")]
     use tokio_util::compat::TokioAsyncReadCompatExt;
@@ -624,7 +605,6 @@ pub async fn start_lsp(
             documents: DOCUMENT_INDEX.clone(),
             workspace: Arc::new(Mutex::new(Workspace::default())),
             shell_request_tx: shell_request_tx.clone(),
-            lsp_initialized,
         };
 
         backend
