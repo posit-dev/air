@@ -46,7 +46,7 @@ use crate::lsp::hover::hover;
 use crate::lsp::indexer;
 use crate::lsp::signature_help::signature_help;
 use crate::lsp::symbols;
-use crate::request::Request;
+use crate::request::KernelRequest;
 
 macro_rules! backend_trace {
 
@@ -76,7 +76,7 @@ pub struct Backend {
     pub documents: Arc<DashMap<Url, Document>>,
     pub workspace: Arc<Mutex<Workspace>>,
     #[allow(dead_code)]
-    pub shell_request_tx: Sender<Request>,
+    pub kernel_request_tx: Sender<KernelRequest>,
 }
 
 impl Backend {
@@ -574,7 +574,7 @@ impl Backend {
 #[tokio::main]
 pub async fn start_lsp(
     address: String,
-    shell_request_tx: Sender<Request>,
+    kernel_request_tx: Sender<KernelRequest>,
     comm_manager_tx: Sender<CommEvent>,
 ) {
     #[cfg(feature = "runtime-agnostic")]
@@ -595,7 +595,7 @@ pub async fn start_lsp(
         // initialize shared globals (needed for R callbacks)
         globals::initialize(
             client.clone(),
-            shell_request_tx.clone(),
+            kernel_request_tx.clone(),
             comm_manager_tx.clone(),
         );
 
@@ -604,7 +604,7 @@ pub async fn start_lsp(
             client,
             documents: DOCUMENT_INDEX.clone(),
             workspace: Arc::new(Mutex::new(Workspace::default())),
-            shell_request_tx: shell_request_tx.clone(),
+            kernel_request_tx: kernel_request_tx.clone(),
         };
 
         backend
