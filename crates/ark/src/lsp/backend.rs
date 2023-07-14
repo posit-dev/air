@@ -11,7 +11,6 @@ use std::collections::HashSet;
 use std::path::Path;
 use std::sync::Arc;
 
-use amalthea::comm::event::CommEvent;
 use crossbeam::channel::Sender;
 use dashmap::DashMap;
 use harp::r_lock;
@@ -572,11 +571,7 @@ impl Backend {
 }
 
 #[tokio::main]
-pub async fn start_lsp(
-    address: String,
-    kernel_request_tx: Sender<KernelRequest>,
-    comm_manager_tx: Sender<CommEvent>,
-) {
+pub async fn start_lsp(address: String, kernel_request_tx: Sender<KernelRequest>) {
     #[cfg(feature = "runtime-agnostic")]
     use tokio_util::compat::TokioAsyncReadCompatExt;
     #[cfg(feature = "runtime-agnostic")]
@@ -593,11 +588,7 @@ pub async fn start_lsp(
 
     let init = |client: Client| {
         // initialize shared globals (needed for R callbacks)
-        globals::initialize(
-            client.clone(),
-            kernel_request_tx.clone(),
-            comm_manager_tx.clone(),
-        );
+        globals::initialize(client.clone(), kernel_request_tx.clone());
 
         // create backend
         let backend = Backend {
