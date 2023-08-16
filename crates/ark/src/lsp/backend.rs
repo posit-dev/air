@@ -271,14 +271,14 @@ impl LanguageServer for Backend {
         });
 
         // respond to document updates
-        if let Err(error) = doc.on_did_change(&params) {
+        let version = unwrap!(doc.on_did_change(&params), Err(error) => {
             backend_trace!(
                 self,
                 "did_change(): unexpected error applying updates {}",
                 error
             );
             return;
-        }
+        });
 
         // update index
         if let Ok(path) = uri.to_file_path() {
@@ -288,9 +288,12 @@ impl LanguageServer for Backend {
             }
         }
 
-        // publish diagnostics
-        let version = params.text_document.version;
-        diagnostics::enqueue_diagnostics(self.clone(), uri.clone(), version).await;
+        // publish diagnostics - but only publish them if the version of
+        // the document now matches the version of the change after applying
+        // it in `on_did_change()`
+        if params.text_document.version == version {
+            diagnostics::enqueue_diagnostics(self.clone(), uri.clone()).await;
+        }
     }
 
     async fn did_save(&self, params: DidSaveTextDocumentParams) {
