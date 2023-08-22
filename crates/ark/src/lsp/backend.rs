@@ -18,6 +18,7 @@ use log::*;
 use parking_lot::Mutex;
 use regex::Regex;
 use serde_json::Value;
+use stdext::result::ResultOrLog;
 use stdext::*;
 use tokio::net::TcpListener;
 use tower_lsp::jsonrpc::Result;
@@ -574,7 +575,11 @@ impl Backend {
 }
 
 #[tokio::main]
-pub async fn start_lsp(address: String, kernel_request_tx: Sender<KernelRequest>) {
+pub async fn start_lsp(
+    address: String,
+    kernel_request_tx: Sender<KernelRequest>,
+    conn_init_tx: Sender<bool>,
+) {
     #[cfg(feature = "runtime-agnostic")]
     use tokio_util::compat::TokioAsyncReadCompatExt;
     #[cfg(feature = "runtime-agnostic")]
@@ -582,6 +587,12 @@ pub async fn start_lsp(address: String, kernel_request_tx: Sender<KernelRequest>
 
     debug!("Connecting to LSP at '{}'", &address);
     let listener = TcpListener::bind(&address).await.unwrap();
+
+    // Notify frontend that we are ready to accept connections
+    conn_init_tx
+        .send(true)
+        .or_log_warning("Couldn't send LSP server init notification");
+
     let (stream, _) = listener.accept().await.unwrap();
     debug!("Connected to LSP at '{}'", address);
     let (read, write) = tokio::io::split(stream);
