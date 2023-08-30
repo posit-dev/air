@@ -293,7 +293,7 @@ impl LanguageServer for Backend {
         // the document now matches the version of the change after applying
         // it in `on_did_change()`
         if params.text_document.version == version {
-            diagnostics::enqueue_diagnostics(self.clone(), uri.clone()).await;
+            diagnostics::enqueue_diagnostics(self.clone(), uri.clone(), version).await;
         }
     }
 
@@ -303,6 +303,23 @@ impl LanguageServer for Backend {
 
     async fn did_close(&self, params: DidCloseTextDocumentParams) {
         backend_trace!(self, "did_close({:?}", params);
+
+        match self.documents.remove(&params.text_document.uri) {
+            Some(_) => {
+                backend_trace!(
+                    self,
+                    "did_close(): closed document with URI: '{}'.",
+                    params.text_document.uri
+                );
+            },
+            None => {
+                backend_trace!(
+                    self,
+                    "did_close(): failed to remove document with unknown URI: '{}'.",
+                    params.text_document.uri
+                );
+            },
+        };
     }
 
     async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
