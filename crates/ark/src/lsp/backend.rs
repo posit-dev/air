@@ -45,9 +45,11 @@ use crate::lsp::globals;
 use crate::lsp::hover::hover;
 use crate::lsp::indexer;
 use crate::lsp::signature_help::signature_help;
+use crate::lsp::statement_range;
 use crate::lsp::symbols;
 use crate::request::KernelRequest;
 
+#[macro_export]
 macro_rules! backend_trace {
 
     ($self: expr, $($rest: expr),*) => {{
@@ -581,11 +583,6 @@ impl LanguageServer for Backend {
 // https://github.com/Microsoft/vscode-languageserver-node/blob/18fad46b0e8085bb72e1b76f9ea23a379569231a/client/src/common/client.ts#L802-L838
 // https://github.com/Microsoft/vscode-languageserver-node/blob/18fad46b0e8085bb72e1b76f9ea23a379569231a/client/src/common/client.ts#L701-L752
 impl Backend {
-    async fn request(&self, params: Option<Value>) -> Result<i32> {
-        info!("Received Positron request: {:?}", params);
-        Ok(42)
-    }
-
     async fn notification(&self, params: Option<Value>) {
         info!("Received Positron notification: {:?}", params);
     }
@@ -633,7 +630,10 @@ pub async fn start_lsp(
     };
 
     let (service, socket) = LspService::build(init)
-        .custom_method("positron/request", Backend::request)
+        .custom_method(
+            statement_range::POSITRON_STATEMENT_RANGE_REQUEST,
+            Backend::statement_range,
+        )
         .custom_method("positron/notification", Backend::notification)
         .finish();
 
