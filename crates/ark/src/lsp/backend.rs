@@ -443,12 +443,16 @@ impl LanguageServer for Backend {
             return Ok(item);
         });
 
-        unsafe {
-            unwrap!(resolve_completion_item(&mut item, &data), Err(error) => {
-                error!("{:?}", error);
-                return Ok(item);
-            });
-        }
+        // Try resolving the completion item
+        let result = r_lock! {
+            resolve_completion_item(&mut item, &data)
+        };
+
+        // Handle error case
+        unwrap!(result, Err(error) => {
+            error!("Failed to resolve completion item due to: {error:?}.");
+            return Ok(item);
+        });
 
         Ok(item)
     }
@@ -471,7 +475,9 @@ impl LanguageServer for Backend {
         });
 
         // request hover information
-        let result = unsafe { hover(&document, &context) };
+        let result = r_lock! {
+            hover(&document, &context)
+        };
 
         // unwrap errors
         let result = unwrap!(result, Err(error) => {
@@ -499,9 +505,12 @@ impl LanguageServer for Backend {
             return Ok(None);
         });
 
-        // request signature help
         let position = params.text_document_position_params.position;
-        let result = unsafe { signature_help(document.value(), &position) };
+
+        // request signature help
+        let result = r_lock! {
+            signature_help(document.value(), &position)
+        };
 
         // unwrap errors
         let result = unwrap!(result, Err(error) => {
