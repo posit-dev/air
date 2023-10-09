@@ -47,6 +47,7 @@ use crate::lsp::indexer;
 use crate::lsp::signature_help::signature_help;
 use crate::lsp::statement_range;
 use crate::lsp::symbols;
+use crate::r_task;
 use crate::request::KernelRequest;
 
 #[macro_export]
@@ -372,7 +373,16 @@ impl LanguageServer for Backend {
 
         log::info!("Completion context: {:#?}", context);
 
-        // add session completions
+        // FIXME: Use `r_task()`
+        // rustc [E0277]: `*const c_void` cannot be shared between threads safely
+        // within `completions::CompletionContext<'_>`, the trait `Sync` is not implemented for `*const c_void`
+        // required for `&completions::CompletionContext<'_>` to implement `Send`
+        // rustc [E0277]: `*const tree_sitter::ffi::TSTree` cannot be shared between threads safely
+        // within `completions::CompletionContext<'_>`, the trait `Sync` is not implemented for `*const tree_sitter::ffi::TSTree`
+        // required for `&completions::CompletionContext<'_>` to implement `Send`
+        // rustc [E0277]: required because it's used within this closure
+
+        // Add session completions
         let result = r_lock! { append_session_completions(&context, &mut completions) };
         if let Err(error) = result {
             error!("{:?}", error);
@@ -455,9 +465,7 @@ impl LanguageServer for Backend {
         });
 
         // Try resolving the completion item
-        let result = r_lock! {
-            resolve_completion_item(&mut item, &data)
-        };
+        let result = r_task(|| unsafe { resolve_completion_item(&mut item, &data) });
 
         // Handle error case
         unwrap!(result, Err(error) => {
@@ -484,6 +492,16 @@ impl LanguageServer for Backend {
             error!("{:?}", error);
             return Ok(None);
         });
+
+        // FIXME: Use `r_task()`
+        // rustc [E0277]: required by a bound introduced by this call
+        // rustc [E0277]: `*const tree_sitter::ffi::TSTree` cannot be shared between threads safely
+        // within `completions::CompletionContext<'_>`, the trait `Sync` is not implemented for `*const tree_sitter::ffi::TSTree`
+        // required for `&completions::CompletionContext<'_>` to implement `Send`
+        // rustc [E0277]: `*const c_void` cannot be shared between threads safely
+        // within `completions::CompletionContext<'_>`, the trait `Sync` is not implemented for `*const c_void`
+        // required for `&completions::CompletionContext<'_>` to implement `Send`
+        // rustc [E0277]: required because it's used within this closure
 
         // request hover information
         let result = r_lock! {
@@ -519,9 +537,7 @@ impl LanguageServer for Backend {
         let position = params.text_document_position_params.position;
 
         // request signature help
-        let result = r_lock! {
-            signature_help(document.value(), &position)
-        };
+        let result = r_task(|| unsafe { signature_help(document.value(), &position) });
 
         // unwrap errors
         let result = unwrap!(result, Err(error) => {
