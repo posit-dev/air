@@ -13,7 +13,6 @@ use std::sync::Arc;
 
 use crossbeam::channel::Sender;
 use dashmap::DashMap;
-use harp::r_lock;
 use log::*;
 use parking_lot::Mutex;
 use regex::Regex;
@@ -373,17 +372,8 @@ impl LanguageServer for Backend {
 
         log::info!("Completion context: {:#?}", context);
 
-        // FIXME: Use `r_task()`
-        // rustc [E0277]: `*const c_void` cannot be shared between threads safely
-        // within `completions::CompletionContext<'_>`, the trait `Sync` is not implemented for `*const c_void`
-        // required for `&completions::CompletionContext<'_>` to implement `Send`
-        // rustc [E0277]: `*const tree_sitter::ffi::TSTree` cannot be shared between threads safely
-        // within `completions::CompletionContext<'_>`, the trait `Sync` is not implemented for `*const tree_sitter::ffi::TSTree`
-        // required for `&completions::CompletionContext<'_>` to implement `Send`
-        // rustc [E0277]: required because it's used within this closure
-
         // Add session completions
-        let result = r_lock! { append_session_completions(&context, &mut completions) };
+        let result = r_task(|| unsafe { append_session_completions(&context, &mut completions) });
         if let Err(error) = result {
             error!("{:?}", error);
         }
@@ -493,20 +483,8 @@ impl LanguageServer for Backend {
             return Ok(None);
         });
 
-        // FIXME: Use `r_task()`
-        // rustc [E0277]: required by a bound introduced by this call
-        // rustc [E0277]: `*const tree_sitter::ffi::TSTree` cannot be shared between threads safely
-        // within `completions::CompletionContext<'_>`, the trait `Sync` is not implemented for `*const tree_sitter::ffi::TSTree`
-        // required for `&completions::CompletionContext<'_>` to implement `Send`
-        // rustc [E0277]: `*const c_void` cannot be shared between threads safely
-        // within `completions::CompletionContext<'_>`, the trait `Sync` is not implemented for `*const c_void`
-        // required for `&completions::CompletionContext<'_>` to implement `Send`
-        // rustc [E0277]: required because it's used within this closure
-
         // request hover information
-        let result = r_lock! {
-            hover(&document, &context)
-        };
+        let result = r_task(|| unsafe { hover(&document, &context) });
 
         // unwrap errors
         let result = unwrap!(result, Err(error) => {
