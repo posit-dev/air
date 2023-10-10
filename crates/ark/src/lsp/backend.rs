@@ -394,6 +394,17 @@ impl LanguageServer for Backend {
         let mut uniques = HashSet::new();
         completions.retain(|x| uniques.insert(x.label.clone()));
 
+        // remove completions that start with `.` unless the user explicitly requested them
+        let user_requested_dot = context
+            .node
+            .utf8_text(context.source.as_bytes())
+            .and_then(|x| Ok(x.starts_with(".")))
+            .unwrap_or(false);
+
+        if !user_requested_dot {
+            completions.retain(|x| !x.label.starts_with("."));
+        }
+
         // sort completions by providing custom 'sort' text to be used when
         // ordering completion results. we use some placeholders at the front
         // to 'bin' different completion types differently; e.g. we place parameter
