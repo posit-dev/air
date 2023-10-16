@@ -41,6 +41,7 @@ use crate::lsp::diagnostics;
 use crate::lsp::documents::Document;
 use crate::lsp::documents::DOCUMENT_INDEX;
 use crate::lsp::globals;
+use crate::lsp::help_topic;
 use crate::lsp::hover::hover;
 use crate::lsp::indexer;
 use crate::lsp::signature_help::signature_help;
@@ -648,6 +649,7 @@ pub async fn start_lsp(
             statement_range::POSITRON_STATEMENT_RANGE_REQUEST,
             Backend::statement_range,
         )
+        .custom_method(help_topic::POSITRON_HELP_TOPIC_REQUEST, Backend::help_topic)
         .custom_method("positron/notification", Backend::notification)
         .finish();
 
