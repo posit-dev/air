@@ -33,11 +33,11 @@ use crate::lsp::completions::activate::can_provide_completions;
 use crate::lsp::completions::document::append_document_completions;
 use crate::lsp::completions::resolve::resolve_completion_item;
 use crate::lsp::completions::session::append_session_completions;
-use crate::lsp::completions::types::completion_context;
 use crate::lsp::completions::types::CompletionData;
 use crate::lsp::completions::workspace::append_workspace_completions;
 use crate::lsp::definitions::goto_definition;
 use crate::lsp::diagnostics;
+use crate::lsp::document_context::DocumentContext;
 use crate::lsp::documents::Document;
 use crate::lsp::documents::DOCUMENT_INDEX;
 use crate::lsp::globals;
@@ -335,15 +335,9 @@ impl LanguageServer for Backend {
             return Ok(None);
         });
 
-        // Build the completion context.
+        // Build the document context.
         let document = document.value_mut();
-        let context = match completion_context(document, &params.text_document_position) {
-            Ok(context) => context,
-            Err(error) => {
-                error!("{:?}", error);
-                return Ok(None);
-            },
-        };
+        let context = DocumentContext::new(document, &params.text_document_position);
 
         // Check whether we can provide completions in this context.
         match can_provide_completions(&context, &params) {
@@ -477,15 +471,11 @@ impl LanguageServer for Backend {
             return Ok(None);
         });
 
-        // build completion context
-        let context = completion_context(&document, &params.text_document_position_params);
-        let context = unwrap!(context, Err(error) => {
-            error!("{:?}", error);
-            return Ok(None);
-        });
+        // build document context
+        let context = DocumentContext::new(&document, &params.text_document_position_params);
 
         // request hover information
-        let result = r_task(|| unsafe { hover(&document, &context) });
+        let result = r_task(|| unsafe { hover(&context) });
 
         // unwrap errors
         let result = unwrap!(result, Err(error) => {
