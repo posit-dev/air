@@ -7,7 +7,6 @@
 
 #![allow(deprecated)]
 
-use std::collections::HashSet;
 use std::path::Path;
 use std::sync::Arc;
 
@@ -15,7 +14,6 @@ use crossbeam::channel::Sender;
 use dashmap::DashMap;
 use log::*;
 use parking_lot::Mutex;
-use regex::Regex;
 use serde_json::Value;
 use stdext::result::ResultOrLog;
 use stdext::*;
@@ -29,12 +27,8 @@ use tower_lsp::LanguageServer;
 use tower_lsp::LspService;
 use tower_lsp::Server;
 
-use crate::lsp::completions::activate::can_provide_completions;
-use crate::lsp::completions::document::append_document_completions;
-use crate::lsp::completions::resolve::resolve_completion_item;
-use crate::lsp::completions::session::append_session_completions;
-use crate::lsp::completions::types::CompletionData;
-use crate::lsp::completions::workspace::append_workspace_completions;
+use crate::lsp::completions::provide_completions;
+use crate::lsp::completions::resolve_completion;
 use crate::lsp::definitions::goto_definition;
 use crate::lsp::diagnostics;
 use crate::lsp::document_context::DocumentContext;
@@ -327,103 +321,16 @@ impl LanguageServer for Backend {
 
         // Get reference to document.
         let uri = &params.text_document_position.text_document.uri;
-        let mut document = unwrap!(self.documents.get_mut(uri), None => {
+        let document = unwrap!(self.documents.get_mut(uri), None => {
             backend_trace!(self, "completion(): No document associated with URI {}", uri);
             return Ok(None);
         });
 
         // Build the document context.
-        let document = document.value_mut();
-        let context = DocumentContext::new(document, &params.text_document_position);
-
-        // Check whether we can provide completions in this context.
-        match can_provide_completions(&context, &params) {
-            Ok(proceed) => {
-                if !proceed {
-                    return Ok(None);
-                }
-            },
-            Err(error) => {
-                log::error!("{}", error);
-                return Ok(None);
-            },
-        }
-
-        // TODO: These probably shouldn't be separate methods, because we might get
-        // the same completion from multiple sources, e.g.
-        //
-        // - A completion for a function 'foo' defined in the current document,
-        // - A completion for a function 'foo' defined in the workspace,
-        // - A variable called 'foo' defined in the current R session.
-        //
-        // Really, what's relevant is which of the above should be considered
-        // 'visible' to the user.
-
-        // start building completions
-        let mut completions: Vec<CompletionItem> = vec![];
-
+        let context = DocumentContext::new(&document, &params.text_document_position);
         log::info!("Completion context: {:#?}", context);
 
-        // Add session completions
-        let result = r_task(|| unsafe { append_session_completions(&context, &mut completions) });
-        if let Err(error) = result {
-            error!("{:?}", error);
-        }
-
-        // add context-relevant completions
-        let result = append_document_completions(&context, &mut completions);
-        if let Err(error) = result {
-            error!("{:?}", error);
-        }
-
-        // add workspace completions
-        let result = append_workspace_completions(&self, &context, &mut completions);
-        if let Err(error) = result {
-            error!("{:?}", error);
-        }
-
-        // remove duplicates
-        let mut uniques = HashSet::new();
-        completions.retain(|x| uniques.insert(x.label.clone()));
-
-        // remove completions that start with `.` unless the user explicitly requested them
-        let user_requested_dot = context
-            .node
-            .utf8_text(context.source.as_bytes())
-            .and_then(|x| Ok(x.starts_with(".")))
-            .unwrap_or(false);
-
-        if !user_requested_dot {
-            completions.retain(|x| !x.label.starts_with("."));
-        }
-
-        // sort completions by providing custom 'sort' text to be used when
-        // ordering completion results. we use some placeholders at the front
-        // to 'bin' different completion types differently; e.g. we place parameter
-        // completions at the front, and completions starting with non-word
-        // characters at the end (e.g. completions starting with `.`)
-        let pattern = Regex::new(r"^\w").unwrap();
-        for item in &mut completions {
-            case! {
-
-                item.kind == Some(CompletionItemKind::FIELD) => {
-                    item.sort_text = Some(join!["1", item.label]);
-                }
-
-                item.kind == Some(CompletionItemKind::VARIABLE) => {
-                    item.sort_text = Some(join!["2", item.label]);
-                }
-
-                pattern.is_match(&item.label) => {
-                    item.sort_text = Some(join!["3", item.label]);
-                }
-
-                => {
-                    item.sort_text = Some(join!["4", item.label]);
-                }
-
-            }
-        }
+        let completions = provide_completions(&self, &context);
 
         if !completions.is_empty() {
             Ok(Some(CompletionResponse::Array(completions)))
@@ -435,25 +342,13 @@ impl LanguageServer for Backend {
     async fn completion_resolve(&self, mut item: CompletionItem) -> Result<CompletionItem> {
         backend_trace!(self, "completion_resolve({:?})", item);
 
-        let data = item.data.clone();
-        let data = unwrap!(data, None => {
-            warn!("Completion '{}' has no associated data", item.label);
-            return Ok(item);
-        });
-
-        let data: CompletionData = unwrap!(serde_json::from_value(data), Err(error) => {
-            error!("{:?}", error);
-            return Ok(item);
-        });
-
         // Try resolving the completion item
-        let result = r_task(|| unsafe { resolve_completion_item(&mut item, &data) });
+        let result = r_task(|| unsafe { resolve_completion(&mut item) });
 
         // Handle error case
-        unwrap!(result, Err(error) => {
-            error!("Failed to resolve completion item due to: {error:?}.");
-            return Ok(item);
-        });
+        if let Err(err) = result {
+            log::error!("Failed to resolve completion item due to: {err:?}.");
+        }
 
         Ok(item)
     }
