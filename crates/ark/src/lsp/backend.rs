@@ -48,7 +48,6 @@ use crate::lsp::signature_help::signature_help;
 use crate::lsp::statement_range;
 use crate::lsp::symbols;
 use crate::r_task;
-use crate::request::KernelRequest;
 
 #[macro_export]
 macro_rules! backend_trace {
@@ -78,8 +77,6 @@ pub struct Backend {
     pub client: Client,
     pub documents: Arc<DashMap<Url, Document>>,
     pub workspace: Arc<Mutex<Workspace>>,
-    #[allow(dead_code)]
-    pub kernel_request_tx: Sender<KernelRequest>,
 }
 
 impl Backend {
@@ -594,11 +591,7 @@ impl Backend {
 }
 
 #[tokio::main]
-pub async fn start_lsp(
-    address: String,
-    kernel_request_tx: Sender<KernelRequest>,
-    conn_init_tx: Sender<bool>,
-) {
+pub async fn start_lsp(address: String, conn_init_tx: Sender<bool>) {
     #[cfg(feature = "runtime-agnostic")]
     use tokio_util::compat::TokioAsyncReadCompatExt;
     #[cfg(feature = "runtime-agnostic")]
@@ -621,14 +614,13 @@ pub async fn start_lsp(
 
     let init = |client: Client| {
         // initialize shared globals (needed for R callbacks)
-        globals::initialize(client.clone(), kernel_request_tx.clone());
+        globals::initialize(client.clone());
 
         // create backend
         let backend = Backend {
             client,
             documents: DOCUMENT_INDEX.clone(),
             workspace: Arc::new(Mutex::new(Workspace::default())),
-            kernel_request_tx: kernel_request_tx.clone(),
         };
 
         backend
