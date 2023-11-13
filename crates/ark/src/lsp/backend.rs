@@ -330,7 +330,12 @@ impl LanguageServer for Backend {
         let context = DocumentContext::new(&document, &params.text_document_position);
         log::info!("Completion context: {:#?}", context);
 
-        let completions = provide_completions(&self, &context);
+        let completions = r_task(|| provide_completions(&self, &context));
+
+        let completions = unwrap!(completions, Err(err) => {
+            backend_trace!(self, "completion(): Failed to provide completions: {err:?}.");
+            return Ok(None)
+        });
 
         if !completions.is_empty() {
             Ok(Some(CompletionResponse::Array(completions)))
