@@ -41,6 +41,7 @@ use crate::lsp::indexer;
 use crate::lsp::signature_help::signature_help;
 use crate::lsp::statement_range;
 use crate::lsp::symbols;
+use crate::lsp::traits::position::PositionExt;
 use crate::r_task;
 
 #[macro_export]
@@ -326,8 +327,10 @@ impl LanguageServer for Backend {
             return Ok(None);
         });
 
+        let point = params.text_document_position.position.as_point();
+
         // Build the document context.
-        let context = DocumentContext::new(&document, &params.text_document_position);
+        let context = DocumentContext::new(&document, point);
         log::info!("Completion context: {:#?}", context);
 
         let completions = r_task(|| provide_completions(&self, &context));
@@ -368,8 +371,10 @@ impl LanguageServer for Backend {
             return Ok(None);
         });
 
+        let point = params.text_document_position_params.position.as_point();
+
         // build document context
-        let context = DocumentContext::new(&document, &params.text_document_position_params);
+        let context = DocumentContext::new(&document, point);
 
         // request hover information
         let result = r_task(|| unsafe { hover(&context) });
