@@ -328,9 +328,10 @@ impl LanguageServer for Backend {
         });
 
         let point = params.text_document_position.position.as_point();
+        let trigger = params.context.and_then(|ctxt| ctxt.trigger_character);
 
         // Build the document context.
-        let context = DocumentContext::new(&document, point);
+        let context = DocumentContext::new(&document, point, trigger);
         log::info!("Completion context: {:#?}", context);
 
         let completions = r_task(|| provide_completions(&self, &context));
@@ -374,7 +375,7 @@ impl LanguageServer for Backend {
         let point = params.text_document_position_params.position.as_point();
 
         // build document context
-        let context = DocumentContext::new(&document, point);
+        let context = DocumentContext::new(&document, point, None);
 
         // request hover information
         let result = r_task(|| unsafe { hover(&context) });
