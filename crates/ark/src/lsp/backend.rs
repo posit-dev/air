@@ -23,11 +23,11 @@ use tower_lsp::lsp_types::request::GotoImplementationParams;
 use tower_lsp::lsp_types::request::GotoImplementationResponse;
 use tower_lsp::lsp_types::*;
 use tower_lsp::Client;
-use tower_lsp::ClientSocket;
 use tower_lsp::LanguageServer;
 use tower_lsp::LspService;
 use tower_lsp::Server;
 
+use crate::interface::RMain;
 use crate::lsp::completions::provide_completions;
 use crate::lsp::completions::resolve_completion;
 use crate::lsp::definitions::goto_definition;
@@ -496,13 +496,7 @@ impl Backend {
     }
 }
 
-pub fn start_lsp(
-    runtime: Arc<Runtime>,
-    service: LspService<Backend>,
-    socket: ClientSocket,
-    address: String,
-    conn_init_tx: Sender<bool>,
-) {
+pub fn start_lsp(runtime: Arc<Runtime>, address: String, conn_init_tx: Sender<bool>) {
     runtime.block_on(async {
         #[cfg(feature = "runtime-agnostic")]
         use tokio_util::compat::TokioAsyncReadCompatExt;
@@ -524,6 +518,40 @@ pub fn start_lsp(
         #[cfg(feature = "runtime-agnostic")]
         let (read, write) = (read.compat(), write.compat_write());
 
+        let init = |client: Client| {
+            // Forward `client` along to `RMain`.
+            // This also updates an outdated `client` after a reconnect.
+            // `RMain` should be initialized by now, since the caller of this
+            // function waits to receive the init notification sent on
+            // `kernel_init_rx`. Even if it isn't, this should be okay because
+            // `r_task()` defensively blocks until its sender is initialized.
+            r_task({
+                let client = client.clone();
+                move || {
+                    let main = RMain::get_mut();
+                    main.set_lsp_client(client);
+                }
+            });
+
+            // create backend
+            let backend = Backend {
+                client,
+                documents: DOCUMENT_INDEX.clone(),
+                workspace: Arc::new(Mutex::new(Workspace::default())),
+            };
+
+            backend
+        };
+
+        let (service, socket) = LspService::build(init)
+            .custom_method(
+                statement_range::POSITRON_STATEMENT_RANGE_REQUEST,
+                Backend::statement_range,
+            )
+            .custom_method(help_topic::POSITRON_HELP_TOPIC_REQUEST, Backend::help_topic)
+            .custom_method("positron/notification", Backend::notification)
+            .finish();
+
         let server = Server::new(read, write, socket);
         server.serve(service).await;
 
@@ -532,34 +560,4 @@ pub fn start_lsp(
             address
         );
     })
-}
-
-pub fn build_lsp_service() -> (LspService<Backend>, ClientSocket, Client) {
-    let mut client = None;
-
-    let init = |client_callback: Client| {
-        client = Some(client_callback.clone());
-
-        // create backend
-        let backend = Backend {
-            client: client_callback,
-            documents: DOCUMENT_INDEX.clone(),
-            workspace: Arc::new(Mutex::new(Workspace::default())),
-        };
-
-        backend
-    };
-
-    let (service, socket) = LspService::build(init)
-        .custom_method(
-            statement_range::POSITRON_STATEMENT_RANGE_REQUEST,
-            Backend::statement_range,
-        )
-        .custom_method(help_topic::POSITRON_HELP_TOPIC_REQUEST, Backend::help_topic)
-        .custom_method("positron/notification", Backend::notification)
-        .finish();
-
-    let client = client.expect("`Client` should be initialized by the `build()` callback.");
-
-    (service, socket, client)
 }
