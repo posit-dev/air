@@ -35,13 +35,14 @@ use crate::lsp::diagnostics;
 use crate::lsp::document_context::DocumentContext;
 use crate::lsp::documents::Document;
 use crate::lsp::documents::DOCUMENT_INDEX;
+use crate::lsp::encoding::convert_position_to_point;
+use crate::lsp::encoding::get_position_encoding_kind;
 use crate::lsp::help_topic;
 use crate::lsp::hover::hover;
 use crate::lsp::indexer;
 use crate::lsp::signature_help::signature_help;
 use crate::lsp::statement_range;
 use crate::lsp::symbols;
-use crate::lsp::traits::position::PositionExt;
 use crate::r_task;
 
 #[macro_export]
@@ -132,7 +133,7 @@ impl LanguageServer for Backend {
                 version: Some(env!("CARGO_PKG_VERSION").to_string()),
             }),
             capabilities: ServerCapabilities {
-                position_encoding: Some(PositionEncodingKind::UTF8),
+                position_encoding: Some(get_position_encoding_kind()),
                 text_document_sync: Some(TextDocumentSyncCapability::Kind(
                     TextDocumentSyncKind::INCREMENTAL,
                 )),
@@ -327,7 +328,9 @@ impl LanguageServer for Backend {
             return Ok(None);
         });
 
-        let point = params.text_document_position.position.as_point();
+        let position = params.text_document_position.position;
+        let point = convert_position_to_point(&document.contents, position);
+
         let trigger = params.context.and_then(|ctxt| ctxt.trigger_character);
 
         // Build the document context.
@@ -372,7 +375,8 @@ impl LanguageServer for Backend {
             return Ok(None);
         });
 
-        let point = params.text_document_position_params.position.as_point();
+        let position = params.text_document_position_params.position;
+        let point = convert_position_to_point(&document.contents, position);
 
         // build document context
         let context = DocumentContext::new(&document, point, None);
@@ -407,9 +411,12 @@ impl LanguageServer for Backend {
         });
 
         let position = params.text_document_position_params.position;
+        let point = convert_position_to_point(&document.contents, position);
+
+        let context = DocumentContext::new(&document, point, None);
 
         // request signature help
-        let result = r_task(|| unsafe { signature_help(document.value(), &position) });
+        let result = r_task(|| unsafe { signature_help(&context) });
 
         // unwrap errors
         let result = unwrap!(result, Err(error) => {

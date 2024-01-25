@@ -19,7 +19,7 @@ use tree_sitter::Parser;
 use tree_sitter::Point;
 use tree_sitter::Tree;
 
-use crate::lsp::traits::position::PositionExt;
+use crate::lsp::encoding::convert_position_to_point;
 use crate::lsp::traits::rope::RopeExt;
 
 lazy_static! {
@@ -192,44 +192,77 @@ impl Document {
         // offsets can be computed correctly.
         let ast = &mut self.ast;
 
-        let start_byte = self.contents.position_to_byte(range.start);
-        let start_position = range.start.as_point();
+        let start_point = convert_position_to_point(&self.contents, range.start);
+        let start_byte = self.contents.point_to_byte(start_point);
 
-        let old_end_byte = self.contents.position_to_byte(range.end);
+        let old_end_point = convert_position_to_point(&self.contents, range.end);
+        let old_end_byte = self.contents.point_to_byte(old_end_point);
+
+        let new_end_point = compute_point(start_point, &change.text);
         let new_end_byte = start_byte + change.text.as_bytes().len();
 
-        let old_end_position = range.end.as_point();
-        let new_end_position = compute_point(start_position, &change.text);
-
+        // Confusing tree sitter names, the `start_position` is really a `Point`
         let edit = InputEdit {
             start_byte,
             old_end_byte,
             new_end_byte,
-            start_position,
-            old_end_position,
-            new_end_position,
+            start_position: start_point,
+            old_end_position: old_end_point,
+            new_end_position: new_end_point,
         };
 
         ast.edit(&edit);
 
         // Now, apply edits to the underlying document.
-        let lhs = self.contents.position_to_byte(range.start);
-        let rhs = self.contents.position_to_byte(range.end);
-
-        // Now, convert from byte offsets to character offsets.
-        let lhs = self.contents.byte_to_char(lhs);
-        let rhs = self.contents.byte_to_char(rhs);
+        // Convert from byte offsets to character offsets.
+        let start_character = self.contents.byte_to_char(start_byte);
+        let old_end_character = self.contents.byte_to_char(old_end_byte);
 
         // Remove the old slice of text, and insert the new slice of text.
-        self.contents.remove(lhs..rhs);
-        self.contents.insert(lhs, change.text.as_str());
+        self.contents.remove(start_character..old_end_character);
+        self.contents.insert(start_character, change.text.as_str());
 
         // We've edited the AST, and updated the document. We can now re-parse.
-        let contents = self.contents.to_string();
-        let ast = self.parser.parse(&contents, Some(&self.ast));
+        let contents = &self.contents;
+        let callback = &mut |byte, point| Self::parse_callback(contents, byte, point);
+
+        let ast = self.parser.parse_with(callback, Some(&self.ast));
         self.ast = ast.unwrap();
 
         Ok(())
+    }
+
+    /// A tree-sitter `parse_with()` callback to efficiently return a slice of the
+    /// document in the `Rope` that tree-sitter can reparse with.
+    ///
+    /// According to the tree-sitter docs:
+    /// * `callback` A function that takes a byte offset and position and
+    ///   returns a slice of UTF8-encoded text starting at that byte offset
+    ///   and position. The slices can be of any length. If the given position
+    ///   is at the end of the text, the callback should return an empty slice.
+    ///
+    /// We expect that tree-sitter will call the callback again with an updated `byte`
+    /// if the chunk doesn't contain enough text to fully reparse.
+    fn parse_callback(contents: &Rope, byte: usize, point: Point) -> &[u8] {
+        // Get Rope "chunk" that lines up with this `byte`
+        let Some((chunk, chunk_byte_idx, _chunk_char_idx, _chunk_line_idx)) =
+            contents.get_chunk_at_byte(byte)
+        else {
+            let contents = contents.to_string();
+            log::error!(
+                "Failed to get Rope chunk at byte {byte}, point {point}. Text '{contents}'.",
+            );
+            return "\n".as_bytes();
+        };
+
+        // How far into this chunk are we?
+        let byte = byte - chunk_byte_idx;
+
+        // Now return the slice from that `byte` to the end of the chunk.
+        // SAFETY: This should never panic, since `get_chunk_at_byte()` worked.
+        let slice = &chunk[byte..];
+
+        slice.as_bytes()
     }
 }
 
