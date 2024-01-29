@@ -34,7 +34,6 @@ use crate::lsp::definitions::goto_definition;
 use crate::lsp::diagnostics;
 use crate::lsp::document_context::DocumentContext;
 use crate::lsp::documents::Document;
-use crate::lsp::documents::DOCUMENT_INDEX;
 use crate::lsp::encoding::convert_position_to_point;
 use crate::lsp::encoding::get_position_encoding_kind;
 use crate::lsp::help_topic;
@@ -540,10 +539,12 @@ pub fn start_lsp(runtime: Arc<Runtime>, address: String, conn_init_tx: Sender<bo
                 }
             });
 
-            // create backend
+            // Create backend.
+            // Note that DashMap uses synchronization primitives internally, so we
+            // don't guard access to the map via a mutex.
             let backend = Backend {
                 client,
-                documents: DOCUMENT_INDEX.clone(),
+                documents: Arc::new(DashMap::new()),
                 workspace: Arc::new(Mutex::new(Workspace::default())),
             };
 
