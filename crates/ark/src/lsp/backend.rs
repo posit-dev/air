@@ -81,7 +81,7 @@ impl Backend {
     {
         let mut fallback = || {
             let contents = std::fs::read_to_string(path)?;
-            let document = Document::new(contents.as_str());
+            let document = Document::new(contents.as_str(), None);
             return callback(&document);
         };
 
@@ -252,7 +252,10 @@ impl LanguageServer for Backend {
 
         self.documents.insert(
             params.text_document.uri,
-            Document::new(params.text_document.text.as_str()),
+            Document::new(
+                params.text_document.text.as_str(),
+                Some(params.text_document.version),
+            ),
         );
     }
 

@@ -62,7 +62,7 @@ impl std::fmt::Debug for Document {
 }
 
 impl Document {
-    pub fn new(contents: &str) -> Self {
+    pub fn new(contents: &str, version: Option<i32>) -> Self {
         // create initial document from rope
         let document = Rope::from(contents);
 
@@ -74,7 +74,6 @@ impl Document {
         let ast = parser.parse(contents, None).unwrap();
 
         let pending = Vec::new();
-        let version = None;
 
         // return generated document
         Self {
