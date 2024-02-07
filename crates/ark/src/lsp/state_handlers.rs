@@ -12,6 +12,7 @@ use tower_lsp::lsp_types::CompletionOptions;
 use tower_lsp::lsp_types::DidChangeTextDocumentParams;
 use tower_lsp::lsp_types::DidCloseTextDocumentParams;
 use tower_lsp::lsp_types::DidOpenTextDocumentParams;
+use tower_lsp::lsp_types::DocumentOnTypeFormattingOptions;
 use tower_lsp::lsp_types::ExecuteCommandOptions;
 use tower_lsp::lsp_types::HoverProviderCapability;
 use tower_lsp::lsp_types::ImplementationProviderCapability;
@@ -120,6 +121,10 @@ pub(crate) fn initialize(
                     change_notifications: Some(OneOf::Left(true)),
                 }),
                 file_operations: None,
+            }),
+            document_on_type_formatting_provider: Some(DocumentOnTypeFormattingOptions {
+                first_trigger_character: String::from("\n"),
+                more_trigger_character: None,
             }),
             ..ServerCapabilities::default()
         },

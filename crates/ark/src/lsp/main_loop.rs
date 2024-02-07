@@ -277,6 +277,9 @@ impl GlobalState {
                         LspRequest::HelpTopic(params) => {
                             respond(tx, handlers::handle_help_topic(params, &self.world), LspResponse::HelpTopic)?;
                         },
+                        LspRequest::OnTypeFormatting(params) => {
+                            respond(tx, handlers::handle_indent(params, &self.world), LspResponse::OnTypeFormatting)?;
+                        },
                     };
                 },
             },

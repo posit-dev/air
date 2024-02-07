@@ -87,6 +87,7 @@ pub(crate) enum LspRequest {
     References(ReferenceParams),
     StatementRange(StatementRangeParams),
     HelpTopic(HelpTopicParams),
+    OnTypeFormatting(DocumentOnTypeFormattingParams),
 }
 
 #[derive(Debug)]
@@ -106,6 +107,7 @@ pub(crate) enum LspResponse {
     References(Option<Vec<Location>>),
     StatementRange(Option<StatementRangeResponse>),
     HelpTopic(Option<HelpTopicResponse>),
+    OnTypeFormatting(Option<Vec<TextEdit>>),
 }
 
 #[derive(Debug)]
@@ -277,6 +279,16 @@ impl LanguageServer for Backend {
         cast_response!(
             self.request(LspRequest::References(params)).await,
             LspResponse::References
+        )
+    }
+
+    async fn on_type_formatting(
+        &self,
+        params: DocumentOnTypeFormattingParams,
+    ) -> Result<Option<Vec<TextEdit>>> {
+        cast_response!(
+            self.request(LspRequest::OnTypeFormatting(params)).await,
+            LspResponse::OnTypeFormatting
         )
     }
 }

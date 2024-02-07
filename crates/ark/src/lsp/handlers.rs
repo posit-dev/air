@@ -10,6 +10,7 @@ use stdext::unwrap;
 use tower_lsp::lsp_types::CompletionItem;
 use tower_lsp::lsp_types::CompletionParams;
 use tower_lsp::lsp_types::CompletionResponse;
+use tower_lsp::lsp_types::DocumentOnTypeFormattingParams;
 use tower_lsp::lsp_types::DocumentSymbolParams;
 use tower_lsp::lsp_types::DocumentSymbolResponse;
 use tower_lsp::lsp_types::GotoDefinitionParams;
@@ -25,6 +26,7 @@ use tower_lsp::lsp_types::SelectionRangeParams;
 use tower_lsp::lsp_types::SignatureHelp;
 use tower_lsp::lsp_types::SignatureHelpParams;
 use tower_lsp::lsp_types::SymbolInformation;
+use tower_lsp::lsp_types::TextEdit;
 use tower_lsp::lsp_types::WorkspaceEdit;
 use tower_lsp::lsp_types::WorkspaceSymbolParams;
 use tower_lsp::Client;
@@ -40,6 +42,7 @@ use crate::lsp::help_topic::help_topic;
 use crate::lsp::help_topic::HelpTopicParams;
 use crate::lsp::help_topic::HelpTopicResponse;
 use crate::lsp::hover::r_hover;
+use crate::lsp::indent::indent;
 use crate::lsp::references::find_references;
 use crate::lsp::selection_range::convert_selection_range_from_tree_sitter_to_lsp;
 use crate::lsp::selection_range::selection_range;
@@ -49,6 +52,7 @@ use crate::lsp::statement_range::statement_range;
 use crate::lsp::statement_range::StatementRangeParams;
 use crate::lsp::statement_range::StatementRangeResponse;
 use crate::lsp::symbols;
+use crate::lsp::traits::node::NodeExt;
 use crate::r_task;
 
 // Handlers that do not mutate the world state. They take a sharing reference or
@@ -279,4 +283,25 @@ pub(crate) fn handle_help_topic(
     let point = convert_position_to_point(contents, position);
 
     help_topic(point, &document)
+}
+
+pub(crate) fn handle_indent(
+    params: DocumentOnTypeFormattingParams,
+    state: &WorldState,
+) -> anyhow::Result<Option<Vec<TextEdit>>> {
+    let ctxt = params.text_document_position;
+    let uri = ctxt.text_document.uri;
+
+    let doc = state.get_document(&uri)?;
+    let pos = ctxt.position;
+    let point = convert_position_to_point(&doc.contents, pos);
+
+    // Find node at point
+    let node = doc
+        .ast
+        .root_node()
+        .find_closest_node_to_point(point)
+        .unwrap();
+
+    indent(pos, node, doc)
 }
