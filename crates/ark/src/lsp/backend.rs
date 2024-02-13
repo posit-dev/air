@@ -39,6 +39,7 @@ use crate::lsp::encoding::get_position_encoding_kind;
 use crate::lsp::help_topic;
 use crate::lsp::hover::hover;
 use crate::lsp::indexer;
+use crate::lsp::indexer::IndexerStateManager;
 use crate::lsp::signature_help::signature_help;
 use crate::lsp::statement_range;
 use crate::lsp::symbols;
@@ -72,6 +73,7 @@ pub struct Backend {
     pub client: Client,
     pub documents: Arc<DashMap<Url, Document>>,
     pub workspace: Arc<Mutex<Workspace>>,
+    pub indexer_state_manager: IndexerStateManager,
 }
 
 impl Backend {
@@ -124,7 +126,7 @@ impl LanguageServer for Backend {
         }
 
         // start indexing
-        indexer::start(folders);
+        indexer::start(folders, self.indexer_state_manager.clone());
 
         Ok(InitializeResult {
             server_info: Some(ServerInfo {
@@ -250,13 +252,14 @@ impl LanguageServer for Backend {
     async fn did_open(&self, params: DidOpenTextDocumentParams) {
         backend_trace!(self, "did_open({}", params.text_document.uri);
 
-        self.documents.insert(
-            params.text_document.uri,
-            Document::new(
-                params.text_document.text.as_str(),
-                Some(params.text_document.version),
-            ),
-        );
+        let contents = params.text_document.text.as_str();
+        let uri = params.text_document.uri;
+        let version = params.text_document.version;
+
+        self.documents
+            .insert(uri.clone(), Document::new(contents, Some(version)));
+
+        diagnostics::refresh_diagnostics(self.clone(), uri.clone(), Some(version));
     }
 
     async fn did_change(&self, params: DidChangeTextDocumentParams) {
@@ -289,9 +292,9 @@ impl LanguageServer for Backend {
 
         // publish diagnostics - but only publish them if the version of
         // the document now matches the version of the change after applying
-        // it in `on_did_change()`
+        // it in `on_did_change()` (i.e. no changes left in the out of order queue)
         if params.text_document.version == version {
-            diagnostics::enqueue_diagnostics(self.clone(), uri.clone(), version);
+            diagnostics::refresh_diagnostics(self.clone(), uri.clone(), Some(version));
         }
     }
 
@@ -302,19 +305,18 @@ impl LanguageServer for Backend {
     async fn did_close(&self, params: DidCloseTextDocumentParams) {
         backend_trace!(self, "did_close({:?}", params);
 
-        match self.documents.remove(&params.text_document.uri) {
+        let uri = params.text_document.uri;
+
+        diagnostics::clear_diagnostics(self.clone(), uri.clone(), None);
+
+        match self.documents.remove(&uri) {
             Some(_) => {
-                backend_trace!(
-                    self,
-                    "did_close(): closed document with URI: '{}'.",
-                    params.text_document.uri
-                );
+                backend_trace!(self, "did_close(): closed document with URI: '{uri}'.");
             },
             None => {
                 backend_trace!(
                     self,
-                    "did_close(): failed to remove document with unknown URI: '{}'.",
-                    params.text_document.uri
+                    "did_close(): failed to remove document with unknown URI: '{uri}'."
                 );
             },
         };
@@ -528,20 +530,6 @@ pub fn start_lsp(runtime: Arc<Runtime>, address: String, conn_init_tx: Sender<bo
         let (read, write) = (read.compat(), write.compat_write());
 
         let init = |client: Client| {
-            // Forward `client` along to `RMain`.
-            // This also updates an outdated `client` after a reconnect.
-            // `RMain` should be initialized by now, since the caller of this
-            // function waits to receive the init notification sent on
-            // `kernel_init_rx`. Even if it isn't, this should be okay because
-            // `r_task()` defensively blocks until its sender is initialized.
-            r_task({
-                let client = client.clone();
-                move || {
-                    let main = RMain::get_mut();
-                    main.set_lsp_client(client);
-                }
-            });
-
             // Create backend.
             // Note that DashMap uses synchronization primitives internally, so we
             // don't guard access to the map via a mutex.
@@ -549,7 +537,22 @@ pub fn start_lsp(runtime: Arc<Runtime>, address: String, conn_init_tx: Sender<bo
                 client,
                 documents: Arc::new(DashMap::new()),
                 workspace: Arc::new(Mutex::new(Workspace::default())),
+                indexer_state_manager: IndexerStateManager::new(),
             };
+
+            // Forward `backend` along to `RMain`.
+            // This also updates an outdated `backend` after a reconnect.
+            // `RMain` should be initialized by now, since the caller of this
+            // function waits to receive the init notification sent on
+            // `kernel_init_rx`. Even if it isn't, this should be okay because
+            // `r_task()` defensively blocks until its sender is initialized.
+            r_task({
+                let backend = backend.clone();
+                move || {
+                    let main = RMain::get_mut();
+                    main.set_lsp_backend(backend);
+                }
+            });
 
             backend
         };
