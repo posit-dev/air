@@ -72,10 +72,13 @@ impl Document {
         // create initial document from rope
         let document = Rope::from(contents);
 
+        let language = tree_sitter_r::language();
+
         // create a parser for this document
         let mut parser = Parser::new();
+
         parser
-            .set_language(tree_sitter_r::language())
+            .set_language(&language)
             .expect("failed to create parser");
         let ast = parser.parse(contents, None).unwrap();
 
