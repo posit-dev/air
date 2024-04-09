@@ -5,6 +5,7 @@
 //
 //
 
+use std::collections::HashMap;
 use std::future;
 use std::pin::Pin;
 
@@ -26,7 +27,6 @@ use crate::lsp::backend::LspResponse;
 use crate::lsp::diagnostics;
 use crate::lsp::documents::Document;
 use crate::lsp::handlers;
-use crate::lsp::state::ParserState;
 use crate::lsp::state::WorldState;
 use crate::lsp::state_handlers;
 use crate::lsp::state_handlers::ConsoleInputs;
@@ -86,9 +86,10 @@ pub(crate) struct GlobalState {
     /// (clones) to handlers.
     world: WorldState,
 
-    /// The state containing tree-sitter parsers for documents contained in the
-    /// `WorldState`. Only used in exclusive ref handlers, and is not cloneable.
-    parsers: ParserState,
+    /// The state containing LSP configuration and tree-sitter parsers for
+    /// documents contained in the `WorldState`. Only used in exclusive ref
+    /// handlers, and is not cloneable.
+    lsp_state: LspState,
 
     /// LSP client shared with tower-lsp and the log loop
     client: Client,
@@ -99,6 +100,23 @@ pub(crate) struct GlobalState {
     /// `Event::Task`.
     events_tx: TokioUnboundedSender<Event>,
     events_rx: TokioUnboundedReceiver<Event>,
+}
+
+/// Unlike `WorldState`, `ParserState` cannot be cloned and is only accessed by
+/// exclusive handlers.
+#[derive(Default)]
+pub(crate) struct LspState {
+    /// The set of tree-sitter document parsers managed by the `GlobalState`.
+    pub(crate) parsers: HashMap<Url, tree_sitter::Parser>,
+
+    /// List of capabilities for which we need to send a registration request
+    /// when we get the `Initialized` notification.
+    pub(crate) needs_registration: ClientCaps,
+}
+
+#[derive(Debug, Default)]
+pub(crate) struct ClientCaps {
+    pub(crate) did_change_configuration: bool,
 }
 
 /// State for the auxiliary loop
@@ -130,7 +148,7 @@ impl GlobalState {
 
         Self {
             world: WorldState::default(),
-            parsers: ParserState::new(),
+            lsp_state: LspState::default(),
             client,
             events_tx,
             events_rx,
@@ -201,27 +219,28 @@ impl GlobalState {
 
                     match notif {
                         LspNotification::Initialized(_params) => {
+                            handlers::handle_initialized(&self.client, &self.lsp_state).await?;
                         },
                         LspNotification::DidChangeWorkspaceFolders(_params) => {
                             // TODO: Restart indexer with new folders.
                         },
-                        LspNotification::DidChangeConfiguration(_params) => {
-                            // TODO: Get config updates.
+                        LspNotification::DidChangeConfiguration(params) => {
+                            state_handlers::did_change_configuration(params, &self.client, &mut self.world).await?;
                         },
                         LspNotification::DidChangeWatchedFiles(_params) => {
                             // TODO: Re-index the changed files.
                         },
                         LspNotification::DidOpenTextDocument(params) => {
-                            state_handlers::did_open(params, &mut self.world, &mut self.parsers)?;
+                            state_handlers::did_open(params, &mut self.lsp_state, &mut self.world)?;
                         },
                         LspNotification::DidChangeTextDocument(params) => {
-                            state_handlers::did_change(params, &mut self.world, &mut self.parsers)?;
+                            state_handlers::did_change(params, &mut self.lsp_state, &mut self.world)?;
                         },
                         LspNotification::DidSaveTextDocument(_params) => {
                             // Currently ignored
                         },
                         LspNotification::DidCloseTextDocument(params) => {
-                            state_handlers::did_close(params, &mut self.world, &mut self.parsers)?;
+                            state_handlers::did_close(params, &mut self.lsp_state, &mut self.world)?;
                         },
                     }
                 },
@@ -231,7 +250,7 @@ impl GlobalState {
 
                     match request {
                         LspRequest::Initialize(params) => {
-                            respond(tx, state_handlers::initialize(params, &mut self.world), LspResponse::Initialize)?;
+                            respond(tx, state_handlers::initialize(params, &mut self.lsp_state, &mut self.world), LspResponse::Initialize)?;
                         },
                         LspRequest::Shutdown() => {
                             // TODO

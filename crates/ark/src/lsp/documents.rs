@@ -14,6 +14,7 @@ use tree_sitter::Parser;
 use tree_sitter::Point;
 use tree_sitter::Tree;
 
+use crate::lsp::config::DocumentConfig;
 use crate::lsp::encoding::convert_position_to_point;
 use crate::lsp::traits::rope::RopeExt;
 
@@ -45,6 +46,9 @@ pub struct Document {
     // The version of the document we last synchronized with.
     // None if the document hasn't been synchronized yet.
     pub version: Option<i32>,
+
+    // Configuration of the document, such as indentation settings.
+    pub config: DocumentConfig,
 }
 
 impl std::fmt::Debug for Document {
@@ -75,6 +79,7 @@ impl Document {
             contents: document,
             version,
             ast,
+            config: Default::default(),
         }
     }
 

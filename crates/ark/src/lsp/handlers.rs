@@ -7,6 +7,7 @@
 
 use serde_json::Value;
 use stdext::unwrap;
+use struct_field_names_as_array::FieldNamesAsArray;
 use tower_lsp::lsp_types::CompletionItem;
 use tower_lsp::lsp_types::CompletionParams;
 use tower_lsp::lsp_types::CompletionResponse;
@@ -21,6 +22,7 @@ use tower_lsp::lsp_types::HoverParams;
 use tower_lsp::lsp_types::Location;
 use tower_lsp::lsp_types::MessageType;
 use tower_lsp::lsp_types::ReferenceParams;
+use tower_lsp::lsp_types::Registration;
 use tower_lsp::lsp_types::SelectionRange;
 use tower_lsp::lsp_types::SelectionRangeParams;
 use tower_lsp::lsp_types::SignatureHelp;
@@ -35,6 +37,7 @@ use tree_sitter::Point;
 use crate::lsp;
 use crate::lsp::completions::provide_completions;
 use crate::lsp::completions::resolve_completion;
+use crate::lsp::config::VscDocumentConfig;
 use crate::lsp::definitions::goto_definition;
 use crate::lsp::document_context::DocumentContext;
 use crate::lsp::encoding::convert_position_to_point;
@@ -43,6 +46,7 @@ use crate::lsp::help_topic::HelpTopicParams;
 use crate::lsp::help_topic::HelpTopicResponse;
 use crate::lsp::hover::r_hover;
 use crate::lsp::indent::indent;
+use crate::lsp::main_loop::LspState;
 use crate::lsp::references::find_references;
 use crate::lsp::selection_range::convert_selection_range_from_tree_sitter_to_lsp;
 use crate::lsp::selection_range::selection_range;
@@ -57,6 +61,38 @@ use crate::r_task;
 
 // Handlers that do not mutate the world state. They take a sharing reference or
 // a clone of the state.
+
+pub(crate) async fn handle_initialized(
+    client: &Client,
+    lsp_state: &LspState,
+) -> anyhow::Result<()> {
+    // Register capabilities to the client
+    let mut regs: Vec<Registration> = vec![];
+
+    if lsp_state.needs_registration.did_change_configuration {
+        // The `didChangeConfiguration` request instructs the client to send
+        // a notification when the tracked settings have changed.
+        //
+        // Note that some settings, such as editor indentation properties, may be
+        // changed by extensions or by the user without changing the actual
+        // underlying setting. Unfortunately we don't receive updates in that case.
+        let mut config_regs: Vec<Registration> = VscDocumentConfig::FIELD_NAMES_AS_ARRAY
+            .into_iter()
+            .map(|field| Registration {
+                id: uuid::Uuid::new_v4().to_string(),
+                method: String::from("workspace/didChangeConfiguration"),
+                register_options: Some(
+                    serde_json::json!({ "section": VscDocumentConfig::section_from_key(field) }),
+                ),
+            })
+            .collect();
+
+        regs.append(&mut config_regs)
+    }
+
+    client.register_capability(regs).await?;
+    Ok(())
+}
 
 pub(crate) fn handle_symbol(
     params: WorkspaceSymbolParams,
