@@ -45,7 +45,7 @@ use crate::lsp::help_topic::help_topic;
 use crate::lsp::help_topic::HelpTopicParams;
 use crate::lsp::help_topic::HelpTopicResponse;
 use crate::lsp::hover::r_hover;
-use crate::lsp::indent::indent;
+use crate::lsp::indent::indent_edit;
 use crate::lsp::main_loop::LspState;
 use crate::lsp::references::find_references;
 use crate::lsp::selection_range::convert_selection_range_from_tree_sitter_to_lsp;
@@ -56,7 +56,6 @@ use crate::lsp::statement_range::statement_range;
 use crate::lsp::statement_range::StatementRangeParams;
 use crate::lsp::statement_range::StatementRangeResponse;
 use crate::lsp::symbols;
-use crate::lsp::traits::node::NodeExt;
 use crate::r_task;
 
 // Handlers that do not mutate the world state. They take a sharing reference or
@@ -332,12 +331,5 @@ pub(crate) fn handle_indent(
     let pos = ctxt.position;
     let point = convert_position_to_point(&doc.contents, pos);
 
-    // Find node at point
-    let node = doc
-        .ast
-        .root_node()
-        .find_closest_node_to_point(point)
-        .unwrap();
-
-    indent(pos, node, doc)
+    indent_edit(doc, point.row)
 }

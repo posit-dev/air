@@ -18,6 +18,7 @@ use tower_lsp::lsp_types::DidCloseTextDocumentParams;
 use tower_lsp::lsp_types::DidOpenTextDocumentParams;
 use tower_lsp::lsp_types::DocumentOnTypeFormattingOptions;
 use tower_lsp::lsp_types::ExecuteCommandOptions;
+use tower_lsp::lsp_types::FormattingOptions;
 use tower_lsp::lsp_types::HoverProviderCapability;
 use tower_lsp::lsp_types::ImplementationProviderCapability;
 use tower_lsp::lsp_types::InitializeParams;
@@ -36,6 +37,7 @@ use tree_sitter::Parser;
 use url::Url;
 
 use crate::lsp;
+use crate::lsp::config::indent_style_from_lsp;
 use crate::lsp::config::DocumentConfig;
 use crate::lsp::config::VscDocumentConfig;
 use crate::lsp::documents::Document;
@@ -234,6 +236,35 @@ pub(crate) async fn did_change_configuration(
     update_config(workspace_uris(state), client, state).await
 }
 
+pub(crate) fn did_change_formatting_options(
+    uri: &Url,
+    opts: &FormattingOptions,
+    state: &mut WorldState,
+) {
+    let Ok(doc) = state.get_document_mut(uri) else {
+        return;
+    };
+
+    // The information provided in formatting requests is more up-to-date
+    // than the user settings because it also includes changes made to the
+    // configuration of particular editors. However the former is less rich
+    // than the latter: it does not allow the tab size to differ from the
+    // indent size, as in the R core sources. So we just ignore the less
+    // rich updates in this case.
+    if doc.config.indent.indent_size != doc.config.indent.tab_width {
+        return;
+    }
+
+    doc.config.indent.indent_size = opts.tab_size as usize;
+    doc.config.indent.tab_width = opts.tab_size as usize;
+    doc.config.indent.indent_style = indent_style_from_lsp(opts.insert_spaces);
+
+    // TODO:
+    // `trim_trailing_whitespace`
+    // `trim_final_newlines`
+    // `insert_final_newline`
+}
+
 async fn update_config(
     uris: Vec<Url>,
     client: &tower_lsp::Client,
@@ -287,8 +318,6 @@ async fn update_config(
 
         // Now convert the VS Code specific type into our own type
         let config: DocumentConfig = config.into();
-
-        lsp::log_info!("Got config for URI `{uri}`: {config:?}");
 
         // Finally, update the document's config
         state.get_document_mut(&uri)?.config = config;

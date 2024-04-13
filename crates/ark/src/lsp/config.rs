@@ -7,17 +7,22 @@ use crate::lsp;
 /// Configuration of a document.
 ///
 /// The naming follows <https://editorconfig.org/> where possible.
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct DocumentConfig {
+    pub indent: IndentationConfig,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct IndentationConfig {
     /// Whether to insert spaces of tabs for one level of indentation.
     pub indent_style: IndentStyle,
 
     /// The number of spaces for one level of indentation.
-    pub indent_size: u8,
+    pub indent_size: usize,
 
     /// The width of a tab. There may be projects with an `indent_size` of 4 and
     /// a `tab_width` of 8 (e.g. GNU R).
-    pub tab_width: u8,
+    pub tab_width: usize,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -32,17 +37,17 @@ pub(crate) struct VscDocumentConfig {
     // DEV NOTE: Update `section_from_key()` method after adding a field
     pub insert_spaces: bool,
     pub indent_size: VscIndentSize,
-    pub tab_size: u8,
+    pub tab_size: usize,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(untagged)]
 pub(crate) enum VscIndentSize {
     Alias(String),
-    Size(u8),
+    Size(usize),
 }
 
-impl Default for DocumentConfig {
+impl Default for IndentationConfig {
     fn default() -> Self {
         Self {
             indent_style: IndentStyle::Space,
@@ -63,15 +68,11 @@ impl VscDocumentConfig {
     }
 }
 
-// Convert from VS Code representation of a document config to our own
-// representation
+/// Convert from VS Code representation of a document config to our own
+/// representation. Currently one-to-one.
 impl From<VscDocumentConfig> for DocumentConfig {
     fn from(x: VscDocumentConfig) -> Self {
-        let indent_style = if x.insert_spaces {
-            IndentStyle::Space
-        } else {
-            IndentStyle::Tab
-        };
+        let indent_style = indent_style_from_lsp(x.insert_spaces);
 
         let indent_size = match x.indent_size {
             VscIndentSize::Size(size) => size,
@@ -86,9 +87,19 @@ impl From<VscDocumentConfig> for DocumentConfig {
         };
 
         Self {
-            indent_style,
-            indent_size,
-            tab_width: x.tab_size,
+            indent: IndentationConfig {
+                indent_style,
+                indent_size,
+                tab_width: x.tab_size,
+            },
         }
+    }
+}
+
+pub(crate) fn indent_style_from_lsp(insert_spaces: bool) -> IndentStyle {
+    if insert_spaces {
+        IndentStyle::Space
+    } else {
+        IndentStyle::Tab
     }
 }

@@ -297,6 +297,7 @@ impl GlobalState {
                             respond(tx, handlers::handle_help_topic(params, &self.world), LspResponse::HelpTopic)?;
                         },
                         LspRequest::OnTypeFormatting(params) => {
+                            state_handlers::did_change_formatting_options(&params.text_document_position.text_document.uri, &params.options, &mut self.world);
                             respond(tx, handlers::handle_indent(params, &self.world), LspResponse::OnTypeFormatting)?;
                         },
                     };
