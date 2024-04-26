@@ -21,11 +21,13 @@ use tokio::runtime::Runtime;
 use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::request::GotoImplementationParams;
 use tower_lsp::lsp_types::request::GotoImplementationResponse;
+use tower_lsp::lsp_types::SelectionRange;
 use tower_lsp::lsp_types::*;
 use tower_lsp::Client;
 use tower_lsp::LanguageServer;
 use tower_lsp::LspService;
 use tower_lsp::Server;
+use tree_sitter::Point;
 
 use crate::interface::RMain;
 use crate::lsp::completions::provide_completions;
@@ -40,6 +42,8 @@ use crate::lsp::help_topic;
 use crate::lsp::hover::hover;
 use crate::lsp::indexer;
 use crate::lsp::indexer::IndexerStateManager;
+use crate::lsp::selection_range::convert_selection_range_from_tree_sitter_to_lsp;
+use crate::lsp::selection_range::selection_range;
 use crate::lsp::signature_help::signature_help;
 use crate::lsp::statement_range;
 use crate::lsp::symbols;
@@ -138,7 +142,7 @@ impl LanguageServer for Backend {
                 text_document_sync: Some(TextDocumentSyncCapability::Kind(
                     TextDocumentSyncKind::INCREMENTAL,
                 )),
-                selection_range_provider: None,
+                selection_range_provider: Some(SelectionRangeProviderCapability::Simple(true)),
                 hover_provider: Some(HoverProviderCapability::from(true)),
                 completion_provider: Some(CompletionOptions {
                     resolve_provider: Some(true),
@@ -466,6 +470,41 @@ impl LanguageServer for Backend {
         let _ = params;
         log::error!("Got a textDocument/implementation request, but it is not implemented");
         return Ok(None);
+    }
+
+    async fn selection_range(
+        &self,
+        params: SelectionRangeParams,
+    ) -> Result<Option<Vec<SelectionRange>>> {
+        backend_trace!(self, "selection_range({:?})", params);
+
+        // Get reference to document
+        let uri = &params.text_document.uri;
+        let document = unwrap!(self.documents.get(uri), None => {
+            backend_trace!(self, "completion(): No document associated with URI {}", uri);
+            return Ok(None);
+        });
+
+        let tree = &document.ast;
+
+        // Get tree-sitter points to return selection ranges for
+        let points: Vec<Point> = params
+            .positions
+            .into_iter()
+            .map(|position| convert_position_to_point(&document.contents, position))
+            .collect();
+
+        let Some(selections) = selection_range(tree, points) else {
+            return Ok(None);
+        };
+
+        // Convert tree-sitter points to LSP positions everywhere
+        let selections = selections
+            .into_iter()
+            .map(|selection| convert_selection_range_from_tree_sitter_to_lsp(selection, &document))
+            .collect();
+
+        Ok(Some(selections))
     }
 
     async fn references(&self, params: ReferenceParams) -> Result<Option<Vec<Location>>> {
