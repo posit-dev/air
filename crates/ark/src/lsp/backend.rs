@@ -331,7 +331,7 @@ impl LanguageServer for Backend {
 
         // Get reference to document.
         let uri = &params.text_document_position.text_document.uri;
-        let document = unwrap!(self.documents.get_mut(uri), None => {
+        let document = unwrap!(self.documents.get(uri), None => {
             backend_trace!(self, "completion(): No document associated with URI {}", uri);
             return Ok(None);
         });
@@ -378,7 +378,7 @@ impl LanguageServer for Backend {
 
         // get document reference
         let uri = &params.text_document_position_params.text_document.uri;
-        let document = unwrap!(self.documents.get_mut(uri), None => {
+        let document = unwrap!(self.documents.get(uri), None => {
             backend_trace!(self, "hover(): No document associated with URI {}", uri);
             return Ok(None);
         });
@@ -413,7 +413,7 @@ impl LanguageServer for Backend {
     async fn signature_help(&self, params: SignatureHelpParams) -> Result<Option<SignatureHelp>> {
         // get document reference
         let uri = &params.text_document_position_params.text_document.uri;
-        let document = unwrap!(self.documents.get_mut(uri), None => {
+        let document = unwrap!(self.documents.get(uri), None => {
             backend_trace!(self, "signature_help(): No document associated with URI {}", uri);
             return Ok(None);
         });
