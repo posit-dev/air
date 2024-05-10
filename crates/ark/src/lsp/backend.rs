@@ -18,6 +18,7 @@ use stdext::result::ResultOrLog;
 use stdext::*;
 use tokio::net::TcpListener;
 use tokio::runtime::Runtime;
+use tokio::sync::mpsc::unbounded_channel as tokio_unbounded_channel;
 use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::request::GotoImplementationParams;
 use tower_lsp::lsp_types::request::GotoImplementationResponse;
@@ -61,6 +62,11 @@ macro_rules! backend_trace {
 
 }
 
+#[derive(Debug)]
+pub enum LspEvent {
+    DidChangeConsoleInputs(ConsoleInputs),
+}
+
 #[derive(Clone, Debug)]
 pub struct Backend {
     /// LSP client, use this for direct interaction with the client.
@@ -71,6 +77,21 @@ pub struct Backend {
 
     /// Synchronisation util for indexer.
     pub indexer_state_manager: IndexerStateManager,
+}
+
+/// Information sent from the kernel to the LSP after each top-level evaluation.
+#[derive(Debug)]
+pub struct ConsoleInputs {
+    /// List of console scopes, from innermost (global or debug) to outermost
+    /// scope. Currently the scopes are vectors of symbol names. TODO: In the
+    /// future, we should send structural information like search path, and let
+    /// the LSP query us for the contents so that the LSP can cache the
+    /// information.
+    pub console_scopes: Vec<Vec<String>>,
+
+    /// Packages currently installed in the library path. TODO: Should send
+    /// library paths instead and inspect and cache package information in the LSP.
+    pub installed_packages: Vec<String>,
 }
 
 impl Backend {
@@ -571,9 +592,30 @@ pub fn start_lsp(runtime: Arc<Runtime>, address: String, conn_init_tx: Sender<bo
                 state: WorldState {
                     documents: Arc::new(DashMap::new()),
                     workspace: Arc::new(Mutex::new(Workspace::default())),
+                    console_scopes: Arc::new(Mutex::new(vec![])),
+                    installed_packages: Arc::new(Mutex::new(vec![])),
                 },
                 indexer_state_manager: IndexerStateManager::new(),
             };
+
+            let (events_tx, mut events_rx) = tokio_unbounded_channel::<LspEvent>();
+
+            // LSP event loop. To be integrated in our synchronising dispatcher
+            // once implemented.
+            tokio::spawn({
+                let backend = backend.clone();
+                async move {
+                    loop {
+                        match events_rx.recv().await.unwrap() {
+                            LspEvent::DidChangeConsoleInputs(inputs) => {
+                                *backend.state.console_scopes.lock() = inputs.console_scopes;
+                                *backend.state.installed_packages.lock() =
+                                    inputs.installed_packages;
+                            },
+                        }
+                    }
+                }
+            });
 
             // Forward `backend` along to `RMain`.
             // This also updates an outdated `backend` after a reconnect.
@@ -585,7 +627,7 @@ pub fn start_lsp(runtime: Arc<Runtime>, address: String, conn_init_tx: Sender<bo
                 let backend = backend.clone();
                 move || {
                     let main = RMain::get_mut();
-                    main.set_lsp_backend(backend);
+                    main.set_lsp_backend(backend, events_tx);
                 }
             });
 
