@@ -49,12 +49,6 @@ pub struct Document {
     // None if the document hasn't been synchronized yet.
     pub version: Option<i32>,
 
-    // An identifier tied to the current diagnostic request. Used during diagnostic
-    // debouncing to determine if diagnostics should still proceed after a short delay.
-    // Can't be `version` as diagnostics can be requested even if the document itself
-    // hasn't changed (i.e. after console execution).
-    pub diagnostics_id: i64,
-
     // The parser used to generate the AST. TODO: Once LSP handlers are
     // properly synchronised, remove the RwLock.
     pub parser: Arc<RwLock<Parser>>,
@@ -89,14 +83,11 @@ impl Document {
 
         let pending = Vec::new();
 
-        let diagnostics_id = 0;
-
         // return generated document
         Self {
             contents: document,
             pending,
             version,
-            diagnostics_id,
             parser: Arc::new(RwLock::new(parser)),
             ast,
         }

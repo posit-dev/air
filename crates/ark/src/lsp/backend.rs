@@ -30,6 +30,8 @@ use tower_lsp::LspService;
 use tower_lsp::Server;
 use tree_sitter::Point;
 
+pub(crate) type TokioUnboundedSender<T> = tokio::sync::mpsc::UnboundedSender<T>;
+
 use crate::interface::RMain;
 use crate::lsp::completions::provide_completions;
 use crate::lsp::completions::resolve_completion;
@@ -42,7 +44,6 @@ use crate::lsp::encoding::get_position_encoding_kind;
 use crate::lsp::help_topic;
 use crate::lsp::hover::hover;
 use crate::lsp::indexer;
-use crate::lsp::indexer::IndexerStateManager;
 use crate::lsp::selection_range::convert_selection_range_from_tree_sitter_to_lsp;
 use crate::lsp::selection_range::selection_range;
 use crate::lsp::signature_help::signature_help;
@@ -65,6 +66,9 @@ macro_rules! backend_trace {
 #[derive(Debug)]
 pub enum LspEvent {
     DidChangeConsoleInputs(ConsoleInputs),
+    RefreshDiagnostics(Url, Document, WorldState),
+    RefreshAllDiagnostics(),
+    PublishDiagnostics(Url, Vec<Diagnostic>, Option<i32>),
 }
 
 #[derive(Clone, Debug)]
@@ -75,8 +79,8 @@ pub struct Backend {
     /// Global world state containing all inputs for LSP analysis.
     pub state: WorldState,
 
-    /// Synchronisation util for indexer.
-    pub indexer_state_manager: IndexerStateManager,
+    /// Channel for communication with the LSP.
+    events_tx: TokioUnboundedSender<LspEvent>,
 }
 
 /// Information sent from the kernel to the LSP after each top-level evaluation.
@@ -120,6 +124,57 @@ impl Backend {
 
         return callback(document.value());
     }
+
+    fn did_change_console_inputs(&self, inputs: ConsoleInputs) {
+        *self.state.console_scopes.lock() = inputs.console_scopes;
+        *self.state.installed_packages.lock() = inputs.installed_packages;
+    }
+
+    fn refresh_diagnostics(&self, url: Url, document: Document, state: WorldState) {
+        tokio::task::spawn_blocking({
+            let events_tx = self.events_tx.clone();
+
+            move || {
+                let diagnostics = diagnostics::generate_diagnostics(document.clone(), state);
+                events_tx.send(LspEvent::PublishDiagnostics(
+                    url,
+                    diagnostics,
+                    document.version,
+                ))
+            }
+        });
+    }
+
+    fn refresh_all_diagnostics(&self) {
+        for doc_ref in self.state.documents.iter() {
+            tokio::task::spawn_blocking({
+                let url = doc_ref.key().clone();
+                let document = doc_ref.value().clone();
+                let version = document.version.clone();
+
+                let state = self.state.clone();
+                let events_tx = self.events_tx.clone();
+
+                move || {
+                    let diagnostics = diagnostics::generate_diagnostics(document, state);
+                    events_tx
+                        .send(LspEvent::PublishDiagnostics(url, diagnostics, version))
+                        .unwrap();
+                }
+            });
+        }
+    }
+
+    async fn publish_diagnostics(
+        &self,
+        uri: Url,
+        diagnostics: Vec<Diagnostic>,
+        version: Option<i32>,
+    ) {
+        self.client
+            .publish_diagnostics(uri, diagnostics, version)
+            .await
+    }
 }
 
 #[tower_lsp::async_trait]
@@ -143,8 +198,10 @@ impl LanguageServer for Backend {
             }
         }
 
-        // start indexing
-        indexer::start(folders, self.indexer_state_manager.clone());
+        // Start indexing
+        tokio::task::spawn_blocking(|| {
+            indexer::start(folders);
+        });
 
         Ok(InitializeResult {
             server_info: Some(ServerInfo {
@@ -274,11 +331,17 @@ impl LanguageServer for Backend {
         let uri = params.text_document.uri;
         let version = params.text_document.version;
 
-        self.state
-            .documents
-            .insert(uri.clone(), Document::new(contents, Some(version)));
+        let document = Document::new(contents, Some(version));
 
-        diagnostics::refresh_diagnostics(self.clone(), uri.clone(), Some(version));
+        self.state.documents.insert(uri.clone(), document.clone());
+
+        self.events_tx
+            .send(LspEvent::RefreshDiagnostics(
+                uri,
+                document,
+                self.state.clone(),
+            ))
+            .unwrap();
     }
 
     async fn did_change(&self, params: DidChangeTextDocumentParams) {
@@ -309,11 +372,17 @@ impl LanguageServer for Backend {
             }
         }
 
-        // publish diagnostics - but only publish them if the version of
+        // Publish diagnostics - but only publish them if the version of
         // the document now matches the version of the change after applying
         // it in `on_did_change()` (i.e. no changes left in the out of order queue)
         if params.text_document.version == version {
-            diagnostics::refresh_diagnostics(self.clone(), uri.clone(), Some(version));
+            self.events_tx
+                .send(LspEvent::RefreshDiagnostics(
+                    uri.clone(),
+                    doc.clone(),
+                    self.state.clone(),
+                ))
+                .unwrap();
         }
     }
 
@@ -326,7 +395,10 @@ impl LanguageServer for Backend {
 
         let uri = params.text_document.uri;
 
-        diagnostics::clear_diagnostics(self.clone(), uri.clone(), None);
+        // Publish empty set of diagnostics to clear them
+        self.client
+            .publish_diagnostics(uri.clone(), Vec::new(), None)
+            .await;
 
         match self.state.documents.remove(&uri) {
             Some(_) => {
@@ -584,33 +656,40 @@ pub fn start_lsp(runtime: Arc<Runtime>, address: String, conn_init_tx: Sender<bo
         let (read, write) = (read.compat(), write.compat_write());
 
         let init = |client: Client| {
+            let (events_tx, mut events_rx) = tokio_unbounded_channel::<LspEvent>();
+
             // Create backend.
             // Note that DashMap uses synchronization primitives internally, so we
             // don't guard access to the map via a mutex.
             let backend = Backend {
                 client,
+                events_tx: events_tx.clone(),
                 state: WorldState {
                     documents: Arc::new(DashMap::new()),
                     workspace: Arc::new(Mutex::new(Workspace::default())),
                     console_scopes: Arc::new(Mutex::new(vec![])),
                     installed_packages: Arc::new(Mutex::new(vec![])),
                 },
-                indexer_state_manager: IndexerStateManager::new(),
             };
 
-            let (events_tx, mut events_rx) = tokio_unbounded_channel::<LspEvent>();
-
-            // LSP event loop. To be integrated in our synchronising dispatcher
-            // once implemented.
+            // Watcher task for LSP events. To be integrated in our
+            // synchronising dispatcher once implemented.
             tokio::spawn({
                 let backend = backend.clone();
                 async move {
                     loop {
                         match events_rx.recv().await.unwrap() {
                             LspEvent::DidChangeConsoleInputs(inputs) => {
-                                *backend.state.console_scopes.lock() = inputs.console_scopes;
-                                *backend.state.installed_packages.lock() =
-                                    inputs.installed_packages;
+                                backend.did_change_console_inputs(inputs);
+                            },
+                            LspEvent::RefreshDiagnostics(url, document, state) => {
+                                backend.refresh_diagnostics(url, document, state);
+                            },
+                            LspEvent::RefreshAllDiagnostics() => {
+                                backend.refresh_all_diagnostics();
+                            },
+                            LspEvent::PublishDiagnostics(uri, diagnostics, version) => {
+                                backend.publish_diagnostics(uri, diagnostics, version).await;
                             },
                         }
                     }
@@ -624,10 +703,10 @@ pub fn start_lsp(runtime: Arc<Runtime>, address: String, conn_init_tx: Sender<bo
             // `kernel_init_rx`. Even if it isn't, this should be okay because
             // `r_task()` defensively blocks until its sender is initialized.
             r_task({
-                let backend = backend.clone();
+                let events_tx = events_tx.clone();
                 move || {
                     let main = RMain::get_mut();
-                    main.set_lsp_backend(backend, events_tx);
+                    main.set_lsp_channel(events_tx);
                 }
             });
 
