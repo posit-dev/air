@@ -1,5 +1,8 @@
+use std::hash::RandomState;
+use std::path::Path;
 use std::sync::Arc;
 
+use anyhow::anyhow;
 use dashmap::DashMap;
 use parking_lot::Mutex;
 use url::Url;
@@ -12,7 +15,7 @@ use crate::lsp::documents::Document;
 
 #[derive(Clone, Default, Debug)]
 /// The world state, i.e. all the inputs necessary for analysing or refactoring code.
-pub struct WorldState {
+pub(crate) struct WorldState {
     /// Watched documents
     pub documents: Arc<DashMap<Url, Document>>,
 
@@ -47,6 +50,63 @@ pub struct WorldState {
 }
 
 #[derive(Default, Debug)]
-pub struct Workspace {
+pub(crate) struct Workspace {
     pub folders: Vec<Url>,
+}
+
+impl WorldState {
+    pub(crate) fn get_document(
+        &self,
+        uri: &Url,
+    ) -> anyhow::Result<dashmap::mapref::one::Ref<Url, Document, RandomState>> {
+        if let Some(doc) = self.documents.get(uri) {
+            Ok(doc)
+        } else {
+            Err(anyhow!("Can't find document for URI {uri}"))
+        }
+    }
+
+    pub(crate) fn get_document_mut(
+        &self,
+        uri: &Url,
+    ) -> anyhow::Result<dashmap::mapref::one::RefMut<Url, Document, RandomState>> {
+        if let Some(doc) = self.documents.get_mut(uri) {
+            Ok(doc)
+        } else {
+            Err(anyhow!("Can't find document for URI {uri}"))
+        }
+    }
+}
+
+pub(crate) fn with_document<T, F>(
+    path: &Path,
+    state: &WorldState,
+    mut callback: F,
+) -> anyhow::Result<T>
+where
+    F: FnMut(&Document) -> anyhow::Result<T>,
+{
+    let mut fallback = || {
+        let contents = std::fs::read_to_string(path)?;
+        let document = Document::new(contents.as_str(), None);
+        return callback(&document);
+    };
+
+    // If we have a cached copy of the document (because we're monitoring it)
+    // then use that; otherwise, try to read the document from the provided
+    // path and use that instead.
+    let Ok(uri) = Url::from_file_path(path) else {
+        log::info!(
+            "couldn't construct uri from {}; reading from disk instead",
+            path.display()
+        );
+        return fallback();
+    };
+
+    let Ok(document) = state.get_document(&uri) else {
+        log::info!("no document for uri {uri}; reading from disk instead");
+        return fallback();
+    };
+
+    return callback(document.value());
 }
