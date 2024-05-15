@@ -1,7 +1,7 @@
 //
 // document.rs
 //
-// Copyright (C) 2022 Posit Software, PBC. All rights reserved.
+// Copyright (C) 2022-2024 Posit Software, PBC. All rights reserved.
 //
 //
 
@@ -41,9 +41,6 @@ fn compute_point(point: Point, text: &str) -> Point {
 pub struct Document {
     // The document's textual contents.
     pub contents: Rope,
-
-    // A set of pending changes for this document.
-    pub pending: Vec<DidChangeTextDocumentParams>,
 
     // The version of the document we last synchronized with.
     // None if the document hasn't been synchronized yet.
@@ -96,92 +93,38 @@ impl Document {
             .expect("failed to create parser");
         let ast = parser.parse(contents, None).unwrap();
 
-        let pending = Vec::new();
-
-        // return generated document
         Self {
             contents: document,
-            pending,
             version,
             parser: Arc::new(Mutex::new(parser)),
             ast,
         }
     }
 
-    pub fn on_did_change(&mut self, params: &DidChangeTextDocumentParams) -> Result<i32> {
-        // Add pending changes.
-        self.pending.push(params.clone());
+    pub fn on_did_change(&mut self, params: &DidChangeTextDocumentParams) {
+        let new_version = params.text_document.version;
 
-        // Check the version of this update.
-        //
-        // If we receive version {n + 2} before {n + 1}, then we'll
-        // bail here, and handle the {n + 2} change after we received
-        // version {n + 1}.
-        //
-        // TODO: What if an intermediate document change is somehow dropped or lost?
-        // Do we need a way to recover (e.g. reset the document state)?
+        // Check for out-of-order change notifications
         if let Some(old_version) = self.version {
-            let new_version = params.text_document.version;
-            if new_version > old_version + 1 {
-                log::info!("on_did_change(): received out-of-order document changes; currently at {}; deferring {}", old_version, new_version);
-                return Ok(old_version);
-            }
-        }
-
-        // Get pending updates, sort by version, and then apply as many as we can.
-        self.pending.sort_by(|lhs, rhs| {
-            let lhs = lhs.text_document.version;
-            let rhs = rhs.text_document.version;
-            lhs.cmp(&rhs)
-        });
-
-        // Apply as many changes as we can, bailing if we hit a non consecutive change.
-        let pending = std::mem::take(&mut self.pending);
-
-        // We know there is at least 1 consecutive change to apply so that can serve
-        // as the initial version since we don't always have a `self.version`.
-        let mut loc = 0;
-        let mut version = pending.first().unwrap().text_document.version - 1;
-
-        for candidate in pending.iter() {
-            let new_version = candidate.text_document.version;
-
-            if new_version > version + 1 {
-                // Not consecutive!
-                log::info!(
-                    "on_did_change(): applying changes [{}, {}]; deferring still out-of-order change {}.",
-                    pending.first().unwrap().text_document.version,
-                    version,
-                    new_version
+            // Versions might not be consecutive but they must be monotonically
+            // increasing. If that's not the case this is a hard nope as we
+            // can't maintain our state integrity. Currently panicking but in
+            // principle we should shut down the LSP in an orderly fashion.
+            if new_version < old_version {
+                panic!(
+                    "out-of-sync change notification: currently at {old_version}, got {new_version}"
                 );
-                break;
-            }
-
-            loc += 1;
-            version = new_version;
-        }
-
-        // Split into the actual changes we can apply and the remaining pending changes.
-        let (changes, pending) = pending.split_at(loc);
-
-        // We will still have to apply these later (if any).
-        self.pending = pending.to_vec();
-
-        // Apply the changes one-by-one.
-        for change in changes {
-            let content_changes = &change.content_changes;
-
-            for event in content_changes {
-                if let Err(error) = self.update(event) {
-                    log::error!("error updating document: {}", error);
-                }
             }
         }
 
-        // Updates successfully applied; update cached document version.
-        self.version = Some(version);
+        for event in &params.content_changes {
+            if let Err(err) = self.update(event) {
+                panic!("Failed to update document: {err:?}");
+            }
+        }
 
-        Ok(version)
+        // Set new version
+        self.version = Some(new_version);
     }
 
     fn update(&mut self, change: &TextDocumentContentChangeEvent) -> Result<()> {

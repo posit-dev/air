@@ -158,7 +158,7 @@ pub(crate) fn did_change(
     let doc = state.get_document_mut(uri)?;
 
     // Respond to document updates
-    let version = doc.on_did_change(&params)?;
+    doc.on_did_change(&params);
 
     // Update index
     if let Ok(path) = uri.to_file_path() {
@@ -168,18 +168,14 @@ pub(crate) fn did_change(
         }
     }
 
-    // Publish diagnostics - but only publish them if the version of
-    // the document now matches the version of the change after applying
-    // it in `on_did_change()` (i.e. no changes left in the out of order queue)
-    if params.text_document.version == version {
-        events_tx
-            .send(Event::Task(LspTask::RefreshDiagnostics(
-                uri.clone(),
-                doc.clone(),
-                state.clone(),
-            )))
-            .unwrap();
-    }
+    // Refresh diagnostics
+    events_tx
+        .send(Event::Task(LspTask::RefreshDiagnostics(
+            uri.clone(),
+            doc.clone(),
+            state.clone(),
+        )))
+        .unwrap();
 
     Ok(())
 }
