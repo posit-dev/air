@@ -8,7 +8,6 @@
 use std::path::Path;
 
 use anyhow::anyhow;
-use tower_lsp::lsp_types;
 use tower_lsp::lsp_types::CompletionOptions;
 use tower_lsp::lsp_types::DidChangeTextDocumentParams;
 use tower_lsp::lsp_types::DidCloseTextDocumentParams;
@@ -29,11 +28,11 @@ use tower_lsp::lsp_types::WorkDoneProgressOptions;
 use tower_lsp::lsp_types::WorkspaceFoldersServerCapabilities;
 use tower_lsp::lsp_types::WorkspaceServerCapabilities;
 
+use crate::lsp;
 use crate::lsp::documents::Document;
 use crate::lsp::encoding::get_position_encoding_kind;
 use crate::lsp::indexer;
 use crate::lsp::main_loop::Event;
-use crate::lsp::main_loop::LspLogMessage;
 use crate::lsp::main_loop::LspTask;
 use crate::lsp::main_loop::TokioUnboundedSender;
 use crate::lsp::state::WorldState;
@@ -167,8 +166,8 @@ pub(crate) fn did_change(
     // Update index
     if let Ok(path) = uri.to_file_path() {
         let path = Path::new(&path);
-        if let Err(error) = indexer::update(&doc, &path) {
-            log::error!("{:?}", error);
+        if let Err(err) = indexer::update(&doc, &path) {
+            lsp::log_error!("{err:?}");
         }
     }
 
@@ -209,12 +208,7 @@ pub(crate) fn did_close(
         .remove(&uri)
         .ok_or(anyhow!("Failed to remove document for URI: {uri}"))?;
 
-    events_tx
-        .send(Event::Task(LspTask::Log(LspLogMessage {
-            level: lsp_types::MessageType::INFO,
-            message: String::from("did_close(): closed document with URI: '{uri}'."),
-        })))
-        .unwrap();
+    lsp::log_info!("did_close(): closed document with URI: '{uri}'.");
 
     Ok(())
 }

@@ -7,9 +7,12 @@
 
 use std::future;
 use std::pin::Pin;
+use std::sync::Arc;
+use std::sync::Mutex;
 
 use anyhow::anyhow;
 use futures::StreamExt;
+use once_cell::sync::Lazy;
 use tokio::sync::mpsc::unbounded_channel as tokio_unbounded_channel;
 use tokio::task::JoinError;
 use tokio::task::JoinHandle;
@@ -19,6 +22,7 @@ use tower_lsp::lsp_types::MessageType;
 use tower_lsp::Client;
 use url::Url;
 
+use crate::lsp;
 use crate::lsp::backend::LspMessage;
 use crate::lsp::backend::LspNotification;
 use crate::lsp::backend::LspRequest;
@@ -31,6 +35,12 @@ use crate::lsp::state_handlers::ConsoleInputs;
 
 pub(crate) type TokioUnboundedSender<T> = tokio::sync::mpsc::UnboundedSender<T>;
 pub(crate) type TokioUnboundedReceiver<T> = tokio::sync::mpsc::UnboundedReceiver<T>;
+
+// The global instance of the auxiliary event channel, used for sending log
+// messages from a free function. Since this is an unbounded channel, sending
+// a log message is not async nor blocking.
+static mut AUXILIARY_EVENT_TX: Lazy<Arc<Mutex<Option<TokioUnboundedSender<AuxiliaryEvent>>>>> =
+    Lazy::new(|| Arc::new(Mutex::new(None)));
 
 // This is the syntax for trait aliases until an official one is stabilised.
 // This alias is for the future of a `JoinHandle<anyhow::Result<T>>`
@@ -54,7 +64,6 @@ pub(crate) enum Event {
 }
 #[derive(Debug)]
 pub(crate) enum LspTask {
-    Log(LspLogMessage),
     RefreshDiagnostics(Url, Document, WorldState),
     RefreshAllDiagnostics(),
     PublishDiagnostics(Url, Vec<Diagnostic>, Option<i32>),
@@ -67,7 +76,7 @@ pub(crate) enum KernelNotification {
 
 #[derive(Debug)]
 enum AuxiliaryEvent {
-    Log(LspLogMessage),
+    Log(lsp_types::MessageType, String),
     SpawnedTask(JoinHandle<anyhow::Result<()>>),
     JoinedTask(std::result::Result<anyhow::Result<()>, JoinError>),
 }
@@ -116,12 +125,6 @@ struct AuxiliaryState {
     tasks: TaskList<()>,
 }
 
-#[derive(Debug)]
-pub(crate) struct LspLogMessage {
-    pub(crate) level: lsp_types::MessageType,
-    pub(crate) message: String,
-}
-
 impl GlobalState {
     /// Create a new global state
     ///
@@ -137,6 +140,12 @@ impl GlobalState {
         // Transmission channels for log messages. This is handled in a separate
         // task loop for latency and ordering reasons.
         let (auxiliary_event_tx, auxiliary_event_rx) = tokio_unbounded_channel::<AuxiliaryEvent>();
+
+        // Set global instance of this channel. This is used for logging
+        // messages from a free function.
+        unsafe {
+            *AUXILIARY_EVENT_TX.lock().unwrap() = Some(auxiliary_event_tx.clone());
+        }
 
         Self {
             world: WorldState::default(),
@@ -172,7 +181,7 @@ impl GlobalState {
             loop {
                 let event = self.next_event().await;
                 if let Err(err) = self.handle_event(event).await {
-                    self.log_error(format!("Failure while handling event: {err:?}"))
+                    lsp::log_error!("Failure while handling event: {err:?}")
                 }
             }
         });
@@ -202,7 +211,7 @@ impl GlobalState {
         match event {
             Event::Lsp(msg) => match msg {
                 LspMessage::Notification(notif) => {
-                    self.log_info(format!("{notif:#?}"));
+                    lsp::log_info!("{notif:#?}");
 
                     match notif {
                         LspNotification::Initialized(_params) => {
@@ -232,7 +241,7 @@ impl GlobalState {
                 },
 
                 LspMessage::Request(request, tx) => {
-                    self.log_info(format!("{request:#?}"));
+                    lsp::log_info!("{request:#?}");
 
                     match request {
                         LspRequest::Initialize(params) => {
@@ -287,10 +296,6 @@ impl GlobalState {
             },
 
             Event::Task(task) => match task {
-                // TODO: remove
-                LspTask::Log(LspLogMessage{ level, message }) => {
-                    self.log(level, message)
-                },
                 LspTask::RefreshDiagnostics(url, doc, state) => {
                     let events_tx = self.events_tx();
                     self.spawn_blocking(move || handlers::refresh_diagnostics(url, doc, events_tx, state));
@@ -389,20 +394,6 @@ impl GlobalState {
     fn state_clone(&self) -> WorldState {
         self.world.clone()
     }
-
-    /// Log an LSP message. This is not async and non-blocking.
-    fn log(&self, level: MessageType, message: String) {
-        self.auxiliary_event_tx
-            .send(AuxiliaryEvent::Log(LspLogMessage { level, message }))
-            .unwrap();
-    }
-
-    fn log_info(&self, message: String) {
-        self.log(MessageType::INFO, message);
-    }
-    fn log_error(&self, message: String) {
-        self.log(MessageType::ERROR, message);
-    }
 }
 
 // Needed for spawning the loop
@@ -433,9 +424,7 @@ impl AuxiliaryState {
             async move {
                 loop {
                     match self.next_event().await {
-                        AuxiliaryEvent::Log(LspLogMessage { level, message }) => {
-                            self.log(level, message).await
-                        },
+                        AuxiliaryEvent::Log(level, message) => self.log(level, message).await,
                         AuxiliaryEvent::SpawnedTask(handle) => self.tasks.push(Box::pin(handle)),
                         AuxiliaryEvent::JoinedTask(result) => match result {
                             Err(err) => self.log_error(format!("A task panicked: {err:?}")).await,
@@ -461,4 +450,25 @@ impl AuxiliaryState {
     async fn log_error(&self, message: String) {
         self.client.log_message(MessageType::ERROR, message).await
     }
+}
+
+/// Send a message to the LSP client. This is non-blocking and treated on a
+/// latency-sensitive task.
+pub(crate) fn log(level: lsp_types::MessageType, message: String) {
+    if let Some(tx) = unsafe { &*AUXILIARY_EVENT_TX.lock().unwrap() } {
+        // Check that channel is still alive in case the LSP was closed.
+        // If closed, fallthrough.
+        if let Ok(_) = tx.send(AuxiliaryEvent::Log(level.clone(), message.clone())) {
+            return;
+        }
+    }
+
+    // Log to the kernel as fallback
+    log::warn!("LSP channel is closed, redirecting messages to Jupyter kernel");
+
+    match level {
+        MessageType::ERROR => log::error!("{message}"),
+        MessageType::WARNING => log::warn!("{message}"),
+        _ => log::info!("{message}"),
+    };
 }

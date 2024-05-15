@@ -32,6 +32,7 @@ use tower_lsp::Client;
 use tree_sitter::Point;
 use url::Url;
 
+use crate::lsp;
 use crate::lsp::completions::provide_completions;
 use crate::lsp::completions::resolve_completion;
 use crate::lsp::definitions::goto_definition;
@@ -68,7 +69,7 @@ pub(crate) fn symbol(
         .map(|res| Some(res))
         .or_else(|err| {
             // Missing doc: Why are we not propagating errors to the frontend?
-            log::error!("{err:?}");
+            lsp::log_error!("{err:?}");
             Ok(None)
         })
 }
@@ -81,7 +82,7 @@ pub(crate) fn document_symbol(
         .map(|res| Some(DocumentSymbolResponse::Nested(res)))
         .or_else(|err| {
             // Missing doc: Why are we not propagating errors to the frontend?
-            log::error!("{err:?}");
+            lsp::log_error!("{err:?}");
             Ok(None)
         })
 }
@@ -110,7 +111,7 @@ pub(crate) fn completion(
 
     // Build the document context.
     let context = DocumentContext::new(&document, point, trigger);
-    log::info!("Completion context: {:#?}", context);
+    lsp::log_info!("Completion context: {:#?}", context);
 
     let completions = r_task(|| provide_completions(&context, state))?;
 
@@ -146,7 +147,7 @@ pub(crate) fn handle_hover(
 
     // unwrap errors
     let result = unwrap!(result, Err(err) => {
-        log::error!("{err:?}");
+        lsp::log_error!("{err:?}");
         return Ok(None);
     });
 
@@ -178,8 +179,8 @@ pub(crate) fn handle_signature_help(
     let result = r_task(|| unsafe { r_signature_help(&context) });
 
     // unwrap errors
-    let result = unwrap!(result, Err(error) => {
-        log::error!("{:?}", error);
+    let result = unwrap!(result, Err(err) => {
+        lsp::log_error!("{err:?}");
         return Ok(None);
     });
 
@@ -201,7 +202,7 @@ pub(crate) fn handle_goto_definition(
 
     // build goto definition context
     let result = unwrap!(unsafe { goto_definition(&document, params) }, Err(err) => {
-        log::error!("{err:?}");
+        lsp::log_error!("{err:?}");
         return Ok(None);
     });
 
