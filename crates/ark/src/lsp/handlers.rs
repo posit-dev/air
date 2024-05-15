@@ -7,7 +7,6 @@
 
 use serde_json::Value;
 use stdext::unwrap;
-use tokio::task::JoinSet;
 use tower_lsp::lsp_types::CompletionItem;
 use tower_lsp::lsp_types::CompletionParams;
 use tower_lsp::lsp_types::CompletionResponse;
@@ -45,6 +44,7 @@ use crate::lsp::help_topic::HelpTopicParams;
 use crate::lsp::help_topic::HelpTopicResponse;
 use crate::lsp::hover::r_hover;
 use crate::lsp::main_loop::Event;
+use crate::lsp::main_loop::GlobalState;
 use crate::lsp::main_loop::LspTask;
 use crate::lsp::main_loop::TokioUnboundedSender;
 use crate::lsp::references::find_references;
@@ -276,12 +276,12 @@ pub(crate) fn refresh_diagnostics(
 }
 
 pub(crate) fn refresh_all_diagnostics(
-    tasks: &mut JoinSet<anyhow::Result<()>>,
+    global: &mut GlobalState,
     events_tx: TokioUnboundedSender<Event>,
     state: WorldState,
 ) -> anyhow::Result<()> {
     for doc_ref in state.documents.iter() {
-        tasks.spawn_blocking({
+        global.spawn_blocking({
             let url = doc_ref.key().clone();
             let document = doc_ref.value().clone();
             let version = document.version.clone();

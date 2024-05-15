@@ -115,6 +115,10 @@ pub struct Backend {
 
     /// Channel for communication with the main loop.
     events_tx: TokioUnboundedSender<Event>,
+
+    /// Handle to main loop. Drop it to cancel the loop, all associated tasks,
+    /// and drop all owned state.
+    _main_loop: tokio::task::JoinSet<()>,
 }
 
 impl Backend {
@@ -347,7 +351,8 @@ pub fn start_lsp(runtime: Arc<Runtime>, address: String, conn_init_tx: Sender<bo
             let state = GlobalState::new(client.clone());
             let events_tx = state.events_tx();
 
-            state.main_loop();
+            // Start main loop and hold onto the handle that keeps it alive
+            let main_loop = state.main_loop();
 
             // Forward event channel along to `RMain`.
             // This also updates an outdated channel after a reconnect.
@@ -363,7 +368,11 @@ pub fn start_lsp(runtime: Arc<Runtime>, address: String, conn_init_tx: Sender<bo
                 }
             });
 
-            Backend { client, events_tx }
+            Backend {
+                client,
+                events_tx,
+                _main_loop: main_loop,
+            }
         };
 
         let (service, socket) = LspService::build(init)

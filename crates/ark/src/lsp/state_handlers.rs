@@ -8,6 +8,7 @@
 use std::path::Path;
 
 use anyhow::anyhow;
+use tower_lsp::lsp_types;
 use tower_lsp::lsp_types::CompletionOptions;
 use tower_lsp::lsp_types::DidChangeTextDocumentParams;
 use tower_lsp::lsp_types::DidCloseTextDocumentParams;
@@ -32,6 +33,7 @@ use crate::lsp::documents::Document;
 use crate::lsp::encoding::get_position_encoding_kind;
 use crate::lsp::indexer;
 use crate::lsp::main_loop::Event;
+use crate::lsp::main_loop::LspLogMessage;
 use crate::lsp::main_loop::LspTask;
 use crate::lsp::main_loop::TokioUnboundedSender;
 use crate::lsp::state::WorldState;
@@ -208,10 +210,10 @@ pub(crate) fn did_close(
         .ok_or(anyhow!("Failed to remove document for URI: {uri}"))?;
 
     events_tx
-        .send(Event::Task(LspTask::Log(
-            tower_lsp::lsp_types::MessageType::INFO,
-            String::from("did_close(): closed document with URI: '{uri}'."),
-        )))
+        .send(Event::Task(LspTask::Log(LspLogMessage {
+            level: lsp_types::MessageType::INFO,
+            message: String::from("did_close(): closed document with URI: '{uri}'."),
+        })))
         .unwrap();
 
     Ok(())

@@ -6,9 +6,13 @@
 //
 
 use std::future;
+use std::pin::Pin;
 
 use anyhow::anyhow;
+use futures::StreamExt;
 use tokio::sync::mpsc::unbounded_channel as tokio_unbounded_channel;
+use tokio::task::JoinError;
+use tokio::task::JoinHandle;
 use tower_lsp::lsp_types;
 use tower_lsp::lsp_types::Diagnostic;
 use tower_lsp::lsp_types::MessageType;
@@ -28,9 +32,19 @@ use crate::lsp::state_handlers::ConsoleInputs;
 pub(crate) type TokioUnboundedSender<T> = tokio::sync::mpsc::UnboundedSender<T>;
 pub(crate) type TokioUnboundedReceiver<T> = tokio::sync::mpsc::UnboundedReceiver<T>;
 
-// This is the syntax for trait aliases until an official one is stabilised
-trait AnyhowFut<T>: std::future::Future<Output = anyhow::Result<T>> {}
-impl<T, F> AnyhowFut<T> for F where F: std::future::Future<Output = anyhow::Result<T>> {}
+// This is the syntax for trait aliases until an official one is stabilised.
+// This alias is for the future of a `JoinHandle<anyhow::Result<T>>`
+trait AnyhowJoinHandleFut<T>:
+    future::Future<Output = std::result::Result<anyhow::Result<T>, tokio::task::JoinError>>
+{
+}
+impl<T, F> AnyhowJoinHandleFut<T> for F where
+    F: future::Future<Output = std::result::Result<anyhow::Result<T>, tokio::task::JoinError>>
+{
+}
+
+// Alias for a list of join handle futures
+type TaskList<T> = futures::stream::FuturesUnordered<Pin<Box<dyn AnyhowJoinHandleFut<T> + Send>>>;
 
 #[derive(Debug)]
 pub(crate) enum Event {
@@ -40,7 +54,7 @@ pub(crate) enum Event {
 }
 #[derive(Debug)]
 pub(crate) enum LspTask {
-    Log(lsp_types::MessageType, String),
+    Log(LspLogMessage),
     RefreshDiagnostics(Url, Document, WorldState),
     RefreshAllDiagnostics(),
     PublishDiagnostics(Url, Vec<Diagnostic>, Option<i32>),
@@ -49,6 +63,13 @@ pub(crate) enum LspTask {
 #[derive(Debug)]
 pub(crate) enum KernelNotification {
     DidChangeConsoleInputs(ConsoleInputs),
+}
+
+#[derive(Debug)]
+enum AuxiliaryEvent {
+    Log(LspLogMessage),
+    SpawnedTask(JoinHandle<anyhow::Result<()>>),
+    JoinedTask(std::result::Result<anyhow::Result<()>, JoinError>),
 }
 
 /// Global state for the main loop
@@ -64,18 +85,41 @@ pub(crate) struct GlobalState {
     /// (clones) to handlers.
     world: WorldState,
 
-    /// LSP client shared with tower-lsp
+    /// LSP client shared with tower-lsp and the log loop
     client: Client,
 
-    /// Event channel for the main loop. The tower-lsp methods forward
+    /// Event channels for the main loop. The tower-lsp methods forward
     /// notifications and requests here via `Event::Lsp`. We also receive
     /// messages from the kernel via `Event::Kernel`, and from ourselves via
     /// `Event::Task`.
     events_tx: TokioUnboundedSender<Event>,
     events_rx: TokioUnboundedReceiver<Event>,
 
-    /// Handle to pending tasks, used to log errors and panics
-    tasks: tokio::task::JoinSet<anyhow::Result<()>>,
+    /// Event channels for the latency-sensitive auxiliary loop. Used for
+    /// sending log messages and joining spawned tasks.
+    auxiliary_event_tx: TokioUnboundedSender<AuxiliaryEvent>,
+    auxiliary_event_rx: Option<TokioUnboundedReceiver<AuxiliaryEvent>>,
+}
+
+/// State for the auxiliary loop
+///
+/// The auxiliary loop handles latency-sensitive events such as log messages. A
+/// main loop tick might takes many milliseconds and might have a lot of events
+/// in queue, so it's not appropriate for events that need immediate handling.
+///
+/// The auxiliary loop currently handles:
+/// - Log messages.
+/// - Joining of spawned blocking tasks to relay any errors or panics to the LSP log.
+struct AuxiliaryState {
+    client: Client,
+    auxiliary_event_rx: TokioUnboundedReceiver<AuxiliaryEvent>,
+    tasks: TaskList<()>,
+}
+
+#[derive(Debug)]
+pub(crate) struct LspLogMessage {
+    pub(crate) level: lsp_types::MessageType,
+    pub(crate) message: String,
 }
 
 impl GlobalState {
@@ -83,24 +127,24 @@ impl GlobalState {
     ///
     /// # Arguments
     ///
-    /// * `client`: The tower-lsp cient shared with the tower-lsp backend.
+    /// * `client`: The tower-lsp cient shared with the tower-lsp backend
+    ///   and auxiliary loop.
     pub(crate) fn new(client: Client) -> Self {
         // Transmission channel for the main loop events. Shared with the
         // tower-lsp backend and the Jupyter kernel.
         let (events_tx, events_rx) = tokio_unbounded_channel::<Event>();
 
-        let mut tasks = tokio::task::JoinSet::new();
-
-        // Prevent the task set from ever becoming empty, so that `join_next()`
-        // never resolves to `None`.
-        tasks.spawn(future::pending());
+        // Transmission channels for log messages. This is handled in a separate
+        // task loop for latency and ordering reasons.
+        let (auxiliary_event_tx, auxiliary_event_rx) = tokio_unbounded_channel::<AuxiliaryEvent>();
 
         Self {
             world: WorldState::default(),
             client,
             events_tx,
             events_rx,
-            tasks,
+            auxiliary_event_tx,
+            auxiliary_event_rx: Some(auxiliary_event_rx),
         }
     }
 
@@ -113,34 +157,31 @@ impl GlobalState {
     ///
     /// This takes ownership of all global state and handles one by one LSP
     /// requests, notifications, and other internal events and tasks.
-    pub(crate) fn main_loop(mut self) -> tokio::task::JoinHandle<()> {
-        tokio::spawn(async move {
+    ///
+    /// Returns a `JoinSet` that holds onto all tasks and state owned by the
+    /// event loop. Drop it to cancel everything and shut down the service.
+    pub(crate) fn main_loop(mut self) -> tokio::task::JoinSet<()> {
+        let mut set = tokio::task::JoinSet::<()>::new();
+
+        // Spawn latency-sensitive auxiliary loop
+        let auxiliary_event_rx = self.auxiliary_event_rx.take().unwrap();
+        AuxiliaryState::new(self.client.clone(), auxiliary_event_rx).spawn(&mut set);
+
+        // Spawn main loop
+        set.spawn(async move {
             loop {
                 let event = self.next_event().await;
                 if let Err(err) = self.handle_event(event).await {
                     self.log_error(format!("Failure while handling event: {err:?}"))
                 }
             }
-        })
+        });
+
+        set
     }
 
     async fn next_event(&mut self) -> Event {
-        loop {
-            tokio::select! {
-                event = self.events_rx.recv() => {
-                    return event.unwrap()
-                },
-
-                result = self.tasks.join_next() => {
-                    match result {
-                        None => unreachable!(),
-                        Some(Err(err)) => self.log_error(format!("A task panicked: {err:?}")),
-                        Some(Ok(Err(err))) => self.log_error(format!("A task failed: {err:?}")),
-                        _ => (),
-                    }
-                }
-            }
-        }
+        self.events_rx.recv().await.unwrap()
     }
 
     #[rustfmt::skip]
@@ -246,7 +287,8 @@ impl GlobalState {
             },
 
             Event::Task(task) => match task {
-                LspTask::Log(level, message) => {
+                // TODO: remove
+                LspTask::Log(LspLogMessage{ level, message }) => {
                     self.log(level, message)
                 },
                 LspTask::RefreshDiagnostics(url, doc, state) => {
@@ -256,7 +298,7 @@ impl GlobalState {
                 LspTask::RefreshAllDiagnostics() => {
                     let state = self.state_clone();
                     let events_tx = self.events_tx();
-                    handlers::refresh_all_diagnostics(&mut self.tasks, events_tx, state)?;
+                    handlers::refresh_all_diagnostics(self, events_tx, state)?;
                 },
                 LspTask::PublishDiagnostics(uri, diagnostics, version) => {
                     handlers::publish_diagnostics(&self.client, uri, diagnostics, version).await?;
@@ -322,12 +364,20 @@ impl GlobalState {
     /// in order of arrival. Such a mechanism should probably not be the default
     /// because that would overly decrease the throughput of blocking tasks when
     /// a handler takes too much time.
-    fn spawn_blocking<Handler>(&mut self, handler: Handler)
+    pub(crate) fn spawn_blocking<Handler>(&mut self, handler: Handler)
     where
         Handler: FnOnce() -> anyhow::Result<()>,
         Handler: Send + 'static,
     {
-        self.tasks.spawn_blocking(|| handler());
+        let handle = tokio::task::spawn_blocking(|| handler());
+
+        // Send the join handle to the auxiliary loop so it can log any errors
+        // or panics as quickly as possible. Joining on the main loop would be
+        // simpler but would result in confusing delays of log messages as the
+        // loop might be stuck on a single tick for milliseconds at a time.
+        self.auxiliary_event_tx
+            .send(AuxiliaryEvent::SpawnedTask(handle))
+            .unwrap();
     }
 
     fn state_ref(&self) -> &WorldState {
@@ -340,13 +390,11 @@ impl GlobalState {
         self.world.clone()
     }
 
-    /// Log an LSP message via a new async task
+    /// Log an LSP message. This is not async and non-blocking.
     fn log(&self, level: MessageType, message: String) {
-        // TODO: Make a single task that loops over a channel to preserve message order.
-        // We should also avoid a `Log` task having to go through the `Event`
-        // channel. It would also be interesting to integrate with the `tracing` crate.
-        let client = self.client.clone();
-        tokio::spawn(async move { client.log_message(level, message).await });
+        self.auxiliary_event_tx
+            .send(AuxiliaryEvent::Log(LspLogMessage { level, message }))
+            .unwrap();
     }
 
     fn log_info(&self, message: String) {
@@ -354,5 +402,63 @@ impl GlobalState {
     }
     fn log_error(&self, message: String) {
         self.log(MessageType::ERROR, message);
+    }
+}
+
+// Needed for spawning the loop
+unsafe impl Sync for AuxiliaryState {}
+
+impl AuxiliaryState {
+    fn new(client: Client, auxiliary_event_rx: TokioUnboundedReceiver<AuxiliaryEvent>) -> Self {
+        let pending_tasks = futures::stream::FuturesUnordered::new();
+
+        // Prevent the stream from ever being empty
+        let pending = tokio::task::spawn(future::pending::<anyhow::Result<()>>());
+        let pending = Box::pin(pending) as Pin<Box<dyn AnyhowJoinHandleFut<()> + Send>>;
+        pending_tasks.push(pending);
+
+        Self {
+            client,
+            auxiliary_event_rx,
+            tasks: pending_tasks,
+        }
+    }
+
+    /// Spawn the auxiliary loop
+    ///
+    /// Takes ownership of auxiliary state and spawns the low-latency auxiliary
+    /// loop on the provided task set.
+    fn spawn(mut self, set: &mut tokio::task::JoinSet<()>) {
+        set.spawn({
+            async move {
+                loop {
+                    match self.next_event().await {
+                        AuxiliaryEvent::Log(LspLogMessage { level, message }) => {
+                            self.log(level, message).await
+                        },
+                        AuxiliaryEvent::SpawnedTask(handle) => self.tasks.push(Box::pin(handle)),
+                        AuxiliaryEvent::JoinedTask(result) => match result {
+                            Err(err) => self.log_error(format!("A task panicked: {err:?}")).await,
+                            Ok(Err(err)) => self.log_error(format!("A task failed: {err:?}")).await,
+                            _ => (),
+                        },
+                    }
+                }
+            }
+        });
+    }
+
+    async fn next_event(&mut self) -> AuxiliaryEvent {
+        tokio::select! {
+            event = self.auxiliary_event_rx.recv() => event.unwrap(),
+            handle = self.tasks.next() => AuxiliaryEvent::JoinedTask(handle.unwrap()),
+        }
+    }
+
+    async fn log(&self, level: MessageType, message: String) {
+        self.client.log_message(level, message).await
+    }
+    async fn log_error(&self, message: String) {
+        self.client.log_message(MessageType::ERROR, message).await
     }
 }
