@@ -1,26 +1,21 @@
-use std::hash::RandomState;
+use std::collections::HashMap;
 use std::path::Path;
-use std::sync::Arc;
 
 use anyhow::anyhow;
-use dashmap::DashMap;
-use parking_lot::Mutex;
 use url::Url;
 
 use crate::lsp::documents::Document;
 
-// This is a work in progress. Currently contains synchronised objects but this
-// shouldn't be necessary after we have implemented synchronisation of LSP handlers.
-// The handlers will either get a shared ref or an exclusive ref to the worldstate.
-
 #[derive(Clone, Default, Debug)]
-/// The world state, i.e. all the inputs necessary for analysing or refactoring code.
+/// The world state, i.e. all the inputs necessary for analysing or refactoring
+/// code. This is a pure value. There is no interior mutability in this data
+/// structure. It can be cloned and safely sent to other threads.
 pub(crate) struct WorldState {
     /// Watched documents
-    pub documents: Arc<DashMap<Url, Document>>,
+    pub(crate) documents: HashMap<Url, Document>,
 
     /// Watched folders
-    pub workspace: Arc<Mutex<Workspace>>,
+    pub(crate) workspace: Workspace,
 
     /// The scopes for the console. This currently contains a list (outer `Vec`)
     /// of names (inner `Vec`) within the environments on the search path, starting
@@ -43,22 +38,19 @@ pub(crate) struct WorldState {
     /// currently pushed to the LSP), and cache the symbols with Salsa. The
     /// performance is not currently an issue but this could change once we do
     /// more analysis of symbols in the search path.
-    pub console_scopes: Arc<Mutex<Vec<Vec<String>>>>,
+    pub(crate) console_scopes: Vec<Vec<String>>,
 
     /// Currently installed packages
-    pub installed_packages: Arc<Mutex<Vec<String>>>,
+    pub(crate) installed_packages: Vec<String>,
 }
 
-#[derive(Default, Debug)]
+#[derive(Clone, Default, Debug)]
 pub(crate) struct Workspace {
     pub folders: Vec<Url>,
 }
 
 impl WorldState {
-    pub(crate) fn get_document(
-        &self,
-        uri: &Url,
-    ) -> anyhow::Result<dashmap::mapref::one::Ref<Url, Document, RandomState>> {
+    pub(crate) fn get_document(&self, uri: &Url) -> anyhow::Result<&Document> {
         if let Some(doc) = self.documents.get(uri) {
             Ok(doc)
         } else {
@@ -66,10 +58,7 @@ impl WorldState {
         }
     }
 
-    pub(crate) fn get_document_mut(
-        &self,
-        uri: &Url,
-    ) -> anyhow::Result<dashmap::mapref::one::RefMut<Url, Document, RandomState>> {
+    pub(crate) fn get_document_mut(&mut self, uri: &Url) -> anyhow::Result<&mut Document> {
         if let Some(doc) = self.documents.get_mut(uri) {
             Ok(doc)
         } else {
@@ -108,5 +97,5 @@ where
         return fallback();
     };
 
-    return callback(document.value());
+    return callback(document);
 }

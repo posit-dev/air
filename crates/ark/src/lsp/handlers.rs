@@ -281,10 +281,10 @@ pub(crate) fn refresh_all_diagnostics(
     events_tx: TokioUnboundedSender<Event>,
     state: WorldState,
 ) -> anyhow::Result<()> {
-    for doc_ref in state.documents.iter() {
+    for (url, document) in state.documents.iter() {
         global.spawn_blocking({
-            let url = doc_ref.key().clone();
-            let document = doc_ref.value().clone();
+            let url = url.clone();
+            let document = document.clone();
             let version = document.version.clone();
 
             let events_tx = events_tx.clone();

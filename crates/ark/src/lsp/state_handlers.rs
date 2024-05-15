@@ -60,14 +60,11 @@ pub(crate) fn initialize(
     params: InitializeParams,
     state: &mut WorldState,
 ) -> anyhow::Result<InitializeResult> {
-    // Initialize the set of known workspaces
-    let mut workspace = state.workspace.lock();
-
     // Initialize the workspace folders
     let mut folders: Vec<String> = Vec::new();
     if let Some(workspace_folders) = params.workspace_folders {
         for folder in workspace_folders.iter() {
-            workspace.folders.push(folder.uri.clone());
+            state.workspace.folders.push(folder.uri.clone());
             if let Ok(path) = folder.uri.to_file_path() {
                 if let Some(path) = path.to_str() {
                     folders.push(path.to_string());
@@ -158,7 +155,7 @@ pub(crate) fn did_change(
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
     let uri = &params.text_document.uri;
-    let mut doc = state.get_document_mut(uri)?;
+    let doc = state.get_document_mut(uri)?;
 
     // Respond to document updates
     let version = doc.on_did_change(&params)?;
@@ -217,7 +214,7 @@ pub(crate) fn did_change_console_inputs(
     inputs: ConsoleInputs,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
-    *state.console_scopes.lock() = inputs.console_scopes;
-    *state.installed_packages.lock() = inputs.installed_packages;
+    state.console_scopes = inputs.console_scopes;
+    state.installed_packages = inputs.installed_packages;
     Ok(())
 }
