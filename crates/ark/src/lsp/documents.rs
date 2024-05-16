@@ -6,7 +6,7 @@
 //
 
 use std::sync::Arc;
-use std::sync::RwLock;
+use std::sync::Mutex;
 
 use anyhow::*;
 use ropey::Rope;
@@ -49,12 +49,27 @@ pub struct Document {
     // None if the document hasn't been synchronized yet.
     pub version: Option<i32>,
 
-    // The parser used to generate the AST. TODO: Once LSP handlers are
-    // properly synchronised, remove the RwLock.
-    pub parser: Arc<RwLock<Parser>>,
-
     // The document's AST.
     pub ast: Tree,
+
+    // The parser used to generate the AST. Currently only used in `did_change()`.
+    // In principle this should be out of the world state and owned by the main
+    // loop in a separate hashmap but it's much easier to store it here in the
+    // document.
+    //
+    // Under a mutex because `Parser` is not clonable, which is needed for
+    // snapshots. Write handlers (i.e. `did_change()` might need an exclusive
+    // reference while background threads have acquired snapshots of the world
+    // state, so this can't be an `RwLock`.
+    //
+    // SAFETY: Background threads holding clones of the world state or documents
+    // should never access `parser`.
+    //
+    // TODO: This could also be in a `SyncUnsafeCell` instead of a mutex as we
+    // assume only one writer at a time which must have an exclusive reference
+    // to the world state, and no concurrent reads from clones. However that's
+    // currently an unstable feature.
+    parser: Arc<Mutex<Parser>>,
 }
 
 impl std::fmt::Debug for Document {
@@ -88,7 +103,7 @@ impl Document {
             contents: document,
             pending,
             version,
-            parser: Arc::new(RwLock::new(parser)),
+            parser: Arc::new(Mutex::new(parser)),
             ast,
         }
     }
@@ -218,7 +233,7 @@ impl Document {
 
         let ast = self
             .parser
-            .write()
+            .lock()
             .unwrap()
             .parse_with(callback, Some(&self.ast));
         self.ast = ast.unwrap();
