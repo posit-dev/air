@@ -73,7 +73,7 @@ pub(crate) fn initialize(
     // Start indexing
     lsp::spawn_blocking(|| {
         indexer::start(folders);
-        Ok(())
+        Ok(None)
     });
 
     Ok(InitializeResult {

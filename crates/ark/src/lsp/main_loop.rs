@@ -69,7 +69,7 @@ pub(crate) enum KernelNotification {
 pub(crate) enum AuxiliaryEvent {
     Log(lsp_types::MessageType, String),
     PublishDiagnostics(Url, Vec<Diagnostic>, Option<i32>),
-    SpawnedTask(JoinHandle<anyhow::Result<()>>),
+    SpawnedTask(JoinHandle<anyhow::Result<Option<AuxiliaryEvent>>>),
 }
 
 /// Global state for the main loop
@@ -108,7 +108,7 @@ pub(crate) struct GlobalState {
 struct AuxiliaryState {
     client: Client,
     auxiliary_event_rx: TokioUnboundedReceiver<AuxiliaryEvent>,
-    tasks: TaskList<()>,
+    tasks: TaskList<Option<AuxiliaryEvent>>,
 }
 
 impl GlobalState {
@@ -355,8 +355,10 @@ impl AuxiliaryState {
 
         // Prevent the stream from ever being empty so that `tasks.next()` never
         // resolves to `None`
-        let pending = tokio::task::spawn(future::pending::<anyhow::Result<()>>());
-        let pending = Box::pin(pending) as Pin<Box<dyn AnyhowJoinHandleFut<()> + Send>>;
+        let pending =
+            tokio::task::spawn(future::pending::<anyhow::Result<Option<AuxiliaryEvent>>>());
+        let pending =
+            Box::pin(pending) as Pin<Box<dyn AnyhowJoinHandleFut<Option<AuxiliaryEvent>> + Send>>;
         tasks.push(pending);
 
         Self {
@@ -387,13 +389,17 @@ impl AuxiliaryState {
     async fn next_event(&mut self) -> AuxiliaryEvent {
         loop {
             tokio::select! {
-                    event = self.auxiliary_event_rx.recv() => return event.unwrap(),
-                    // Handle private events here and loop back into select!
-                    handle = self.tasks.next() => match handle.unwrap() {
-                        Err(err) => self.log_error(format!("A task panicked: {err:?}")).await,
-                        Ok(Err(err)) => self.log_error(format!("A task failed: {err:?}")).await,
-                        _ => (),
-                    },
+                event = self.auxiliary_event_rx.recv() => return event.unwrap(),
+
+                handle = self.tasks.next() => match handle.unwrap() {
+                    // A joined task returned an event for us, handle it
+                    Ok(Ok(Some(event))) => return event,
+
+                    // Otherwise relay any errors and loop back into select
+                    Err(err) => self.log_error(format!("A task panicked:\n{err:?}")).await,
+                    Ok(Err(err)) => self.log_error(format!("A task failed:\n{err:?}")).await,
+                    _ => (),
+                },
             }
         }
     }
@@ -433,11 +439,14 @@ pub(crate) fn log(level: lsp_types::MessageType, message: String) {
 
 /// Spawn a blocking task
 ///
-/// This runs tasks that do semantic analysis on a separate thread pool
-/// to avoid blocking the main loop.
+/// This runs tasks that do semantic analysis on a separate thread pool to avoid
+/// blocking the main loop.
+///
+/// Can optionally return an event for the auxiliary loop (i.e. a log message or
+/// diagnostics publication).
 pub(crate) fn spawn_blocking<Handler>(handler: Handler)
 where
-    Handler: FnOnce() -> anyhow::Result<()>,
+    Handler: FnOnce() -> anyhow::Result<Option<AuxiliaryEvent>>,
     Handler: Send + 'static,
 {
     let handle = tokio::task::spawn_blocking(|| handler());
@@ -449,6 +458,25 @@ where
         .unwrap();
 }
 
+pub(crate) fn spawn_diagnostics_refresh(uri: Url, document: Document, state: WorldState) {
+    lsp::spawn_blocking(move || {
+        let version = document.version;
+        let diagnostics = diagnostics::generate_diagnostics(document, state);
+
+        Ok(Some(AuxiliaryEvent::PublishDiagnostics(
+            uri,
+            diagnostics,
+            version,
+        )))
+    })
+}
+
+pub(crate) fn spawn_diagnostics_refresh_all(state: WorldState) {
+    for (url, document) in state.documents.iter() {
+        spawn_diagnostics_refresh(url.clone(), document.clone(), state.clone())
+    }
+}
+
 pub(crate) fn publish_diagnostics(uri: Url, diagnostics: Vec<Diagnostic>, version: Option<i32>) {
     auxiliary_tx()
         .send(AuxiliaryEvent::PublishDiagnostics(
@@ -457,19 +485,4 @@ pub(crate) fn publish_diagnostics(uri: Url, diagnostics: Vec<Diagnostic>, versio
             version,
         ))
         .unwrap();
-}
-
-pub(crate) fn spawn_diagnostics_refresh(uri: Url, document: Document, state: WorldState) {
-    lsp::spawn_blocking(move || {
-        let version = document.version;
-        let diagnostics = diagnostics::generate_diagnostics(document, state);
-        lsp::publish_diagnostics(uri, diagnostics, version);
-        Ok(())
-    })
-}
-
-pub(crate) fn spawn_diagnostics_refresh_all(state: WorldState) {
-    for (url, document) in state.documents.iter() {
-        spawn_diagnostics_refresh(url.clone(), document.clone(), state.clone())
-    }
 }
