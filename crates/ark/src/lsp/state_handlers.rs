@@ -74,8 +74,9 @@ pub(crate) fn initialize(
     }
 
     // Start indexing
-    tokio::task::spawn_blocking(|| {
+    lsp::spawn_blocking(|| {
         indexer::start(folders);
+        Ok(())
     });
 
     Ok(InitializeResult {

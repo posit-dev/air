@@ -45,7 +45,6 @@ use crate::lsp::help_topic::HelpTopicParams;
 use crate::lsp::help_topic::HelpTopicResponse;
 use crate::lsp::hover::r_hover;
 use crate::lsp::main_loop::Event;
-use crate::lsp::main_loop::GlobalState;
 use crate::lsp::main_loop::LspTask;
 use crate::lsp::main_loop::TokioUnboundedSender;
 use crate::lsp::references::find_references;
@@ -277,12 +276,11 @@ pub(crate) fn refresh_diagnostics(
 }
 
 pub(crate) fn refresh_all_diagnostics(
-    global: &mut GlobalState,
     events_tx: TokioUnboundedSender<Event>,
     state: WorldState,
 ) -> anyhow::Result<()> {
     for (url, document) in state.documents.iter() {
-        global.spawn_blocking({
+        lsp::spawn_blocking({
             let url = url.clone();
             let document = document.clone();
             let version = document.version.clone();

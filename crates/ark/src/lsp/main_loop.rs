@@ -34,9 +34,9 @@ pub(crate) type TokioUnboundedSender<T> = tokio::sync::mpsc::UnboundedSender<T>;
 pub(crate) type TokioUnboundedReceiver<T> = tokio::sync::mpsc::UnboundedReceiver<T>;
 
 // The global instance of the auxiliary event channel, used for sending log
-// messages from a free function. Since this is an unbounded channel, sending a
-// log message is not async nor blocking. Tokio senders are Send and Sync so
-// this global variable can be safely shared across threads.
+// messages or spawning threads from free functions. Since this is an unbounded
+// channel, sending a log message is not async nor blocking. Tokio senders are
+// Send and Sync so this global variable can be safely shared across threads.
 static mut AUXILIARY_EVENT_TX: std::cell::OnceCell<TokioUnboundedSender<AuxiliaryEvent>> =
     std::cell::OnceCell::new();
 
@@ -101,11 +101,6 @@ pub(crate) struct GlobalState {
     /// `Event::Task`.
     events_tx: TokioUnboundedSender<Event>,
     events_rx: TokioUnboundedReceiver<Event>,
-
-    /// Event channels for the latency-sensitive auxiliary loop. Used for
-    /// sending log messages and joining spawned tasks.
-    auxiliary_event_tx: TokioUnboundedSender<AuxiliaryEvent>,
-    auxiliary_event_rx: Option<TokioUnboundedReceiver<AuxiliaryEvent>>,
 }
 
 /// State for the auxiliary loop
@@ -135,23 +130,11 @@ impl GlobalState {
         // tower-lsp backend and the Jupyter kernel.
         let (events_tx, events_rx) = tokio_unbounded_channel::<Event>();
 
-        // Transmission channels for log messages. This is handled in a separate
-        // task loop for latency and ordering reasons.
-        let (auxiliary_event_tx, auxiliary_event_rx) = tokio_unbounded_channel::<AuxiliaryEvent>();
-
-        // Set global instance of this channel. This is used for logging
-        // messages from a free function.
-        unsafe {
-            AUXILIARY_EVENT_TX.set(auxiliary_event_tx.clone()).unwrap();
-        }
-
         Self {
             world: WorldState::default(),
             client,
             events_tx,
             events_rx,
-            auxiliary_event_tx,
-            auxiliary_event_rx: Some(auxiliary_event_rx),
         }
     }
 
@@ -171,8 +154,7 @@ impl GlobalState {
         let mut set = tokio::task::JoinSet::<()>::new();
 
         // Spawn latency-sensitive auxiliary loop
-        let auxiliary_event_rx = self.auxiliary_event_rx.take().unwrap();
-        AuxiliaryState::new(self.client.clone(), auxiliary_event_rx).spawn(&mut set);
+        AuxiliaryState::new(self.client.clone()).spawn(&mut set);
 
         // Spawn main loop
         set.spawn(async move {
@@ -205,6 +187,15 @@ impl GlobalState {
     ///   of the main loop should be as fast as possible to increase throughput)
     ///   they are spawned on blocking threads and provided a snapshot (clone) of
     ///   the state.
+    ///
+    /// We currently don't have a way to handle client requests concurrently.
+    /// In the future we could add a way to respond to requests from handlers
+    /// spawned on blocking threads if needed (e.g. to improve throughput).
+    /// The LSP protocol does allow concurrent handling as long as it doesn't
+    /// affect correctness of responses. For instance handlers that only inspect
+    /// the world state could be run concurrently. On the other hand, handlers
+    /// that manipulate documents should not be run concurrently, and probably
+    /// should trigger cancellation of all concurrent handlers.
     async fn handle_event(&mut self, event: Event) -> anyhow::Result<()> {
         match event {
             Event::Lsp(msg) => match msg {
@@ -296,12 +287,12 @@ impl GlobalState {
             Event::Task(task) => match task {
                 LspTask::RefreshDiagnostics(url, doc, state) => {
                     let events_tx = self.events_tx();
-                    self.spawn_blocking(move || handlers::refresh_diagnostics(url, doc, events_tx, state));
+                    lsp::spawn_blocking(move || handlers::refresh_diagnostics(url, doc, events_tx, state));
                 },
                 LspTask::RefreshAllDiagnostics() => {
                     let state = self.state_clone();
                     let events_tx = self.events_tx();
-                    handlers::refresh_all_diagnostics(self, events_tx, state)?;
+                    handlers::refresh_all_diagnostics(events_tx, state)?;
                 },
                 LspTask::PublishDiagnostics(uri, diagnostics, version) => {
                     handlers::publish_diagnostics(&self.client, uri, diagnostics, version).await?;
@@ -353,36 +344,6 @@ impl GlobalState {
         out
     }
 
-    /// Spawn a blocking task
-    ///
-    /// This runs handlers that do semantic analysis on a separate thread pool
-    /// to avoid blocking the main loop.
-    ///
-    /// Use with care because this will cause out-of-order responses to LSP
-    /// requests. This is allowed by the protocol as long as it doesn't affect
-    /// the correctness of the responses. In particular, requests that respond
-    /// with edits should be responded to in the order of arrival.
-    ///
-    /// If needed we could add a mechanism to mark handlers that must respond
-    /// in order of arrival. Such a mechanism should probably not be the default
-    /// because that would overly decrease the throughput of blocking tasks when
-    /// a handler takes too much time.
-    pub(crate) fn spawn_blocking<Handler>(&mut self, handler: Handler)
-    where
-        Handler: FnOnce() -> anyhow::Result<()>,
-        Handler: Send + 'static,
-    {
-        let handle = tokio::task::spawn_blocking(|| handler());
-
-        // Send the join handle to the auxiliary loop so it can log any errors
-        // or panics as quickly as possible. Joining on the main loop would be
-        // simpler but would result in confusing delays of log messages as the
-        // loop might be stuck on a single tick for milliseconds at a time.
-        self.auxiliary_event_tx
-            .send(AuxiliaryEvent::SpawnedTask(handle))
-            .unwrap();
-    }
-
     fn state_ref(&self) -> &WorldState {
         &self.world
     }
@@ -398,18 +359,30 @@ impl GlobalState {
 unsafe impl Sync for AuxiliaryState {}
 
 impl AuxiliaryState {
-    fn new(client: Client, auxiliary_event_rx: TokioUnboundedReceiver<AuxiliaryEvent>) -> Self {
-        let pending_tasks = futures::stream::FuturesUnordered::new();
+    fn new(client: Client) -> Self {
+        // Channels for communication with the auxiliary loop
+        let (auxiliary_event_tx, auxiliary_event_rx) = tokio_unbounded_channel::<AuxiliaryEvent>();
 
-        // Prevent the stream from ever being empty
+        // Set global instance of this channel. This is used for logging
+        // messages from a free function.
+        unsafe {
+            AUXILIARY_EVENT_TX.set(auxiliary_event_tx.clone()).unwrap();
+        }
+
+        // List of pending tasks for which we manage the lifecycle (mainly relay
+        // errors and panics)
+        let tasks = futures::stream::FuturesUnordered::new();
+
+        // Prevent the stream from ever being empty so that `tasks.next()` never
+        // resolves to `None`
         let pending = tokio::task::spawn(future::pending::<anyhow::Result<()>>());
         let pending = Box::pin(pending) as Pin<Box<dyn AnyhowJoinHandleFut<()> + Send>>;
-        pending_tasks.push(pending);
+        tasks.push(pending);
 
         Self {
             client,
             auxiliary_event_rx,
-            tasks: pending_tasks,
+            tasks,
         }
     }
 
@@ -450,15 +423,19 @@ impl AuxiliaryState {
     }
 }
 
+fn auxiliary_tx() -> &'static TokioUnboundedSender<AuxiliaryEvent> {
+    // If we get here that means the LSP was initialised at least once. The
+    // channel might be closed if the LSP was dropped, but it should exist.
+    unsafe { AUXILIARY_EVENT_TX.get().unwrap() }
+}
+
 /// Send a message to the LSP client. This is non-blocking and treated on a
 /// latency-sensitive task.
 pub(crate) fn log(level: lsp_types::MessageType, message: String) {
-    if let Some(tx) = unsafe { AUXILIARY_EVENT_TX.get() } {
-        // Check that channel is still alive in case the LSP was closed.
-        // If closed, fallthrough.
-        if let Ok(_) = tx.send(AuxiliaryEvent::Log(level.clone(), message.clone())) {
-            return;
-        }
+    // Check that channel is still alive in case the LSP was closed.
+    // If closed, fallthrough.
+    if let Ok(_) = auxiliary_tx().send(AuxiliaryEvent::Log(level.clone(), message.clone())) {
+        return;
     }
 
     // Log to the kernel as fallback
@@ -469,4 +446,22 @@ pub(crate) fn log(level: lsp_types::MessageType, message: String) {
         MessageType::WARNING => log::warn!("{message}"),
         _ => log::info!("{message}"),
     };
+}
+
+/// Spawn a blocking task
+///
+/// This runs tasks that do semantic analysis on a separate thread pool
+/// to avoid blocking the main loop.
+pub(crate) fn spawn_blocking<Handler>(handler: Handler)
+where
+    Handler: FnOnce() -> anyhow::Result<()>,
+    Handler: Send + 'static,
+{
+    let handle = tokio::task::spawn_blocking(|| handler());
+
+    // Send the join handle to the auxiliary loop so it can log any errors
+    // or panics
+    auxiliary_tx()
+        .send(AuxiliaryEvent::SpawnedTask(handle))
+        .unwrap();
 }
