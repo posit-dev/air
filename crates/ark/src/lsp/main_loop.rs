@@ -434,6 +434,13 @@ fn auxiliary_tx() -> &'static TokioUnboundedSender<AuxiliaryEvent> {
     unsafe { AUXILIARY_EVENT_TX.get().unwrap() }
 }
 
+fn send_auxiliary(event: AuxiliaryEvent) {
+    if let Err(err) = auxiliary_tx().send(event) {
+        // The error includes the event
+        log::warn!("LSP is shut down, can't send event:\n{err:?}");
+    }
+}
+
 /// Send a message to the LSP client. This is non-blocking and treated on a
 /// latency-sensitive task.
 pub(crate) fn log(level: lsp_types::MessageType, message: String) {
@@ -469,9 +476,7 @@ where
 
     // Send the join handle to the auxiliary loop so it can log any errors
     // or panics
-    auxiliary_tx()
-        .send(AuxiliaryEvent::SpawnedTask(handle))
-        .unwrap();
+    send_auxiliary(AuxiliaryEvent::SpawnedTask(handle));
 }
 
 pub(crate) fn spawn_diagnostics_refresh(uri: Url, document: Document, state: WorldState) {
@@ -494,11 +499,9 @@ pub(crate) fn spawn_diagnostics_refresh_all(state: WorldState) {
 }
 
 pub(crate) fn publish_diagnostics(uri: Url, diagnostics: Vec<Diagnostic>, version: Option<i32>) {
-    auxiliary_tx()
-        .send(AuxiliaryEvent::PublishDiagnostics(
-            uri,
-            diagnostics,
-            version,
-        ))
-        .unwrap();
+    send_auxiliary(AuxiliaryEvent::PublishDiagnostics(
+        uri,
+        diagnostics,
+        version,
+    ));
 }
