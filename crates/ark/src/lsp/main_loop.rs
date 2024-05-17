@@ -11,7 +11,6 @@ use std::pin::Pin;
 use anyhow::anyhow;
 use futures::StreamExt;
 use tokio::sync::mpsc::unbounded_channel as tokio_unbounded_channel;
-use tokio::task::JoinError;
 use tokio::task::JoinHandle;
 use tower_lsp::lsp_types;
 use tower_lsp::lsp_types::Diagnostic;
@@ -24,6 +23,7 @@ use crate::lsp::backend::LspMessage;
 use crate::lsp::backend::LspNotification;
 use crate::lsp::backend::LspRequest;
 use crate::lsp::backend::LspResponse;
+use crate::lsp::diagnostics;
 use crate::lsp::documents::Document;
 use crate::lsp::handlers;
 use crate::lsp::state::WorldState;
@@ -57,14 +57,7 @@ type TaskList<T> = futures::stream::FuturesUnordered<Pin<Box<dyn AnyhowJoinHandl
 #[derive(Debug)]
 pub(crate) enum Event {
     Lsp(LspMessage),
-    Task(LspTask),
     Kernel(KernelNotification),
-}
-#[derive(Debug)]
-pub(crate) enum LspTask {
-    RefreshDiagnostics(Url, Document, WorldState),
-    RefreshAllDiagnostics(),
-    PublishDiagnostics(Url, Vec<Diagnostic>, Option<i32>),
 }
 
 #[derive(Debug)]
@@ -73,10 +66,10 @@ pub(crate) enum KernelNotification {
 }
 
 #[derive(Debug)]
-enum AuxiliaryEvent {
+pub(crate) enum AuxiliaryEvent {
     Log(lsp_types::MessageType, String),
+    PublishDiagnostics(Url, Vec<Diagnostic>, Option<i32>),
     SpawnedTask(JoinHandle<anyhow::Result<()>>),
-    JoinedTask(std::result::Result<anyhow::Result<()>, JoinError>),
 }
 
 /// Global state for the main loop
@@ -220,16 +213,16 @@ impl GlobalState {
                             // TODO: Re-index the changed files.
                         },
                         LspNotification::DidOpenTextDocument(params) => {
-                            state_handlers::did_open(params, self.events_tx(), &mut self.world)?;
+                            state_handlers::did_open(params, &mut self.world)?;
                         },
                         LspNotification::DidChangeTextDocument(params) => {
-                            state_handlers::did_change(params, self.events_tx(), &mut self.world)?;
+                            state_handlers::did_change(params, &mut self.world)?;
                         },
                         LspNotification::DidSaveTextDocument(_params) => {
                             // Currently ignored
                         },
                         LspNotification::DidCloseTextDocument(params) => {
-                            state_handlers::did_close(params, self.events_tx(), &mut self.world)?;
+                            state_handlers::did_close(params, &mut self.world)?;
                         },
                     }
                 },
@@ -289,21 +282,6 @@ impl GlobalState {
                 },
             },
 
-            Event::Task(task) => match task {
-                LspTask::RefreshDiagnostics(url, doc, state) => {
-                    let events_tx = self.events_tx();
-                    lsp::spawn_blocking(move || handlers::refresh_diagnostics(url, doc, events_tx, state));
-                },
-                LspTask::RefreshAllDiagnostics() => {
-                    let state = self.state_clone();
-                    let events_tx = self.events_tx();
-                    handlers::refresh_all_diagnostics(events_tx, state)?;
-                },
-                LspTask::PublishDiagnostics(uri, diagnostics, version) => {
-                    handlers::publish_diagnostics(&self.client, uri, diagnostics, version).await?;
-                },
-            },
-
             Event::Kernel(notif) => match notif {
                 KernelNotification::DidChangeConsoleInputs(inputs) => {
                     state_handlers::did_change_console_inputs(inputs, self.state_mut())?;
@@ -355,9 +333,6 @@ impl GlobalState {
     fn state_mut(&mut self) -> &mut WorldState {
         &mut self.world
     }
-    fn state_clone(&self) -> WorldState {
-        self.world.clone()
-    }
 }
 
 // Needed for spawning the loop
@@ -400,19 +375,26 @@ impl AuxiliaryState {
             match self.next_event().await {
                 AuxiliaryEvent::Log(level, message) => self.log(level, message).await,
                 AuxiliaryEvent::SpawnedTask(handle) => self.tasks.push(Box::pin(handle)),
-                AuxiliaryEvent::JoinedTask(result) => match result {
-                    Err(err) => self.log_error(format!("A task panicked: {err:?}")).await,
-                    Ok(Err(err)) => self.log_error(format!("A task failed: {err:?}")).await,
-                    _ => (),
+                AuxiliaryEvent::PublishDiagnostics(uri, diagnostics, version) => {
+                    self.client
+                        .publish_diagnostics(uri, diagnostics, version)
+                        .await
                 },
             }
         }
     }
 
     async fn next_event(&mut self) -> AuxiliaryEvent {
-        tokio::select! {
-            event = self.auxiliary_event_rx.recv() => event.unwrap(),
-            handle = self.tasks.next() => AuxiliaryEvent::JoinedTask(handle.unwrap()),
+        loop {
+            tokio::select! {
+                    event = self.auxiliary_event_rx.recv() => return event.unwrap(),
+                    // Handle private events here and loop back into select!
+                    handle = self.tasks.next() => match handle.unwrap() {
+                        Err(err) => self.log_error(format!("A task panicked: {err:?}")).await,
+                        Ok(Err(err)) => self.log_error(format!("A task failed: {err:?}")).await,
+                        _ => (),
+                    },
+            }
         }
     }
 
@@ -465,4 +447,29 @@ where
     auxiliary_tx()
         .send(AuxiliaryEvent::SpawnedTask(handle))
         .unwrap();
+}
+
+pub(crate) fn publish_diagnostics(uri: Url, diagnostics: Vec<Diagnostic>, version: Option<i32>) {
+    auxiliary_tx()
+        .send(AuxiliaryEvent::PublishDiagnostics(
+            uri,
+            diagnostics,
+            version,
+        ))
+        .unwrap();
+}
+
+pub(crate) fn spawn_diagnostics_refresh(uri: Url, document: Document, state: WorldState) {
+    lsp::spawn_blocking(move || {
+        let version = document.version;
+        let diagnostics = diagnostics::generate_diagnostics(document, state);
+        lsp::publish_diagnostics(uri, diagnostics, version);
+        Ok(())
+    })
+}
+
+pub(crate) fn spawn_diagnostics_refresh_all(state: WorldState) {
+    for (url, document) in state.documents.iter() {
+        spawn_diagnostics_refresh(url.clone(), document.clone(), state.clone())
+    }
 }

@@ -32,9 +32,6 @@ use crate::lsp;
 use crate::lsp::documents::Document;
 use crate::lsp::encoding::get_position_encoding_kind;
 use crate::lsp::indexer;
-use crate::lsp::main_loop::Event;
-use crate::lsp::main_loop::LspTask;
-use crate::lsp::main_loop::TokioUnboundedSender;
 use crate::lsp::state::WorldState;
 
 // Handlers that mutate the world state
@@ -129,7 +126,6 @@ pub(crate) fn initialize(
 
 pub(crate) fn did_open(
     params: DidOpenTextDocumentParams,
-    events_tx: TokioUnboundedSender<Event>,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
     let contents = params.text_document.text.as_str();
@@ -139,20 +135,13 @@ pub(crate) fn did_open(
     let document = Document::new(contents, Some(version));
     state.documents.insert(uri.clone(), document.clone());
 
-    events_tx
-        .send(Event::Task(LspTask::RefreshDiagnostics(
-            uri,
-            document,
-            state.clone(),
-        )))
-        .unwrap();
+    lsp::spawn_diagnostics_refresh(uri, document, state.clone());
 
     Ok(())
 }
 
 pub(crate) fn did_change(
     params: DidChangeTextDocumentParams,
-    events_tx: TokioUnboundedSender<Event>,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
     let uri = &params.text_document.uri;
@@ -170,32 +159,19 @@ pub(crate) fn did_change(
     }
 
     // Refresh diagnostics
-    events_tx
-        .send(Event::Task(LspTask::RefreshDiagnostics(
-            uri.clone(),
-            doc.clone(),
-            state.clone(),
-        )))
-        .unwrap();
+    lsp::spawn_diagnostics_refresh(uri.clone(), doc.clone(), state.clone());
 
     Ok(())
 }
 
 pub(crate) fn did_close(
     params: DidCloseTextDocumentParams,
-    events_tx: TokioUnboundedSender<Event>,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
     let uri = params.text_document.uri;
 
     // Publish empty set of diagnostics to clear them
-    events_tx
-        .send(Event::Task(LspTask::PublishDiagnostics(
-            uri.clone(),
-            Vec::new(),
-            None,
-        )))
-        .unwrap();
+    lsp::publish_diagnostics(uri.clone(), Vec::new(), None);
 
     state
         .documents
@@ -213,5 +189,12 @@ pub(crate) fn did_change_console_inputs(
 ) -> anyhow::Result<()> {
     state.console_scopes = inputs.console_scopes;
     state.installed_packages = inputs.installed_packages;
+
+    // We currently rely on global console scopes for diagnostics, in particular
+    // during package development in conjunction with `devtools::load_all()`.
+    // Ideally diagnostics would not rely on these though, and we wouldn't need
+    // to refresh from here.
+    lsp::spawn_diagnostics_refresh_all(state.clone());
+
     Ok(())
 }

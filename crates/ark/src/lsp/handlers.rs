@@ -10,7 +10,6 @@ use stdext::unwrap;
 use tower_lsp::lsp_types::CompletionItem;
 use tower_lsp::lsp_types::CompletionParams;
 use tower_lsp::lsp_types::CompletionResponse;
-use tower_lsp::lsp_types::Diagnostic;
 use tower_lsp::lsp_types::DocumentSymbolParams;
 use tower_lsp::lsp_types::DocumentSymbolResponse;
 use tower_lsp::lsp_types::GotoDefinitionParams;
@@ -30,23 +29,17 @@ use tower_lsp::lsp_types::WorkspaceEdit;
 use tower_lsp::lsp_types::WorkspaceSymbolParams;
 use tower_lsp::Client;
 use tree_sitter::Point;
-use url::Url;
 
 use crate::lsp;
 use crate::lsp::completions::provide_completions;
 use crate::lsp::completions::resolve_completion;
 use crate::lsp::definitions::goto_definition;
-use crate::lsp::diagnostics;
 use crate::lsp::document_context::DocumentContext;
-use crate::lsp::documents::Document;
 use crate::lsp::encoding::convert_position_to_point;
 use crate::lsp::help_topic::help_topic;
 use crate::lsp::help_topic::HelpTopicParams;
 use crate::lsp::help_topic::HelpTopicResponse;
 use crate::lsp::hover::r_hover;
-use crate::lsp::main_loop::Event;
-use crate::lsp::main_loop::LspTask;
-use crate::lsp::main_loop::TokioUnboundedSender;
 use crate::lsp::references::find_references;
 use crate::lsp::selection_range::convert_selection_range_from_tree_sitter_to_lsp;
 use crate::lsp::selection_range::selection_range;
@@ -254,65 +247,6 @@ pub(crate) fn handle_references(
     } else {
         Ok(Some(locations))
     }
-}
-
-pub(crate) fn refresh_diagnostics(
-    url: Url,
-    document: Document,
-    events_tx: TokioUnboundedSender<Event>,
-    state: WorldState,
-) -> anyhow::Result<()> {
-    let version = document.version.clone();
-    let diagnostics = diagnostics::generate_diagnostics(document, state);
-    events_tx
-        .send(Event::Task(LspTask::PublishDiagnostics(
-            url,
-            diagnostics,
-            document.version,
-        )))
-        .unwrap();
-
-    Ok(())
-}
-
-pub(crate) fn refresh_all_diagnostics(
-    events_tx: TokioUnboundedSender<Event>,
-    state: WorldState,
-) -> anyhow::Result<()> {
-    for (url, document) in state.documents.iter() {
-        lsp::spawn_blocking({
-            let url = url.clone();
-            let document = document.clone();
-            let version = document.version.clone();
-
-            let events_tx = events_tx.clone();
-            let state = state.clone();
-
-            move || {
-                let diagnostics = diagnostics::generate_diagnostics(document, state);
-                events_tx
-                    .send(Event::Task(LspTask::PublishDiagnostics(
-                        url,
-                        diagnostics,
-                        version,
-                    )))
-                    .unwrap();
-                Ok(())
-            }
-        });
-    }
-
-    Ok(())
-}
-
-pub(crate) async fn publish_diagnostics(
-    client: &Client,
-    uri: Url,
-    diagnostics: Vec<Diagnostic>,
-    version: Option<i32>,
-) -> anyhow::Result<()> {
-    client.publish_diagnostics(uri, diagnostics, version).await;
-    Ok(())
 }
 
 pub(crate) fn handle_statement_range(
