@@ -174,26 +174,17 @@ impl GlobalState {
     #[rustfmt::skip]
     /// Handle event of main loop
     ///
-    /// The events are attached to _exclusive_, _sharing_, or _snapshot_
+    /// The events are attached to _exclusive_, _sharing_, or _concurrent_
     /// handlers.
     ///
     /// - Exclusive handlers are passed an `&mut` to the world state so they can
     ///   update it.
     /// - Sharing handlers are passed a simple reference. In principle we could
-    ///   run these concurrently but we typically run a handler one at a time.
+    ///   run these concurrently but we run these one handler at a time for simplicity.
     /// - When concurrent handlers are needed for performance reason (one tick
     ///   of the main loop should be as fast as possible to increase throughput)
     ///   they are spawned on blocking threads and provided a snapshot (clone) of
     ///   the state.
-    ///
-    /// We currently don't have a way to handle client requests concurrently.
-    /// In the future we could add a way to respond to requests from handlers
-    /// spawned on blocking threads if needed (e.g. to improve throughput).
-    /// The LSP protocol does allow concurrent handling as long as it doesn't
-    /// affect correctness of responses. For instance handlers that only inspect
-    /// the world state could be run concurrently. On the other hand, handlers
-    /// that manipulate documents should not be run concurrently, and probably
-    /// should trigger cancellation of all concurrent handlers.
     async fn handle_event(&mut self, event: Event) -> anyhow::Result<()> {
         match event {
             Event::Lsp(msg) => match msg {
@@ -232,51 +223,51 @@ impl GlobalState {
 
                     match request {
                         LspRequest::Initialize(params) => {
-                            Self::respond(tx, state_handlers::initialize(params, self.state_mut()), LspResponse::Initialize)?;
+                            respond(tx, state_handlers::initialize(params, self.state_mut()), LspResponse::Initialize)?;
                         },
                         LspRequest::Shutdown() => {
                             // TODO
-                            Self::respond(tx, Ok(()), LspResponse::Shutdown)?;
+                            respond(tx, Ok(()), LspResponse::Shutdown)?;
                         },
                         LspRequest::WorkspaceSymbol(params) => {
-                            Self::respond(tx, handlers::symbol(params), LspResponse::WorkspaceSymbol)?;
+                            respond(tx, handlers::symbol(params), LspResponse::WorkspaceSymbol)?;
                         },
                         LspRequest::DocumentSymbol(params) => {
-                            Self::respond(tx, handlers::document_symbol(params, self.state_ref()), LspResponse::DocumentSymbol)?;
+                            respond(tx, handlers::document_symbol(params, self.state_ref()), LspResponse::DocumentSymbol)?;
                         },
                         LspRequest::ExecuteCommand(_params) => {
-                            Self::respond(tx, handlers::execute_command(&self.client).await, LspResponse::ExecuteCommand)?;
+                            respond(tx, handlers::execute_command(&self.client).await, LspResponse::ExecuteCommand)?;
                         },
                         LspRequest::Completion(params) => {
-                            Self::respond(tx, handlers::completion(params, self.state_ref()), LspResponse::Completion)?;
+                            respond(tx, handlers::completion(params, self.state_ref()), LspResponse::Completion)?;
                         },
                         LspRequest::CompletionResolve(params) => {
-                            Self::respond(tx, handlers::handle_completion_resolve(params), LspResponse::CompletionResolve)?;
+                            respond(tx, handlers::handle_completion_resolve(params), LspResponse::CompletionResolve)?;
                         },
                         LspRequest::Hover(params) => {
-                            Self::respond(tx, handlers::handle_hover(params, self.state_ref()), LspResponse::Hover)?;
+                            respond(tx, handlers::handle_hover(params, self.state_ref()), LspResponse::Hover)?;
                         },
                         LspRequest::SignatureHelp(params) => {
-                            Self::respond(tx, handlers::handle_signature_help(params, self.state_ref()), LspResponse::SignatureHelp)?;
+                            respond(tx, handlers::handle_signature_help(params, self.state_ref()), LspResponse::SignatureHelp)?;
                         },
                         LspRequest::GotoDefinition(params) => {
-                            Self::respond(tx, handlers::handle_goto_definition(params, self.state_ref()), LspResponse::GotoDefinition)?;
+                            respond(tx, handlers::handle_goto_definition(params, self.state_ref()), LspResponse::GotoDefinition)?;
                         },
                         LspRequest::GotoImplementation(_params) => {
                             // TODO
-                            Self::respond(tx, Ok(None), LspResponse::GotoImplementation)?;
+                            respond(tx, Ok(None), LspResponse::GotoImplementation)?;
                         },
                         LspRequest::SelectionRange(params) => {
-                            Self::respond(tx, handlers::handle_selection_range(params, self.state_ref()), LspResponse::SelectionRange)?;
+                            respond(tx, handlers::handle_selection_range(params, self.state_ref()), LspResponse::SelectionRange)?;
                         },
                         LspRequest::References(params) => {
-                            Self::respond(tx, handlers::handle_references(params, self.state_ref()), LspResponse::References)?;
+                            respond(tx, handlers::handle_references(params, self.state_ref()), LspResponse::References)?;
                         },
                         LspRequest::StatementRange(params) => {
-                            Self::respond(tx, handlers::handle_statement_range(params, self.state_ref()), LspResponse::StatementRange)?;
+                            respond(tx, handlers::handle_statement_range(params, self.state_ref()), LspResponse::StatementRange)?;
                         },
                         LspRequest::HelpTopic(params) => {
-                            Self::respond(tx, handlers::handle_help_topic(params, self.state_ref()), LspResponse::HelpTopic)?;
+                            respond(tx, handlers::handle_help_topic(params, self.state_ref()), LspResponse::HelpTopic)?;
                         },
                     };
                 },
@@ -292,39 +283,27 @@ impl GlobalState {
         Ok(())
     }
 
-    /// Respond to a request from the LSP
+    #[allow(dead_code)] // Currently unused
+    /// Spawn blocking thread for LSP request handler
     ///
-    /// We receive requests from the LSP client with a response channel.
+    /// Use this for handlers that might take too long to handle on the main
+    /// loop and negatively affect throughput.
     ///
-    /// The response channel will be closed if the request has been cancelled on
-    /// the tower-lsp side. In that case the future of the async request method
-    /// has been dropped, along with the receiving side of this channel. It's
-    /// unclear whether we want to support this sort of client-side cancellation
-    /// better. We should probably focus on cancellation of expensive tasks
-    /// running on side threads when the world state has changed.
-    ///
-    /// # Arguments
-    ///
-    /// * - `response_tx`: A response channel for the tower-lsp request handler.
-    /// * - `response`: The response wrapped in a `anyhow::Result`.
-    /// * - `into_lsp_response`: A constructor for the relevant `LspResponse` variant.
-    fn respond<T>(
+    /// The LSP protocol allows concurrent handling as long as it doesn't affect
+    /// correctness of responses. For instance handlers that only inspect the
+    /// world state could be run concurrently. On the other hand, handlers that
+    /// manipulate documents (e.g. formatting or refactoring) should not.
+    fn spawn_handler<T, Handler>(
         response_tx: TokioUnboundedSender<anyhow::Result<LspResponse>>,
-        response: anyhow::Result<T>,
-        into_lsp_response: impl FnOnce(T) -> LspResponse,
-    ) -> anyhow::Result<()> {
-        let out = match response {
-            Ok(_) => Ok(()),
-            Err(ref err) => Err(anyhow!("Error while handling request: {err:?}")),
-        };
-
-        let response = response.map(into_lsp_response);
-
-        // Ignore errors from a closed channel. This indicates the request has
-        // been cancelled on the tower-lsp side.
-        let _ = response_tx.send(response);
-
-        out
+        handler: Handler,
+        into_lsp_response: impl FnOnce(T) -> LspResponse + Send + 'static,
+    ) where
+        Handler: FnOnce() -> anyhow::Result<T>,
+        Handler: Send + 'static,
+    {
+        lsp::spawn_blocking(move || {
+            respond(response_tx, handler(), into_lsp_response).and(Ok(None))
+        })
     }
 
     fn state_ref(&self) -> &WorldState {
@@ -333,6 +312,43 @@ impl GlobalState {
     fn state_mut(&mut self) -> &mut WorldState {
         &mut self.world
     }
+}
+
+/// Respond to a request from the LSP
+///
+/// We receive requests from the LSP client with a response channel. Once we
+/// have a response, we send it to tower-lsp which will forward it to the
+/// client.
+///
+/// The response channel will be closed if the request has been cancelled on
+/// the tower-lsp side. In that case the future of the async request method
+/// has been dropped, along with the receiving side of this channel. It's
+/// unclear whether we want to support this sort of client-side cancellation
+/// better. We should probably focus on cancellation of expensive tasks
+/// running on side threads when the world state has changed.
+///
+/// # Arguments
+///
+/// * - `response_tx`: A response channel for the tower-lsp request handler.
+/// * - `response`: The response wrapped in a `anyhow::Result`. Errors are logged.
+/// * - `into_lsp_response`: A constructor for the relevant `LspResponse` variant.
+fn respond<T>(
+    response_tx: TokioUnboundedSender<anyhow::Result<LspResponse>>,
+    response: anyhow::Result<T>,
+    into_lsp_response: impl FnOnce(T) -> LspResponse,
+) -> anyhow::Result<()> {
+    let out = match response {
+        Ok(_) => Ok(()),
+        Err(ref err) => Err(anyhow!("Error while handling request:\n{err:?}")),
+    };
+
+    let response = response.map(into_lsp_response);
+
+    // Ignore errors from a closed channel. This indicates the request has
+    // been cancelled on the tower-lsp side.
+    let _ = response_tx.send(response);
+
+    out
 }
 
 // Needed for spawning the loop
