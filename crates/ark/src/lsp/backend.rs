@@ -352,7 +352,7 @@ pub fn start_lsp(runtime: Arc<Runtime>, address: String, conn_init_tx: Sender<bo
             let events_tx = state.events_tx();
 
             // Start main loop and hold onto the handle that keeps it alive
-            let main_loop = state.main_loop();
+            let main_loop = state.start();
 
             // Forward event channel along to `RMain`.
             // This also updates an outdated channel after a reconnect.

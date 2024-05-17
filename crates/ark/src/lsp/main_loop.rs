@@ -143,30 +143,35 @@ impl GlobalState {
         self.events_tx.clone()
     }
 
-    /// Start the main loop
-    ///
-    /// This takes ownership of all global state and handles one by one LSP
-    /// requests, notifications, and other internal events and tasks.
+    /// Start the main and auxiliary loops
     ///
     /// Returns a `JoinSet` that holds onto all tasks and state owned by the
     /// event loop. Drop it to cancel everything and shut down the service.
-    pub(crate) fn main_loop(mut self) -> tokio::task::JoinSet<()> {
+    pub(crate) fn start(self) -> tokio::task::JoinSet<()> {
         let mut set = tokio::task::JoinSet::<()>::new();
 
-        // Spawn latency-sensitive auxiliary loop
-        AuxiliaryState::new(self.client.clone()).spawn(&mut set);
+        // Spawn latency-sensitive auxiliary loop. Must be first to initialise
+        // global transmission channel.
+        let aux = AuxiliaryState::new(self.client.clone());
+        set.spawn(async move { aux.start().await });
 
         // Spawn main loop
-        set.spawn(async move {
-            loop {
-                let event = self.next_event().await;
-                if let Err(err) = self.handle_event(event).await {
-                    lsp::log_error!("Failure while handling event: {err:?}")
-                }
-            }
-        });
+        set.spawn(async move { self.main_loop().await });
 
         set
+    }
+
+    /// Run main loop
+    ///
+    /// This takes ownership of all global state and handles one by one LSP
+    /// requests, notifications, and other internal events.
+    async fn main_loop(mut self) {
+        loop {
+            let event = self.next_event().await;
+            if let Err(err) = self.handle_event(event).await {
+                lsp::log_error!("Failure while handling event:\n{err:?}")
+            }
+        }
     }
 
     async fn next_event(&mut self) -> Event {
@@ -390,22 +395,18 @@ impl AuxiliaryState {
     ///
     /// Takes ownership of auxiliary state and spawns the low-latency auxiliary
     /// loop on the provided task set.
-    fn spawn(mut self, set: &mut tokio::task::JoinSet<()>) {
-        set.spawn({
-            async move {
-                loop {
-                    match self.next_event().await {
-                        AuxiliaryEvent::Log(level, message) => self.log(level, message).await,
-                        AuxiliaryEvent::SpawnedTask(handle) => self.tasks.push(Box::pin(handle)),
-                        AuxiliaryEvent::JoinedTask(result) => match result {
-                            Err(err) => self.log_error(format!("A task panicked: {err:?}")).await,
-                            Ok(Err(err)) => self.log_error(format!("A task failed: {err:?}")).await,
-                            _ => (),
-                        },
-                    }
-                }
+    async fn start(mut self) {
+        loop {
+            match self.next_event().await {
+                AuxiliaryEvent::Log(level, message) => self.log(level, message).await,
+                AuxiliaryEvent::SpawnedTask(handle) => self.tasks.push(Box::pin(handle)),
+                AuxiliaryEvent::JoinedTask(result) => match result {
+                    Err(err) => self.log_error(format!("A task panicked: {err:?}")).await,
+                    Ok(Err(err)) => self.log_error(format!("A task failed: {err:?}")).await,
+                    _ => (),
+                },
             }
-        });
+        }
     }
 
     async fn next_event(&mut self) -> AuxiliaryEvent {
