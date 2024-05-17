@@ -7,12 +7,9 @@
 
 use std::future;
 use std::pin::Pin;
-use std::sync::Arc;
-use std::sync::Mutex;
 
 use anyhow::anyhow;
 use futures::StreamExt;
-use once_cell::sync::Lazy;
 use tokio::sync::mpsc::unbounded_channel as tokio_unbounded_channel;
 use tokio::task::JoinError;
 use tokio::task::JoinHandle;
@@ -37,10 +34,11 @@ pub(crate) type TokioUnboundedSender<T> = tokio::sync::mpsc::UnboundedSender<T>;
 pub(crate) type TokioUnboundedReceiver<T> = tokio::sync::mpsc::UnboundedReceiver<T>;
 
 // The global instance of the auxiliary event channel, used for sending log
-// messages from a free function. Since this is an unbounded channel, sending
-// a log message is not async nor blocking.
-static mut AUXILIARY_EVENT_TX: Lazy<Arc<Mutex<Option<TokioUnboundedSender<AuxiliaryEvent>>>>> =
-    Lazy::new(|| Arc::new(Mutex::new(None)));
+// messages from a free function. Since this is an unbounded channel, sending a
+// log message is not async nor blocking. Tokio senders are Send and Sync so
+// this global variable can be safely shared across threads.
+static mut AUXILIARY_EVENT_TX: std::cell::OnceCell<TokioUnboundedSender<AuxiliaryEvent>> =
+    std::cell::OnceCell::new();
 
 // This is the syntax for trait aliases until an official one is stabilised.
 // This alias is for the future of a `JoinHandle<anyhow::Result<T>>`
@@ -144,7 +142,7 @@ impl GlobalState {
         // Set global instance of this channel. This is used for logging
         // messages from a free function.
         unsafe {
-            *AUXILIARY_EVENT_TX.lock().unwrap() = Some(auxiliary_event_tx.clone());
+            AUXILIARY_EVENT_TX.set(auxiliary_event_tx.clone()).unwrap();
         }
 
         Self {
@@ -455,7 +453,7 @@ impl AuxiliaryState {
 /// Send a message to the LSP client. This is non-blocking and treated on a
 /// latency-sensitive task.
 pub(crate) fn log(level: lsp_types::MessageType, message: String) {
-    if let Some(tx) = unsafe { &*AUXILIARY_EVENT_TX.lock().unwrap() } {
+    if let Some(tx) = unsafe { AUXILIARY_EVENT_TX.get() } {
         // Check that channel is still alive in case the LSP was closed.
         // If closed, fallthrough.
         if let Ok(_) = tx.send(AuxiliaryEvent::Log(level.clone(), message.clone())) {
