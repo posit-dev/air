@@ -186,6 +186,8 @@ impl GlobalState {
     ///   they are spawned on blocking threads and provided a snapshot (clone) of
     ///   the state.
     async fn handle_event(&mut self, event: Event) -> anyhow::Result<()> {
+        let loop_tick = std::time::Instant::now();
+
         match event {
             Event::Lsp(msg) => match msg {
                 LspMessage::Notification(notif) => {
@@ -278,6 +280,11 @@ impl GlobalState {
                     state_handlers::did_change_console_inputs(inputs, self.state_mut())?;
                 },
             },
+        }
+
+        // TODO Make this threshold configurable by the client
+        if loop_tick.elapsed() > std::time::Duration::from_millis(50) {
+            lsp::log_info!("Handler took {}ms", loop_tick.elapsed().as_millis());
         }
 
         Ok(())
