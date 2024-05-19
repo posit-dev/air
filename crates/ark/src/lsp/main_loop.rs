@@ -366,10 +366,17 @@ impl AuxiliaryState {
         // Channels for communication with the auxiliary loop
         let (auxiliary_event_tx, auxiliary_event_rx) = tokio_unbounded_channel::<AuxiliaryEvent>();
 
-        // Set global instance of this channel. This is used for logging
-        // messages from a free function.
+        // Set global instance of this channel. This is used for interacting
+        // with the auxiliary loop (logging messages or spawning a task) from
+        // free functions.
         unsafe {
-            AUXILIARY_EVENT_TX.set(auxiliary_event_tx.clone()).unwrap();
+            if let Some(val) = AUXILIARY_EVENT_TX.get_mut() {
+                // Reset channel if already set. Happens e.g. on reconnection after a refresh.
+                *val = auxiliary_event_tx.clone();
+            } else {
+                // Set channel for the first time
+                AUXILIARY_EVENT_TX.set(auxiliary_event_tx.clone()).unwrap();
+            }
         }
 
         // List of pending tasks for which we manage the lifecycle (mainly relay
