@@ -5,6 +5,9 @@
 //
 //
 
+use anyhow::anyhow;
+use dashmap::DashMap;
+use once_cell::sync::Lazy;
 use serde_json::Value;
 use stdext::unwrap;
 use struct_field_names_as_array::FieldNamesAsArray;
@@ -59,6 +62,16 @@ use crate::lsp::statement_range::StatementRangeParams;
 use crate::lsp::statement_range::StatementRangeResponse;
 use crate::lsp::symbols;
 use crate::r_task;
+
+pub static ARK_VDOC_REQUEST: &'static str = "ark/internal/virtualDocument";
+
+#[derive(Debug, Eq, PartialEq, Clone, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct VirtualDocumentParams {
+    pub path: String,
+}
+
+pub(crate) type VirtualDocumentResponse = String;
 
 // Handlers that do not mutate the world state. They take a sharing reference or
 // a clone of the state.
@@ -355,4 +368,16 @@ pub(crate) fn handle_indent(
     Result::map(res, |opt| {
         Option::map(opt, |edits| edits.into_lsp_offset(&doc.contents))
     })
+}
+
+pub static mut ARK_VDOCS: Lazy<DashMap<String, Vec<String>>> = Lazy::new(|| DashMap::new());
+
+pub(crate) fn handle_virtual_document(
+    params: VirtualDocumentParams,
+) -> anyhow::Result<VirtualDocumentResponse> {
+    if let Some(doc) = unsafe { ARK_VDOCS.get(&params.path) } {
+        Ok(doc.join("\n"))
+    } else {
+        Err(anyhow!("Can't find virtual document {}", params.path))
+    }
 }

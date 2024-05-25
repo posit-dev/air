@@ -27,6 +27,9 @@ use tower_lsp::LspService;
 use tower_lsp::Server;
 
 use crate::interface::RMain;
+use crate::lsp::handlers::VirtualDocumentParams;
+use crate::lsp::handlers::VirtualDocumentResponse;
+use crate::lsp::handlers::ARK_VDOC_REQUEST;
 use crate::lsp::help_topic;
 use crate::lsp::help_topic::HelpTopicParams;
 use crate::lsp::help_topic::HelpTopicResponse;
@@ -88,6 +91,7 @@ pub(crate) enum LspRequest {
     StatementRange(StatementRangeParams),
     HelpTopic(HelpTopicParams),
     OnTypeFormatting(DocumentOnTypeFormattingParams),
+    VirtualDocument(VirtualDocumentParams),
 }
 
 #[derive(Debug)]
@@ -108,6 +112,7 @@ pub(crate) enum LspResponse {
     StatementRange(Option<StatementRangeResponse>),
     HelpTopic(Option<HelpTopicResponse>),
     OnTypeFormatting(Option<Vec<TextEdit>>),
+    VirtualDocument(VirtualDocumentResponse),
 }
 
 #[derive(Debug)]
@@ -194,7 +199,10 @@ impl LanguageServer for Backend {
         )
     }
 
-    async fn execute_command(&self, params: ExecuteCommandParams) -> Result<Option<Value>> {
+    async fn execute_command(
+        &self,
+        params: ExecuteCommandParams,
+    ) -> jsonrpc::Result<Option<Value>> {
         cast_response!(
             self.request(LspRequest::ExecuteCommand(params)).await,
             LspResponse::ExecuteCommand
@@ -329,6 +337,16 @@ impl Backend {
         )
     }
 
+    async fn virtual_document(
+        &self,
+        params: VirtualDocumentParams,
+    ) -> tower_lsp::jsonrpc::Result<VirtualDocumentResponse> {
+        cast_response!(
+            self.request(LspRequest::VirtualDocument(params)).await,
+            LspResponse::VirtualDocument
+        )
+    }
+
     async fn notification(&self, params: Option<Value>) {
         log::info!("Received Positron notification: {:?}", params);
     }
@@ -389,6 +407,7 @@ pub fn start_lsp(runtime: Arc<Runtime>, address: String, conn_init_tx: Sender<bo
                 Backend::statement_range,
             )
             .custom_method(help_topic::POSITRON_HELP_TOPIC_REQUEST, Backend::help_topic)
+            .custom_method(ARK_VDOC_REQUEST, Backend::virtual_document)
             .custom_method("positron/notification", Backend::notification)
             .finish();
 

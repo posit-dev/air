@@ -300,6 +300,9 @@ impl GlobalState {
                             state_handlers::did_change_formatting_options(&params.text_document_position.text_document.uri, &params.options, &mut self.world);
                             respond(tx, handlers::handle_indent(params, &self.world), LspResponse::OnTypeFormatting)?;
                         },
+                        LspRequest::VirtualDocument(params) => {
+                            respond(tx, handlers::handle_virtual_document(params), LspResponse::VirtualDocument)?;
+                        },
                     };
                 },
             },
