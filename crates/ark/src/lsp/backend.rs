@@ -135,12 +135,9 @@ impl Backend {
             let events_tx = self.events_tx.clone();
 
             move || {
-                let diagnostics = diagnostics::generate_diagnostics(document.clone(), state);
-                events_tx.send(LspEvent::PublishDiagnostics(
-                    url,
-                    diagnostics,
-                    document.version,
-                ))
+                let version = document.version.clone();
+                let diagnostics = diagnostics::generate_diagnostics(document, state);
+                events_tx.send(LspEvent::PublishDiagnostics(url, diagnostics, version))
             }
         });
     }
