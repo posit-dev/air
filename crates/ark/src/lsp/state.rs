@@ -20,7 +20,7 @@ pub struct WorldState {
     pub workspace: Arc<Mutex<Workspace>>,
 
     /// The scopes for the console. This currently contains a list (outer `Vec`)
-    /// of names (inner `Vec`) of the environments on the search path, starting
+    /// of names (inner `Vec`) within the environments on the search path, starting
     /// from the global environment and ending with the base package. Eventually
     /// this might also be populated with the scope for the current environment
     /// in debug sessions (not implemented yet).
