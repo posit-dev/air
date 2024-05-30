@@ -54,7 +54,7 @@ use crate::r_task;
 // Handlers that do not mutate the world state. They take a sharing reference or
 // a clone of the state.
 
-pub(crate) fn symbol(
+pub(crate) fn handle_symbol(
     params: WorkspaceSymbolParams,
 ) -> anyhow::Result<Option<Vec<SymbolInformation>>> {
     symbols::symbols(&params)
@@ -66,7 +66,7 @@ pub(crate) fn symbol(
         })
 }
 
-pub(crate) fn document_symbol(
+pub(crate) fn handle_document_symbol(
     params: DocumentSymbolParams,
     state: &WorldState,
 ) -> anyhow::Result<Option<DocumentSymbolResponse>> {
@@ -79,7 +79,7 @@ pub(crate) fn document_symbol(
         })
 }
 
-pub(crate) async fn execute_command(client: &Client) -> anyhow::Result<Option<Value>> {
+pub(crate) async fn handle_execute_command(client: &Client) -> anyhow::Result<Option<Value>> {
     match client.apply_edit(WorkspaceEdit::default()).await {
         Ok(res) if res.applied => client.log_message(MessageType::INFO, "applied").await,
         Ok(_) => client.log_message(MessageType::INFO, "rejected").await,
@@ -88,7 +88,7 @@ pub(crate) async fn execute_command(client: &Client) -> anyhow::Result<Option<Va
     Ok(None)
 }
 
-pub(crate) fn completion(
+pub(crate) fn handle_completion(
     params: CompletionParams,
     state: &WorldState,
 ) -> anyhow::Result<Option<CompletionResponse>> {

@@ -238,16 +238,16 @@ impl GlobalState {
                             respond(tx, Ok(()), LspResponse::Shutdown)?;
                         },
                         LspRequest::WorkspaceSymbol(params) => {
-                            respond(tx, handlers::symbol(params), LspResponse::WorkspaceSymbol)?;
+                            respond(tx, handlers::handle_symbol(params), LspResponse::WorkspaceSymbol)?;
                         },
                         LspRequest::DocumentSymbol(params) => {
-                            respond(tx, handlers::document_symbol(params, self.state_ref()), LspResponse::DocumentSymbol)?;
+                            respond(tx, handlers::handle_document_symbol(params, self.state_ref()), LspResponse::DocumentSymbol)?;
                         },
                         LspRequest::ExecuteCommand(_params) => {
-                            respond(tx, handlers::execute_command(&self.client).await, LspResponse::ExecuteCommand)?;
+                            respond(tx, handlers::handle_execute_command(&self.client).await, LspResponse::ExecuteCommand)?;
                         },
                         LspRequest::Completion(params) => {
-                            respond(tx, handlers::completion(params, self.state_ref()), LspResponse::Completion)?;
+                            respond(tx, handlers::handle_completion(params, self.state_ref()), LspResponse::Completion)?;
                         },
                         LspRequest::CompletionResolve(params) => {
                             respond(tx, handlers::handle_completion_resolve(params), LspResponse::CompletionResolve)?;
