@@ -397,10 +397,10 @@ impl AuxiliaryState {
         }
     }
 
-    /// Spawn the auxiliary loop
+    /// Start the auxiliary loop
     ///
-    /// Takes ownership of auxiliary state and spawns the low-latency auxiliary
-    /// loop on the provided task set.
+    /// Takes ownership of auxiliary state and start the low-latency auxiliary
+    /// loop.
     async fn start(mut self) {
         loop {
             match self.next_event().await {
