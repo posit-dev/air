@@ -109,10 +109,7 @@ pub(crate) enum LspResponse {
 }
 
 #[derive(Debug)]
-pub struct Backend {
-    /// LSP client, use this for direct interaction with the client.
-    pub client: Client,
-
+struct Backend {
     /// Channel for communication with the main loop.
     events_tx: TokioUnboundedSender<Event>,
 
@@ -348,7 +345,7 @@ pub fn start_lsp(runtime: Arc<Runtime>, address: String, conn_init_tx: Sender<bo
         let (read, write) = (read.compat(), write.compat_write());
 
         let init = |client: Client| {
-            let state = GlobalState::new(client.clone());
+            let state = GlobalState::new(client);
             let events_tx = state.events_tx();
 
             // Start main loop and hold onto the handle that keeps it alive
@@ -369,7 +366,6 @@ pub fn start_lsp(runtime: Arc<Runtime>, address: String, conn_init_tx: Sender<bo
             });
 
             Backend {
-                client,
                 events_tx,
                 _main_loop: main_loop,
             }
