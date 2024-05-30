@@ -121,7 +121,7 @@ impl GlobalState {
     ///
     /// # Arguments
     ///
-    /// * `client`: The tower-lsp cient shared with the tower-lsp backend
+    /// * `client`: The tower-lsp client shared with the tower-lsp backend
     ///   and auxiliary loop.
     pub(crate) fn new(client: Client) -> Self {
         // Transmission channel for the main loop events. Shared with the
@@ -378,10 +378,10 @@ impl AuxiliaryState {
         unsafe {
             if let Some(val) = AUXILIARY_EVENT_TX.get_mut() {
                 // Reset channel if already set. Happens e.g. on reconnection after a refresh.
-                *val = auxiliary_event_tx.clone();
+                *val = auxiliary_event_tx;
             } else {
                 // Set channel for the first time
-                AUXILIARY_EVENT_TX.set(auxiliary_event_tx.clone()).unwrap();
+                AUXILIARY_EVENT_TX.set(auxiliary_event_tx).unwrap();
             }
         }
 

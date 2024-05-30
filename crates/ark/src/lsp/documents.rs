@@ -83,7 +83,7 @@ impl Document {
 
         // Check for out-of-order change notifications
         if let Some(old_version) = self.version {
-            // Versions might not be consecutive but they must be monotonically
+            // According to the spec, versions might not be consecutive but they must be monotonically
             // increasing. If that's not the case this is a hard nope as we
             // can't maintain our state integrity. Currently panicking but in
             // principle we should shut down the LSP in an orderly fashion.
