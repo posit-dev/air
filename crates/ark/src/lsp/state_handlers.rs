@@ -144,6 +144,7 @@ pub(crate) fn did_open(
     parsers.insert(uri.clone(), parser);
     state.documents.insert(uri.clone(), document.clone());
 
+    update_index(&uri, &document);
     lsp::spawn_diagnostics_refresh(uri, document, state.clone());
 
     Ok(())
@@ -158,18 +159,9 @@ pub(crate) fn did_change(
     let doc = state.get_document_mut(uri)?;
     let mut parser = parsers.get_mut(uri)?;
 
-    // Respond to document updates
     doc.on_did_change(&mut parser, &params);
 
-    // Update index
-    if let Ok(path) = uri.to_file_path() {
-        let path = Path::new(&path);
-        if let Err(err) = indexer::update(&doc, &path) {
-            lsp::log_error!("{err:?}");
-        }
-    }
-
-    // Refresh diagnostics
+    update_index(uri, doc);
     lsp::spawn_diagnostics_refresh(uri.clone(), doc.clone(), state.clone());
 
     Ok(())
@@ -213,4 +205,17 @@ pub(crate) fn did_change_console_inputs(
     lsp::spawn_diagnostics_refresh_all(state.clone());
 
     Ok(())
+}
+
+// FIXME: The initial indexer is currently racing against our state notification
+// handlers. The indexer is synchronised through a mutex but we might end up in
+// a weird state. Eventually the index should be moved to WorldState and created
+// on demand with Salsa instrumenting and cancellation.
+fn update_index(uri: &url::Url, doc: &Document) {
+    if let Ok(path) = uri.to_file_path() {
+        let path = Path::new(&path);
+        if let Err(err) = indexer::update(&doc, &path) {
+            lsp::log_error!("{err:?}");
+        }
+    }
 }
