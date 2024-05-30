@@ -47,6 +47,7 @@ use crate::lsp::help_topic::HelpTopicResponse;
 use crate::lsp::hover::r_hover;
 use crate::lsp::indent::indent_edit;
 use crate::lsp::main_loop::LspState;
+use crate::lsp::offset::IntoLspOffset;
 use crate::lsp::references::find_references;
 use crate::lsp::selection_range::convert_selection_range_from_tree_sitter_to_lsp;
 use crate::lsp::selection_range::selection_range;
@@ -331,5 +332,9 @@ pub(crate) fn handle_indent(
     let pos = ctxt.position;
     let point = convert_position_to_point(&doc.contents, pos);
 
-    indent_edit(doc, point.row)
+    let res = indent_edit(doc, point.row);
+
+    Result::map(res, |opt| {
+        Option::map(opt, |edits| edits.into_lsp_offset(&doc.contents))
+    })
 }
