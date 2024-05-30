@@ -5,9 +5,6 @@
 //
 //
 
-use std::sync::Arc;
-use std::sync::Mutex;
-
 use anyhow::*;
 use ropey::Rope;
 use tower_lsp::lsp_types::DidChangeTextDocumentParams;
@@ -42,31 +39,12 @@ pub struct Document {
     // The document's textual contents.
     pub contents: Rope,
 
-    // The version of the document we last synchronized with.
-    // None if the document hasn't been synchronized yet.
-    pub version: Option<i32>,
-
     // The document's AST.
     pub ast: Tree,
 
-    // The parser used to generate the AST. Currently only used in `did_change()`.
-    // In principle this should be out of the world state and owned by the main
-    // loop in a separate hashmap but it's much easier to store it here in the
-    // document.
-    //
-    // Under a mutex because `Parser` is not clonable, which is needed for
-    // snapshots. Write handlers (i.e. `did_change()` might need an exclusive
-    // reference while background threads have acquired snapshots of the world
-    // state, so this can't be an `RwLock`.
-    //
-    // SAFETY: Background threads holding clones of the world state or documents
-    // should never access `parser`.
-    //
-    // TODO: This could also be in a `SyncUnsafeCell` instead of a mutex as we
-    // assume only one writer at a time which must have an exclusive reference
-    // to the world state, and no concurrent reads from clones. However that's
-    // currently an unstable feature.
-    parser: Arc<Mutex<Parser>>,
+    // The version of the document we last synchronized with.
+    // None if the document hasn't been synchronized yet.
+    pub version: Option<i32>,
 }
 
 impl std::fmt::Debug for Document {
@@ -80,28 +58,27 @@ impl std::fmt::Debug for Document {
 
 impl Document {
     pub fn new(contents: &str, version: Option<i32>) -> Self {
-        // create initial document from rope
-        let document = Rope::from(contents);
-
+        // A one-shot parser, assumes the `Document` won't be incrementally reparsed.
+        // Useful for testing, `with_document()`, and `index_file()`.
         let language = tree_sitter_r::language();
-
-        // create a parser for this document
         let mut parser = Parser::new();
+        parser.set_language(&language).unwrap();
 
-        parser
-            .set_language(&language)
-            .expect("failed to create parser");
+        Self::new_with_parser(contents, &mut parser, version)
+    }
+
+    pub fn new_with_parser(contents: &str, parser: &mut Parser, version: Option<i32>) -> Self {
+        let document = Rope::from(contents);
         let ast = parser.parse(contents, None).unwrap();
 
         Self {
             contents: document,
             version,
-            parser: Arc::new(Mutex::new(parser)),
             ast,
         }
     }
 
-    pub fn on_did_change(&mut self, params: &DidChangeTextDocumentParams) {
+    pub fn on_did_change(&mut self, parser: &mut Parser, params: &DidChangeTextDocumentParams) {
         let new_version = params.text_document.version;
 
         // Check for out-of-order change notifications
@@ -118,7 +95,7 @@ impl Document {
         }
 
         for event in &params.content_changes {
-            if let Err(err) = self.update(event) {
+            if let Err(err) = self.update(parser, event) {
                 panic!("Failed to update document: {err:?}");
             }
         }
@@ -127,7 +104,11 @@ impl Document {
         self.version = Some(new_version);
     }
 
-    fn update(&mut self, change: &TextDocumentContentChangeEvent) -> Result<()> {
+    fn update(
+        &mut self,
+        parser: &mut Parser,
+        change: &TextDocumentContentChangeEvent,
+    ) -> Result<()> {
         // Extract edit range. Nothing to do if there wasn't an edit.
         let range = match change.range {
             Some(r) => r,
@@ -174,11 +155,7 @@ impl Document {
         let contents = &self.contents;
         let callback = &mut |byte, point| Self::parse_callback(contents, byte, point);
 
-        let ast = self
-            .parser
-            .lock()
-            .unwrap()
-            .parse_with(callback, Some(&self.ast));
+        let ast = parser.parse_with(callback, Some(&self.ast));
         self.ast = ast.unwrap();
 
         Ok(())

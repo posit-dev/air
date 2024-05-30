@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::path::Path;
 
 use anyhow::anyhow;
+use tree_sitter::Parser;
 use url::Url;
 
 use crate::lsp::documents::Document;
@@ -49,6 +50,13 @@ pub(crate) struct Workspace {
     pub folders: Vec<Url>,
 }
 
+/// The set of tree-sitter document parsers managed by the `GlobalState`. Unlike
+/// `WorldState`, `ParserState` cannot be cloned and is only accessed by exclusive
+/// handlers.
+pub(crate) struct ParserState {
+    inner: HashMap<Url, Parser>,
+}
+
 impl WorldState {
     pub(crate) fn get_document(&self, uri: &Url) -> anyhow::Result<&Document> {
         if let Some(doc) = self.documents.get(uri) {
@@ -63,6 +71,30 @@ impl WorldState {
             Ok(doc)
         } else {
             Err(anyhow!("Can't find document for URI {uri}"))
+        }
+    }
+}
+
+impl ParserState {
+    pub(crate) fn new() -> Self {
+        Self {
+            inner: HashMap::new(),
+        }
+    }
+
+    pub(crate) fn insert(&mut self, uri: Url, parser: Parser) -> Option<Parser> {
+        self.inner.insert(uri, parser)
+    }
+
+    pub(crate) fn remove(&mut self, uri: &Url) -> Option<Parser> {
+        self.inner.remove(uri)
+    }
+
+    pub(crate) fn get_mut(&mut self, uri: &Url) -> anyhow::Result<&mut Parser> {
+        if let Some(parser) = self.inner.get_mut(uri) {
+            Ok(parser)
+        } else {
+            Err(anyhow!("Can't find parser for URI {uri}"))
         }
     }
 }

@@ -26,6 +26,7 @@ use crate::lsp::backend::LspResponse;
 use crate::lsp::diagnostics;
 use crate::lsp::documents::Document;
 use crate::lsp::handlers;
+use crate::lsp::state::ParserState;
 use crate::lsp::state::WorldState;
 use crate::lsp::state_handlers;
 use crate::lsp::state_handlers::ConsoleInputs;
@@ -85,6 +86,10 @@ pub(crate) struct GlobalState {
     /// (clones) to handlers.
     world: WorldState,
 
+    /// The state containing tree-sitter parsers for documents contained in the
+    /// `WorldState`. Only used in exclusive ref handlers, and is not cloneable.
+    parsers: ParserState,
+
     /// LSP client shared with tower-lsp and the log loop
     client: Client,
 
@@ -125,6 +130,7 @@ impl GlobalState {
 
         Self {
             world: WorldState::default(),
+            parsers: ParserState::new(),
             client,
             events_tx,
             events_rx,
@@ -206,16 +212,16 @@ impl GlobalState {
                             // TODO: Re-index the changed files.
                         },
                         LspNotification::DidOpenTextDocument(params) => {
-                            state_handlers::did_open(params, &mut self.world)?;
+                            state_handlers::did_open(params, &mut self.world, &mut self.parsers)?;
                         },
                         LspNotification::DidChangeTextDocument(params) => {
-                            state_handlers::did_change(params, &mut self.world)?;
+                            state_handlers::did_change(params, &mut self.world, &mut self.parsers)?;
                         },
                         LspNotification::DidSaveTextDocument(_params) => {
                             // Currently ignored
                         },
                         LspNotification::DidCloseTextDocument(params) => {
-                            state_handlers::did_close(params, &mut self.world)?;
+                            state_handlers::did_close(params, &mut self.world, &mut self.parsers)?;
                         },
                     }
                 },

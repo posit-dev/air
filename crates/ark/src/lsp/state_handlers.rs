@@ -27,11 +27,13 @@ use tower_lsp::lsp_types::TextDocumentSyncKind;
 use tower_lsp::lsp_types::WorkDoneProgressOptions;
 use tower_lsp::lsp_types::WorkspaceFoldersServerCapabilities;
 use tower_lsp::lsp_types::WorkspaceServerCapabilities;
+use tree_sitter::Parser;
 
 use crate::lsp;
 use crate::lsp::documents::Document;
 use crate::lsp::encoding::get_position_encoding_kind;
 use crate::lsp::indexer;
+use crate::lsp::state::ParserState;
 use crate::lsp::state::WorldState;
 
 // Handlers that mutate the world state
@@ -127,12 +129,19 @@ pub(crate) fn initialize(
 pub(crate) fn did_open(
     params: DidOpenTextDocumentParams,
     state: &mut WorldState,
+    parsers: &mut ParserState,
 ) -> anyhow::Result<()> {
     let contents = params.text_document.text.as_str();
     let uri = params.text_document.uri;
     let version = params.text_document.version;
 
-    let document = Document::new(contents, Some(version));
+    let language = tree_sitter_r::language();
+    let mut parser = Parser::new();
+    parser.set_language(&language).unwrap();
+
+    let document = Document::new_with_parser(contents, &mut parser, Some(version));
+
+    parsers.insert(uri.clone(), parser);
     state.documents.insert(uri.clone(), document.clone());
 
     lsp::spawn_diagnostics_refresh(uri, document, state.clone());
@@ -143,12 +152,14 @@ pub(crate) fn did_open(
 pub(crate) fn did_change(
     params: DidChangeTextDocumentParams,
     state: &mut WorldState,
+    parsers: &mut ParserState,
 ) -> anyhow::Result<()> {
     let uri = &params.text_document.uri;
     let doc = state.get_document_mut(uri)?;
+    let mut parser = parsers.get_mut(uri)?;
 
     // Respond to document updates
-    doc.on_did_change(&params);
+    doc.on_did_change(&mut parser, &params);
 
     // Update index
     if let Ok(path) = uri.to_file_path() {
@@ -167,6 +178,7 @@ pub(crate) fn did_change(
 pub(crate) fn did_close(
     params: DidCloseTextDocumentParams,
     state: &mut WorldState,
+    parsers: &mut ParserState,
 ) -> anyhow::Result<()> {
     let uri = params.text_document.uri;
 
@@ -177,6 +189,10 @@ pub(crate) fn did_close(
         .documents
         .remove(&uri)
         .ok_or(anyhow!("Failed to remove document for URI: {uri}"))?;
+
+    parsers
+        .remove(&uri)
+        .ok_or(anyhow!("Failed to remove parser for URI: {uri}"))?;
 
     lsp::log_info!("did_close(): closed document with URI: '{uri}'.");
 
