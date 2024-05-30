@@ -231,7 +231,7 @@ impl GlobalState {
 
                     match request {
                         LspRequest::Initialize(params) => {
-                            respond(tx, state_handlers::initialize(params, self.state_mut()), LspResponse::Initialize)?;
+                            respond(tx, state_handlers::initialize(params, &mut self.world), LspResponse::Initialize)?;
                         },
                         LspRequest::Shutdown() => {
                             // TODO
@@ -241,41 +241,41 @@ impl GlobalState {
                             respond(tx, handlers::handle_symbol(params), LspResponse::WorkspaceSymbol)?;
                         },
                         LspRequest::DocumentSymbol(params) => {
-                            respond(tx, handlers::handle_document_symbol(params, self.state_ref()), LspResponse::DocumentSymbol)?;
+                            respond(tx, handlers::handle_document_symbol(params, &self.world), LspResponse::DocumentSymbol)?;
                         },
                         LspRequest::ExecuteCommand(_params) => {
                             respond(tx, handlers::handle_execute_command(&self.client).await, LspResponse::ExecuteCommand)?;
                         },
                         LspRequest::Completion(params) => {
-                            respond(tx, handlers::handle_completion(params, self.state_ref()), LspResponse::Completion)?;
+                            respond(tx, handlers::handle_completion(params, &self.world), LspResponse::Completion)?;
                         },
                         LspRequest::CompletionResolve(params) => {
                             respond(tx, handlers::handle_completion_resolve(params), LspResponse::CompletionResolve)?;
                         },
                         LspRequest::Hover(params) => {
-                            respond(tx, handlers::handle_hover(params, self.state_ref()), LspResponse::Hover)?;
+                            respond(tx, handlers::handle_hover(params, &self.world), LspResponse::Hover)?;
                         },
                         LspRequest::SignatureHelp(params) => {
-                            respond(tx, handlers::handle_signature_help(params, self.state_ref()), LspResponse::SignatureHelp)?;
+                            respond(tx, handlers::handle_signature_help(params, &self.world), LspResponse::SignatureHelp)?;
                         },
                         LspRequest::GotoDefinition(params) => {
-                            respond(tx, handlers::handle_goto_definition(params, self.state_ref()), LspResponse::GotoDefinition)?;
+                            respond(tx, handlers::handle_goto_definition(params, &self.world), LspResponse::GotoDefinition)?;
                         },
                         LspRequest::GotoImplementation(_params) => {
                             // TODO
                             respond(tx, Ok(None), LspResponse::GotoImplementation)?;
                         },
                         LspRequest::SelectionRange(params) => {
-                            respond(tx, handlers::handle_selection_range(params, self.state_ref()), LspResponse::SelectionRange)?;
+                            respond(tx, handlers::handle_selection_range(params, &self.world), LspResponse::SelectionRange)?;
                         },
                         LspRequest::References(params) => {
-                            respond(tx, handlers::handle_references(params, self.state_ref()), LspResponse::References)?;
+                            respond(tx, handlers::handle_references(params, &self.world), LspResponse::References)?;
                         },
                         LspRequest::StatementRange(params) => {
-                            respond(tx, handlers::handle_statement_range(params, self.state_ref()), LspResponse::StatementRange)?;
+                            respond(tx, handlers::handle_statement_range(params, &self.world), LspResponse::StatementRange)?;
                         },
                         LspRequest::HelpTopic(params) => {
-                            respond(tx, handlers::handle_help_topic(params, self.state_ref()), LspResponse::HelpTopic)?;
+                            respond(tx, handlers::handle_help_topic(params, &self.world), LspResponse::HelpTopic)?;
                         },
                     };
                 },
@@ -283,7 +283,7 @@ impl GlobalState {
 
             Event::Kernel(notif) => match notif {
                 KernelNotification::DidChangeConsoleInputs(inputs) => {
-                    state_handlers::did_change_console_inputs(inputs, self.state_mut())?;
+                    state_handlers::did_change_console_inputs(inputs, &mut self.world)?;
                 },
             },
         }
@@ -317,13 +317,6 @@ impl GlobalState {
         lsp::spawn_blocking(move || {
             respond(response_tx, handler(), into_lsp_response).and(Ok(None))
         })
-    }
-
-    fn state_ref(&self) -> &WorldState {
-        &self.world
-    }
-    fn state_mut(&mut self) -> &mut WorldState {
-        &mut self.world
     }
 }
 
