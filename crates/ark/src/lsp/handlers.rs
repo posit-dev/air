@@ -273,12 +273,10 @@ pub(crate) fn handle_help_topic(
 ) -> anyhow::Result<Option<HelpTopicResponse>> {
     let uri = &params.text_document.uri;
     let document = state.get_document(uri)?;
-
-    let tree = &document.ast;
     let contents = &document.contents;
 
     let position = params.position;
     let point = convert_position_to_point(contents, position);
 
-    help_topic(tree, point, &document)
+    help_topic(point, &document)
 }
