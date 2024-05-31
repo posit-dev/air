@@ -33,6 +33,7 @@ use tower_lsp::lsp_types::TextDocumentSyncKind;
 use tower_lsp::lsp_types::WorkDoneProgressOptions;
 use tower_lsp::lsp_types::WorkspaceFoldersServerCapabilities;
 use tower_lsp::lsp_types::WorkspaceServerCapabilities;
+use tracing::Instrument;
 use tree_sitter::Parser;
 use url::Url;
 
@@ -228,17 +229,20 @@ pub(crate) fn did_close(
     Ok(())
 }
 
-#[tracing::instrument(level = "info", skip_all)]
 pub(crate) async fn did_change_configuration(
     _params: DidChangeConfigurationParams,
     client: &tower_lsp::Client,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
+    let span = tracing::info_span!("did_change_configuration");
+
     // The notification params sometimes contain data but it seems in practice
     // we should just ignore it. Instead we need to pull the settings again for
     // all URI of interest.
 
-    update_config(workspace_uris(state), client, state).await
+    update_config(workspace_uris(state), client, state)
+        .instrument(span)
+        .await
 }
 
 #[tracing::instrument(level = "info", skip_all)]

@@ -32,6 +32,7 @@ use tower_lsp::lsp_types::TextEdit;
 use tower_lsp::lsp_types::WorkspaceEdit;
 use tower_lsp::lsp_types::WorkspaceSymbolParams;
 use tower_lsp::Client;
+use tracing::Instrument;
 use tree_sitter::Point;
 
 use crate::lsp;
@@ -62,11 +63,12 @@ use crate::r_task;
 // Handlers that do not mutate the world state. They take a sharing reference or
 // a clone of the state.
 
-#[tracing::instrument(level = "info", skip_all)]
 pub(crate) async fn handle_initialized(
     client: &Client,
     lsp_state: &LspState,
 ) -> anyhow::Result<()> {
+    let span = tracing::info_span!("handle_initialized").entered();
+
     // Register capabilities to the client
     let mut regs: Vec<Registration> = vec![];
 
@@ -91,7 +93,10 @@ pub(crate) async fn handle_initialized(
         regs.append(&mut config_regs)
     }
 
-    client.register_capability(regs).await?;
+    client
+        .register_capability(regs)
+        .instrument(span.exit())
+        .await?;
     Ok(())
 }
 
@@ -122,7 +127,6 @@ pub(crate) fn handle_document_symbol(
         })
 }
 
-#[tracing::instrument(level = "info", skip_all)]
 pub(crate) async fn handle_execute_command(client: &Client) -> anyhow::Result<Option<Value>> {
     match client.apply_edit(WorkspaceEdit::default()).await {
         Ok(res) if res.applied => client.log_message(MessageType::INFO, "applied").await,
