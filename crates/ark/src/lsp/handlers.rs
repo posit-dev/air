@@ -62,6 +62,7 @@ use crate::r_task;
 // Handlers that do not mutate the world state. They take a sharing reference or
 // a clone of the state.
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) async fn handle_initialized(
     client: &Client,
     lsp_state: &LspState,
@@ -94,6 +95,7 @@ pub(crate) async fn handle_initialized(
     Ok(())
 }
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn handle_symbol(
     params: WorkspaceSymbolParams,
 ) -> anyhow::Result<Option<Vec<SymbolInformation>>> {
@@ -106,6 +108,7 @@ pub(crate) fn handle_symbol(
         })
 }
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn handle_document_symbol(
     params: DocumentSymbolParams,
     state: &WorldState,
@@ -119,6 +122,7 @@ pub(crate) fn handle_document_symbol(
         })
 }
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) async fn handle_execute_command(client: &Client) -> anyhow::Result<Option<Value>> {
     match client.apply_edit(WorkspaceEdit::default()).await {
         Ok(res) if res.applied => client.log_message(MessageType::INFO, "applied").await,
@@ -128,6 +132,7 @@ pub(crate) async fn handle_execute_command(client: &Client) -> anyhow::Result<Op
     Ok(None)
 }
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn handle_completion(
     params: CompletionParams,
     state: &WorldState,
@@ -154,6 +159,7 @@ pub(crate) fn handle_completion(
     }
 }
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn handle_completion_resolve(
     mut item: CompletionItem,
 ) -> anyhow::Result<CompletionItem> {
@@ -161,6 +167,7 @@ pub(crate) fn handle_completion_resolve(
     Ok(item)
 }
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn handle_hover(
     params: HoverParams,
     state: &WorldState,
@@ -195,6 +202,7 @@ pub(crate) fn handle_hover(
     }))
 }
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn handle_signature_help(
     params: SignatureHelpParams,
     state: &WorldState,
@@ -224,6 +232,7 @@ pub(crate) fn handle_signature_help(
     Ok(Some(result))
 }
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn handle_goto_definition(
     params: GotoDefinitionParams,
     state: &WorldState,
@@ -241,6 +250,7 @@ pub(crate) fn handle_goto_definition(
     Ok(result)
 }
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn handle_selection_range(
     params: SelectionRangeParams,
     state: &WorldState,
@@ -271,6 +281,7 @@ pub(crate) fn handle_selection_range(
     Ok(Some(selections))
 }
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn handle_references(
     params: ReferenceParams,
     state: &WorldState,
@@ -289,6 +300,7 @@ pub(crate) fn handle_references(
     }
 }
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn handle_statement_range(
     params: StatementRangeParams,
     state: &WorldState,
@@ -307,6 +319,7 @@ pub(crate) fn handle_statement_range(
     statement_range(root, contents, point, row)
 }
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn handle_help_topic(
     params: HelpTopicParams,
     state: &WorldState,
@@ -321,6 +334,7 @@ pub(crate) fn handle_help_topic(
     help_topic(point, &document)
 }
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn handle_indent(
     params: DocumentOnTypeFormattingParams,
     state: &WorldState,

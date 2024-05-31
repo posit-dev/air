@@ -66,6 +66,7 @@ pub struct ConsoleInputs {
 
 // Handlers taking exclusive references to global state
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn initialize(
     params: InitializeParams,
     lsp_state: &mut LspState,
@@ -93,7 +94,7 @@ pub(crate) fn initialize(
         }
     }
 
-    // Start indexing
+    // Start first round of indexing
     lsp::spawn_blocking(|| {
         indexer::start(folders);
         Ok(None)
@@ -151,6 +152,7 @@ pub(crate) fn initialize(
     })
 }
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn did_open(
     params: DidOpenTextDocumentParams,
     lsp_state: &mut LspState,
@@ -178,6 +180,7 @@ pub(crate) fn did_open(
     Ok(())
 }
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn did_change(
     params: DidChangeTextDocumentParams,
     lsp_state: &mut LspState,
@@ -199,6 +202,7 @@ pub(crate) fn did_change(
     Ok(())
 }
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn did_close(
     params: DidCloseTextDocumentParams,
     lsp_state: &mut LspState,
@@ -224,6 +228,7 @@ pub(crate) fn did_close(
     Ok(())
 }
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) async fn did_change_configuration(
     _params: DidChangeConfigurationParams,
     client: &tower_lsp::Client,
@@ -236,6 +241,7 @@ pub(crate) async fn did_change_configuration(
     update_config(workspace_uris(state), client, state).await
 }
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn did_change_formatting_options(
     uri: &Url,
     opts: &FormattingOptions,
@@ -326,6 +332,7 @@ async fn update_config(
     Ok(())
 }
 
+#[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn did_change_console_inputs(
     inputs: ConsoleInputs,
     state: &mut WorldState,

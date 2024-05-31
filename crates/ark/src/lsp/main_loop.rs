@@ -517,6 +517,8 @@ where
 
 pub(crate) fn spawn_diagnostics_refresh(uri: Url, document: Document, state: WorldState) {
     lsp::spawn_blocking(move || {
+        let _s = tracing::info_span!("diagnostics_refresh", uri = %uri).entered();
+
         let version = document.version;
         let diagnostics = diagnostics::generate_diagnostics(document, state);
 
