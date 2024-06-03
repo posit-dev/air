@@ -234,14 +234,12 @@ pub(crate) async fn did_change_configuration(
     client: &tower_lsp::Client,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
-    let span = tracing::info_span!("did_change_configuration");
-
     // The notification params sometimes contain data but it seems in practice
     // we should just ignore it. Instead we need to pull the settings again for
     // all URI of interest.
 
     update_config(workspace_uris(state), client, state)
-        .instrument(span)
+        .instrument(tracing::info_span!("did_change_configuration"))
         .await
 }
 
