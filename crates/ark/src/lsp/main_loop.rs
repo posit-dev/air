@@ -483,6 +483,11 @@ fn send_auxiliary(event: AuxiliaryEvent) {
 /// Send a message to the LSP client. This is non-blocking and treated on a
 /// latency-sensitive task.
 pub(crate) fn log(level: lsp_types::MessageType, message: String) {
+    // We're not connected to an LSP client when running unit tests
+    if cfg!(test) {
+        return;
+    }
+
     // Check that channel is still alive in case the LSP was closed.
     // If closed, fallthrough.
     if let Ok(_) = auxiliary_tx().send(AuxiliaryEvent::Log(level.clone(), message.clone())) {
