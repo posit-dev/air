@@ -3,6 +3,13 @@ use serde::Serialize;
 use struct_field_names_as_array::FieldNamesAsArray;
 
 use crate::lsp;
+use crate::lsp::diagnostics::DiagnosticsConfig;
+
+/// Configuration of the LSP
+#[derive(Clone, Debug)]
+pub(crate) struct LspConfig {
+    pub(crate) diagnostics: DiagnosticsConfig,
+}
 
 /// Configuration of a document.
 ///
@@ -40,11 +47,25 @@ pub(crate) struct VscDocumentConfig {
     pub tab_size: usize,
 }
 
+#[derive(Serialize, Deserialize, FieldNamesAsArray, Clone, Debug)]
+pub(crate) struct VscDiagnosticsConfig {
+    // DEV NOTE: Update `section_from_key()` method after adding a field
+    pub enable: bool,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(untagged)]
 pub(crate) enum VscIndentSize {
     Alias(String),
     Size(usize),
+}
+
+impl Default for LspConfig {
+    fn default() -> Self {
+        Self {
+            diagnostics: Default::default(),
+        }
+    }
 }
 
 impl Default for IndentationConfig {
@@ -92,6 +113,23 @@ impl From<VscDocumentConfig> for DocumentConfig {
                 indent_size,
                 tab_width: x.tab_size,
             },
+        }
+    }
+}
+
+impl VscDiagnosticsConfig {
+    pub(crate) fn section_from_key(key: &str) -> &str {
+        match key {
+            "enable" => "positron.r.diagnostics.enable",
+            _ => "unknown", // To be caught via downstream errors
+        }
+    }
+}
+
+impl From<VscDiagnosticsConfig> for DiagnosticsConfig {
+    fn from(value: VscDiagnosticsConfig) -> Self {
+        Self {
+            enable: value.enable,
         }
     }
 }

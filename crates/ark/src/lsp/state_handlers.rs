@@ -40,7 +40,9 @@ use url::Url;
 use crate::lsp;
 use crate::lsp::config::indent_style_from_lsp;
 use crate::lsp::config::DocumentConfig;
+use crate::lsp::config::VscDiagnosticsConfig;
 use crate::lsp::config::VscDocumentConfig;
+use crate::lsp::diagnostics::DiagnosticsConfig;
 use crate::lsp::documents::Document;
 use crate::lsp::encoding::get_position_encoding_kind;
 use crate::lsp::indexer;
@@ -278,16 +280,29 @@ async fn update_config(
     client: &tower_lsp::Client,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
-    let config_keys = VscDocumentConfig::FIELD_NAMES_AS_ARRAY;
+    let mut items: Vec<ConfigurationItem> = vec![];
 
-    // We first collect all pairs of URIs and config keys of interest in a
-    // flat vector. This way we can make a single request for all items.
-    let items: Vec<ConfigurationItem> = itertools::iproduct!(uris.iter(), config_keys.iter())
-        .map(|(uri, key)| ConfigurationItem {
-            scope_uri: Some(uri.clone()),
-            section: Some(VscDocumentConfig::section_from_key(key).into()),
+    let diagnostics_keys = VscDiagnosticsConfig::FIELD_NAMES_AS_ARRAY;
+    let mut diagnostics_items: Vec<ConfigurationItem> = diagnostics_keys
+        .iter()
+        .map(|key| ConfigurationItem {
+            scope_uri: None,
+            section: Some(VscDiagnosticsConfig::section_from_key(key).into()),
         })
         .collect();
+    items.append(&mut diagnostics_items);
+
+    // For document configs we collect all pairs of URIs and config keys of
+    // interest in a flat vector
+    let config_keys = VscDocumentConfig::FIELD_NAMES_AS_ARRAY;
+    let mut config_items: Vec<ConfigurationItem> =
+        itertools::iproduct!(uris.iter(), config_keys.iter())
+            .map(|(uri, key)| ConfigurationItem {
+                scope_uri: Some(uri.clone()),
+                section: Some(VscDocumentConfig::section_from_key(key).into()),
+            })
+            .collect();
+    items.append(&mut config_items);
 
     let configs = client.configuration(items).await?;
 
@@ -296,7 +311,8 @@ async fn update_config(
     // we've got the expected number of items before we process them chunk
     // by chunk
     let n_config_items = config_keys.len();
-    let n_items = n_config_items * uris.len();
+    let n_diagnostics_items = diagnostics_keys.len();
+    let n_items = n_diagnostics_items + n_config_items * uris.len();
 
     if configs.len() != n_items {
         return Err(anyhow!(
@@ -308,14 +324,35 @@ async fn update_config(
 
     let mut configs = configs.into_iter();
 
+    // --- Diagnostics
+    let keys = diagnostics_keys.into_iter();
+    let items: Vec<Value> = configs.by_ref().take(n_diagnostics_items).collect();
+
+    // Create a new `serde_json::Value::Object` manually to convert it
+    // to a `VscDocumentConfig` with `from_value()`. This way serde_json
+    // can type-check the dynamic JSON value we got from the client.
+    let mut map = serde_json::Map::new();
+    std::iter::zip(keys, items).for_each(|(key, item)| {
+        map.insert(key.into(), item);
+    });
+
+    // Deserialise the VS Code configuration
+    let config: VscDiagnosticsConfig = serde_json::from_value(serde_json::Value::Object(map))?;
+    let config: DiagnosticsConfig = config.into();
+
+    let changed = state.config.diagnostics != config;
+    state.config.diagnostics = config;
+
+    if changed {
+        lsp::spawn_diagnostics_refresh_all(state.clone());
+    }
+
+    // --- Documents
     // For each document, deserialise the vector of JSON values into a typed config
     for uri in uris.into_iter() {
         let keys = config_keys.into_iter();
         let items: Vec<Value> = configs.by_ref().take(n_config_items).collect();
 
-        // Create a new `serde_json::Value::Object` manually to convert it
-        // to a `VscDocumentConfig` with `from_value()`. This way serde_json
-        // can type-check the dynamic JSON value we got from the client.
         let mut map = serde_json::Map::new();
         std::iter::zip(keys, items).for_each(|(key, item)| {
             map.insert(key.into(), item);
