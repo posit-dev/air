@@ -370,13 +370,13 @@ pub(crate) fn handle_indent(
     })
 }
 
-pub static mut ARK_VDOCS: Lazy<DashMap<String, Vec<String>>> = Lazy::new(|| DashMap::new());
+pub static mut ARK_VDOCS: Lazy<DashMap<String, String>> = Lazy::new(|| DashMap::new());
 
 pub(crate) fn handle_virtual_document(
     params: VirtualDocumentParams,
 ) -> anyhow::Result<VirtualDocumentResponse> {
     if let Some(doc) = unsafe { ARK_VDOCS.get(&params.path) } {
-        Ok(doc.join("\n"))
+        Ok(doc.clone())
     } else {
         Err(anyhow!("Can't find virtual document {}", params.path))
     }
