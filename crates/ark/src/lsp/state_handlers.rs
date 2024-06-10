@@ -294,15 +294,15 @@ async fn update_config(
 
     // For document configs we collect all pairs of URIs and config keys of
     // interest in a flat vector
-    let config_keys = VscDocumentConfig::FIELD_NAMES_AS_ARRAY;
-    let mut config_items: Vec<ConfigurationItem> =
-        itertools::iproduct!(uris.iter(), config_keys.iter())
+    let document_keys = VscDocumentConfig::FIELD_NAMES_AS_ARRAY;
+    let mut document_items: Vec<ConfigurationItem> =
+        itertools::iproduct!(uris.iter(), document_keys.iter())
             .map(|(uri, key)| ConfigurationItem {
                 scope_uri: Some(uri.clone()),
                 section: Some(VscDocumentConfig::section_from_key(key).into()),
             })
             .collect();
-    items.append(&mut config_items);
+    items.append(&mut document_items);
 
     let configs = client.configuration(items).await?;
 
@@ -310,9 +310,9 @@ async fn update_config(
     // ordered in the same way it was sent in. Be defensive and check that
     // we've got the expected number of items before we process them chunk
     // by chunk
-    let n_config_items = config_keys.len();
+    let n_document_items = document_keys.len();
     let n_diagnostics_items = diagnostics_keys.len();
-    let n_items = n_diagnostics_items + n_config_items * uris.len();
+    let n_items = n_diagnostics_items + (n_document_items * uris.len());
 
     if configs.len() != n_items {
         return Err(anyhow!(
@@ -350,8 +350,8 @@ async fn update_config(
     // --- Documents
     // For each document, deserialise the vector of JSON values into a typed config
     for uri in uris.into_iter() {
-        let keys = config_keys.into_iter();
-        let items: Vec<Value> = configs.by_ref().take(n_config_items).collect();
+        let keys = document_keys.into_iter();
+        let items: Vec<Value> = configs.by_ref().take(n_document_items).collect();
 
         let mut map = serde_json::Map::new();
         std::iter::zip(keys, items).for_each(|(key, item)| {
