@@ -370,6 +370,7 @@ pub(crate) fn handle_indent(
     })
 }
 
+// TODO: Should be in WorldState and updated via message passing
 pub static mut ARK_VDOCS: Lazy<DashMap<String, String>> = Lazy::new(|| DashMap::new());
 
 pub(crate) fn handle_virtual_document(
