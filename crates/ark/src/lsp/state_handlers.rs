@@ -105,7 +105,7 @@ pub(crate) fn initialize(
 
     Ok(InitializeResult {
         server_info: Some(ServerInfo {
-            name: "Amalthea R Kernel (ARK)".to_string(),
+            name: "Ark R Kernel".to_string(),
             version: Some(env!("CARGO_PKG_VERSION").to_string()),
         }),
         capabilities: ServerCapabilities {
