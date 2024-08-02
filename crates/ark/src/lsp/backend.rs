@@ -354,11 +354,6 @@ impl Backend {
 
 pub fn start_lsp(runtime: Arc<Runtime>, address: String, conn_init_tx: Sender<bool>) {
     runtime.block_on(async {
-        #[cfg(feature = "runtime-agnostic")]
-        use tokio_util::compat::TokioAsyncReadCompatExt;
-        #[cfg(feature = "runtime-agnostic")]
-        use tokio_util::compat::TokioAsyncWriteCompatExt;
-
         log::trace!("Connecting to LSP at '{}'", &address);
         let listener = TcpListener::bind(&address).await.unwrap();
 
@@ -370,9 +365,6 @@ pub fn start_lsp(runtime: Arc<Runtime>, address: String, conn_init_tx: Sender<bo
         let (stream, _) = listener.accept().await.unwrap();
         log::trace!("Connected to LSP at '{}'", address);
         let (read, write) = tokio::io::split(stream);
-
-        #[cfg(feature = "runtime-agnostic")]
-        let (read, write) = (read.compat(), write.compat_write());
 
         let init = |client: Client| {
             let state = GlobalState::new(client);
