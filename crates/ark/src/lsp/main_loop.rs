@@ -490,7 +490,7 @@ pub(crate) fn log(level: lsp_types::MessageType, message: String) {
 
     // Check that channel is still alive in case the LSP was closed.
     // If closed, fallthrough.
-    if let Ok(_) = auxiliary_tx().send(AuxiliaryEvent::Log(level.clone(), message.clone())) {
+    if let Ok(_) = auxiliary_tx().send(AuxiliaryEvent::Log(level, message.clone())) {
         return;
     }
 
