@@ -81,7 +81,11 @@ where
         let n = x.len_lines();
         let x = x.to_string();
         let line = line + 1;
-        log::error!("Requesting line {line} but only {n} lines exist. Document: '{x}'.");
+        // Forcing a full capture so we can learn the situations in which this occurs
+        let trace = std::backtrace::Backtrace::force_capture();
+        log::error!(
+            "Requesting line {line} but only {n} lines exist.\n\nDocument:\n{x}\n\nBacktrace:\n{trace}"
+        );
         return 0;
     };
 
