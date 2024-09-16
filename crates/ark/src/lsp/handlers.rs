@@ -191,7 +191,7 @@ pub(crate) fn handle_completion(
 pub(crate) fn handle_completion_resolve(
     mut item: CompletionItem,
 ) -> anyhow::Result<CompletionItem> {
-    r_task(|| unsafe { resolve_completion(&mut item) })?;
+    r_task(|| resolve_completion(&mut item))?;
     Ok(item)
 }
 
@@ -210,7 +210,7 @@ pub(crate) fn handle_hover(
     let context = DocumentContext::new(&document, point, None);
 
     // request hover information
-    let result = r_task(|| unsafe { r_hover(&context) });
+    let result = r_task(|| r_hover(&context));
 
     // unwrap errors
     let result = unwrap!(result, Err(err) => {
@@ -244,7 +244,7 @@ pub(crate) fn handle_signature_help(
     let context = DocumentContext::new(&document, point, None);
 
     // request signature help
-    let result = r_task(|| unsafe { r_signature_help(&context) });
+    let result = r_task(|| r_signature_help(&context));
 
     // unwrap errors
     let result = unwrap!(result, Err(err) => {
