@@ -38,7 +38,7 @@ use tower_lsp::Client;
 use tracing::Instrument;
 use tree_sitter::Point;
 
-use crate::analysis::input_boundaries::parse_boundaries;
+use crate::analysis::input_boundaries::input_boundaries;
 use crate::lsp;
 use crate::lsp::completions::provide_completions;
 use crate::lsp::completions::resolve_completion;
@@ -400,6 +400,6 @@ pub(crate) fn handle_virtual_document(
 pub(crate) fn handle_input_boundaries(
     params: InputBoundariesParams,
 ) -> anyhow::Result<InputBoundariesResponse> {
-    let boundaries = r_task(|| parse_boundaries(&params.text))?;
+    let boundaries = r_task(|| input_boundaries(&params.text))?;
     Ok(InputBoundariesResponse { boundaries })
 }
