@@ -38,7 +38,7 @@ use tower_lsp::Client;
 use tracing::Instrument;
 use tree_sitter::Point;
 
-use crate::analysis::parse_boundaries::parse_boundaries;
+use crate::analysis::input_boundaries::parse_boundaries;
 use crate::lsp;
 use crate::lsp::completions::provide_completions;
 use crate::lsp::completions::resolve_completion;
