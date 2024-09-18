@@ -33,6 +33,9 @@ use crate::lsp::handlers::ARK_VDOC_REQUEST;
 use crate::lsp::help_topic;
 use crate::lsp::help_topic::HelpTopicParams;
 use crate::lsp::help_topic::HelpTopicResponse;
+use crate::lsp::input_boundaries;
+use crate::lsp::input_boundaries::InputBoundariesParams;
+use crate::lsp::input_boundaries::InputBoundariesResponse;
 use crate::lsp::main_loop::Event;
 use crate::lsp::main_loop::GlobalState;
 use crate::lsp::main_loop::TokioUnboundedSender;
@@ -92,6 +95,7 @@ pub(crate) enum LspRequest {
     HelpTopic(HelpTopicParams),
     OnTypeFormatting(DocumentOnTypeFormattingParams),
     VirtualDocument(VirtualDocumentParams),
+    InputBoundaries(InputBoundariesParams),
 }
 
 #[derive(Debug)]
@@ -113,6 +117,7 @@ pub(crate) enum LspResponse {
     HelpTopic(Option<HelpTopicResponse>),
     OnTypeFormatting(Option<Vec<TextEdit>>),
     VirtualDocument(VirtualDocumentResponse),
+    InputBoundaries(InputBoundariesResponse),
 }
 
 #[derive(Debug)]
@@ -347,6 +352,16 @@ impl Backend {
         )
     }
 
+    async fn input_boundaries(
+        &self,
+        params: InputBoundariesParams,
+    ) -> tower_lsp::jsonrpc::Result<InputBoundariesResponse> {
+        cast_response!(
+            self.request(LspRequest::InputBoundaries(params)).await,
+            LspResponse::InputBoundaries
+        )
+    }
+
     async fn notification(&self, params: Option<Value>) {
         log::info!("Received Positron notification: {:?}", params);
     }
@@ -400,6 +415,11 @@ pub fn start_lsp(runtime: Arc<Runtime>, address: String, conn_init_tx: Sender<bo
             )
             .custom_method(help_topic::POSITRON_HELP_TOPIC_REQUEST, Backend::help_topic)
             .custom_method(ARK_VDOC_REQUEST, Backend::virtual_document)
+            // In principle this should probably be a Jupyter request
+            .custom_method(
+                input_boundaries::POSITRON_INPUT_BOUNDARIES_REQUEST,
+                Backend::input_boundaries,
+            )
             .custom_method("positron/notification", Backend::notification)
             .finish();
 

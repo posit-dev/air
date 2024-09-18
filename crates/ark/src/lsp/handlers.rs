@@ -38,6 +38,7 @@ use tower_lsp::Client;
 use tracing::Instrument;
 use tree_sitter::Point;
 
+use crate::analysis::parse_boundaries::parse_boundaries;
 use crate::lsp;
 use crate::lsp::completions::provide_completions;
 use crate::lsp::completions::resolve_completion;
@@ -51,6 +52,8 @@ use crate::lsp::help_topic::HelpTopicParams;
 use crate::lsp::help_topic::HelpTopicResponse;
 use crate::lsp::hover::r_hover;
 use crate::lsp::indent::indent_edit;
+use crate::lsp::input_boundaries::InputBoundariesParams;
+use crate::lsp::input_boundaries::InputBoundariesResponse;
 use crate::lsp::main_loop::LspState;
 use crate::lsp::offset::IntoLspOffset;
 use crate::lsp::references::find_references;
@@ -392,4 +395,11 @@ pub(crate) fn handle_virtual_document(
     } else {
         Err(anyhow!("Can't find virtual document {}", params.path))
     }
+}
+
+pub(crate) fn handle_input_boundaries(
+    params: InputBoundariesParams,
+) -> anyhow::Result<InputBoundariesResponse> {
+    let boundaries = r_task(|| parse_boundaries(&params.text))?;
+    Ok(InputBoundariesResponse { boundaries })
 }

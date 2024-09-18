@@ -303,6 +303,9 @@ impl GlobalState {
                         LspRequest::VirtualDocument(params) => {
                             respond(tx, handlers::handle_virtual_document(params), LspResponse::VirtualDocument)?;
                         },
+                        LspRequest::InputBoundaries(params) => {
+                            respond(tx, handlers::handle_input_boundaries(params), LspResponse::InputBoundaries)?;
+                        },
                     };
                 },
             },
