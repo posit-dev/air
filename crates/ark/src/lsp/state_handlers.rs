@@ -165,9 +165,10 @@ pub(crate) fn did_open(
     let uri = params.text_document.uri;
     let version = params.text_document.version;
 
-    let language = tree_sitter_r::language();
     let mut parser = Parser::new();
-    parser.set_language(&language).unwrap();
+    parser
+        .set_language(&tree_sitter_r::LANGUAGE.into())
+        .unwrap();
 
     let document = Document::new_with_parser(contents, &mut parser, Some(version));
 

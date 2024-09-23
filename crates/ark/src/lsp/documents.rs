@@ -64,9 +64,10 @@ impl Document {
     pub fn new(contents: &str, version: Option<i32>) -> Self {
         // A one-shot parser, assumes the `Document` won't be incrementally reparsed.
         // Useful for testing, `with_document()`, and `index_file()`.
-        let language = tree_sitter_r::language();
         let mut parser = Parser::new();
-        parser.set_language(&language).unwrap();
+        parser
+            .set_language(&tree_sitter_r::LANGUAGE.into())
+            .unwrap();
 
         Self::new_with_parser(contents, &mut parser, version)
     }
@@ -223,5 +224,12 @@ mod tests {
 
         let point = compute_point(Point::new(0, 0), "abcdefghi\n");
         assert_eq!(point, Point::new(1, 0));
+    }
+
+    #[test]
+    fn test_document_starts_at_0_0_with_leading_whitespace() {
+        let document = Document::new("\n\n# hi there", None);
+        let root = document.ast.root_node();
+        assert_eq!(root.start_position(), Point::new(0, 0));
     }
 }
