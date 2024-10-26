@@ -581,256 +581,315 @@ impl RParse {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//
-//     enum Pos {
-//         Leading,
-//         Trailing,
-//     }
-//
-//     fn trivia(text: &str) -> Vec<Trivia> {
-//         let (_events, trivia, _errors) = parse_text(text, RParserOptions::default());
-//         trivia
-//     }
-//
-//     fn ws(start: u32, end: u32, position: Pos) -> Trivia {
-//         Trivia::new(
-//             TriviaPieceKind::Whitespace,
-//             TextRange::new(TextSize::from(start), TextSize::from(end)),
-//             matches!(position, Pos::Trailing),
-//         )
-//     }
-//
-//     fn nl(start: u32, end: u32) -> Trivia {
-//         Trivia::new(
-//             TriviaPieceKind::Newline,
-//             TextRange::new(TextSize::from(start), TextSize::from(end)),
-//             false,
-//         )
-//     }
-//
-//     fn cmt(start: u32, end: u32, position: Pos) -> Trivia {
-//         Trivia::new(
-//             TriviaPieceKind::SingleLineComment,
-//             TextRange::new(TextSize::from(start), TextSize::from(end)),
-//             matches!(position, Pos::Trailing),
-//         )
-//     }
-//
-//     #[test]
-//     fn test_parse_trivia_smoke_test() {
-//         assert_eq!(
-//             trivia("1 + 1"),
-//             vec![ws(1, 2, Pos::Leading), ws(3, 4, Pos::Leading)]
-//         );
-//     }
-//
-//     #[test]
-//     fn test_parse_trivia_tab_test() {
-//         assert_eq!(
-//             trivia("1\t+\t\n\t1"),
-//             vec![
-//                 ws(1, 2, Pos::Leading),
-//                 ws(3, 4, Pos::Trailing),
-//                 nl(4, 5),
-//                 ws(5, 6, Pos::Leading)
-//             ]
-//         );
-//     }
-//
-//     #[test]
-//     fn test_parse_trivia_trailing_test() {
-//         assert_eq!(
-//             trivia("1 + \n1"),
-//             vec![ws(1, 2, Pos::Leading), ws(3, 4, Pos::Trailing), nl(4, 5)]
-//         );
-//     }
-//
-//     #[test]
-//     fn test_parse_trivia_trailing_trivia_test() {
-//         // Note that trivia between the last token and `EOF` is always
-//         // leading and will be attached to an `EOF` token by `TreeSink`.
-//         assert_eq!(
-//             trivia("1  \n "),
-//             vec![ws(1, 3, Pos::Leading), nl(3, 4), ws(4, 5, Pos::Leading)]
-//         );
-//     }
-//
-//     #[test]
-//     fn test_parse_trivia_trailing_crlf_test() {
-//         assert_eq!(
-//             trivia("1 + \r\n1"),
-//             vec![ws(1, 2, Pos::Leading), ws(3, 4, Pos::Trailing), nl(4, 6)]
-//         );
-//     }
-//
-//     #[test]
-//     fn test_parse_trivia_before_first_token() {
-//         assert_eq!(trivia("  \n1"), vec![ws(0, 2, Pos::Leading), nl(2, 3)]);
-//     }
-//
-//     #[test]
-//     fn test_parse_trivia_comment_test() {
-//         assert_eq!(
-//             trivia("1 #"),
-//             vec![ws(1, 2, Pos::Trailing), cmt(2, 3, Pos::Trailing)]
-//         );
-//     }
-//
-//     #[test]
-//     fn test_parse_trivia_comment_nothing_else_test() {
-//         assert_eq!(trivia("#"), vec![cmt(0, 1, Pos::Leading)]);
-//     }
-//
-//     #[test]
-//     fn test_parse_trivia_comment_end_of_document_test() {
-//         assert_eq!(trivia("1\n#"), vec![nl(1, 2), cmt(2, 3, Pos::Leading)]);
-//     }
-//
-//     #[test]
-//     fn test_parse_trivia_whitespace_between_comments_test() {
-//         let text = "
-// 1 #
-// #
-// 2
-// "
-//         .trim();
-//         assert_eq!(
-//             trivia(text),
-//             vec![
-//                 ws(1, 2, Pos::Trailing),
-//                 cmt(2, 3, Pos::Trailing),
-//                 nl(3, 4),
-//                 cmt(4, 5, Pos::Leading),
-//                 nl(5, 6),
-//             ]
-//         );
-//     }
-//
-//     #[test]
-//     fn test_parse_trivia_comment_beginning_of_document_test() {
-//         assert_eq!(trivia("#\n1"), vec![cmt(0, 1, Pos::Leading), nl(1, 2)]);
-//     }
-//
-//     #[test]
-//     fn test_parse_trivia_comment_beginning_of_document_with_whitespace_test() {
-//         assert_eq!(
-//             trivia(" \n \n#"),
-//             vec![
-//                 ws(0, 1, Pos::Leading),
-//                 nl(1, 2),
-//                 ws(2, 3, Pos::Leading),
-//                 nl(3, 4),
-//                 cmt(4, 5, Pos::Leading),
-//             ]
-//         );
-//     }
-//
-//     #[test]
-//     fn test_parse_smoke_test() {
-//         let (events, trivia, _errors) = parse_text("1+1", RParserOptions::default());
-//
-//         let expect = vec![
-//             Event::Start {
-//                 kind: RSyntaxKind::R_ROOT,
-//                 forward_parent: None,
-//             },
-//             Event::Start {
-//                 kind: RSyntaxKind::R_EXPRESSION_LIST,
-//                 forward_parent: None,
-//             },
-//             Event::Start {
-//                 kind: RSyntaxKind::R_BINARY_EXPRESSION,
-//                 forward_parent: None,
-//             },
-//             Event::Start {
-//                 kind: RSyntaxKind::R_DOUBLE_VALUE,
-//                 forward_parent: None,
-//             },
-//             Event::Token {
-//                 kind: RSyntaxKind::R_DOUBLE_LITERAL,
-//                 end: TextSize::from(1),
-//             },
-//             Event::Finish,
-//             Event::Token {
-//                 kind: RSyntaxKind::PLUS,
-//                 end: TextSize::from(2),
-//             },
-//             Event::Start {
-//                 kind: RSyntaxKind::R_DOUBLE_VALUE,
-//                 forward_parent: None,
-//             },
-//             Event::Token {
-//                 kind: RSyntaxKind::R_DOUBLE_LITERAL,
-//                 end: TextSize::from(3),
-//             },
-//             Event::Finish,
-//             Event::Finish,
-//             Event::Finish,
-//             Event::Finish,
-//         ];
-//
-//         assert_eq!(events, expect);
-//         assert!(trivia.is_empty());
-//     }
-//
-//     #[test]
-//     fn test_parse_function_definition() {
-//         let (events, trivia, _errors) = parse_text("function() 1", RParserOptions::default());
-//
-//         let expect = vec![
-//             Event::Start {
-//                 kind: RSyntaxKind::R_ROOT,
-//                 forward_parent: None,
-//             },
-//             Event::Start {
-//                 kind: RSyntaxKind::R_EXPRESSION_LIST,
-//                 forward_parent: None,
-//             },
-//             Event::Start {
-//                 kind: RSyntaxKind::R_FUNCTION_DEFINITION,
-//                 forward_parent: None,
-//             },
-//             Event::Token {
-//                 kind: RSyntaxKind::FUNCTION_KW,
-//                 end: TextSize::from(8),
-//             },
-//             Event::Start {
-//                 kind: RSyntaxKind::R_PARAMETERS,
-//                 forward_parent: None,
-//             },
-//             Event::Token {
-//                 kind: RSyntaxKind::L_PAREN,
-//                 end: TextSize::from(9),
-//             },
-//             Event::Start {
-//                 kind: RSyntaxKind::R_PARAMETER_LIST,
-//                 forward_parent: None,
-//             },
-//             Event::Finish, // R_PARAMETER_LIST
-//             Event::Token {
-//                 kind: RSyntaxKind::R_PAREN,
-//                 end: TextSize::from(10),
-//             },
-//             Event::Finish, // R_PARAMETERS
-//             Event::Start {
-//                 kind: RSyntaxKind::R_DOUBLE_VALUE,
-//                 forward_parent: None,
-//             },
-//             Event::Token {
-//                 kind: RSyntaxKind::R_DOUBLE_LITERAL,
-//                 end: TextSize::from(12),
-//             },
-//             Event::Finish, // R_DOUBLE_VALUE
-//             Event::Finish, // R_FUNCTION_DEFINITION
-//             Event::Finish, // R_EXPRESSION_LIST
-//             Event::Finish, // R_ROOT
-//         ];
-//         assert_eq!(events, expect);
-//
-//         let expect = vec![ws(10, 11, Pos::Leading)];
-//         assert_eq!(trivia, expect);
-//     }
-// }
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    enum Pos {
+        Leading,
+        Trailing,
+    }
+
+    fn trivia(text: &str) -> Vec<Trivia> {
+        let (_events, trivia, _errors) = parse_text(text, RParserOptions::default());
+        trivia
+    }
+
+    fn ws(start: u32, end: u32, position: Pos) -> Trivia {
+        Trivia::new(
+            TriviaPieceKind::Whitespace,
+            TextRange::new(TextSize::from(start), TextSize::from(end)),
+            matches!(position, Pos::Trailing),
+        )
+    }
+
+    fn nl(start: u32, end: u32) -> Trivia {
+        Trivia::new(
+            TriviaPieceKind::Newline,
+            TextRange::new(TextSize::from(start), TextSize::from(end)),
+            false,
+        )
+    }
+
+    fn cmt(start: u32, end: u32, position: Pos) -> Trivia {
+        Trivia::new(
+            TriviaPieceKind::SingleLineComment,
+            TextRange::new(TextSize::from(start), TextSize::from(end)),
+            matches!(position, Pos::Trailing),
+        )
+    }
+
+    // TODO: It would be great if `biome_parser::token_source::Trivia`
+    // implemented `PartialEq`, maybe we should ask for that.
+    fn assert_eq_trivia(lhs: Vec<Trivia>, rhs: Vec<Trivia>) {
+        assert_eq!(lhs.len(), rhs.len());
+
+        for (i, (lhs, rhs)) in lhs.iter().zip(rhs.iter()).enumerate() {
+            let message = format!("In event {i} with:\nlhs {lhs:?}\nrhs {rhs:?}");
+            assert_eq!(lhs.kind(), rhs.kind(), "{message}");
+            assert_eq!(lhs.text_range(), rhs.text_range(), "{message}");
+            assert_eq!(lhs.trailing(), rhs.trailing(), "{message}");
+        }
+    }
+
+    // TODO: It would be great if `biome_parser::token_source::Trivia`
+    // implemented `PartialEq`, maybe we should ask for that.
+    fn assert_eq_events(lhs: Vec<Event<RSyntaxKind>>, rhs: Vec<Event<RSyntaxKind>>) {
+        assert_eq!(lhs.len(), rhs.len());
+
+        for (i, (lhs, rhs)) in lhs.iter().zip(rhs.iter()).enumerate() {
+            let message = format!("In event {i} with:\nlhs {lhs:?}\nrhs {rhs:?}");
+
+            match lhs {
+                Event::Start {
+                    kind: lhs_kind,
+                    forward_parent: lhs_forward_parent,
+                } => match rhs {
+                    Event::Start {
+                        kind: rhs_kind,
+                        forward_parent: rhs_forward_parent,
+                    } => {
+                        assert_eq!(lhs_kind, rhs_kind, "{message}");
+                        assert_eq!(lhs_forward_parent, rhs_forward_parent, "{message}");
+                    }
+                    Event::Finish => panic!("{message}"),
+                    Event::Token { .. } => panic!("{message}"),
+                },
+                Event::Token {
+                    kind: lhs_kind,
+                    end: lhs_end,
+                } => match rhs {
+                    Event::Token {
+                        kind: rhs_kind,
+                        end: rhs_end,
+                    } => {
+                        assert_eq!(lhs_kind, rhs_kind, "{message}");
+                        assert_eq!(lhs_end, rhs_end, "{message}");
+                    }
+                    Event::Start { .. } => panic!("{message}"),
+                    Event::Finish => panic!("{message}"),
+                },
+                Event::Finish => match rhs {
+                    Event::Finish => (),
+                    Event::Start { .. } => panic!("{message}"),
+                    Event::Token { .. } => panic!("{message}"),
+                },
+            }
+        }
+    }
+
+    #[test]
+    fn test_parse_trivia_smoke_test() {
+        assert_eq_trivia(
+            trivia("1 + 1"),
+            vec![ws(1, 2, Pos::Leading), ws(3, 4, Pos::Leading)],
+        );
+    }
+
+    #[test]
+    fn test_parse_trivia_tab_test() {
+        assert_eq_trivia(
+            trivia("1\t+\t\n\t1"),
+            vec![
+                ws(1, 2, Pos::Leading),
+                ws(3, 4, Pos::Trailing),
+                nl(4, 5),
+                ws(5, 6, Pos::Leading),
+            ],
+        );
+    }
+
+    #[test]
+    fn test_parse_trivia_trailing_test() {
+        assert_eq_trivia(
+            trivia("1 + \n1"),
+            vec![ws(1, 2, Pos::Leading), ws(3, 4, Pos::Trailing), nl(4, 5)],
+        );
+    }
+
+    #[test]
+    fn test_parse_trivia_trailing_trivia_test() {
+        // Note that trivia between the last token and `EOF` is always
+        // leading and will be attached to an `EOF` token by `TreeSink`.
+        assert_eq_trivia(
+            trivia("1  \n "),
+            vec![ws(1, 3, Pos::Leading), nl(3, 4), ws(4, 5, Pos::Leading)],
+        );
+    }
+
+    #[test]
+    fn test_parse_trivia_trailing_crlf_test() {
+        assert_eq_trivia(
+            trivia("1 + \r\n1"),
+            vec![ws(1, 2, Pos::Leading), ws(3, 4, Pos::Trailing), nl(4, 6)],
+        );
+    }
+
+    #[test]
+    fn test_parse_trivia_before_first_token() {
+        assert_eq_trivia(trivia("  \n1"), vec![ws(0, 2, Pos::Leading), nl(2, 3)]);
+    }
+
+    #[test]
+    fn test_parse_trivia_comment_test() {
+        assert_eq_trivia(
+            trivia("1 #"),
+            vec![ws(1, 2, Pos::Trailing), cmt(2, 3, Pos::Trailing)],
+        );
+    }
+
+    #[test]
+    fn test_parse_trivia_comment_nothing_else_test() {
+        assert_eq_trivia(trivia("#"), vec![cmt(0, 1, Pos::Leading)]);
+    }
+
+    #[test]
+    fn test_parse_trivia_comment_end_of_document_test() {
+        assert_eq_trivia(trivia("1\n#"), vec![nl(1, 2), cmt(2, 3, Pos::Leading)]);
+    }
+
+    #[test]
+    fn test_parse_trivia_whitespace_between_comments_test() {
+        let text = "
+1 #
+#
+2
+"
+        .trim();
+        assert_eq_trivia(
+            trivia(text),
+            vec![
+                ws(1, 2, Pos::Trailing),
+                cmt(2, 3, Pos::Trailing),
+                nl(3, 4),
+                cmt(4, 5, Pos::Leading),
+                nl(5, 6),
+            ],
+        );
+    }
+
+    #[test]
+    fn test_parse_trivia_comment_beginning_of_document_test() {
+        assert_eq_trivia(trivia("#\n1"), vec![cmt(0, 1, Pos::Leading), nl(1, 2)]);
+    }
+
+    #[test]
+    fn test_parse_trivia_comment_beginning_of_document_with_whitespace_test() {
+        assert_eq_trivia(
+            trivia(" \n \n#"),
+            vec![
+                ws(0, 1, Pos::Leading),
+                nl(1, 2),
+                ws(2, 3, Pos::Leading),
+                nl(3, 4),
+                cmt(4, 5, Pos::Leading),
+            ],
+        );
+    }
+
+    #[test]
+    fn test_parse_smoke_test() {
+        let (events, trivia, _errors) = parse_text("1+1", RParserOptions::default());
+
+        let expect = vec![
+            Event::Start {
+                kind: RSyntaxKind::R_ROOT,
+                forward_parent: None,
+            },
+            Event::Start {
+                kind: RSyntaxKind::R_EXPRESSION_LIST,
+                forward_parent: None,
+            },
+            Event::Start {
+                kind: RSyntaxKind::R_BINARY_EXPRESSION,
+                forward_parent: None,
+            },
+            Event::Start {
+                kind: RSyntaxKind::R_DOUBLE_VALUE,
+                forward_parent: None,
+            },
+            Event::Token {
+                kind: RSyntaxKind::R_DOUBLE_LITERAL,
+                end: TextSize::from(1),
+            },
+            Event::Finish,
+            Event::Token {
+                kind: RSyntaxKind::PLUS,
+                end: TextSize::from(2),
+            },
+            Event::Start {
+                kind: RSyntaxKind::R_DOUBLE_VALUE,
+                forward_parent: None,
+            },
+            Event::Token {
+                kind: RSyntaxKind::R_DOUBLE_LITERAL,
+                end: TextSize::from(3),
+            },
+            Event::Finish,
+            Event::Finish,
+            Event::Finish,
+            Event::Finish,
+        ];
+
+        assert_eq_events(events, expect);
+        assert!(trivia.is_empty());
+    }
+
+    #[test]
+    fn test_parse_function_definition() {
+        let (events, trivia, _errors) = parse_text("function() 1", RParserOptions::default());
+
+        let expect = vec![
+            Event::Start {
+                kind: RSyntaxKind::R_ROOT,
+                forward_parent: None,
+            },
+            Event::Start {
+                kind: RSyntaxKind::R_EXPRESSION_LIST,
+                forward_parent: None,
+            },
+            Event::Start {
+                kind: RSyntaxKind::R_FUNCTION_DEFINITION,
+                forward_parent: None,
+            },
+            Event::Token {
+                kind: RSyntaxKind::FUNCTION_KW,
+                end: TextSize::from(8),
+            },
+            Event::Start {
+                kind: RSyntaxKind::R_PARAMETERS,
+                forward_parent: None,
+            },
+            Event::Token {
+                kind: RSyntaxKind::L_PAREN,
+                end: TextSize::from(9),
+            },
+            Event::Start {
+                kind: RSyntaxKind::R_PARAMETER_LIST,
+                forward_parent: None,
+            },
+            Event::Finish, // R_PARAMETER_LIST
+            Event::Token {
+                kind: RSyntaxKind::R_PAREN,
+                end: TextSize::from(10),
+            },
+            Event::Finish, // R_PARAMETERS
+            Event::Start {
+                kind: RSyntaxKind::R_DOUBLE_VALUE,
+                forward_parent: None,
+            },
+            Event::Token {
+                kind: RSyntaxKind::R_DOUBLE_LITERAL,
+                end: TextSize::from(12),
+            },
+            Event::Finish, // R_DOUBLE_VALUE
+            Event::Finish, // R_FUNCTION_DEFINITION
+            Event::Finish, // R_EXPRESSION_LIST
+            Event::Finish, // R_ROOT
+        ];
+        assert_eq_events(events, expect);
+
+        let expect = vec![ws(10, 11, Pos::Leading)];
+        assert_eq_trivia(trivia, expect);
+    }
+}
