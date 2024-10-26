@@ -1,0 +1,29 @@
+[package]
+authors.workspace    = true
+categories.workspace = true
+description          = "Air R parser"
+edition.workspace    = true
+homepage.workspace   = true
+keywords.workspace   = true
+license.workspace    = true
+name                 = "air_r_parser"
+repository.workspace = true
+version              = "0.1.0"
+
+[dependencies]
+air_r_factory       = { workspace = true }
+air_r_syntax        = { workspace = true }
+biome_parser        = { workspace = true }
+biome_rowan         = { workspace = true }
+biome_unicode_table = { workspace = true }
+serde               = { workspace = true, features = ["derive"] }
+tracing             = { workspace = true }
+tree-sitter         = { workspace = true }
+tree-sitter-r       = { workspace = true }
+
+# cargo-workspaces metadata
+[package.metadata.workspaces]
+independent = true
+
+[lints]
+workspace = true

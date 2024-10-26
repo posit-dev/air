@@ -83,10 +83,10 @@ inherits = "release"
 
 [workspace.dependencies]
 # publish
-biome_r_factory   = { version = "0.1.0", path = "./crates/biome_r_factory" }
-biome_r_formatter = { version = "0.1.0", path = "./crates/biome_r_formatter" }
-biome_r_parser    = { version = "0.1.0", path = "./crates/biome_r_parser" }
-biome_r_syntax    = { version = "0.1.0", path = "./crates/biome_r_syntax" }
+air_r_factory   = { version = "0.1.0", path = "./crates/air_r_factory" }
+air_r_formatter = { version = "0.1.0", path = "./crates/air_r_formatter" }
+air_r_parser    = { version = "0.1.0", path = "./crates/air_r_parser" }
+air_r_syntax    = { version = "0.1.0", path = "./crates/air_r_syntax" }
 
 # not publish
 biome_ungrammar = { path = "./crates/biome_ungrammar" }

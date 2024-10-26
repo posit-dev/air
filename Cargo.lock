@@ -27,6 +27,47 @@ dependencies = [
 ]
 
 [[package]]
+name = "air_r_factory"
+version = "0.1.0"
+dependencies = [
+ "air_r_syntax",
+ "biome_rowan",
+]
+
+[[package]]
+name = "air_r_formatter"
+version = "0.1.0"
+dependencies = [
+ "air_r_syntax",
+ "biome_formatter",
+ "biome_rowan",
+]
+
+[[package]]
+name = "air_r_parser"
+version = "0.1.0"
+dependencies = [
+ "air_r_factory",
+ "air_r_syntax",
+ "biome_parser",
+ "biome_rowan",
+ "biome_unicode_table",
+ "serde",
+ "tracing",
+ "tree-sitter",
+ "tree-sitter-r",
+]
+
+[[package]]
+name = "air_r_syntax"
+version = "0.1.0"
+dependencies = [
+ "biome_rowan",
+ "biome_string_case",
+ "serde",
+]
+
+[[package]]
 name = "anyhow"
 version = "1.0.91"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -220,47 +261,6 @@ dependencies = [
  "drop_bomb",
  "enumflags2",
  "unicode-bom",
-]
-
-[[package]]
-name = "biome_r_factory"
-version = "0.1.0"
-dependencies = [
- "biome_r_syntax",
- "biome_rowan",
-]
-
-[[package]]
-name = "biome_r_formatter"
-version = "0.1.0"
-dependencies = [
- "biome_formatter",
- "biome_r_syntax",
- "biome_rowan",
-]
-
-[[package]]
-name = "biome_r_parser"
-version = "0.1.0"
-dependencies = [
- "biome_parser",
- "biome_r_factory",
- "biome_r_syntax",
- "biome_rowan",
- "biome_unicode_table",
- "serde",
- "tracing",
- "tree-sitter",
- "tree-sitter-r",
-]
-
-[[package]]
-name = "biome_r_syntax"
-version = "0.1.0"
-dependencies = [
- "biome_rowan",
- "biome_string_case",
- "serde",
 ]
 
 [[package]]
