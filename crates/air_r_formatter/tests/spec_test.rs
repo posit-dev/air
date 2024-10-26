@@ -1,5 +1,5 @@
+use air_formatter_test::spec::{SpecSnapshot, SpecTestFile};
 use air_r_formatter::{context::RFormatOptions, RFormatLanguage};
-use biome_formatter_test::spec::{SpecSnapshot, SpecTestFile};
 use std::path::Path;
 
 mod language {

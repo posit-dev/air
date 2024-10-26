@@ -27,6 +27,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "air_formatter_test"
+version = "0.0.0"
+dependencies = [
+ "biome_console",
+ "biome_diagnostics",
+ "biome_formatter",
+ "biome_parser",
+ "biome_rowan",
+ "insta",
+ "serde",
+ "similar",
+ "similar-asserts",
+]
+
+[[package]]
 name = "air_r_factory"
 version = "0.1.0"
 dependencies = [
@@ -38,10 +53,10 @@ dependencies = [
 name = "air_r_formatter"
 version = "0.1.0"
 dependencies = [
+ "air_formatter_test",
  "air_r_parser",
  "air_r_syntax",
  "biome_formatter",
- "biome_formatter_test",
  "biome_parser",
  "biome_rowan",
  "tests_macros",
@@ -210,21 +225,6 @@ dependencies = [
  "rustc-hash 1.1.0",
  "tracing",
  "unicode-width",
-]
-
-[[package]]
-name = "biome_formatter_test"
-version = "0.0.0"
-dependencies = [
- "biome_console",
- "biome_diagnostics",
- "biome_formatter",
- "biome_parser",
- "biome_rowan",
- "insta",
- "serde",
- "similar",
- "similar-asserts",
 ]
 
 [[package]]

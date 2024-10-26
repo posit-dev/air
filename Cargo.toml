@@ -89,9 +89,9 @@ air_r_parser    = { version = "0.1.0", path = "./crates/air_r_parser" }
 air_r_syntax    = { version = "0.1.0", path = "./crates/air_r_syntax" }
 
 # not publish
-biome_formatter_test = { path = "./crates/biome_formatter_test" }
-biome_ungrammar      = { path = "./crates/biome_ungrammar" }
-tests_macros         = { path = "./crates/tests_macros" }
+air_formatter_test = { path = "./crates/air_formatter_test" }
+biome_ungrammar    = { path = "./crates/biome_ungrammar" }
+tests_macros       = { path = "./crates/tests_macros" }
 
 # Crates needed in the workspace
 anyhow              = "1.0.89"
