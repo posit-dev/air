@@ -38,9 +38,13 @@ dependencies = [
 name = "air_r_formatter"
 version = "0.1.0"
 dependencies = [
+ "air_r_parser",
  "air_r_syntax",
  "biome_formatter",
+ "biome_formatter_test",
+ "biome_parser",
  "biome_rowan",
+ "tests_macros",
 ]
 
 [[package]]
@@ -206,6 +210,21 @@ dependencies = [
  "rustc-hash 1.1.0",
  "tracing",
  "unicode-width",
+]
+
+[[package]]
+name = "biome_formatter_test"
+version = "0.0.0"
+dependencies = [
+ "biome_console",
+ "biome_diagnostics",
+ "biome_formatter",
+ "biome_parser",
+ "biome_rowan",
+ "insta",
+ "serde",
+ "similar",
+ "similar-asserts",
 ]
 
 [[package]]
@@ -619,9 +638,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6593a41c7a73841868772495db7dc1e8ecab43bb5c0b6da2059246c4b506ab60"
 dependencies = [
  "console",
+ "globset",
  "lazy_static",
  "linked-hash-map",
  "similar",
+ "walkdir",
 ]
 
 [[package]]
@@ -1060,6 +1081,16 @@ checksum = "1de1d4f81173b03af4c0cbed3c898f6bff5b870e4a7f5d6f4057d62a7a4b686e"
 dependencies = [
  "bstr",
  "unicode-segmentation",
+]
+
+[[package]]
+name = "similar-asserts"
+version = "1.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cfe85670573cd6f0fa97940f26e7e6601213c3b0555246c24234131f88c5709e"
+dependencies = [
+ "console",
+ "similar",
 ]
 
 [[package]]
