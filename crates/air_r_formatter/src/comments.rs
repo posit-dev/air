@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use air_r_syntax::RLanguage;
 use biome_formatter::comments::CommentKind;
 use biome_formatter::comments::CommentPlacement;
 use biome_formatter::comments::CommentStyle;
@@ -6,7 +7,6 @@ use biome_formatter::comments::Comments;
 use biome_formatter::comments::DecoratedComment;
 use biome_formatter::comments::SourceComment;
 use biome_formatter::write;
-use air_r_syntax::RLanguage;
 use biome_rowan::SyntaxTriviaPieceComments;
 
 pub type RComments = Comments<RLanguage>;

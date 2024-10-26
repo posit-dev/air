@@ -1,8 +1,8 @@
 use crate::prelude::*;
 use crate::{AsFormat, FormatRSyntaxToken};
+use air_r_syntax::{RLanguage, RSyntaxToken};
 use biome_formatter::separated::{FormatSeparatedElementRule, FormatSeparatedIter};
 use biome_formatter::FormatRefWithRule;
-use air_r_syntax::{RLanguage, RSyntaxToken};
 use biome_rowan::{AstNode, AstSeparatedList, AstSeparatedListElementsIterator};
 use std::marker::PhantomData;
 

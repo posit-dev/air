@@ -1,9 +1,9 @@
 use std::fmt::Debug;
 
 use crate::prelude::*;
-use biome_formatter::write;
 use air_r_syntax::RFunctionDefinition;
 use air_r_syntax::RFunctionDefinitionFields;
+use biome_formatter::write;
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct FormatRFunctionDefinition;

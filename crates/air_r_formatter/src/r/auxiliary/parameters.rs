@@ -1,7 +1,7 @@
 use crate::prelude::*;
-use biome_formatter::write;
 use air_r_syntax::RParameters;
 use air_r_syntax::RParametersFields;
+use biome_formatter::write;
 #[derive(Debug, Clone, Default)]
 pub(crate) struct FormatRParameters;
 impl FormatNodeRule<RParameters> for FormatRParameters {

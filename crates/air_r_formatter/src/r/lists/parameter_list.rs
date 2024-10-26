@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use crate::separated::FormatAstSeparatedListExtension;
-use biome_formatter::separated::TrailingSeparator;
 use air_r_syntax::RParameterList;
+use biome_formatter::separated::TrailingSeparator;
 #[derive(Debug, Clone, Default)]
 pub(crate) struct FormatRParameterList;
 impl FormatRule<RParameterList> for FormatRParameterList {

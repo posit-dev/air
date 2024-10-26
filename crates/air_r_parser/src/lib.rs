@@ -9,7 +9,7 @@ pub use options::RParserOptions;
 pub use parse::parse;
 pub use parse::parse_r_with_cache;
 
-use biome_parser::tree_sink::LosslessTreeSink;
 use air_r_syntax::RLanguage;
+use biome_parser::tree_sink::LosslessTreeSink;
 
 pub(crate) type RLosslessTreeSink<'source> = LosslessTreeSink<'source, RLanguage, RSyntaxFactory>;

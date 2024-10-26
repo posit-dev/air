@@ -2,8 +2,8 @@ use xtask::{project_root, pushd, Result};
 
 use xtask::Mode::Overwrite;
 use xtask_codegen::{
-    generate_ast, generate_crate, generate_formatters,
-    generate_parser_tests, generate_tables, task_command, TaskCommand,
+    generate_ast, generate_crate, generate_formatters, generate_parser_tests, generate_tables,
+    task_command, TaskCommand,
 };
 
 fn main() -> Result<()> {

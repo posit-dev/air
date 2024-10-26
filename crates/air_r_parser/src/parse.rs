@@ -1,8 +1,8 @@
+use air_r_syntax::RSyntaxKind;
 use biome_parser::event::Event;
 use biome_parser::prelude::ParseDiagnostic;
 use biome_parser::prelude::Trivia;
 use biome_parser::AnyParse;
-use air_r_syntax::RSyntaxKind;
 use biome_rowan::NodeCache;
 use biome_rowan::TextRange;
 use biome_rowan::TextSize;

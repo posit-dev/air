@@ -1,6 +1,7 @@
 use std::fmt;
 use std::rc::Rc;
 
+use air_r_syntax::RLanguage;
 use biome_formatter::printer::PrinterOptions;
 use biome_formatter::AttributePosition;
 use biome_formatter::BracketSpacing;
@@ -12,7 +13,6 @@ use biome_formatter::IndentWidth;
 use biome_formatter::LineEnding;
 use biome_formatter::LineWidth;
 use biome_formatter::TransformSourceMap;
-use air_r_syntax::RLanguage;
 
 use crate::comments::FormatRLeadingComment;
 use crate::comments::RCommentStyle;
