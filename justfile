@@ -6,8 +6,8 @@ gen-formatter:
 gen-grammar:
     cargo run -p xtask_codegen -- grammar r
 
-# Run the R parser and formatter tests
-test-r:
+# Run the parser and formatter tests
+test:
   cargo test -p air_r_parser
   cargo test -p air_r_formatter
 
