@@ -93,13 +93,10 @@ biome_ungrammar = { path = "./crates/biome_ungrammar" }
 
 # Crates needed in the workspace
 anyhow              = "1.0.89"
-biome_diagnostic    = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
 biome_formatter     = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
 biome_parser        = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
 biome_rowan         = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
 biome_string_case   = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
-biome_text_edit     = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
-biome_text_size     = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
 biome_unicode_table = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
 insta               = "1.40.0"
 serde               = { version = "1.0.210", features = ["derive"] }
