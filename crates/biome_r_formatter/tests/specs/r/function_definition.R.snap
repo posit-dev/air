@@ -1,0 +1,38 @@
+---
+source: crates/biome_formatter_test/src/snapshot_builder.rs
+info: r/function_definition.R
+---
+# Input
+
+```R
+function() 1
+function(a, b) 1
+
+function(a_really_long_argument_name_to_break_on, and_here_is_another_one_please_break_me, and_this) 1
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Tab
+Indent width: 2
+Line ending: LF
+Line width: 80
+-----
+
+```R
+function() 1
+function(a, b) 1
+
+function(
+	a_really_long_argument_name_to_break_on,
+	and_here_is_another_one_please_break_me,
+	and_this
+) 1
+```

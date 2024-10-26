@@ -1,0 +1,11 @@
+[package]
+edition = "2021"
+name    = "xtask"
+publish = false
+version = "0.0.0"
+
+[dependencies]
+anyhow = { workspace = true }
+
+[lints]
+workspace = true

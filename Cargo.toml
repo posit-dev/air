@@ -1,6 +1,108 @@
-[package]
-name = "air"
-version = "0.1.0"
-edition = "2021"
+[workspace]
+# Use the newer version of the cargo resolver
+# https://doc.rust-lang.org/cargo/reference/resolver.html#resolver-versions
+members  = ["crates/*", "xtask/codegen"]
+resolver = "2"
 
-[dependencies]
+[workspace.lints.clippy]
+# pedantic
+assigning_clones             = "warn"
+checked_conversions          = "warn"
+cloned_instead_of_copied     = "warn"
+copy_iterator                = "warn"
+dbg_macro                    = "warn"
+doc_link_with_quotes         = "warn"
+empty_enum                   = "warn"
+expl_impl_clone_on_copy      = "warn"
+explicit_into_iter_loop      = "warn"
+filter_map_next              = "warn"
+flat_map_option              = "warn"
+fn_params_excessive_bools    = "warn"
+from_iter_instead_of_collect = "warn"
+implicit_clone               = "warn"
+implicit_hasher              = "warn"
+index_refutable_slice        = "warn"
+inefficient_to_string        = "warn"
+invalid_upcast_comparisons   = "warn"
+iter_filter_is_ok            = "warn"
+iter_not_returning_iterator  = "warn"
+large_stack_arrays           = "warn"
+large_types_passed_by_value  = "warn"
+macro_use_imports            = "warn"
+manual_is_variant_and        = "warn"
+manual_ok_or                 = "warn"
+manual_string_new            = "warn"
+map_flatten                  = "warn"
+map_unwrap_or                = "warn"
+mismatching_type_param_order = "warn"
+mut_mut                      = "warn"
+naive_bytecount              = "warn"
+needless_bitwise_bool        = "warn"
+needless_continue            = "warn"
+needless_for_each            = "warn"
+no_effect_underscore_binding = "warn"
+option_as_ref_cloned         = "warn"
+ref_binding_to_reference     = "warn"
+ref_option_ref               = "warn"
+single_char_pattern          = "warn"
+stable_sort_primitive        = "warn"
+str_split_at_newline         = "warn"
+unnecessary_box_returns      = "warn"
+unnecessary_join             = "warn"
+unnested_or_patterns         = "warn"
+unreadable_literal           = "warn"
+verbose_bit_mask             = "warn"
+zero_sized_map_values        = "warn"
+
+# restriction
+cfg_not_test                      = "warn"
+empty_drop                        = "warn"
+empty_enum_variants_with_brackets = "warn"
+float_cmp_const                   = "warn"
+get_unwrap                        = "warn"
+infinite_loop                     = "warn"
+lossy_float_literal               = "warn"
+rc_buffer                         = "warn"
+rc_mutex                          = "warn"
+rest_pat_in_fully_bound_structs   = "warn"
+string_lit_chars_any              = "warn"
+verbose_file_reads                = "warn"
+
+[workspace.package]
+authors    = ["Air Developers and Contributors"]
+categories = ["development-tools"]
+edition    = "2021"
+homepage   = "https://github.com/posit-dev/ark"
+keywords   = ["parser", "formatter"]
+license    = "MIT"
+repository = "https://github.com/posit-dev/ark"
+
+[profile.release-with-debug]
+debug    = true
+inherits = "release"
+
+[workspace.dependencies]
+# publish
+biome_r_factory   = { version = "0.1.0", path = "./crates/biome_r_factory" }
+biome_r_formatter = { version = "0.1.0", path = "./crates/biome_r_formatter" }
+biome_r_parser    = { version = "0.1.0", path = "./crates/biome_r_parser" }
+biome_r_syntax    = { version = "0.1.0", path = "./crates/biome_r_syntax" }
+
+# not publish
+biome_ungrammar = { path = "./crates/biome_ungrammar" }
+
+# Crates needed in the workspace
+anyhow              = "1.0.89"
+biome_diagnostic    = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
+biome_formatter     = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
+biome_parser        = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
+biome_rowan         = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
+biome_string_case   = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
+biome_text_edit     = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
+biome_text_size     = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
+biome_unicode_table = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
+insta               = "1.40.0"
+serde               = { version = "1.0.210", features = ["derive"] }
+tracing             = { version = "0.1.40", default-features = false, features = ["std"] }
+tree-sitter         = "0.23.0"
+tree-sitter-r       = { git = "https://github.com/r-lib/tree-sitter-r", rev = "2097fa502efa21349d26af0ffee55d773015e481" }

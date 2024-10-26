@@ -1,0 +1,121 @@
+// R Un-Grammar.
+//
+// This grammar specifies the structure of R's concrete syntax tree.
+// It does not specify parsing rules (ambiguities, precedence, etc are out of scope).
+// Tokens are processed -- contextual keywords are recognised, compound operators glued.
+//
+// Legend:
+//
+//   //                          -- comment
+//   Name =                      -- non-terminal definition
+//   'ident'                     -- token (terminal)
+//   A B                         -- sequence
+//   A | B                       -- alternation
+//   A*                          -- zero or more repetition
+//   (A (',' A)* ','?)            -- repetition of node A separated by ',' and allowing a trailing comma
+//   (A (',' A)*)                -- repetition of node A separated by ',' without a trailing comma
+//   A?                          -- zero or one repetition
+//   (A)                         -- same as A
+//   label:A                     -- suggested name for field of AST node
+
+// NOTES
+//
+// - SyntaxNode, SyntaxToken and SyntaxElement will be stripped from the codegen
+// - Bogus nodes are special nodes used to keep track of broken code; they are
+//   not part of the grammar but they will appear inside the green tree
+
+// ----------------------------------------------------------------
+// Initial
+
+SyntaxElement = SyntaxElement
+
+// ----------------------------------------------------------------
+// Bogus
+
+RBogus = SyntaxElement*
+RBogusValue = SyntaxElement*
+RBogusExpression = SyntaxElement*
+RBogusParameter = SyntaxElement*
+
+// ----------------------------------------------------------------
+// Root
+
+RRoot =
+	bom: 'UNICODE_BOM'?
+	expressions: RExpressionList
+	eof: 'EOF'
+
+// ----------------------------------------------------------------
+// Binary
+
+RBinaryExpression =
+	left: AnyRExpression
+    operator: (
+		'+'
+	)
+	right: AnyRExpression
+
+// ----------------------------------------------------------------
+// Function
+
+// TODO: `\\` is not a valid Ident and causes issues with codegen
+RFunctionDefinition =
+	'function'
+	parameters: RParameters
+	body: AnyRExpression
+
+RParameters =
+	'('
+	items: RParameterList
+	')'
+
+RParameterList = (AnyRParameter (',' AnyRParameter)*)
+
+AnyRParameter =
+	RIdentifierParameter
+	| RDotsParameter
+	| RDefaultParameter
+	| RBogusParameter
+
+RIdentifierParameter = name: 'ident'
+
+RDotsParameter = name: '...'
+
+RDefaultParameter =
+	name: 'ident'
+	'='
+	default: AnyRExpression?
+
+// ----------------------------------------------------------------
+// Expression
+
+RExpressionList = AnyRExpression*
+
+AnyRExpression =
+	AnyRValue
+	| RIdentifier
+	| RBinaryExpression
+	| RFunctionDefinition
+	| RBogusExpression
+
+// ----------------------------------------------------------------
+// Value
+
+AnyRValue =
+	RIntegerValue
+	| RDoubleValue
+	| RStringValue
+	| RLogicalValue
+	| RNullValue
+	| RBogusValue
+
+RIntegerValue = value: 'r_integer_literal'
+RDoubleValue = value: 'r_double_literal'
+RStringValue = value: 'r_string_literal'
+RLogicalValue = value: 'r_logical_literal'
+RNullValue = value: 'r_null_literal'
+
+// ----------------------------------------------------------------
+// Identifier
+
+RIdentifier = name: 'ident'
