@@ -21,6 +21,12 @@ tracing             = { workspace = true }
 tree-sitter         = { workspace = true }
 tree-sitter-r       = { workspace = true }
 
+[dev-dependencies]
+biome_console     = { workspace = true }
+biome_diagnostics = { workspace = true }
+insta             = { workspace = true }
+tests_macros      = { workspace = true }
+
 # cargo-workspaces metadata
 [package.metadata.workspaces]
 independent = true

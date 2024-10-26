@@ -90,15 +90,19 @@ air_r_syntax    = { version = "0.1.0", path = "./crates/air_r_syntax" }
 
 # not publish
 biome_ungrammar = { path = "./crates/biome_ungrammar" }
+tests_macros    = { path = "./crates/tests_macros" }
 
 # Crates needed in the workspace
 anyhow              = "1.0.89"
+biome_console       = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
+biome_diagnostics   = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
 biome_formatter     = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
 biome_parser        = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
 biome_rowan         = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
 biome_string_case   = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
 biome_unicode_table = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
 insta               = "1.40.0"
+proc-macro2         = "1.0.86"
 serde               = { version = "1.0.210", features = ["derive"] }
 tracing             = { version = "0.1.40", default-features = false, features = ["std"] }
 tree-sitter         = "0.23.0"
