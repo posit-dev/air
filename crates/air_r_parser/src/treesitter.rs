@@ -302,7 +302,7 @@ pub struct Preorder<'tree> {
 
 impl<'tree> Preorder<'tree> {
     fn new(start: Node) -> Preorder {
-        let next = Some(WalkEvent::Enter(start.clone()));
+        let next = Some(WalkEvent::Enter(start));
         Preorder {
             start,
             next,
@@ -336,7 +336,7 @@ impl<'tree> Iterator for Preorder<'tree> {
             Some(match next {
                 WalkEvent::Enter(node) => match node.child(0) {
                     Some(child) => WalkEvent::Enter(child),
-                    None => WalkEvent::Leave(node.clone()),
+                    None => WalkEvent::Leave(*node),
                 },
                 WalkEvent::Leave(node) => {
                     if node == &self.start {
@@ -435,7 +435,7 @@ impl NodeTypeExt for Node<'_> {
     }
 
     fn preorder(&self) -> Preorder {
-        Preorder::new(self.clone())
+        Preorder::new(*self)
     }
 }
 

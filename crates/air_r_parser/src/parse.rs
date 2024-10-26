@@ -532,7 +532,7 @@ impl RParse {
 
             if Self::is_whitespace(*byte) {
                 // Finish out stream of whitespace
-                while let Some(_) = iter.next_if(|byte| Self::is_whitespace(**byte)) {
+                while iter.next_if(|byte| Self::is_whitespace(**byte)).is_some() {
                     end += TextSize::from(1);
                 }
                 let range = TextRange::new(start, end);

@@ -31,7 +31,7 @@ impl RFileSource {
         let file_name = path
             .file_name()
             .and_then(OsStr::to_str)
-            .ok_or_else(|| FileSourceError::MissingFileName)?;
+            .ok_or(FileSourceError::MissingFileName)?;
         if Self::is_well_known_r_file(file_name) {
             return Ok(Self::r());
         }

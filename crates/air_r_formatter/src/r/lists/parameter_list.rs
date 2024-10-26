@@ -8,7 +8,7 @@ impl FormatRule<RParameterList> for FormatRParameterList {
     type Context = RFormatContext;
     fn fmt(&self, node: &RParameterList, f: &mut RFormatter) -> FormatResult<()> {
         let mut joiner = f.join_nodes_with_soft_line();
-        join_parameter_list(&mut joiner, &node)?;
+        join_parameter_list(&mut joiner, node)?;
         joiner.finish()
     }
 }
