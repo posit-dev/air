@@ -15,7 +15,15 @@ mod language {
 #[ignore]
 #[test]
 fn quick_test() {
-    let src = "1 + 1\n";
+    let src = r#"
+    for
+  (
+      i
+      in
+      1
+  ) # a comment
+  i
+    "#;
 
     let parse = parse(src, RParserOptions::default());
 

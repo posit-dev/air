@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use air_r_syntax::AnyRExpression;
 use air_r_syntax::RForStatement;
 use air_r_syntax::RForStatementFields;
 use biome_formatter::format_args;
@@ -18,27 +19,47 @@ impl FormatNodeRule<RForStatement> for FormatRForStatement {
             body,
         } = node.as_fields();
 
-        let format_inner = format_with(|f| {
-            write!(
-                f,
-                [
-                    for_token.format(),
-                    space(),
-                    l_paren_token.format(),
-                    group(&soft_block_indent(&format_args![
-                        variable.format(),
-                        soft_line_break_or_space(),
-                        in_token.format(),
-                        soft_line_break_or_space(),
-                        sequence.format(),
-                    ])),
-                    r_paren_token.format(),
-                    space(),
-                    body.format(),
-                ]
-            )
-        });
+        write!(
+            f,
+            [group(&format_args!(
+                for_token.format(),
+                space(),
+                l_paren_token.format(),
+                variable.format(),
+                space(),
+                in_token.format(),
+                space(),
+                sequence.format(),
+                r_paren_token.format(),
+                FormatForStatementBody::new(&body?)
+            ))]
+        )
+    }
+}
 
-        write!(f, [group(&format_inner)])
+pub(crate) struct FormatForStatementBody<'a> {
+    body: &'a AnyRExpression,
+}
+
+impl<'a> FormatForStatementBody<'a> {
+    pub fn new(body: &'a AnyRExpression) -> Self {
+        Self { body }
+    }
+}
+
+impl Format<RFormatContext> for FormatForStatementBody<'_> {
+    fn fmt(&self, f: &mut Formatter<RFormatContext>) -> FormatResult<()> {
+        // TODO:
+        // For block statements that start with `{`, we want to try and keep
+        // the `{` on the same line as the for loop `()`, and then let the
+        // block statement format itself from there. Otherwise we forcibly
+        // indent 1 liner for loops for clarity.
+        //
+        // use AnyRExpression::*;
+        // if  let RBlockStatement() = &self.body {
+        //     write!(f, [space(), self.body.format()])
+        // } else {
+
+        write!(f, [soft_line_indent_or_space(&self.body.format())])
     }
 }
