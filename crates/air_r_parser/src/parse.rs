@@ -114,6 +114,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_DOTS_PARAMETER => self.handle_dots_parameter_enter(iter),
             RSyntaxKind::R_IDENTIFIER_PARAMETER => self.handle_identifier_parameter_enter(iter),
             RSyntaxKind::R_DEFAULT_PARAMETER => self.handle_default_parameter_enter(node, iter),
+            RSyntaxKind::R_FOR_STATEMENT => self.handle_node_enter(kind),
             RSyntaxKind::R_INTEGER_VALUE => self.handle_value_enter(kind),
             RSyntaxKind::R_DOUBLE_VALUE => self.handle_value_enter(kind),
             RSyntaxKind::R_STRING_VALUE => self.handle_value_enter(kind),
@@ -127,6 +128,8 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::PLUS => (),
             RSyntaxKind::EQUAL => (),
             RSyntaxKind::FUNCTION_KW => (),
+            RSyntaxKind::FOR_KW => (),
+            RSyntaxKind::IN_KW => (),
             RSyntaxKind::L_PAREN => (),
             RSyntaxKind::R_PAREN => (),
 
@@ -169,6 +172,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_DOTS_PARAMETER => self.handle_dots_parameter_leave(node),
             RSyntaxKind::R_IDENTIFIER_PARAMETER => self.handle_identifier_parameter_leave(node),
             RSyntaxKind::R_DEFAULT_PARAMETER => self.handle_default_parameter_leave(),
+            RSyntaxKind::R_FOR_STATEMENT => self.handle_node_leave(),
             RSyntaxKind::R_INTEGER_VALUE => {
                 self.handle_value_leave(node, RSyntaxKind::R_INTEGER_LITERAL)
             }
@@ -190,6 +194,8 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::PLUS => self.handle_token(node, kind),
             RSyntaxKind::EQUAL => self.handle_token(node, kind),
             RSyntaxKind::FUNCTION_KW => self.handle_token(node, kind),
+            RSyntaxKind::FOR_KW => self.handle_token(node, kind),
+            RSyntaxKind::IN_KW => self.handle_token(node, kind),
             RSyntaxKind::L_PAREN => self.handle_token(node, kind),
             RSyntaxKind::R_PAREN => self.handle_token(node, kind),
             RSyntaxKind::COMMENT => self.handle_comment_leave(node),

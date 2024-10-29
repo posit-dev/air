@@ -32,6 +32,10 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RDoubleValue::new_unchecked(node) };
                     $body
                 }
+                $crate::RSyntaxKind::R_FOR_STATEMENT => {
+                    let $pattern = unsafe { $crate::RForStatement::new_unchecked(node) };
+                    $body
+                }
                 $crate::RSyntaxKind::R_FUNCTION_DEFINITION => {
                     let $pattern = unsafe { $crate::RFunctionDefinition::new_unchecked(node) };
                     $body

@@ -25,6 +25,8 @@ pub enum RSyntaxKind {
     EQUAL,
     DOTS,
     FUNCTION_KW,
+    FOR_KW,
+    IN_KW,
     R_INTEGER_LITERAL,
     R_DOUBLE_LITERAL,
     R_STRING_LITERAL,
@@ -43,6 +45,7 @@ pub enum RSyntaxKind {
     R_IDENTIFIER_PARAMETER,
     R_DOTS_PARAMETER,
     R_DEFAULT_PARAMETER,
+    R_FOR_STATEMENT,
     R_EXPRESSION_LIST,
     R_INTEGER_VALUE,
     R_DOUBLE_VALUE,
@@ -81,6 +84,8 @@ impl RSyntaxKind {
     pub fn from_keyword(ident: &str) -> Option<RSyntaxKind> {
         let kw = match ident {
             "function" => FUNCTION_KW,
+            "for" => FOR_KW,
+            "in" => IN_KW,
             _ => return None,
         };
         Some(kw)
@@ -99,6 +104,8 @@ impl RSyntaxKind {
             EQUAL => "=",
             DOTS => "...",
             FUNCTION_KW => "function",
+            FOR_KW => "for",
+            IN_KW => "in",
             R_STRING_VALUE => "string value",
             _ => return None,
         };
@@ -107,4 +114,4 @@ impl RSyntaxKind {
 }
 #[doc = r" Utility macro for creating a SyntaxKind through simple macro syntax"]
 #[macro_export]
-macro_rules ! T { [;] => { $ crate :: RSyntaxKind :: SEMICOLON } ; [,] => { $ crate :: RSyntaxKind :: COMMA } ; ['{'] => { $ crate :: RSyntaxKind :: L_CURLY } ; ['}'] => { $ crate :: RSyntaxKind :: R_CURLY } ; ['['] => { $ crate :: RSyntaxKind :: L_BRACK } ; [']'] => { $ crate :: RSyntaxKind :: R_BRACK } ; ['('] => { $ crate :: RSyntaxKind :: L_PAREN } ; [')'] => { $ crate :: RSyntaxKind :: R_PAREN } ; [+] => { $ crate :: RSyntaxKind :: PLUS } ; [=] => { $ crate :: RSyntaxKind :: EQUAL } ; [...] => { $ crate :: RSyntaxKind :: DOTS } ; [function] => { $ crate :: RSyntaxKind :: FUNCTION_KW } ; [ident] => { $ crate :: RSyntaxKind :: IDENT } ; [EOF] => { $ crate :: RSyntaxKind :: EOF } ; [UNICODE_BOM] => { $ crate :: RSyntaxKind :: UNICODE_BOM } ; [#] => { $ crate :: RSyntaxKind :: HASH } ; }
+macro_rules ! T { [;] => { $ crate :: RSyntaxKind :: SEMICOLON } ; [,] => { $ crate :: RSyntaxKind :: COMMA } ; ['{'] => { $ crate :: RSyntaxKind :: L_CURLY } ; ['}'] => { $ crate :: RSyntaxKind :: R_CURLY } ; ['['] => { $ crate :: RSyntaxKind :: L_BRACK } ; [']'] => { $ crate :: RSyntaxKind :: R_BRACK } ; ['('] => { $ crate :: RSyntaxKind :: L_PAREN } ; [')'] => { $ crate :: RSyntaxKind :: R_PAREN } ; [+] => { $ crate :: RSyntaxKind :: PLUS } ; [=] => { $ crate :: RSyntaxKind :: EQUAL } ; [...] => { $ crate :: RSyntaxKind :: DOTS } ; [function] => { $ crate :: RSyntaxKind :: FUNCTION_KW } ; [for] => { $ crate :: RSyntaxKind :: FOR_KW } ; [in] => { $ crate :: RSyntaxKind :: IN_KW } ; [ident] => { $ crate :: RSyntaxKind :: IDENT } ; [EOF] => { $ crate :: RSyntaxKind :: EOF } ; [UNICODE_BOM] => { $ crate :: RSyntaxKind :: UNICODE_BOM } ; [#] => { $ crate :: RSyntaxKind :: HASH } ; }

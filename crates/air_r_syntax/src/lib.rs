@@ -50,6 +50,8 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::EQUAL
             | RSyntaxKind::DOTS
             | RSyntaxKind::FUNCTION_KW
+            | RSyntaxKind::FOR_KW
+            | RSyntaxKind::IN_KW
             | RSyntaxKind::R_INTEGER_LITERAL
             | RSyntaxKind::R_DOUBLE_LITERAL
             | RSyntaxKind::R_STRING_LITERAL
@@ -68,6 +70,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_DOTS_PARAMETER
             | RSyntaxKind::R_IDENTIFIER_PARAMETER
             | RSyntaxKind::R_DEFAULT_PARAMETER
+            | RSyntaxKind::R_FOR_STATEMENT
             | RSyntaxKind::R_EXPRESSION_LIST
             | RSyntaxKind::R_INTEGER_VALUE
             | RSyntaxKind::R_DOUBLE_VALUE
@@ -114,6 +117,8 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             RSyntaxKind::EQUAL => RSyntaxKind::R_BOGUS,
             RSyntaxKind::DOTS => RSyntaxKind::R_BOGUS,
             RSyntaxKind::FUNCTION_KW => RSyntaxKind::R_BOGUS,
+            RSyntaxKind::FOR_KW => RSyntaxKind::R_BOGUS,
+            RSyntaxKind::IN_KW => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_INTEGER_LITERAL => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_DOUBLE_LITERAL => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_STRING_LITERAL => RSyntaxKind::R_BOGUS,
@@ -128,6 +133,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             RSyntaxKind::R_FUNCTION_DEFINITION => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_PARAMETERS => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_PARAMETER_LIST => RSyntaxKind::R_BOGUS,
+            RSyntaxKind::R_FOR_STATEMENT => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_EXPRESSION_LIST => RSyntaxKind::R_BOGUS,
             RSyntaxKind::__LAST => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_BOGUS => RSyntaxKind::R_BOGUS,
