@@ -87,6 +87,18 @@ RDefaultParameter =
 	default: AnyRExpression?
 
 // ----------------------------------------------------------------
+// For statement
+
+RForStatement =
+	'for'
+	'('
+	variable: RIdentifier
+	'in'
+	sequence: AnyRExpression
+	')'
+	body: AnyRExpression
+
+// ----------------------------------------------------------------
 // Expression
 
 RExpressionList = AnyRExpression*
@@ -96,6 +108,7 @@ AnyRExpression =
 	| RIdentifier
 	| RBinaryExpression
 	| RFunctionDefinition
+	| RForStatement
 	| RBogusExpression
 
 // ----------------------------------------------------------------

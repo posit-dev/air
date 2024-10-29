@@ -64,6 +64,28 @@ pub fn r_double_value(value_token: SyntaxToken) -> RDoubleValue {
         [Some(SyntaxElement::Token(value_token))],
     ))
 }
+pub fn r_for_statement(
+    for_token: SyntaxToken,
+    l_paren_token: SyntaxToken,
+    variable: RIdentifier,
+    in_token: SyntaxToken,
+    sequence: AnyRExpression,
+    r_paren_token: SyntaxToken,
+    body: AnyRExpression,
+) -> RForStatement {
+    RForStatement::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_FOR_STATEMENT,
+        [
+            Some(SyntaxElement::Token(for_token)),
+            Some(SyntaxElement::Token(l_paren_token)),
+            Some(SyntaxElement::Node(variable.into_syntax())),
+            Some(SyntaxElement::Token(in_token)),
+            Some(SyntaxElement::Node(sequence.into_syntax())),
+            Some(SyntaxElement::Token(r_paren_token)),
+            Some(SyntaxElement::Node(body.into_syntax())),
+        ],
+    ))
+}
 pub fn r_function_definition(
     function_token: SyntaxToken,
     parameters: RParameters,

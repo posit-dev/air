@@ -4,6 +4,7 @@ pub(crate) mod binary_expression;
 pub(crate) mod default_parameter;
 pub(crate) mod dots_parameter;
 pub(crate) mod double_value;
+pub(crate) mod for_statement;
 pub(crate) mod function_definition;
 pub(crate) mod identifier;
 pub(crate) mod identifier_parameter;

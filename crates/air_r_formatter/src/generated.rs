@@ -148,6 +148,42 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RDoubleValue {
         )
     }
 }
+impl FormatRule<air_r_syntax::RForStatement>
+    for crate::r::auxiliary::for_statement::FormatRForStatement
+{
+    type Context = RFormatContext;
+    #[inline(always)]
+    fn fmt(&self, node: &air_r_syntax::RForStatement, f: &mut RFormatter) -> FormatResult<()> {
+        FormatNodeRule::<air_r_syntax::RForStatement>::fmt(self, node, f)
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::RForStatement {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::RForStatement,
+        crate::r::auxiliary::for_statement::FormatRForStatement,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::auxiliary::for_statement::FormatRForStatement::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::RForStatement {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::RForStatement,
+        crate::r::auxiliary::for_statement::FormatRForStatement,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::auxiliary::for_statement::FormatRForStatement::default(),
+        )
+    }
+}
 impl FormatRule<air_r_syntax::RFunctionDefinition>
     for crate::r::auxiliary::function_definition::FormatRFunctionDefinition
 {
