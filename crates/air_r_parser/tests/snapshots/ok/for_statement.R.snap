@@ -6,11 +6,18 @@ expression: snapshot
 
 ```R
 for (i in 1) i
+
 for (
   i # comment
   in # comment2
   1 # comment3
 ) i
+
+for # dangling1
+  ( # dangling2
+    a in 1
+  ) # dangling3
+  a
 
 ```
 
@@ -37,31 +44,46 @@ RRoot {
             },
         },
         RForStatement {
-            for_token: FOR_KW@14..18 "for" [Newline("\n")] [],
-            l_paren_token: L_PAREN@18..20 "(" [Whitespace(" ")] [],
+            for_token: FOR_KW@14..19 "for" [Newline("\n"), Newline("\n")] [],
+            l_paren_token: L_PAREN@19..21 "(" [Whitespace(" ")] [],
             variable: RIdentifier {
-                name_token: IDENT@20..34 "i" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment")],
+                name_token: IDENT@21..35 "i" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment")],
             },
-            in_token: IN_KW@34..50 "in" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")],
+            in_token: IN_KW@35..51 "in" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")],
             sequence: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@50..65 "1" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment3")],
+                value_token: R_DOUBLE_LITERAL@51..66 "1" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment3")],
             },
-            r_paren_token: R_PAREN@65..67 ")" [Newline("\n")] [],
+            r_paren_token: R_PAREN@66..68 ")" [Newline("\n")] [],
             body: RIdentifier {
-                name_token: IDENT@67..69 "i" [Whitespace(" ")] [],
+                name_token: IDENT@68..70 "i" [Whitespace(" ")] [],
+            },
+        },
+        RForStatement {
+            for_token: FOR_KW@70..87 "for" [Newline("\n"), Newline("\n")] [Whitespace(" "), Comments("# dangling1")],
+            l_paren_token: L_PAREN@87..103 "(" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# dangling2")],
+            variable: RIdentifier {
+                name_token: IDENT@103..109 "a" [Newline("\n"), Whitespace("    ")] [],
+            },
+            in_token: IN_KW@109..112 "in" [Whitespace(" ")] [],
+            sequence: RDoubleValue {
+                value_token: R_DOUBLE_LITERAL@112..114 "1" [Whitespace(" ")] [],
+            },
+            r_paren_token: R_PAREN@114..130 ")" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# dangling3")],
+            body: RIdentifier {
+                name_token: IDENT@130..134 "a" [Newline("\n"), Whitespace("  ")] [],
             },
         },
     ],
-    eof_token: EOF@69..70 "" [Newline("\n")] [],
+    eof_token: EOF@134..135 "" [Newline("\n")] [],
 }
 ```
 
 ## CST
 
 ```
-0: R_ROOT@0..70
+0: R_ROOT@0..135
   0: (empty)
-  1: R_EXPRESSION_LIST@0..69
+  1: R_EXPRESSION_LIST@0..134
     0: R_FOR_STATEMENT@0..14
       0: FOR_KW@0..3 "for" [] []
       1: L_PAREN@3..5 "(" [Whitespace(" ")] []
@@ -73,17 +95,28 @@ RRoot {
       5: R_PAREN@11..12 ")" [] []
       6: R_IDENTIFIER@12..14
         0: IDENT@12..14 "i" [Whitespace(" ")] []
-    1: R_FOR_STATEMENT@14..69
-      0: FOR_KW@14..18 "for" [Newline("\n")] []
-      1: L_PAREN@18..20 "(" [Whitespace(" ")] []
-      2: R_IDENTIFIER@20..34
-        0: IDENT@20..34 "i" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment")]
-      3: IN_KW@34..50 "in" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")]
-      4: R_DOUBLE_VALUE@50..65
-        0: R_DOUBLE_LITERAL@50..65 "1" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment3")]
-      5: R_PAREN@65..67 ")" [Newline("\n")] []
-      6: R_IDENTIFIER@67..69
-        0: IDENT@67..69 "i" [Whitespace(" ")] []
-  2: EOF@69..70 "" [Newline("\n")] []
+    1: R_FOR_STATEMENT@14..70
+      0: FOR_KW@14..19 "for" [Newline("\n"), Newline("\n")] []
+      1: L_PAREN@19..21 "(" [Whitespace(" ")] []
+      2: R_IDENTIFIER@21..35
+        0: IDENT@21..35 "i" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment")]
+      3: IN_KW@35..51 "in" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")]
+      4: R_DOUBLE_VALUE@51..66
+        0: R_DOUBLE_LITERAL@51..66 "1" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment3")]
+      5: R_PAREN@66..68 ")" [Newline("\n")] []
+      6: R_IDENTIFIER@68..70
+        0: IDENT@68..70 "i" [Whitespace(" ")] []
+    2: R_FOR_STATEMENT@70..134
+      0: FOR_KW@70..87 "for" [Newline("\n"), Newline("\n")] [Whitespace(" "), Comments("# dangling1")]
+      1: L_PAREN@87..103 "(" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# dangling2")]
+      2: R_IDENTIFIER@103..109
+        0: IDENT@103..109 "a" [Newline("\n"), Whitespace("    ")] []
+      3: IN_KW@109..112 "in" [Whitespace(" ")] []
+      4: R_DOUBLE_VALUE@112..114
+        0: R_DOUBLE_LITERAL@112..114 "1" [Whitespace(" ")] []
+      5: R_PAREN@114..130 ")" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# dangling3")]
+      6: R_IDENTIFIER@130..134
+        0: IDENT@130..134 "a" [Newline("\n"), Whitespace("  ")] []
+  2: EOF@134..135 "" [Newline("\n")] []
 
 ```

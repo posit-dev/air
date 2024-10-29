@@ -1,0 +1,50 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/for_statement.R
+---
+# Input
+
+```R
+for(x in y) x + y
+
+for(a_really_long_argument_name_to_break_on in another_really_long_variable_name_here) 1
+
+for # dangling1
+  ( # dangling2
+    a in 1
+  ) # dangling3
+  a
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Tab
+Indent width: 2
+Line ending: LF
+Line width: 80
+-----
+
+```R
+for (x in y) x + y
+
+for (
+	a_really_long_argument_name_to_break_on
+	in
+	another_really_long_variable_name_here
+) 1
+
+for (
+	# dangling1
+	# dangling2
+	a
+	in
+	1 # dangling3
+) a
+```
