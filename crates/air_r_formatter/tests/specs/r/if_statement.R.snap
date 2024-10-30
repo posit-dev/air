@@ -1,0 +1,47 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/if_statement.R
+---
+# Input
+
+```R
+if (a) 1
+if (a) 1 else 2
+if (a) 1 else if (b) 2 else 3
+
+# Spacing test
+if(a)1 else if(b)2 else 3
+
+# Line break test
+if (a_really_really_long_condition_here_that_is_allowed_to_break_onto_the_next_line) 1 else 2
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Tab
+Indent width: 2
+Line ending: LF
+Line width: 80
+-----
+
+```R
+if (a) 1
+if (a) 1 else 2
+if (a) 1 else if (b) 2 else 3
+
+# Spacing test
+if (a) 1 else if (b) 2 else 3
+
+# Line break test
+if (
+	a_really_really_long_condition_here_that_is_allowed_to_break_onto_the_next_line
+)
+	1 else 2
+```

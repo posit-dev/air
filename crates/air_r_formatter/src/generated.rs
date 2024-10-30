@@ -184,6 +184,40 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RDoubleValue {
         )
     }
 }
+impl FormatRule<air_r_syntax::RElseClause> for crate::r::auxiliary::else_clause::FormatRElseClause {
+    type Context = RFormatContext;
+    #[inline(always)]
+    fn fmt(&self, node: &air_r_syntax::RElseClause, f: &mut RFormatter) -> FormatResult<()> {
+        FormatNodeRule::<air_r_syntax::RElseClause>::fmt(self, node, f)
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::RElseClause {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::RElseClause,
+        crate::r::auxiliary::else_clause::FormatRElseClause,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::auxiliary::else_clause::FormatRElseClause::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::RElseClause {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::RElseClause,
+        crate::r::auxiliary::else_clause::FormatRElseClause,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::auxiliary::else_clause::FormatRElseClause::default(),
+        )
+    }
+}
 impl FormatRule<air_r_syntax::RForStatement>
     for crate::r::auxiliary::for_statement::FormatRForStatement
 {
@@ -331,6 +365,42 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RIdentifierParameter {
         FormatOwnedWithRule::new(
             self,
             crate::r::auxiliary::identifier_parameter::FormatRIdentifierParameter::default(),
+        )
+    }
+}
+impl FormatRule<air_r_syntax::RIfStatement>
+    for crate::r::auxiliary::if_statement::FormatRIfStatement
+{
+    type Context = RFormatContext;
+    #[inline(always)]
+    fn fmt(&self, node: &air_r_syntax::RIfStatement, f: &mut RFormatter) -> FormatResult<()> {
+        FormatNodeRule::<air_r_syntax::RIfStatement>::fmt(self, node, f)
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::RIfStatement {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::RIfStatement,
+        crate::r::auxiliary::if_statement::FormatRIfStatement,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::auxiliary::if_statement::FormatRIfStatement::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::RIfStatement {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::RIfStatement,
+        crate::r::auxiliary::if_statement::FormatRIfStatement,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::auxiliary::if_statement::FormatRIfStatement::default(),
         )
     }
 }

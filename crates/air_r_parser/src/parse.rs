@@ -114,6 +114,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_DOTS_PARAMETER => self.handle_dots_parameter_enter(iter),
             RSyntaxKind::R_IDENTIFIER_PARAMETER => self.handle_identifier_parameter_enter(iter),
             RSyntaxKind::R_DEFAULT_PARAMETER => self.handle_default_parameter_enter(node, iter),
+            RSyntaxKind::R_IF_STATEMENT => self.handle_if_statement_enter(node, iter),
             RSyntaxKind::R_FOR_STATEMENT => self.handle_node_enter(kind),
             RSyntaxKind::R_INTEGER_VALUE => self.handle_integer_value_enter(iter),
             RSyntaxKind::R_COMPLEX_VALUE => self.handle_complex_value_enter(iter),
@@ -132,6 +133,8 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::FUNCTION_KW => (),
             RSyntaxKind::FOR_KW => (),
             RSyntaxKind::IN_KW => (),
+            RSyntaxKind::IF_KW => (),
+            RSyntaxKind::ELSE_KW => (),
             RSyntaxKind::L_PAREN => (),
             RSyntaxKind::R_PAREN => (),
 
@@ -139,6 +142,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::COMMENT => self.handle_comment_enter(),
 
             // Unreachable directly
+            RSyntaxKind::R_ELSE_CLAUSE => unreachable!("{kind:?}"),
             RSyntaxKind::R_PARAMETER_LIST => unreachable!("{kind:?}"),
             RSyntaxKind::R_EXPRESSION_LIST => unreachable!("{kind:?}"),
             RSyntaxKind::EOF => unreachable!("{kind:?}"),
@@ -175,6 +179,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_DOTS_PARAMETER => self.handle_dots_parameter_leave(node),
             RSyntaxKind::R_IDENTIFIER_PARAMETER => self.handle_identifier_parameter_leave(node),
             RSyntaxKind::R_DEFAULT_PARAMETER => self.handle_default_parameter_leave(),
+            RSyntaxKind::R_IF_STATEMENT => self.handle_if_statement_leave(),
             RSyntaxKind::R_FOR_STATEMENT => self.handle_node_leave(),
             RSyntaxKind::R_INTEGER_VALUE => self.handle_integer_value_leave(node),
             RSyntaxKind::R_DOUBLE_VALUE => {
@@ -197,11 +202,16 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::FUNCTION_KW => self.handle_token(node, kind),
             RSyntaxKind::FOR_KW => self.handle_token(node, kind),
             RSyntaxKind::IN_KW => self.handle_token(node, kind),
+            RSyntaxKind::IF_KW => self.handle_token(node, kind),
+            RSyntaxKind::ELSE_KW => self.handle_token(node, kind),
             RSyntaxKind::L_PAREN => self.handle_token(node, kind),
             RSyntaxKind::R_PAREN => self.handle_token(node, kind),
+
+            // Comments
             RSyntaxKind::COMMENT => self.handle_comment_leave(node),
 
             // Unreachable directly
+            RSyntaxKind::R_ELSE_CLAUSE => unreachable!("{kind:?}"),
             RSyntaxKind::R_PARAMETER_LIST => unreachable!("{kind:?}"),
             RSyntaxKind::R_EXPRESSION_LIST => unreachable!("{kind:?}"),
             RSyntaxKind::EOF => unreachable!("{kind:?}"),
@@ -355,10 +365,10 @@ impl<'src> RWalk<'src> {
             match child.syntax_kind() {
                 RSyntaxKind::L_PAREN => {
                     self.walk(&mut child_iter);
-                    self.parse.start(RSyntaxKind::R_PARAMETER_LIST)
+                    self.handle_node_enter(RSyntaxKind::R_PARAMETER_LIST);
                 }
                 RSyntaxKind::R_PAREN => {
-                    self.parse.finish();
+                    self.handle_node_leave();
                     self.walk(&mut child_iter);
                 }
                 RSyntaxKind::R_DOTS_PARAMETER => self.walk(&mut child_iter),
@@ -461,6 +471,47 @@ impl<'src> RWalk<'src> {
 
     fn handle_string_value_leave(&mut self, node: tree_sitter::Node) {
         self.handle_value_leave(node, RSyntaxKind::R_STRING_LITERAL);
+    }
+
+    fn handle_if_statement_enter(&mut self, node: tree_sitter::Node, iter: &mut Preorder) {
+        // We handle all children directly
+        iter.skip_subtree();
+
+        self.handle_node_enter(RSyntaxKind::R_IF_STATEMENT);
+
+        let mut used_else = false;
+        let mut cursor = node.walk();
+
+        // Seeing an `else` causes us to open an `R_ELSE_CLAUSE` node which
+        // we push the `else` keyword under, along with the `alternative`,
+        // and any comments that appear there. We then close the `R_ELSE_CLAUSE`
+        // on the way out.
+        for child in node.children(&mut cursor) {
+            let mut child_iter = child.preorder();
+
+            match child.syntax_kind() {
+                RSyntaxKind::IF_KW => self.walk(&mut child_iter),
+                RSyntaxKind::L_PAREN => self.walk(&mut child_iter),
+                RSyntaxKind::R_PAREN => self.walk(&mut child_iter),
+                RSyntaxKind::ELSE_KW => {
+                    used_else = true;
+                    self.handle_node_enter(RSyntaxKind::R_ELSE_CLAUSE);
+                    self.walk(&mut child_iter);
+                }
+                RSyntaxKind::COMMENT => self.walk(&mut child_iter),
+                // i.e. the `condition`, `consequence`, and `alternative`
+                _ => self.walk(&mut child_iter),
+            }
+        }
+
+        if used_else {
+            // Leaving `R_ELSE_CLAUSE`
+            self.handle_node_leave();
+        }
+    }
+
+    fn handle_if_statement_leave(&mut self) {
+        self.handle_node_leave();
     }
 }
 

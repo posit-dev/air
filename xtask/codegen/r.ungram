@@ -86,6 +86,21 @@ RDefaultParameter =
 	default: AnyRExpression?
 
 // ----------------------------------------------------------------
+// If statement
+
+RIfStatement =
+	'if'
+	'('
+	condition: AnyRExpression
+	')'
+	consequence: AnyRExpression
+	else_clause: RElseClause?
+
+RElseClause =
+	'else'
+	alternative: AnyRExpression
+
+// ----------------------------------------------------------------
 // For statement
 
 RForStatement =
@@ -107,6 +122,7 @@ AnyRExpression =
 	| RIdentifier
 	| RBinaryExpression
 	| RFunctionDefinition
+	| RIfStatement
 	| RForStatement
 	| RBogusExpression
 

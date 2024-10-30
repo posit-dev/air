@@ -70,6 +70,15 @@ pub fn r_double_value(value_token: SyntaxToken) -> RDoubleValue {
         [Some(SyntaxElement::Token(value_token))],
     ))
 }
+pub fn r_else_clause(else_token: SyntaxToken, alternative: AnyRExpression) -> RElseClause {
+    RElseClause::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_ELSE_CLAUSE,
+        [
+            Some(SyntaxElement::Token(else_token)),
+            Some(SyntaxElement::Node(alternative.into_syntax())),
+        ],
+    ))
+}
 pub fn r_for_statement(
     for_token: SyntaxToken,
     l_paren_token: SyntaxToken,
@@ -117,6 +126,50 @@ pub fn r_identifier_parameter(name_token: SyntaxToken) -> RIdentifierParameter {
         RSyntaxKind::R_IDENTIFIER_PARAMETER,
         [Some(SyntaxElement::Token(name_token))],
     ))
+}
+pub fn r_if_statement(
+    if_token: SyntaxToken,
+    l_paren_token: SyntaxToken,
+    condition: AnyRExpression,
+    r_paren_token: SyntaxToken,
+    consequence: AnyRExpression,
+) -> RIfStatementBuilder {
+    RIfStatementBuilder {
+        if_token,
+        l_paren_token,
+        condition,
+        r_paren_token,
+        consequence,
+        else_clause: None,
+    }
+}
+pub struct RIfStatementBuilder {
+    if_token: SyntaxToken,
+    l_paren_token: SyntaxToken,
+    condition: AnyRExpression,
+    r_paren_token: SyntaxToken,
+    consequence: AnyRExpression,
+    else_clause: Option<RElseClause>,
+}
+impl RIfStatementBuilder {
+    pub fn with_else_clause(mut self, else_clause: RElseClause) -> Self {
+        self.else_clause = Some(else_clause);
+        self
+    }
+    pub fn build(self) -> RIfStatement {
+        RIfStatement::unwrap_cast(SyntaxNode::new_detached(
+            RSyntaxKind::R_IF_STATEMENT,
+            [
+                Some(SyntaxElement::Token(self.if_token)),
+                Some(SyntaxElement::Token(self.l_paren_token)),
+                Some(SyntaxElement::Node(self.condition.into_syntax())),
+                Some(SyntaxElement::Token(self.r_paren_token)),
+                Some(SyntaxElement::Node(self.consequence.into_syntax())),
+                self.else_clause
+                    .map(|token| SyntaxElement::Node(token.into_syntax())),
+            ],
+        ))
+    }
 }
 pub fn r_integer_value(value_token: SyntaxToken) -> RIntegerValue {
     RIntegerValue::unwrap_cast(SyntaxNode::new_detached(

@@ -36,6 +36,10 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RDoubleValue::new_unchecked(node) };
                     $body
                 }
+                $crate::RSyntaxKind::R_ELSE_CLAUSE => {
+                    let $pattern = unsafe { $crate::RElseClause::new_unchecked(node) };
+                    $body
+                }
                 $crate::RSyntaxKind::R_FOR_STATEMENT => {
                     let $pattern = unsafe { $crate::RForStatement::new_unchecked(node) };
                     $body
@@ -50,6 +54,10 @@ macro_rules! map_syntax_node {
                 }
                 $crate::RSyntaxKind::R_IDENTIFIER_PARAMETER => {
                     let $pattern = unsafe { $crate::RIdentifierParameter::new_unchecked(node) };
+                    $body
+                }
+                $crate::RSyntaxKind::R_IF_STATEMENT => {
+                    let $pattern = unsafe { $crate::RIfStatement::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_INTEGER_VALUE => {

@@ -218,6 +218,46 @@ pub struct RDoubleValueFields {
     pub value_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RElseClause {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RElseClause {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RElseClauseFields {
+        RElseClauseFields {
+            else_token: self.else_token(),
+            alternative: self.alternative(),
+        }
+    }
+    pub fn else_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+    pub fn alternative(&self) -> SyntaxResult<AnyRExpression> {
+        support::required_node(&self.syntax, 1usize)
+    }
+}
+impl Serialize for RElseClause {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RElseClauseFields {
+    pub else_token: SyntaxResult<SyntaxToken>,
+    pub alternative: SyntaxResult<AnyRExpression>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RForStatement {
     pub(crate) syntax: SyntaxNode,
 }
@@ -396,6 +436,66 @@ impl Serialize for RIdentifierParameter {
 #[derive(Serialize)]
 pub struct RIdentifierParameterFields {
     pub name_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RIfStatement {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RIfStatement {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RIfStatementFields {
+        RIfStatementFields {
+            if_token: self.if_token(),
+            l_paren_token: self.l_paren_token(),
+            condition: self.condition(),
+            r_paren_token: self.r_paren_token(),
+            consequence: self.consequence(),
+            else_clause: self.else_clause(),
+        }
+    }
+    pub fn if_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 1usize)
+    }
+    pub fn condition(&self) -> SyntaxResult<AnyRExpression> {
+        support::required_node(&self.syntax, 2usize)
+    }
+    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 3usize)
+    }
+    pub fn consequence(&self) -> SyntaxResult<AnyRExpression> {
+        support::required_node(&self.syntax, 4usize)
+    }
+    pub fn else_clause(&self) -> Option<RElseClause> {
+        support::node(&self.syntax, 5usize)
+    }
+}
+impl Serialize for RIfStatement {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RIfStatementFields {
+    pub if_token: SyntaxResult<SyntaxToken>,
+    pub l_paren_token: SyntaxResult<SyntaxToken>,
+    pub condition: SyntaxResult<AnyRExpression>,
+    pub r_paren_token: SyntaxResult<SyntaxToken>,
+    pub consequence: SyntaxResult<AnyRExpression>,
+    pub else_clause: Option<RElseClause>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RIntegerValue {
@@ -635,6 +735,7 @@ pub enum AnyRExpression {
     RForStatement(RForStatement),
     RFunctionDefinition(RFunctionDefinition),
     RIdentifier(RIdentifier),
+    RIfStatement(RIfStatement),
 }
 impl AnyRExpression {
     pub fn as_any_r_value(&self) -> Option<&AnyRValue> {
@@ -670,6 +771,12 @@ impl AnyRExpression {
     pub fn as_r_identifier(&self) -> Option<&RIdentifier> {
         match &self {
             AnyRExpression::RIdentifier(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_if_statement(&self) -> Option<&RIfStatement> {
+        match &self {
+            AnyRExpression::RIfStatement(item) => Some(item),
             _ => None,
         }
     }
@@ -964,6 +1071,48 @@ impl From<RDoubleValue> for SyntaxElement {
         n.syntax.into()
     }
 }
+impl AstNode for RElseClause {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_ELSE_CLAUSE as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_ELSE_CLAUSE
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RElseClause {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RElseClause")
+            .field("else_token", &support::DebugSyntaxResult(self.else_token()))
+            .field(
+                "alternative",
+                &support::DebugSyntaxResult(self.alternative()),
+            )
+            .finish()
+    }
+}
+impl From<RElseClause> for SyntaxNode {
+    fn from(n: RElseClause) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RElseClause> for SyntaxElement {
+    fn from(n: RElseClause) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
 impl AstNode for RForStatement {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> =
@@ -1127,6 +1276,61 @@ impl From<RIdentifierParameter> for SyntaxNode {
 }
 impl From<RIdentifierParameter> for SyntaxElement {
     fn from(n: RIdentifierParameter) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
+impl AstNode for RIfStatement {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_IF_STATEMENT as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_IF_STATEMENT
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RIfStatement {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RIfStatement")
+            .field("if_token", &support::DebugSyntaxResult(self.if_token()))
+            .field(
+                "l_paren_token",
+                &support::DebugSyntaxResult(self.l_paren_token()),
+            )
+            .field("condition", &support::DebugSyntaxResult(self.condition()))
+            .field(
+                "r_paren_token",
+                &support::DebugSyntaxResult(self.r_paren_token()),
+            )
+            .field(
+                "consequence",
+                &support::DebugSyntaxResult(self.consequence()),
+            )
+            .field(
+                "else_clause",
+                &support::DebugOptionalElement(self.else_clause()),
+            )
+            .finish()
+    }
+}
+impl From<RIfStatement> for SyntaxNode {
+    fn from(n: RIfStatement) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RIfStatement> for SyntaxElement {
+    fn from(n: RIfStatement) -> SyntaxElement {
         n.syntax.into()
     }
 }
@@ -1407,6 +1611,11 @@ impl From<RIdentifier> for AnyRExpression {
         AnyRExpression::RIdentifier(node)
     }
 }
+impl From<RIfStatement> for AnyRExpression {
+    fn from(node: RIfStatement) -> AnyRExpression {
+        AnyRExpression::RIfStatement(node)
+    }
+}
 impl AstNode for AnyRExpression {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> = AnyRValue::KIND_SET
@@ -1414,14 +1623,16 @@ impl AstNode for AnyRExpression {
         .union(RBogusExpression::KIND_SET)
         .union(RForStatement::KIND_SET)
         .union(RFunctionDefinition::KIND_SET)
-        .union(RIdentifier::KIND_SET);
+        .union(RIdentifier::KIND_SET)
+        .union(RIfStatement::KIND_SET);
     fn can_cast(kind: SyntaxKind) -> bool {
         match kind {
             R_BINARY_EXPRESSION
             | R_BOGUS_EXPRESSION
             | R_FOR_STATEMENT
             | R_FUNCTION_DEFINITION
-            | R_IDENTIFIER => true,
+            | R_IDENTIFIER
+            | R_IF_STATEMENT => true,
             k if AnyRValue::can_cast(k) => true,
             _ => false,
         }
@@ -1435,6 +1646,7 @@ impl AstNode for AnyRExpression {
                 AnyRExpression::RFunctionDefinition(RFunctionDefinition { syntax })
             }
             R_IDENTIFIER => AnyRExpression::RIdentifier(RIdentifier { syntax }),
+            R_IF_STATEMENT => AnyRExpression::RIfStatement(RIfStatement { syntax }),
             _ => {
                 if let Some(any_r_value) = AnyRValue::cast(syntax) {
                     return Some(AnyRExpression::AnyRValue(any_r_value));
@@ -1451,6 +1663,7 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RForStatement(it) => &it.syntax,
             AnyRExpression::RFunctionDefinition(it) => &it.syntax,
             AnyRExpression::RIdentifier(it) => &it.syntax,
+            AnyRExpression::RIfStatement(it) => &it.syntax,
             AnyRExpression::AnyRValue(it) => it.syntax(),
         }
     }
@@ -1461,6 +1674,7 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RForStatement(it) => it.syntax,
             AnyRExpression::RFunctionDefinition(it) => it.syntax,
             AnyRExpression::RIdentifier(it) => it.syntax,
+            AnyRExpression::RIfStatement(it) => it.syntax,
             AnyRExpression::AnyRValue(it) => it.into_syntax(),
         }
     }
@@ -1474,6 +1688,7 @@ impl std::fmt::Debug for AnyRExpression {
             AnyRExpression::RForStatement(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RFunctionDefinition(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RIdentifier(it) => std::fmt::Debug::fmt(it, f),
+            AnyRExpression::RIfStatement(it) => std::fmt::Debug::fmt(it, f),
         }
     }
 }
@@ -1486,6 +1701,7 @@ impl From<AnyRExpression> for SyntaxNode {
             AnyRExpression::RForStatement(it) => it.into(),
             AnyRExpression::RFunctionDefinition(it) => it.into(),
             AnyRExpression::RIdentifier(it) => it.into(),
+            AnyRExpression::RIfStatement(it) => it.into(),
         }
     }
 }
@@ -1746,6 +1962,11 @@ impl std::fmt::Display for RDoubleValue {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
+impl std::fmt::Display for RElseClause {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
 impl std::fmt::Display for RForStatement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
@@ -1762,6 +1983,11 @@ impl std::fmt::Display for RIdentifier {
     }
 }
 impl std::fmt::Display for RIdentifierParameter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RIfStatement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }

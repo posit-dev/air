@@ -14,7 +14,7 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
         ("=", "EQUAL"),
         ("...", "DOTS"),
     ],
-    keywords: &["function", "for", "in"],
+    keywords: &["function", "for", "in", "if", "else"],
     literals: &[
         "R_INTEGER_LITERAL",
         "R_DOUBLE_LITERAL",
@@ -34,6 +34,8 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
         "R_IDENTIFIER_PARAMETER",
         "R_DOTS_PARAMETER",
         "R_DEFAULT_PARAMETER",
+        "R_IF_STATEMENT",
+        "R_ELSE_CLAUSE",
         "R_FOR_STATEMENT",
         "R_EXPRESSION_LIST",
         "R_INTEGER_VALUE",
