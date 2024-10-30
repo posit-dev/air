@@ -9,6 +9,7 @@ impl FormatRule<AnyRValue> for FormatAnyRValue {
     fn fmt(&self, node: &AnyRValue, f: &mut RFormatter) -> FormatResult<()> {
         match node {
             AnyRValue::RBogusValue(node) => node.format().fmt(f),
+            AnyRValue::RComplexValue(node) => node.format().fmt(f),
             AnyRValue::RDoubleValue(node) => node.format().fmt(f),
             AnyRValue::RIntegerValue(node) => node.format().fmt(f),
             AnyRValue::RLogicalValue(node) => node.format().fmt(f),

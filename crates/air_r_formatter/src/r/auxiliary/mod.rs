@@ -1,6 +1,7 @@
 //! This is a generated file. Don't modify it by hand! Run 'cargo codegen formatter' to re-generate the file.
 
 pub(crate) mod binary_expression;
+pub(crate) mod complex_value;
 pub(crate) mod default_parameter;
 pub(crate) mod dots_parameter;
 pub(crate) mod double_value;

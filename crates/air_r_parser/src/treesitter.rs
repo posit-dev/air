@@ -364,6 +364,7 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "identifier" => RSyntaxKind::R_IDENTIFIER,
         "integer" => RSyntaxKind::R_INTEGER_VALUE,
         "float" => RSyntaxKind::R_DOUBLE_VALUE,
+        "complex" => RSyntaxKind::R_COMPLEX_VALUE,
         "string" => RSyntaxKind::R_STRING_VALUE,
         "true" => RSyntaxKind::R_LOGICAL_VALUE,
         "false" => RSyntaxKind::R_LOGICAL_VALUE,

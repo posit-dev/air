@@ -40,6 +40,42 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RBinaryExpression {
         )
     }
 }
+impl FormatRule<air_r_syntax::RComplexValue>
+    for crate::r::auxiliary::complex_value::FormatRComplexValue
+{
+    type Context = RFormatContext;
+    #[inline(always)]
+    fn fmt(&self, node: &air_r_syntax::RComplexValue, f: &mut RFormatter) -> FormatResult<()> {
+        FormatNodeRule::<air_r_syntax::RComplexValue>::fmt(self, node, f)
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::RComplexValue {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::RComplexValue,
+        crate::r::auxiliary::complex_value::FormatRComplexValue,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::auxiliary::complex_value::FormatRComplexValue::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::RComplexValue {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::RComplexValue,
+        crate::r::auxiliary::complex_value::FormatRComplexValue,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::auxiliary::complex_value::FormatRComplexValue::default(),
+        )
+    }
+}
 impl FormatRule<air_r_syntax::RDefaultParameter>
     for crate::r::auxiliary::default_parameter::FormatRDefaultParameter
 {

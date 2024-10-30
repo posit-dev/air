@@ -20,6 +20,12 @@ pub fn r_binary_expression(
         ],
     ))
 }
+pub fn r_complex_value(value_token: SyntaxToken) -> RComplexValue {
+    RComplexValue::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_COMPLEX_VALUE,
+        [Some(SyntaxElement::Token(value_token))],
+    ))
+}
 pub fn r_default_parameter(
     name_token: SyntaxToken,
     eq_token: SyntaxToken,

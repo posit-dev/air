@@ -54,6 +54,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::IN_KW
             | RSyntaxKind::R_INTEGER_LITERAL
             | RSyntaxKind::R_DOUBLE_LITERAL
+            | RSyntaxKind::R_COMPLEX_LITERAL
             | RSyntaxKind::R_STRING_LITERAL
             | RSyntaxKind::R_LOGICAL_LITERAL
             | RSyntaxKind::R_NULL_LITERAL
@@ -74,6 +75,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_EXPRESSION_LIST
             | RSyntaxKind::R_INTEGER_VALUE
             | RSyntaxKind::R_DOUBLE_VALUE
+            | RSyntaxKind::R_COMPLEX_VALUE
             | RSyntaxKind::R_STRING_VALUE
             | RSyntaxKind::R_LOGICAL_VALUE
             | RSyntaxKind::R_NULL_VALUE
@@ -86,6 +88,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             // Bogus value
             RSyntaxKind::R_INTEGER_VALUE => RSyntaxKind::R_BOGUS_VALUE,
             RSyntaxKind::R_DOUBLE_VALUE => RSyntaxKind::R_BOGUS_VALUE,
+            RSyntaxKind::R_COMPLEX_VALUE => RSyntaxKind::R_BOGUS_VALUE,
             RSyntaxKind::R_STRING_VALUE => RSyntaxKind::R_BOGUS_VALUE,
             RSyntaxKind::R_LOGICAL_VALUE => RSyntaxKind::R_BOGUS_VALUE,
             RSyntaxKind::R_NULL_VALUE => RSyntaxKind::R_BOGUS_VALUE,
@@ -121,6 +124,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             RSyntaxKind::IN_KW => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_INTEGER_LITERAL => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_DOUBLE_LITERAL => RSyntaxKind::R_BOGUS,
+            RSyntaxKind::R_COMPLEX_LITERAL => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_STRING_LITERAL => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_LOGICAL_LITERAL => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_NULL_LITERAL => RSyntaxKind::R_BOGUS,

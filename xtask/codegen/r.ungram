@@ -117,6 +117,7 @@ AnyRExpression =
 AnyRValue =
 	RIntegerValue
 	| RDoubleValue
+	| RComplexValue
 	| RStringValue
 	| RLogicalValue
 	| RNullValue
@@ -124,6 +125,7 @@ AnyRValue =
 
 RIntegerValue = value: 'r_integer_literal'
 RDoubleValue = value: 'r_double_literal'
+RComplexValue = value: 'r_complex_literal'
 RStringValue = value: 'r_string_literal'
 RLogicalValue = value: 'r_logical_literal'
 RNullValue = value: 'r_null_literal'

@@ -50,6 +50,25 @@ impl SyntaxFactory for RSyntaxFactory {
                 }
                 slots.into_node(R_BINARY_EXPRESSION, children)
             }
+            R_COMPLEX_VALUE => {
+                let mut elements = (&children).into_iter();
+                let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
+                let mut current_element = elements.next();
+                if let Some(element) = &current_element {
+                    if element.kind() == R_COMPLEX_LITERAL {
+                        slots.mark_present();
+                        current_element = elements.next();
+                    }
+                }
+                slots.next_slot();
+                if current_element.is_some() {
+                    return RawSyntaxNode::new(
+                        R_COMPLEX_VALUE.to_bogus(),
+                        children.into_iter().map(Some),
+                    );
+                }
+                slots.into_node(R_COMPLEX_VALUE, children)
+            }
             R_DEFAULT_PARAMETER => {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();

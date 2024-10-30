@@ -68,6 +68,41 @@ pub struct RBinaryExpressionFields {
     pub right: SyntaxResult<AnyRExpression>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RComplexValue {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RComplexValue {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RComplexValueFields {
+        RComplexValueFields {
+            value_token: self.value_token(),
+        }
+    }
+    pub fn value_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+}
+impl Serialize for RComplexValue {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RComplexValueFields {
+    pub value_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RDefaultParameter {
     pub(crate) syntax: SyntaxNode,
 }
@@ -675,6 +710,7 @@ impl AnyRParameter {
 #[derive(Clone, PartialEq, Eq, Hash, Serialize)]
 pub enum AnyRValue {
     RBogusValue(RBogusValue),
+    RComplexValue(RComplexValue),
     RDoubleValue(RDoubleValue),
     RIntegerValue(RIntegerValue),
     RLogicalValue(RLogicalValue),
@@ -685,6 +721,12 @@ impl AnyRValue {
     pub fn as_r_bogus_value(&self) -> Option<&RBogusValue> {
         match &self {
             AnyRValue::RBogusValue(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_complex_value(&self) -> Option<&RComplexValue> {
+        match &self {
+            AnyRValue::RComplexValue(item) => Some(item),
             _ => None,
         }
     }
@@ -759,6 +801,47 @@ impl From<RBinaryExpression> for SyntaxNode {
 }
 impl From<RBinaryExpression> for SyntaxElement {
     fn from(n: RBinaryExpression) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
+impl AstNode for RComplexValue {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_COMPLEX_VALUE as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_COMPLEX_VALUE
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RComplexValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RComplexValue")
+            .field(
+                "value_token",
+                &support::DebugSyntaxResult(self.value_token()),
+            )
+            .finish()
+    }
+}
+impl From<RComplexValue> for SyntaxNode {
+    fn from(n: RComplexValue) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RComplexValue> for SyntaxElement {
+    fn from(n: RComplexValue) -> SyntaxElement {
         n.syntax.into()
     }
 }
@@ -1507,6 +1590,11 @@ impl From<RBogusValue> for AnyRValue {
         AnyRValue::RBogusValue(node)
     }
 }
+impl From<RComplexValue> for AnyRValue {
+    fn from(node: RComplexValue) -> AnyRValue {
+        AnyRValue::RComplexValue(node)
+    }
+}
 impl From<RDoubleValue> for AnyRValue {
     fn from(node: RDoubleValue) -> AnyRValue {
         AnyRValue::RDoubleValue(node)
@@ -1535,6 +1623,7 @@ impl From<RStringValue> for AnyRValue {
 impl AstNode for AnyRValue {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> = RBogusValue::KIND_SET
+        .union(RComplexValue::KIND_SET)
         .union(RDoubleValue::KIND_SET)
         .union(RIntegerValue::KIND_SET)
         .union(RLogicalValue::KIND_SET)
@@ -1544,6 +1633,7 @@ impl AstNode for AnyRValue {
         matches!(
             kind,
             R_BOGUS_VALUE
+                | R_COMPLEX_VALUE
                 | R_DOUBLE_VALUE
                 | R_INTEGER_VALUE
                 | R_LOGICAL_VALUE
@@ -1554,6 +1644,7 @@ impl AstNode for AnyRValue {
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         let res = match syntax.kind() {
             R_BOGUS_VALUE => AnyRValue::RBogusValue(RBogusValue { syntax }),
+            R_COMPLEX_VALUE => AnyRValue::RComplexValue(RComplexValue { syntax }),
             R_DOUBLE_VALUE => AnyRValue::RDoubleValue(RDoubleValue { syntax }),
             R_INTEGER_VALUE => AnyRValue::RIntegerValue(RIntegerValue { syntax }),
             R_LOGICAL_VALUE => AnyRValue::RLogicalValue(RLogicalValue { syntax }),
@@ -1566,6 +1657,7 @@ impl AstNode for AnyRValue {
     fn syntax(&self) -> &SyntaxNode {
         match self {
             AnyRValue::RBogusValue(it) => &it.syntax,
+            AnyRValue::RComplexValue(it) => &it.syntax,
             AnyRValue::RDoubleValue(it) => &it.syntax,
             AnyRValue::RIntegerValue(it) => &it.syntax,
             AnyRValue::RLogicalValue(it) => &it.syntax,
@@ -1576,6 +1668,7 @@ impl AstNode for AnyRValue {
     fn into_syntax(self) -> SyntaxNode {
         match self {
             AnyRValue::RBogusValue(it) => it.syntax,
+            AnyRValue::RComplexValue(it) => it.syntax,
             AnyRValue::RDoubleValue(it) => it.syntax,
             AnyRValue::RIntegerValue(it) => it.syntax,
             AnyRValue::RLogicalValue(it) => it.syntax,
@@ -1588,6 +1681,7 @@ impl std::fmt::Debug for AnyRValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             AnyRValue::RBogusValue(it) => std::fmt::Debug::fmt(it, f),
+            AnyRValue::RComplexValue(it) => std::fmt::Debug::fmt(it, f),
             AnyRValue::RDoubleValue(it) => std::fmt::Debug::fmt(it, f),
             AnyRValue::RIntegerValue(it) => std::fmt::Debug::fmt(it, f),
             AnyRValue::RLogicalValue(it) => std::fmt::Debug::fmt(it, f),
@@ -1600,6 +1694,7 @@ impl From<AnyRValue> for SyntaxNode {
     fn from(n: AnyRValue) -> SyntaxNode {
         match n {
             AnyRValue::RBogusValue(it) => it.into(),
+            AnyRValue::RComplexValue(it) => it.into(),
             AnyRValue::RDoubleValue(it) => it.into(),
             AnyRValue::RIntegerValue(it) => it.into(),
             AnyRValue::RLogicalValue(it) => it.into(),
@@ -1630,6 +1725,11 @@ impl std::fmt::Display for AnyRValue {
     }
 }
 impl std::fmt::Display for RBinaryExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RComplexValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }

@@ -29,6 +29,7 @@ pub enum RSyntaxKind {
     IN_KW,
     R_INTEGER_LITERAL,
     R_DOUBLE_LITERAL,
+    R_COMPLEX_LITERAL,
     R_STRING_LITERAL,
     R_LOGICAL_LITERAL,
     R_NULL_LITERAL,
@@ -49,6 +50,7 @@ pub enum RSyntaxKind {
     R_EXPRESSION_LIST,
     R_INTEGER_VALUE,
     R_DOUBLE_VALUE,
+    R_COMPLEX_VALUE,
     R_STRING_VALUE,
     R_LOGICAL_VALUE,
     R_NULL_VALUE,
@@ -70,8 +72,8 @@ impl RSyntaxKind {
     }
     pub const fn is_literal(self) -> bool {
         match self {
-            R_INTEGER_LITERAL | R_DOUBLE_LITERAL | R_STRING_LITERAL | R_LOGICAL_LITERAL
-            | R_NULL_LITERAL => true,
+            R_INTEGER_LITERAL | R_DOUBLE_LITERAL | R_COMPLEX_LITERAL | R_STRING_LITERAL
+            | R_LOGICAL_LITERAL | R_NULL_LITERAL => true,
             _ => false,
         }
     }
