@@ -23,7 +23,7 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
         "R_LOGICAL_LITERAL",
         "R_NULL_LITERAL",
     ],
-    tokens: &["NEWLINE", "WHITESPACE", "IDENT", "COMMENT"],
+    tokens: &["NEWLINE", "WHITESPACE", "IDENT", "COMMENT", "BACKSLASH"],
     nodes: &[
         "R_ROOT",
         "R_IDENTIFIER",

@@ -378,6 +378,7 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "+" => RSyntaxKind::PLUS,
         "=" => equal_syntax_kind(x),
         "function" => RSyntaxKind::FUNCTION_KW,
+        "\\" => RSyntaxKind::BACKSLASH,
         "for" => RSyntaxKind::FOR_KW,
         "in" => RSyntaxKind::IN_KW,
         "comma" => RSyntaxKind::COMMA,

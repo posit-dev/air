@@ -37,6 +37,7 @@ pub enum RSyntaxKind {
     WHITESPACE,
     IDENT,
     COMMENT,
+    BACKSLASH,
     R_ROOT,
     R_IDENTIFIER,
     R_BINARY_EXPRESSION,

@@ -58,9 +58,8 @@ RBinaryExpression =
 // ----------------------------------------------------------------
 // Function
 
-// TODO: `\\` is not a valid Ident and causes issues with codegen
 RFunctionDefinition =
-	'function'
+	name: ('function' | 'backslash')
 	parameters: RParameters
 	body: AnyRExpression
 

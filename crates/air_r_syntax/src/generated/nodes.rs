@@ -298,12 +298,12 @@ impl RFunctionDefinition {
     }
     pub fn as_fields(&self) -> RFunctionDefinitionFields {
         RFunctionDefinitionFields {
-            function_token: self.function_token(),
+            name: self.name(),
             parameters: self.parameters(),
             body: self.body(),
         }
     }
-    pub fn function_token(&self) -> SyntaxResult<SyntaxToken> {
+    pub fn name(&self) -> SyntaxResult<SyntaxToken> {
         support::required_token(&self.syntax, 0usize)
     }
     pub fn parameters(&self) -> SyntaxResult<RParameters> {
@@ -323,7 +323,7 @@ impl Serialize for RFunctionDefinition {
 }
 #[derive(Serialize)]
 pub struct RFunctionDefinitionFields {
-    pub function_token: SyntaxResult<SyntaxToken>,
+    pub name: SyntaxResult<SyntaxToken>,
     pub parameters: SyntaxResult<RParameters>,
     pub body: SyntaxResult<AnyRExpression>,
 }
@@ -1038,10 +1038,7 @@ impl AstNode for RFunctionDefinition {
 impl std::fmt::Debug for RFunctionDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("RFunctionDefinition")
-            .field(
-                "function_token",
-                &support::DebugSyntaxResult(self.function_token()),
-            )
+            .field("name", &support::DebugSyntaxResult(self.name()))
             .field("parameters", &support::DebugSyntaxResult(self.parameters()))
             .field("body", &support::DebugSyntaxResult(self.body()))
             .finish()

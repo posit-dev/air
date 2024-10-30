@@ -10,7 +10,7 @@ pub(crate) struct FormatRFunctionDefinition;
 impl FormatNodeRule<RFunctionDefinition> for FormatRFunctionDefinition {
     fn fmt_fields(&self, node: &RFunctionDefinition, f: &mut RFormatter) -> FormatResult<()> {
         let RFunctionDefinitionFields {
-            function_token,
+            name,
             parameters,
             body,
         } = node.as_fields();
@@ -18,7 +18,7 @@ impl FormatNodeRule<RFunctionDefinition> for FormatRFunctionDefinition {
         write!(
             f,
             [
-                function_token.format(),
+                name.format(),
                 group(&parameters.format()),
                 space(),
                 body.format()

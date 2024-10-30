@@ -93,14 +93,14 @@ pub fn r_for_statement(
     ))
 }
 pub fn r_function_definition(
-    function_token: SyntaxToken,
+    name_token: SyntaxToken,
     parameters: RParameters,
     body: AnyRExpression,
 ) -> RFunctionDefinition {
     RFunctionDefinition::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_FUNCTION_DEFINITION,
         [
-            Some(SyntaxElement::Token(function_token)),
+            Some(SyntaxElement::Token(name_token)),
             Some(SyntaxElement::Node(parameters.into_syntax())),
             Some(SyntaxElement::Node(body.into_syntax())),
         ],

@@ -20,6 +20,8 @@ function(
   4
 ) 1
 
+\(x, y) 1
+
 ```
 
 
@@ -30,7 +32,7 @@ RRoot {
     bom_token: missing (optional),
     expressions: RExpressionList [
         RFunctionDefinition {
-            function_token: FUNCTION_KW@0..8 "function" [] [],
+            name: FUNCTION_KW@0..8 "function" [] [],
             parameters: RParameters {
                 l_paren_token: L_PAREN@8..9 "(" [] [],
                 items: RParameterList [],
@@ -41,7 +43,7 @@ RRoot {
             },
         },
         RFunctionDefinition {
-            function_token: FUNCTION_KW@12..21 "function" [Newline("\n")] [],
+            name: FUNCTION_KW@12..21 "function" [Newline("\n")] [],
             parameters: RParameters {
                 l_paren_token: L_PAREN@21..22 "(" [] [],
                 items: RParameterList [
@@ -56,7 +58,7 @@ RRoot {
             },
         },
         RFunctionDefinition {
-            function_token: FUNCTION_KW@26..35 "function" [Newline("\n")] [],
+            name: FUNCTION_KW@26..35 "function" [Newline("\n")] [],
             parameters: RParameters {
                 l_paren_token: L_PAREN@35..36 "(" [] [],
                 items: RParameterList [
@@ -81,7 +83,7 @@ RRoot {
             },
         },
         RFunctionDefinition {
-            function_token: FUNCTION_KW@47..56 "function" [Newline("\n")] [],
+            name: FUNCTION_KW@47..56 "function" [Newline("\n")] [],
             parameters: RParameters {
                 l_paren_token: L_PAREN@56..57 "(" [] [],
                 items: RParameterList [
@@ -96,7 +98,7 @@ RRoot {
             },
         },
         RFunctionDefinition {
-            function_token: FUNCTION_KW@78..87 "function" [Newline("\n")] [],
+            name: FUNCTION_KW@78..87 "function" [Newline("\n")] [],
             parameters: RParameters {
                 l_paren_token: L_PAREN@87..88 "(" [] [],
                 items: RParameterList [
@@ -111,7 +113,7 @@ RRoot {
             },
         },
         RFunctionDefinition {
-            function_token: FUNCTION_KW@94..103 "function" [Newline("\n")] [],
+            name: FUNCTION_KW@94..103 "function" [Newline("\n")] [],
             parameters: RParameters {
                 l_paren_token: L_PAREN@103..104 "(" [] [],
                 items: RParameterList [
@@ -134,7 +136,7 @@ RRoot {
             },
         },
         RFunctionDefinition {
-            function_token: FUNCTION_KW@116..125 "function" [Newline("\n")] [],
+            name: FUNCTION_KW@116..125 "function" [Newline("\n")] [],
             parameters: RParameters {
                 l_paren_token: L_PAREN@125..126 "(" [] [],
                 items: RParameterList [
@@ -165,7 +167,7 @@ RRoot {
             },
         },
         RFunctionDefinition {
-            function_token: FUNCTION_KW@146..155 "function" [Newline("\n")] [],
+            name: FUNCTION_KW@146..155 "function" [Newline("\n")] [],
             parameters: RParameters {
                 l_paren_token: L_PAREN@155..156 "(" [] [],
                 items: RParameterList [
@@ -188,7 +190,7 @@ RRoot {
             },
         },
         RFunctionDefinition {
-            function_token: FUNCTION_KW@168..177 "function" [Newline("\n")] [],
+            name: FUNCTION_KW@168..177 "function" [Newline("\n")] [],
             parameters: RParameters {
                 l_paren_token: L_PAREN@177..178 "(" [] [],
                 items: RParameterList [
@@ -206,17 +208,36 @@ RRoot {
                 value_token: R_DOUBLE_LITERAL@203..205 "1" [Whitespace(" ")] [],
             },
         },
+        RFunctionDefinition {
+            name: BACKSLASH@205..208 "\\" [Newline("\n"), Newline("\n")] [],
+            parameters: RParameters {
+                l_paren_token: L_PAREN@208..209 "(" [] [],
+                items: RParameterList [
+                    RIdentifierParameter {
+                        name_token: IDENT@209..210 "x" [] [],
+                    },
+                    COMMA@210..211 "," [] [],
+                    RIdentifierParameter {
+                        name_token: IDENT@211..213 "y" [Whitespace(" ")] [],
+                    },
+                ],
+                r_paren_token: R_PAREN@213..214 ")" [] [],
+            },
+            body: RDoubleValue {
+                value_token: R_DOUBLE_LITERAL@214..216 "1" [Whitespace(" ")] [],
+            },
+        },
     ],
-    eof_token: EOF@205..206 "" [Newline("\n")] [],
+    eof_token: EOF@216..217 "" [Newline("\n")] [],
 }
 ```
 
 ## CST
 
 ```
-0: R_ROOT@0..206
+0: R_ROOT@0..217
   0: (empty)
-  1: R_EXPRESSION_LIST@0..205
+  1: R_EXPRESSION_LIST@0..216
     0: R_FUNCTION_DEFINITION@0..12
       0: FUNCTION_KW@0..8 "function" [] []
       1: R_PARAMETERS@8..10
@@ -340,6 +361,19 @@ RRoot {
         2: R_PAREN@201..203 ")" [Newline("\n")] []
       2: R_DOUBLE_VALUE@203..205
         0: R_DOUBLE_LITERAL@203..205 "1" [Whitespace(" ")] []
-  2: EOF@205..206 "" [Newline("\n")] []
+    9: R_FUNCTION_DEFINITION@205..216
+      0: BACKSLASH@205..208 "\\" [Newline("\n"), Newline("\n")] []
+      1: R_PARAMETERS@208..214
+        0: L_PAREN@208..209 "(" [] []
+        1: R_PARAMETER_LIST@209..213
+          0: R_IDENTIFIER_PARAMETER@209..210
+            0: IDENT@209..210 "x" [] []
+          1: COMMA@210..211 "," [] []
+          2: R_IDENTIFIER_PARAMETER@211..213
+            0: IDENT@211..213 "y" [Whitespace(" ")] []
+        2: R_PAREN@213..214 ")" [] []
+      2: R_DOUBLE_VALUE@214..216
+        0: R_DOUBLE_LITERAL@214..216 "1" [Whitespace(" ")] []
+  2: EOF@216..217 "" [Newline("\n")] []
 
 ```

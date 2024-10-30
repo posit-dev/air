@@ -112,7 +112,7 @@ impl RForStatement {
     }
 }
 impl RFunctionDefinition {
-    pub fn with_function_token(self, element: SyntaxToken) -> Self {
+    pub fn with_name_token(self, element: SyntaxToken) -> Self {
         Self::unwrap_cast(
             self.syntax
                 .splice_slots(0usize..=0usize, once(Some(element.into()))),

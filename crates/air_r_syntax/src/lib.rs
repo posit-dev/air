@@ -62,6 +62,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::WHITESPACE
             | RSyntaxKind::IDENT
             | RSyntaxKind::COMMENT
+            | RSyntaxKind::BACKSLASH
             | RSyntaxKind::R_ROOT
             | RSyntaxKind::R_IDENTIFIER
             | RSyntaxKind::R_BINARY_EXPRESSION
@@ -132,6 +133,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             RSyntaxKind::WHITESPACE => RSyntaxKind::R_BOGUS,
             RSyntaxKind::IDENT => RSyntaxKind::R_BOGUS,
             RSyntaxKind::COMMENT => RSyntaxKind::R_BOGUS,
+            RSyntaxKind::BACKSLASH => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_ROOT => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_IDENTIFIER => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_FUNCTION_DEFINITION => RSyntaxKind::R_BOGUS,
