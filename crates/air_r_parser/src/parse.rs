@@ -115,7 +115,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_IDENTIFIER_PARAMETER => self.handle_identifier_parameter_enter(iter),
             RSyntaxKind::R_DEFAULT_PARAMETER => self.handle_default_parameter_enter(node, iter),
             RSyntaxKind::R_FOR_STATEMENT => self.handle_node_enter(kind),
-            RSyntaxKind::R_INTEGER_VALUE => self.handle_value_enter(kind),
+            RSyntaxKind::R_INTEGER_VALUE => self.handle_integer_value_enter(iter),
             RSyntaxKind::R_DOUBLE_VALUE => self.handle_value_enter(kind),
             RSyntaxKind::R_STRING_VALUE => self.handle_value_enter(kind),
             RSyntaxKind::R_LOGICAL_VALUE => self.handle_value_enter(kind),
@@ -173,9 +173,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_IDENTIFIER_PARAMETER => self.handle_identifier_parameter_leave(node),
             RSyntaxKind::R_DEFAULT_PARAMETER => self.handle_default_parameter_leave(),
             RSyntaxKind::R_FOR_STATEMENT => self.handle_node_leave(),
-            RSyntaxKind::R_INTEGER_VALUE => {
-                self.handle_value_leave(node, RSyntaxKind::R_INTEGER_LITERAL)
-            }
+            RSyntaxKind::R_INTEGER_VALUE => self.handle_integer_value_leave(node),
             RSyntaxKind::R_DOUBLE_VALUE => {
                 self.handle_value_leave(node, RSyntaxKind::R_DOUBLE_LITERAL)
             }
@@ -426,6 +424,17 @@ impl<'src> RWalk<'src> {
 
     fn handle_default_parameter_leave(&mut self) {
         self.handle_node_leave();
+    }
+
+    fn handle_integer_value_enter(&mut self, iter: &mut Preorder) {
+        // Skip subtree, we don't want to separate the literal from the `L`.
+        // Can't have comments between the value and the `L`.
+        iter.skip_subtree();
+        self.handle_value_enter(RSyntaxKind::R_INTEGER_VALUE);
+    }
+
+    fn handle_integer_value_leave(&mut self, node: tree_sitter::Node) {
+        self.handle_value_leave(node, RSyntaxKind::R_INTEGER_LITERAL);
     }
 }
 
