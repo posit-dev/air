@@ -362,6 +362,7 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "parameter" => parameter_syntax_kind(x),
         "if_statement" => RSyntaxKind::R_IF_STATEMENT,
         "for_statement" => RSyntaxKind::R_FOR_STATEMENT,
+        "braced_expression" => RSyntaxKind::R_BRACED_EXPRESSIONS,
         "identifier" => RSyntaxKind::R_IDENTIFIER,
         "integer" => RSyntaxKind::R_INTEGER_VALUE,
         "float" => RSyntaxKind::R_DOUBLE_VALUE,

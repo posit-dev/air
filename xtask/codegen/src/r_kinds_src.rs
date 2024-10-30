@@ -37,6 +37,7 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
         "R_IF_STATEMENT",
         "R_ELSE_CLAUSE",
         "R_FOR_STATEMENT",
+        "R_BRACED_EXPRESSIONS",
         "R_EXPRESSION_LIST",
         "R_INTEGER_VALUE",
         "R_DOUBLE_VALUE",

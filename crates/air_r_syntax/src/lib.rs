@@ -77,6 +77,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_IF_STATEMENT
             | RSyntaxKind::R_ELSE_CLAUSE
             | RSyntaxKind::R_FOR_STATEMENT
+            | RSyntaxKind::R_BRACED_EXPRESSIONS
             | RSyntaxKind::R_EXPRESSION_LIST
             | RSyntaxKind::R_INTEGER_VALUE
             | RSyntaxKind::R_DOUBLE_VALUE
@@ -148,6 +149,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             RSyntaxKind::R_IF_STATEMENT => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_ELSE_CLAUSE => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_FOR_STATEMENT => RSyntaxKind::R_BOGUS,
+            RSyntaxKind::R_BRACED_EXPRESSIONS => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_EXPRESSION_LIST => RSyntaxKind::R_BOGUS,
             RSyntaxKind::__LAST => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_BOGUS => RSyntaxKind::R_BOGUS,

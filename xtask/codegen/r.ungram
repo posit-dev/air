@@ -113,6 +113,14 @@ RForStatement =
 	body: AnyRExpression
 
 // ----------------------------------------------------------------
+// Braced expressions
+
+RBracedExpressions =
+	'{'
+	expressions: RExpressionList
+	'}'
+
+// ----------------------------------------------------------------
 // Expression
 
 RExpressionList = AnyRExpression*
@@ -124,6 +132,7 @@ AnyRExpression =
 	| RFunctionDefinition
 	| RIfStatement
 	| RForStatement
+	| RBracedExpressions
 	| RBogusExpression
 
 // ----------------------------------------------------------------

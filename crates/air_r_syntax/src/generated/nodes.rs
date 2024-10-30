@@ -68,6 +68,51 @@ pub struct RBinaryExpressionFields {
     pub right: SyntaxResult<AnyRExpression>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RBracedExpressions {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RBracedExpressions {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RBracedExpressionsFields {
+        RBracedExpressionsFields {
+            l_curly_token: self.l_curly_token(),
+            expressions: self.expressions(),
+            r_curly_token: self.r_curly_token(),
+        }
+    }
+    pub fn l_curly_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+    pub fn expressions(&self) -> RExpressionList {
+        support::list(&self.syntax, 1usize)
+    }
+    pub fn r_curly_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 2usize)
+    }
+}
+impl Serialize for RBracedExpressions {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RBracedExpressionsFields {
+    pub l_curly_token: SyntaxResult<SyntaxToken>,
+    pub expressions: RExpressionList,
+    pub r_curly_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RComplexValue {
     pub(crate) syntax: SyntaxNode,
 }
@@ -732,6 +777,7 @@ pub enum AnyRExpression {
     AnyRValue(AnyRValue),
     RBinaryExpression(RBinaryExpression),
     RBogusExpression(RBogusExpression),
+    RBracedExpressions(RBracedExpressions),
     RForStatement(RForStatement),
     RFunctionDefinition(RFunctionDefinition),
     RIdentifier(RIdentifier),
@@ -753,6 +799,12 @@ impl AnyRExpression {
     pub fn as_r_bogus_expression(&self) -> Option<&RBogusExpression> {
         match &self {
             AnyRExpression::RBogusExpression(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_braced_expressions(&self) -> Option<&RBracedExpressions> {
+        match &self {
+            AnyRExpression::RBracedExpressions(item) => Some(item),
             _ => None,
         }
     }
@@ -908,6 +960,52 @@ impl From<RBinaryExpression> for SyntaxNode {
 }
 impl From<RBinaryExpression> for SyntaxElement {
     fn from(n: RBinaryExpression) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
+impl AstNode for RBracedExpressions {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_BRACED_EXPRESSIONS as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_BRACED_EXPRESSIONS
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RBracedExpressions {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RBracedExpressions")
+            .field(
+                "l_curly_token",
+                &support::DebugSyntaxResult(self.l_curly_token()),
+            )
+            .field("expressions", &self.expressions())
+            .field(
+                "r_curly_token",
+                &support::DebugSyntaxResult(self.r_curly_token()),
+            )
+            .finish()
+    }
+}
+impl From<RBracedExpressions> for SyntaxNode {
+    fn from(n: RBracedExpressions) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RBracedExpressions> for SyntaxElement {
+    fn from(n: RBracedExpressions) -> SyntaxElement {
         n.syntax.into()
     }
 }
@@ -1596,6 +1694,11 @@ impl From<RBogusExpression> for AnyRExpression {
         AnyRExpression::RBogusExpression(node)
     }
 }
+impl From<RBracedExpressions> for AnyRExpression {
+    fn from(node: RBracedExpressions) -> AnyRExpression {
+        AnyRExpression::RBracedExpressions(node)
+    }
+}
 impl From<RForStatement> for AnyRExpression {
     fn from(node: RForStatement) -> AnyRExpression {
         AnyRExpression::RForStatement(node)
@@ -1621,6 +1724,7 @@ impl AstNode for AnyRExpression {
     const KIND_SET: SyntaxKindSet<Language> = AnyRValue::KIND_SET
         .union(RBinaryExpression::KIND_SET)
         .union(RBogusExpression::KIND_SET)
+        .union(RBracedExpressions::KIND_SET)
         .union(RForStatement::KIND_SET)
         .union(RFunctionDefinition::KIND_SET)
         .union(RIdentifier::KIND_SET)
@@ -1629,6 +1733,7 @@ impl AstNode for AnyRExpression {
         match kind {
             R_BINARY_EXPRESSION
             | R_BOGUS_EXPRESSION
+            | R_BRACED_EXPRESSIONS
             | R_FOR_STATEMENT
             | R_FUNCTION_DEFINITION
             | R_IDENTIFIER
@@ -1641,6 +1746,9 @@ impl AstNode for AnyRExpression {
         let res = match syntax.kind() {
             R_BINARY_EXPRESSION => AnyRExpression::RBinaryExpression(RBinaryExpression { syntax }),
             R_BOGUS_EXPRESSION => AnyRExpression::RBogusExpression(RBogusExpression { syntax }),
+            R_BRACED_EXPRESSIONS => {
+                AnyRExpression::RBracedExpressions(RBracedExpressions { syntax })
+            }
             R_FOR_STATEMENT => AnyRExpression::RForStatement(RForStatement { syntax }),
             R_FUNCTION_DEFINITION => {
                 AnyRExpression::RFunctionDefinition(RFunctionDefinition { syntax })
@@ -1660,6 +1768,7 @@ impl AstNode for AnyRExpression {
         match self {
             AnyRExpression::RBinaryExpression(it) => &it.syntax,
             AnyRExpression::RBogusExpression(it) => &it.syntax,
+            AnyRExpression::RBracedExpressions(it) => &it.syntax,
             AnyRExpression::RForStatement(it) => &it.syntax,
             AnyRExpression::RFunctionDefinition(it) => &it.syntax,
             AnyRExpression::RIdentifier(it) => &it.syntax,
@@ -1671,6 +1780,7 @@ impl AstNode for AnyRExpression {
         match self {
             AnyRExpression::RBinaryExpression(it) => it.syntax,
             AnyRExpression::RBogusExpression(it) => it.syntax,
+            AnyRExpression::RBracedExpressions(it) => it.syntax,
             AnyRExpression::RForStatement(it) => it.syntax,
             AnyRExpression::RFunctionDefinition(it) => it.syntax,
             AnyRExpression::RIdentifier(it) => it.syntax,
@@ -1685,6 +1795,7 @@ impl std::fmt::Debug for AnyRExpression {
             AnyRExpression::AnyRValue(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RBinaryExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RBogusExpression(it) => std::fmt::Debug::fmt(it, f),
+            AnyRExpression::RBracedExpressions(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RForStatement(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RFunctionDefinition(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RIdentifier(it) => std::fmt::Debug::fmt(it, f),
@@ -1698,6 +1809,7 @@ impl From<AnyRExpression> for SyntaxNode {
             AnyRExpression::AnyRValue(it) => it.into(),
             AnyRExpression::RBinaryExpression(it) => it.into(),
             AnyRExpression::RBogusExpression(it) => it.into(),
+            AnyRExpression::RBracedExpressions(it) => it.into(),
             AnyRExpression::RForStatement(it) => it.into(),
             AnyRExpression::RFunctionDefinition(it) => it.into(),
             AnyRExpression::RIdentifier(it) => it.into(),
@@ -1938,6 +2050,11 @@ impl std::fmt::Display for AnyRValue {
     }
 }
 impl std::fmt::Display for RBinaryExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RBracedExpressions {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }

@@ -116,6 +116,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_DEFAULT_PARAMETER => self.handle_default_parameter_enter(node, iter),
             RSyntaxKind::R_IF_STATEMENT => self.handle_if_statement_enter(node, iter),
             RSyntaxKind::R_FOR_STATEMENT => self.handle_node_enter(kind),
+            RSyntaxKind::R_BRACED_EXPRESSIONS => self.handle_braced_expressions_enter(node, iter),
             RSyntaxKind::R_INTEGER_VALUE => self.handle_integer_value_enter(iter),
             RSyntaxKind::R_COMPLEX_VALUE => self.handle_complex_value_enter(iter),
             RSyntaxKind::R_DOUBLE_VALUE => self.handle_value_enter(kind),
@@ -137,6 +138,8 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::ELSE_KW => (),
             RSyntaxKind::L_PAREN => (),
             RSyntaxKind::R_PAREN => (),
+            RSyntaxKind::L_CURLY => (),
+            RSyntaxKind::R_CURLY => (),
 
             // Comments
             RSyntaxKind::COMMENT => self.handle_comment_enter(),
@@ -147,8 +150,6 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_EXPRESSION_LIST => unreachable!("{kind:?}"),
             RSyntaxKind::EOF => unreachable!("{kind:?}"),
             RSyntaxKind::UNICODE_BOM => unreachable!("{kind:?}"),
-            RSyntaxKind::L_CURLY => unreachable!("{kind:?}"),
-            RSyntaxKind::R_CURLY => unreachable!("{kind:?}"),
             RSyntaxKind::L_BRACK => unreachable!("{kind:?}"),
             RSyntaxKind::R_BRACK => unreachable!("{kind:?}"),
             RSyntaxKind::DOTS => unreachable!("{kind:?}"),
@@ -181,6 +182,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_DEFAULT_PARAMETER => self.handle_default_parameter_leave(),
             RSyntaxKind::R_IF_STATEMENT => self.handle_if_statement_leave(),
             RSyntaxKind::R_FOR_STATEMENT => self.handle_node_leave(),
+            RSyntaxKind::R_BRACED_EXPRESSIONS => self.handle_braced_expressions_leave(),
             RSyntaxKind::R_INTEGER_VALUE => self.handle_integer_value_leave(node),
             RSyntaxKind::R_DOUBLE_VALUE => {
                 self.handle_value_leave(node, RSyntaxKind::R_DOUBLE_LITERAL)
@@ -206,6 +208,8 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::ELSE_KW => self.handle_token(node, kind),
             RSyntaxKind::L_PAREN => self.handle_token(node, kind),
             RSyntaxKind::R_PAREN => self.handle_token(node, kind),
+            RSyntaxKind::L_CURLY => self.handle_token(node, kind),
+            RSyntaxKind::R_CURLY => self.handle_token(node, kind),
 
             // Comments
             RSyntaxKind::COMMENT => self.handle_comment_leave(node),
@@ -216,8 +220,6 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_EXPRESSION_LIST => unreachable!("{kind:?}"),
             RSyntaxKind::EOF => unreachable!("{kind:?}"),
             RSyntaxKind::UNICODE_BOM => unreachable!("{kind:?}"),
-            RSyntaxKind::L_CURLY => unreachable!("{kind:?}"),
-            RSyntaxKind::R_CURLY => unreachable!("{kind:?}"),
             RSyntaxKind::L_BRACK => unreachable!("{kind:?}"),
             RSyntaxKind::R_BRACK => unreachable!("{kind:?}"),
             RSyntaxKind::DOTS => unreachable!("{kind:?}"),
@@ -266,15 +268,12 @@ impl<'src> RWalk<'src> {
         // TODO: Handle optional BOM?
 
         // Root contains a list of `expressions`
-        self.parse.push_event(Event::Start {
-            kind: RSyntaxKind::R_EXPRESSION_LIST,
-            forward_parent: None,
-        });
+        self.handle_node_enter(RSyntaxKind::R_EXPRESSION_LIST);
     }
 
     fn handle_root_leave(&mut self, node: tree_sitter::Node) {
         // Finish expression list
-        self.parse.finish();
+        self.handle_node_leave();
 
         // No longer between two tokens.
         // Now between last token and EOF.
@@ -511,6 +510,36 @@ impl<'src> RWalk<'src> {
     }
 
     fn handle_if_statement_leave(&mut self) {
+        self.handle_node_leave();
+    }
+
+    fn handle_braced_expressions_enter(&mut self, node: tree_sitter::Node, iter: &mut Preorder) {
+        // We handle all children directly
+        iter.skip_subtree();
+
+        self.handle_node_enter(RSyntaxKind::R_BRACED_EXPRESSIONS);
+
+        let mut cursor = node.walk();
+
+        for child in node.children(&mut cursor) {
+            let mut child_iter = child.preorder();
+
+            match child.syntax_kind() {
+                RSyntaxKind::L_CURLY => {
+                    self.walk(&mut child_iter);
+                    self.handle_node_enter(RSyntaxKind::R_EXPRESSION_LIST);
+                }
+                RSyntaxKind::R_CURLY => {
+                    self.handle_node_leave();
+                    self.walk(&mut child_iter);
+                }
+                RSyntaxKind::COMMENT => self.walk(&mut child_iter),
+                _ => self.walk(&mut child_iter),
+            }
+        }
+    }
+
+    fn handle_braced_expressions_leave(&mut self) {
         self.handle_node_leave();
     }
 }

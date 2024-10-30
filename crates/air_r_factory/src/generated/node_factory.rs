@@ -20,6 +20,20 @@ pub fn r_binary_expression(
         ],
     ))
 }
+pub fn r_braced_expressions(
+    l_curly_token: SyntaxToken,
+    expressions: RExpressionList,
+    r_curly_token: SyntaxToken,
+) -> RBracedExpressions {
+    RBracedExpressions::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_BRACED_EXPRESSIONS,
+        [
+            Some(SyntaxElement::Token(l_curly_token)),
+            Some(SyntaxElement::Node(expressions.into_syntax())),
+            Some(SyntaxElement::Token(r_curly_token)),
+        ],
+    ))
+}
 pub fn r_complex_value(value_token: SyntaxToken) -> RComplexValue {
     RComplexValue::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_COMPLEX_VALUE,

@@ -20,6 +20,10 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RBinaryExpression::new_unchecked(node) };
                     $body
                 }
+                $crate::RSyntaxKind::R_BRACED_EXPRESSIONS => {
+                    let $pattern = unsafe { $crate::RBracedExpressions::new_unchecked(node) };
+                    $body
+                }
                 $crate::RSyntaxKind::R_COMPLEX_VALUE => {
                     let $pattern = unsafe { $crate::RComplexValue::new_unchecked(node) };
                     $body
