@@ -117,7 +117,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_FOR_STATEMENT => self.handle_node_enter(kind),
             RSyntaxKind::R_INTEGER_VALUE => self.handle_integer_value_enter(iter),
             RSyntaxKind::R_DOUBLE_VALUE => self.handle_value_enter(kind),
-            RSyntaxKind::R_STRING_VALUE => self.handle_value_enter(kind),
+            RSyntaxKind::R_STRING_VALUE => self.handle_string_value_enter(iter),
             RSyntaxKind::R_LOGICAL_VALUE => self.handle_value_enter(kind),
             RSyntaxKind::R_NULL_VALUE => self.handle_value_enter(kind),
             RSyntaxKind::R_IDENTIFIER => self.handle_value_enter(kind),
@@ -177,9 +177,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_DOUBLE_VALUE => {
                 self.handle_value_leave(node, RSyntaxKind::R_DOUBLE_LITERAL)
             }
-            RSyntaxKind::R_STRING_VALUE => {
-                self.handle_value_leave(node, RSyntaxKind::R_STRING_LITERAL)
-            }
+            RSyntaxKind::R_STRING_VALUE => self.handle_string_value_leave(node),
             RSyntaxKind::R_LOGICAL_VALUE => {
                 self.handle_value_leave(node, RSyntaxKind::R_LOGICAL_LITERAL)
             }
@@ -435,6 +433,17 @@ impl<'src> RWalk<'src> {
 
     fn handle_integer_value_leave(&mut self, node: tree_sitter::Node) {
         self.handle_value_leave(node, RSyntaxKind::R_INTEGER_LITERAL);
+    }
+
+    fn handle_string_value_enter(&mut self, iter: &mut Preorder) {
+        // Skip subtree, we currently don't separate string types.
+        // Can't have comments in a string subtree.
+        iter.skip_subtree();
+        self.handle_value_enter(RSyntaxKind::R_STRING_VALUE);
+    }
+
+    fn handle_string_value_leave(&mut self, node: tree_sitter::Node) {
+        self.handle_value_leave(node, RSyntaxKind::R_STRING_LITERAL);
     }
 }
 
