@@ -15,11 +15,33 @@ if(a)1 else if(b)2 else 3
 # Line break test
 if (a_really_really_long_condition_here_that_is_allowed_to_break_onto_the_next_line) 1 else 2
 
-# TODO: `comment1` should probably end up inside the braces, like with
-# function definitions
-if (a) # comment1
+if (a) # becomes leading on `1 + 1`
 {
-  # comment2
+  1 + 1
+}
+
+if (a) # becomes dangling on `{}`
+{
+}
+
+if (a) # becomes dangling on `{}`
+{
+  # inner comment but empty `{}`
+}
+
+if (a) # becomes leading on `TRUE`
+  TRUE
+
+if (
+  a
+  # becomes trailing on `a`
+) {
+  TRUE
+}
+
+if (a # becomes trailing on `a`
+) {
+  TRUE
 }
 
 ```
@@ -52,11 +74,34 @@ if (
 )
 	1 else 2
 
-# TODO: `comment1` should probably end up inside the braces, like with
-# function definitions
+if (a) {
+	# becomes leading on `1 + 1`
+	1 + 1
+}
+
+if (a) {
+	# becomes dangling on `{}`
+}
+
+if (a) {
+	# becomes dangling on `{}`
+	# inner comment but empty `{}`
+}
+
+if (a)
+	# becomes leading on `TRUE`
+	TRUE
+
 if (
-	a # comment1
+	a
+	# becomes trailing on `a`
 ) {
-	# comment2
+	TRUE
+}
+
+if (
+	a # becomes trailing on `a`
+) {
+	TRUE
 }
 ```

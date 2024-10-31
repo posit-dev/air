@@ -1,5 +1,6 @@
 use crate::prelude::*;
 use air_r_syntax::AnyRExpression;
+use air_r_syntax::RIfStatement;
 use air_r_syntax::RLanguage;
 use air_r_syntax::RSyntaxKind;
 use biome_formatter::comments::CommentKind;
@@ -53,12 +54,12 @@ impl CommentStyle for RCommentStyle {
     ) -> CommentPlacement<Self::Language> {
         // TODO: Implement more rule based comment placement, see `biome_js_formatter`
         match comment.text_position() {
-            CommentTextPosition::EndOfLine => {
-                handle_for_comment(comment).or_else(handle_function_comment)
-            }
-            CommentTextPosition::OwnLine => {
-                handle_for_comment(comment).or_else(handle_function_comment)
-            }
+            CommentTextPosition::EndOfLine => handle_for_comment(comment)
+                .or_else(handle_function_comment)
+                .or_else(handle_if_statement_comment),
+            CommentTextPosition::OwnLine => handle_for_comment(comment)
+                .or_else(handle_function_comment)
+                .or_else(handle_if_statement_comment),
             CommentTextPosition::SameLine => {
                 // Not applicable for R, we don't have `/* */` comments
                 CommentPlacement::Default(comment)
@@ -96,47 +97,112 @@ fn handle_function_comment(comment: DecoratedComment<RLanguage>) -> CommentPlace
         return CommentPlacement::Default(comment);
     };
 
-    // Make line comments between the `)` token and the function body:
-    // - Leading comments of the first expression within `{}`
-    // - Dangling comments of the `{}` if they are empty
-    // - Leading comments of the body if the body is not a `{}` expression
-    //
-    // Doing this allows these comments to be handled elegantly in one pass.
-    // Otherwise we can end up with unstable formatting where in a first pass we
-    // format as:
-    //
-    // ```r
-    // function() { # comment
-    // }
-    // ```
-    //
-    // and then in a second pass we format as:
-    //
-    // ```r
-    // function() {
-    //   # comment
-    // }
-    // ```
-    //
-    // Examples:
-    //
-    // ```r
-    // function() # becomes leading on `1 + 1`
-    // {
-    //  1 + 1
-    // }
-    // ```
-    //
-    // ```r
-    // function() # becomes dangling on the `{}`
-    // {
-    // }
-    // ```
-    //
-    // ```r
-    // function() # becomes leading on `1 + 1`
-    //   1 + 1
-    // ```
+    place_leading_or_dangling_body_comment(body, comment)
+}
+
+fn handle_if_statement_comment(
+    comment: DecoratedComment<RLanguage>,
+) -> CommentPlacement<RLanguage> {
+    match (comment.enclosing_node().kind(), comment.following_node()) {
+        (RSyntaxKind::R_IF_STATEMENT, Some(following)) => {
+            let if_statement = RIfStatement::unwrap_cast(comment.enclosing_node().clone());
+
+            if let Some(preceding) = comment.preceding_node() {
+                // Make comments directly before the condition `)` trailing
+                // comments of the condition itself
+                //
+                // ```r
+                // if (
+                //   cond
+                //   # comment
+                // ) {
+                // }
+                // ```
+                if comment
+                    .following_token()
+                    .map_or(false, |token| token.kind() == RSyntaxKind::R_PAREN)
+                {
+                    return CommentPlacement::trailing(preceding.clone(), comment);
+                }
+            }
+
+            // Figure out if this is a comment that comes directly before the
+            // `consequence` and after the `)`, in which case we move it onto
+            // the `consequence`
+            //
+            // ```r
+            // if (cond) # comment
+            //   TRUE
+            // ```
+            if let Ok(consequence) = if_statement.consequence() {
+                if consequence.syntax() == following {
+                    return place_leading_or_dangling_body_comment(consequence, comment);
+                }
+            }
+        }
+        (RSyntaxKind::R_ELSE_CLAUSE, _) => {
+            // TODO: Handle else clause comments in some way? See JS for an example.
+            // fall through
+        }
+        _ => {
+            // fall through
+        }
+    }
+
+    CommentPlacement::Default(comment)
+}
+
+/// Make line comments between a `)` token and a `body`:
+/// - Leading comments of the first expression within `{}` if `body` is a braced expression
+/// - Dangling comments of the `{}` if `body` is an empty braced expression
+/// - Leading comments of the `body` if the `body` is not a braced expression
+///
+/// Doing this allows these comments to be handled elegantly in one pass.
+/// Otherwise we can end up with unstable formatting where in a first pass we
+/// format as:
+///
+/// ```r
+/// function() { # comment
+/// }
+/// ```
+///
+/// and then in a second pass we format as:
+///
+/// ```r
+/// function() {
+///   # comment
+/// }
+/// ```
+///
+/// Examples:
+///
+/// ```r
+/// function() # becomes leading on `1 + 1`
+/// {
+///  1 + 1
+/// }
+/// ```
+///
+/// ```r
+/// function() # becomes dangling on the `{}`
+/// {
+/// }
+/// ```
+///
+/// ```r
+/// function() # becomes leading on `1 + 1`
+///   1 + 1
+/// ```
+///
+/// ```r
+/// if (cond) # becomes leading on `{}`
+/// {
+/// }
+/// ```
+fn place_leading_or_dangling_body_comment(
+    body: AnyRExpression,
+    comment: DecoratedComment<RLanguage>,
+) -> CommentPlacement<RLanguage> {
     match body {
         AnyRExpression::RBracedExpressions(body) => match body.expressions().first() {
             Some(first) => CommentPlacement::leading(first.into_syntax(), comment),
