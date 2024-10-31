@@ -21,7 +21,6 @@ impl FormatNodeRule<RFunctionDefinition> for FormatRFunctionDefinition {
             [
                 name.format(),
                 group(&parameters.format()),
-                space(),
                 group(&FormatStatementBody::new(&body?)),
             ]
         )
