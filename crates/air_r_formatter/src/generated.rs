@@ -40,6 +40,42 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RBinaryExpression {
         )
     }
 }
+impl FormatRule<air_r_syntax::RBracedExpressions>
+    for crate::r::auxiliary::braced_expressions::FormatRBracedExpressions
+{
+    type Context = RFormatContext;
+    #[inline(always)]
+    fn fmt(&self, node: &air_r_syntax::RBracedExpressions, f: &mut RFormatter) -> FormatResult<()> {
+        FormatNodeRule::<air_r_syntax::RBracedExpressions>::fmt(self, node, f)
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::RBracedExpressions {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::RBracedExpressions,
+        crate::r::auxiliary::braced_expressions::FormatRBracedExpressions,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::auxiliary::braced_expressions::FormatRBracedExpressions::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::RBracedExpressions {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::RBracedExpressions,
+        crate::r::auxiliary::braced_expressions::FormatRBracedExpressions,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::auxiliary::braced_expressions::FormatRBracedExpressions::default(),
+        )
+    }
+}
 impl FormatRule<air_r_syntax::RComplexValue>
     for crate::r::auxiliary::complex_value::FormatRComplexValue
 {

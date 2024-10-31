@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use air_r_syntax::AnyRExpression;
 use air_r_syntax::RLanguage;
 use air_r_syntax::RSyntaxKind;
 use biome_formatter::comments::CommentKind;
@@ -52,9 +53,16 @@ impl CommentStyle for RCommentStyle {
     ) -> CommentPlacement<Self::Language> {
         // TODO: Implement more rule based comment placement, see `biome_js_formatter`
         match comment.text_position() {
-            CommentTextPosition::EndOfLine => handle_for_comment(comment),
-            CommentTextPosition::OwnLine => handle_for_comment(comment),
-            CommentTextPosition::SameLine => handle_for_comment(comment),
+            CommentTextPosition::EndOfLine => {
+                handle_for_comment(comment).or_else(handle_function_comment)
+            }
+            CommentTextPosition::OwnLine => {
+                handle_for_comment(comment).or_else(handle_function_comment)
+            }
+            CommentTextPosition::SameLine => {
+                // Not applicable for R, we don't have `/* */` comments
+                CommentPlacement::Default(comment)
+            }
         }
     }
 }
@@ -72,4 +80,68 @@ fn handle_for_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<
     }
 
     CommentPlacement::Default(comment)
+}
+
+fn handle_function_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
+    if !matches!(
+        comment.enclosing_node().kind(),
+        RSyntaxKind::R_FUNCTION_DEFINITION
+    ) {
+        return CommentPlacement::Default(comment);
+    };
+
+    // Function definitions have `name`, `parameters`, and `body` fields, and
+    // only the `body` can be an `AnyRExpression`.
+    let Some(body) = comment.following_node().and_then(AnyRExpression::cast_ref) else {
+        return CommentPlacement::Default(comment);
+    };
+
+    // Make line comments between the `)` token and the function body:
+    // - Leading comments of the first expression within `{}`
+    // - Dangling comments of the `{}` if they are empty
+    // - Leading comments of the body if the body is not a `{}` expression
+    //
+    // Doing this allows these comments to be handled elegantly in one pass.
+    // Otherwise we can end up with unstable formatting where in a first pass we
+    // format as:
+    //
+    // ```r
+    // function() { # comment
+    // }
+    // ```
+    //
+    // and then in a second pass we format as:
+    //
+    // ```r
+    // function() {
+    //   # comment
+    // }
+    // ```
+    //
+    // Examples:
+    //
+    // ```r
+    // function() # becomes leading on `1 + 1`
+    // {
+    //  1 + 1
+    // }
+    // ```
+    //
+    // ```r
+    // function() # becomes dangling on the `{}`
+    // {
+    // }
+    // ```
+    //
+    // ```r
+    // function() # becomes leading on `1 + 1`
+    //   1 + 1
+    // ```
+    match body {
+        AnyRExpression::RBracedExpressions(body) => match body.expressions().first() {
+            Some(first) => CommentPlacement::leading(first.into_syntax(), comment),
+            None => CommentPlacement::dangling(body.into_syntax(), comment),
+        },
+        _ => CommentPlacement::leading(body.into_syntax(), comment),
+    }
 }

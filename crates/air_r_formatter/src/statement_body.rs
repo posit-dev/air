@@ -26,18 +26,20 @@ impl<'a> FormatStatementBody<'a> {
 
 impl Format<RFormatContext> for FormatStatementBody<'_> {
     fn fmt(&self, f: &mut Formatter<RFormatContext>) -> FormatResult<()> {
-        // TODO:
-        // For block statements that start with `{`, we want to try and keep
-        // the `{` on the same line as the for loop `()`, and then let the
-        // block statement format itself from there. Otherwise we forcibly
-        // indent 1 liner for loops for clarity.
-        //
-        // use AnyRExpression::*;
-        // if  let RBlockStatement() = &self.body {
-        //     write!(f, [space(), self.body.format()])
-        // } else {
+        use AnyRExpression::*;
 
-        if self.force_space {
+        // We only want a single space between the construct and the statement
+        // body if the body is a braced expression. The expression will handle
+        // the line break as required. Otherwise, we handle the soft line
+        // indent for all other syntax.
+        //
+        // if (a) {}
+        //       |--| statement body
+        //
+        // if (a)
+        //   a
+        //  |--| statement body
+        if matches!(&self.body, RBracedExpressions(_)) || self.force_space {
             write!(f, [space(), self.body.format()])
         } else {
             write!(f, [soft_line_indent_or_space(&self.body.format())])

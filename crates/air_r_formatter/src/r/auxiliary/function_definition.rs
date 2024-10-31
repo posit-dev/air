@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 
 use crate::prelude::*;
+use crate::statement_body::FormatStatementBody;
 use air_r_syntax::RFunctionDefinition;
 use air_r_syntax::RFunctionDefinitionFields;
 use biome_formatter::write;
@@ -21,7 +22,7 @@ impl FormatNodeRule<RFunctionDefinition> for FormatRFunctionDefinition {
                 name.format(),
                 group(&parameters.format()),
                 space(),
-                body.format()
+                group(&FormatStatementBody::new(&body?)),
             ]
         )
     }
