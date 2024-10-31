@@ -2,6 +2,7 @@
 
 #[allow(clippy::module_inception)]
 pub(crate) mod bogus;
+pub(crate) mod bogus_argument;
 pub(crate) mod bogus_expression;
 pub(crate) mod bogus_parameter;
 pub(crate) mod bogus_value;
