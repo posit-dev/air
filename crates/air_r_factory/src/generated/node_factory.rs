@@ -34,6 +34,35 @@ pub fn r_braced_expressions(
         ],
     ))
 }
+pub fn r_call(function: AnyRExpression, arguments: RCallArguments) -> RCall {
+    RCall::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_CALL,
+        [
+            Some(SyntaxElement::Node(function.into_syntax())),
+            Some(SyntaxElement::Node(arguments.into_syntax())),
+        ],
+    ))
+}
+pub fn r_call_arguments(
+    l_paren_token: SyntaxToken,
+    items: RArgumentList,
+    r_paren_token: SyntaxToken,
+) -> RCallArguments {
+    RCallArguments::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_CALL_ARGUMENTS,
+        [
+            Some(SyntaxElement::Token(l_paren_token)),
+            Some(SyntaxElement::Node(items.into_syntax())),
+            Some(SyntaxElement::Token(r_paren_token)),
+        ],
+    ))
+}
+pub fn r_comma(value_token: SyntaxToken) -> RComma {
+    RComma::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_COMMA,
+        [Some(SyntaxElement::Token(value_token))],
+    ))
+}
 pub fn r_complex_value(value_token: SyntaxToken) -> RComplexValue {
     RComplexValue::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_COMPLEX_VALUE,
@@ -71,6 +100,18 @@ impl RDefaultParameterBuilder {
             ],
         ))
     }
+}
+pub fn r_dots(value_token: SyntaxToken) -> RDots {
+    RDots::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_DOTS,
+        [Some(SyntaxElement::Token(value_token))],
+    ))
+}
+pub fn r_dots_argument(value_token: SyntaxToken) -> RDotsArgument {
+    RDotsArgument::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_DOTS_ARGUMENT,
+        [Some(SyntaxElement::Token(value_token))],
+    ))
 }
 pub fn r_dots_parameter(name_token: SyntaxToken) -> RDotsParameter {
     RDotsParameter::unwrap_cast(SyntaxNode::new_detached(
@@ -197,6 +238,35 @@ pub fn r_logical_value(value_token: SyntaxToken) -> RLogicalValue {
         [Some(SyntaxElement::Token(value_token))],
     ))
 }
+pub fn r_named_argument(name: AnyRArgumentName, eq_token: SyntaxToken) -> RNamedArgumentBuilder {
+    RNamedArgumentBuilder {
+        name,
+        eq_token,
+        value: None,
+    }
+}
+pub struct RNamedArgumentBuilder {
+    name: AnyRArgumentName,
+    eq_token: SyntaxToken,
+    value: Option<AnyRExpression>,
+}
+impl RNamedArgumentBuilder {
+    pub fn with_value(mut self, value: AnyRExpression) -> Self {
+        self.value = Some(value);
+        self
+    }
+    pub fn build(self) -> RNamedArgument {
+        RNamedArgument::unwrap_cast(SyntaxNode::new_detached(
+            RSyntaxKind::R_NAMED_ARGUMENT,
+            [
+                Some(SyntaxElement::Node(self.name.into_syntax())),
+                Some(SyntaxElement::Token(self.eq_token)),
+                self.value
+                    .map(|token| SyntaxElement::Node(token.into_syntax())),
+            ],
+        ))
+    }
+}
 pub fn r_null_value(value_token: SyntaxToken) -> RNullValue {
     RNullValue::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_NULL_VALUE,
@@ -251,6 +321,24 @@ pub fn r_string_value(value_token: SyntaxToken) -> RStringValue {
         [Some(SyntaxElement::Token(value_token))],
     ))
 }
+pub fn r_unnamed_argument(value: AnyRExpression) -> RUnnamedArgument {
+    RUnnamedArgument::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_UNNAMED_ARGUMENT,
+        [Some(SyntaxElement::Node(value.into_syntax()))],
+    ))
+}
+pub fn r_argument_list<I>(items: I) -> RArgumentList
+where
+    I: IntoIterator<Item = AnyRArgumentListElement>,
+    I::IntoIter: ExactSizeIterator,
+{
+    RArgumentList::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_ARGUMENT_LIST,
+        items
+            .into_iter()
+            .map(|item| Some(item.into_syntax().into())),
+    ))
+}
 pub fn r_expression_list<I>(items: I) -> RExpressionList
 where
     I: IntoIterator<Item = AnyRExpression>,
@@ -290,6 +378,16 @@ where
     I::IntoIter: ExactSizeIterator,
 {
     RBogus::unwrap_cast(SyntaxNode::new_detached(RSyntaxKind::R_BOGUS, slots))
+}
+pub fn r_bogus_argument<I>(slots: I) -> RBogusArgument
+where
+    I: IntoIterator<Item = Option<SyntaxElement>>,
+    I::IntoIter: ExactSizeIterator,
+{
+    RBogusArgument::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_BOGUS_ARGUMENT,
+        slots,
+    ))
 }
 pub fn r_bogus_expression<I>(slots: I) -> RBogusExpression
 where

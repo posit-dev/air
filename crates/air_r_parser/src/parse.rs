@@ -116,6 +116,11 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_DEFAULT_PARAMETER => self.handle_default_parameter_enter(node, iter),
             RSyntaxKind::R_IF_STATEMENT => self.handle_if_statement_enter(node, iter),
             RSyntaxKind::R_FOR_STATEMENT => self.handle_node_enter(kind),
+            RSyntaxKind::R_CALL => self.handle_node_enter(kind),
+            RSyntaxKind::R_CALL_ARGUMENTS => self.handle_call_arguments_enter(node, iter),
+            RSyntaxKind::R_NAMED_ARGUMENT => self.handle_named_argument_enter(node, iter),
+            RSyntaxKind::R_UNNAMED_ARGUMENT => self.handle_node_enter(kind),
+            RSyntaxKind::R_DOTS_ARGUMENT => self.handle_dots_argument_enter(node, iter),
             RSyntaxKind::R_BRACED_EXPRESSIONS => self.handle_braced_expressions_enter(node, iter),
             RSyntaxKind::R_INTEGER_VALUE => self.handle_integer_value_enter(iter),
             RSyntaxKind::R_COMPLEX_VALUE => self.handle_complex_value_enter(iter),
@@ -145,8 +150,11 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::COMMENT => self.handle_comment_enter(),
 
             // Unreachable directly
+            RSyntaxKind::R_DOTS => unreachable!("{kind:?}"),
+            RSyntaxKind::R_COMMA => unreachable!("{kind:?}"),
             RSyntaxKind::R_ELSE_CLAUSE => unreachable!("{kind:?}"),
             RSyntaxKind::R_PARAMETER_LIST => unreachable!("{kind:?}"),
+            RSyntaxKind::R_ARGUMENT_LIST => unreachable!("{kind:?}"),
             RSyntaxKind::R_EXPRESSION_LIST => unreachable!("{kind:?}"),
             RSyntaxKind::EOF => unreachable!("{kind:?}"),
             RSyntaxKind::UNICODE_BOM => unreachable!("{kind:?}"),
@@ -166,6 +174,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_BOGUS_VALUE => unreachable!("{kind:?}"),
             RSyntaxKind::R_BOGUS_EXPRESSION => unreachable!("{kind:?}"),
             RSyntaxKind::R_BOGUS_PARAMETER => unreachable!("{kind:?}"),
+            RSyntaxKind::R_BOGUS_ARGUMENT => unreachable!("{kind:?}"),
             RSyntaxKind::TOMBSTONE => unreachable!("{kind:?}"),
             RSyntaxKind::__LAST => unreachable!("{kind:?}"),
         }
@@ -182,6 +191,11 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_DEFAULT_PARAMETER => self.handle_default_parameter_leave(),
             RSyntaxKind::R_IF_STATEMENT => self.handle_if_statement_leave(),
             RSyntaxKind::R_FOR_STATEMENT => self.handle_node_leave(),
+            RSyntaxKind::R_CALL => self.handle_node_leave(),
+            RSyntaxKind::R_CALL_ARGUMENTS => self.handle_call_arguments_leave(),
+            RSyntaxKind::R_NAMED_ARGUMENT => self.handle_named_argument_leave(),
+            RSyntaxKind::R_UNNAMED_ARGUMENT => self.handle_node_leave(),
+            RSyntaxKind::R_DOTS_ARGUMENT => self.handle_dots_argument_leave(),
             RSyntaxKind::R_BRACED_EXPRESSIONS => self.handle_braced_expressions_leave(),
             RSyntaxKind::R_INTEGER_VALUE => self.handle_integer_value_leave(node),
             RSyntaxKind::R_DOUBLE_VALUE => {
@@ -215,8 +229,11 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::COMMENT => self.handle_comment_leave(node),
 
             // Unreachable directly
+            RSyntaxKind::R_DOTS => unreachable!("{kind:?}"),
+            RSyntaxKind::R_COMMA => unreachable!("{kind:?}"),
             RSyntaxKind::R_ELSE_CLAUSE => unreachable!("{kind:?}"),
             RSyntaxKind::R_PARAMETER_LIST => unreachable!("{kind:?}"),
+            RSyntaxKind::R_ARGUMENT_LIST => unreachable!("{kind:?}"),
             RSyntaxKind::R_EXPRESSION_LIST => unreachable!("{kind:?}"),
             RSyntaxKind::EOF => unreachable!("{kind:?}"),
             RSyntaxKind::UNICODE_BOM => unreachable!("{kind:?}"),
@@ -236,6 +253,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_BOGUS_VALUE => unreachable!("{kind:?}"),
             RSyntaxKind::R_BOGUS_EXPRESSION => unreachable!("{kind:?}"),
             RSyntaxKind::R_BOGUS_PARAMETER => unreachable!("{kind:?}"),
+            RSyntaxKind::R_BOGUS_ARGUMENT => unreachable!("{kind:?}"),
             RSyntaxKind::TOMBSTONE => unreachable!("{kind:?}"),
             RSyntaxKind::__LAST => unreachable!("{kind:?}"),
         }
@@ -542,6 +560,84 @@ impl<'src> RWalk<'src> {
     fn handle_braced_expressions_leave(&mut self) {
         self.handle_node_leave();
     }
+
+    fn handle_call_arguments_enter(&mut self, node: tree_sitter::Node, iter: &mut Preorder) {
+        // We handle all children directly
+        iter.skip_subtree();
+
+        self.handle_node_enter(RSyntaxKind::R_CALL_ARGUMENTS);
+
+        let mut cursor = node.walk();
+
+        // TODO: In theory we'd return an error and refuse to parse successfully
+        // if we see `fn(a b)`, i.e. two arguments in a row. Can we handle in
+        // tree sitter instead?
+        for child in node.children(&mut cursor) {
+            let mut child_iter = child.preorder();
+
+            match child.syntax_kind() {
+                RSyntaxKind::L_PAREN => {
+                    self.walk(&mut child_iter);
+                    self.handle_node_enter(RSyntaxKind::R_ARGUMENT_LIST);
+                }
+                RSyntaxKind::R_PAREN => {
+                    self.handle_node_leave();
+                    self.walk(&mut child_iter);
+                }
+                RSyntaxKind::COMMA => {
+                    // Promote to an `R_COMMA` node, commas are very special in calls
+                    self.handle_node_enter(RSyntaxKind::R_COMMA);
+                    self.handle_token(child, RSyntaxKind::COMMA);
+                    self.handle_node_leave();
+                }
+                RSyntaxKind::R_DOTS_ARGUMENT => self.walk(&mut child_iter),
+                RSyntaxKind::R_NAMED_ARGUMENT => self.walk(&mut child_iter),
+                RSyntaxKind::R_UNNAMED_ARGUMENT => self.walk(&mut child_iter),
+                RSyntaxKind::COMMENT => self.walk(&mut child_iter),
+                kind => unreachable!("Found {kind:?} in arguments"),
+            }
+        }
+    }
+
+    fn handle_call_arguments_leave(&mut self) {
+        self.handle_node_leave();
+    }
+
+    fn handle_dots_argument_enter(&mut self, node: tree_sitter::Node, iter: &mut Preorder) {
+        iter.skip_subtree();
+        self.handle_node_enter(RSyntaxKind::R_DOTS_ARGUMENT);
+        self.handle_token(node, RSyntaxKind::DOTS);
+    }
+
+    fn handle_dots_argument_leave(&mut self) {
+        self.handle_node_leave();
+    }
+
+    fn handle_named_argument_enter(&mut self, node: tree_sitter::Node, iter: &mut Preorder) {
+        iter.skip_subtree();
+
+        self.handle_node_enter(RSyntaxKind::R_NAMED_ARGUMENT);
+
+        let mut cursor = node.walk();
+
+        for child in node.children(&mut cursor) {
+            let mut child_iter = child.preorder();
+
+            match child.syntax_kind() {
+                RSyntaxKind::DOTS => {
+                    // Promote to `R_DOTS` node
+                    self.handle_node_enter(RSyntaxKind::R_DOTS);
+                    self.handle_token(child, RSyntaxKind::DOTS);
+                    self.handle_node_leave();
+                }
+                _ => self.walk(&mut child_iter),
+            }
+        }
+    }
+
+    fn handle_named_argument_leave(&mut self) {
+        self.handle_node_leave();
+    }
 }
 
 struct RParse {
@@ -756,7 +852,7 @@ mod tests {
     // TODO: It would be great if `biome_parser::token_source::Trivia`
     // implemented `PartialEq`, maybe we should ask for that.
     fn assert_eq_events(lhs: Vec<Event<RSyntaxKind>>, rhs: Vec<Event<RSyntaxKind>>) {
-        assert_eq!(lhs.len(), rhs.len());
+        assert_eq!(lhs.len(), rhs.len(), "With:\nlhs {lhs:?}\nrhs {rhs:?}");
 
         for (i, (lhs, rhs)) in lhs.iter().zip(rhs.iter()).enumerate() {
             let message = format!("In event {i} with:\nlhs {lhs:?}\nrhs {rhs:?}");
@@ -1011,6 +1107,60 @@ mod tests {
         assert_eq_events(events, expect);
 
         let expect = vec![ws(10, 11, Pos::Leading)];
+        assert_eq_trivia(trivia, expect);
+    }
+
+    #[test]
+    fn test_parse_call() {
+        let (events, trivia, _errors) = parse_text("fn()", RParserOptions::default());
+
+        let expect = vec![
+            Event::Start {
+                kind: RSyntaxKind::R_ROOT,
+                forward_parent: None,
+            },
+            Event::Start {
+                kind: RSyntaxKind::R_EXPRESSION_LIST,
+                forward_parent: None,
+            },
+            Event::Start {
+                kind: RSyntaxKind::R_CALL,
+                forward_parent: None,
+            },
+            Event::Start {
+                kind: RSyntaxKind::R_IDENTIFIER,
+                forward_parent: None,
+            },
+            Event::Token {
+                kind: RSyntaxKind::IDENT,
+                end: TextSize::from(2),
+            },
+            Event::Finish, // R_IDENTIFIER
+            Event::Start {
+                kind: RSyntaxKind::R_CALL_ARGUMENTS,
+                forward_parent: None,
+            },
+            Event::Token {
+                kind: RSyntaxKind::L_PAREN,
+                end: TextSize::from(3),
+            },
+            Event::Start {
+                kind: RSyntaxKind::R_ARGUMENT_LIST,
+                forward_parent: None,
+            },
+            Event::Finish, // R_ARGUMENT_LIST
+            Event::Token {
+                kind: RSyntaxKind::R_PAREN,
+                end: TextSize::from(4),
+            },
+            Event::Finish, // R_CALL_ARGUMENTS
+            Event::Finish, // R_CALL
+            Event::Finish, // R_EXPRESSION_LIST
+            Event::Finish, // R_ROOT
+        ];
+        assert_eq_events(events, expect);
+
+        let expect = vec![];
         assert_eq_trivia(trivia, expect);
     }
 }

@@ -24,12 +24,32 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RBracedExpressions::new_unchecked(node) };
                     $body
                 }
+                $crate::RSyntaxKind::R_CALL => {
+                    let $pattern = unsafe { $crate::RCall::new_unchecked(node) };
+                    $body
+                }
+                $crate::RSyntaxKind::R_CALL_ARGUMENTS => {
+                    let $pattern = unsafe { $crate::RCallArguments::new_unchecked(node) };
+                    $body
+                }
+                $crate::RSyntaxKind::R_COMMA => {
+                    let $pattern = unsafe { $crate::RComma::new_unchecked(node) };
+                    $body
+                }
                 $crate::RSyntaxKind::R_COMPLEX_VALUE => {
                     let $pattern = unsafe { $crate::RComplexValue::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_DEFAULT_PARAMETER => {
                     let $pattern = unsafe { $crate::RDefaultParameter::new_unchecked(node) };
+                    $body
+                }
+                $crate::RSyntaxKind::R_DOTS => {
+                    let $pattern = unsafe { $crate::RDots::new_unchecked(node) };
+                    $body
+                }
+                $crate::RSyntaxKind::R_DOTS_ARGUMENT => {
+                    let $pattern = unsafe { $crate::RDotsArgument::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_DOTS_PARAMETER => {
@@ -72,6 +92,10 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RLogicalValue::new_unchecked(node) };
                     $body
                 }
+                $crate::RSyntaxKind::R_NAMED_ARGUMENT => {
+                    let $pattern = unsafe { $crate::RNamedArgument::new_unchecked(node) };
+                    $body
+                }
                 $crate::RSyntaxKind::R_NULL_VALUE => {
                     let $pattern = unsafe { $crate::RNullValue::new_unchecked(node) };
                     $body
@@ -88,8 +112,16 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RStringValue::new_unchecked(node) };
                     $body
                 }
+                $crate::RSyntaxKind::R_UNNAMED_ARGUMENT => {
+                    let $pattern = unsafe { $crate::RUnnamedArgument::new_unchecked(node) };
+                    $body
+                }
                 $crate::RSyntaxKind::R_BOGUS => {
                     let $pattern = unsafe { $crate::RBogus::new_unchecked(node) };
+                    $body
+                }
+                $crate::RSyntaxKind::R_BOGUS_ARGUMENT => {
+                    let $pattern = unsafe { $crate::RBogusArgument::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_BOGUS_EXPRESSION => {
@@ -102,6 +134,10 @@ macro_rules! map_syntax_node {
                 }
                 $crate::RSyntaxKind::R_BOGUS_VALUE => {
                     let $pattern = unsafe { $crate::RBogusValue::new_unchecked(node) };
+                    $body
+                }
+                $crate::RSyntaxKind::R_ARGUMENT_LIST => {
+                    let $pattern = unsafe { $crate::RArgumentList::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_EXPRESSION_LIST => {

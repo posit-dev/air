@@ -42,6 +42,8 @@ pub enum RSyntaxKind {
     BACKSLASH,
     R_ROOT,
     R_IDENTIFIER,
+    R_COMMA,
+    R_DOTS,
     R_BINARY_EXPRESSION,
     R_FUNCTION_DEFINITION,
     R_PARAMETERS,
@@ -53,6 +55,12 @@ pub enum RSyntaxKind {
     R_ELSE_CLAUSE,
     R_FOR_STATEMENT,
     R_BRACED_EXPRESSIONS,
+    R_CALL,
+    R_CALL_ARGUMENTS,
+    R_ARGUMENT_LIST,
+    R_NAMED_ARGUMENT,
+    R_UNNAMED_ARGUMENT,
+    R_DOTS_ARGUMENT,
     R_EXPRESSION_LIST,
     R_INTEGER_VALUE,
     R_DOUBLE_VALUE,
@@ -64,6 +72,7 @@ pub enum RSyntaxKind {
     R_BOGUS_VALUE,
     R_BOGUS_EXPRESSION,
     R_BOGUS_PARAMETER,
+    R_BOGUS_ARGUMENT,
     #[doc(hidden)]
     __LAST,
 }
@@ -85,7 +94,7 @@ impl RSyntaxKind {
     }
     pub const fn is_list(self) -> bool {
         match self {
-            R_PARAMETER_LIST | R_EXPRESSION_LIST => true,
+            R_PARAMETER_LIST | R_ARGUMENT_LIST | R_EXPRESSION_LIST => true,
             _ => false,
         }
     }

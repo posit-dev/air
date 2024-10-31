@@ -33,7 +33,8 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             RSyntaxKind::R_BOGUS
             | RSyntaxKind::R_BOGUS_VALUE
             | RSyntaxKind::R_BOGUS_EXPRESSION
-            | RSyntaxKind::R_BOGUS_PARAMETER => true,
+            | RSyntaxKind::R_BOGUS_PARAMETER
+            | RSyntaxKind::R_BOGUS_ARGUMENT => true,
 
             RSyntaxKind::TOMBSTONE
             | RSyntaxKind::EOF
@@ -66,6 +67,8 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::COMMENT
             | RSyntaxKind::BACKSLASH
             | RSyntaxKind::R_ROOT
+            | RSyntaxKind::R_COMMA
+            | RSyntaxKind::R_DOTS
             | RSyntaxKind::R_IDENTIFIER
             | RSyntaxKind::R_BINARY_EXPRESSION
             | RSyntaxKind::R_FUNCTION_DEFINITION
@@ -78,6 +81,12 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_ELSE_CLAUSE
             | RSyntaxKind::R_FOR_STATEMENT
             | RSyntaxKind::R_BRACED_EXPRESSIONS
+            | RSyntaxKind::R_CALL
+            | RSyntaxKind::R_CALL_ARGUMENTS
+            | RSyntaxKind::R_ARGUMENT_LIST
+            | RSyntaxKind::R_NAMED_ARGUMENT
+            | RSyntaxKind::R_UNNAMED_ARGUMENT
+            | RSyntaxKind::R_DOTS_ARGUMENT
             | RSyntaxKind::R_EXPRESSION_LIST
             | RSyntaxKind::R_INTEGER_VALUE
             | RSyntaxKind::R_DOUBLE_VALUE
@@ -109,6 +118,12 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             // Bogus expression
             RSyntaxKind::R_BINARY_EXPRESSION => RSyntaxKind::R_BOGUS_EXPRESSION,
             RSyntaxKind::R_BOGUS_EXPRESSION => RSyntaxKind::R_BOGUS_EXPRESSION,
+
+            // Bogus argument
+            RSyntaxKind::R_NAMED_ARGUMENT => RSyntaxKind::R_BOGUS_ARGUMENT,
+            RSyntaxKind::R_UNNAMED_ARGUMENT => RSyntaxKind::R_BOGUS_ARGUMENT,
+            RSyntaxKind::R_DOTS_ARGUMENT => RSyntaxKind::R_BOGUS_ARGUMENT,
+            RSyntaxKind::R_BOGUS_ARGUMENT => RSyntaxKind::R_BOGUS_ARGUMENT,
 
             // Bogus
             RSyntaxKind::TOMBSTONE => RSyntaxKind::R_BOGUS,
@@ -143,6 +158,8 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             RSyntaxKind::BACKSLASH => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_ROOT => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_IDENTIFIER => RSyntaxKind::R_BOGUS,
+            RSyntaxKind::R_COMMA => RSyntaxKind::R_BOGUS,
+            RSyntaxKind::R_DOTS => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_FUNCTION_DEFINITION => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_PARAMETERS => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_PARAMETER_LIST => RSyntaxKind::R_BOGUS,
@@ -150,6 +167,9 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             RSyntaxKind::R_ELSE_CLAUSE => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_FOR_STATEMENT => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_BRACED_EXPRESSIONS => RSyntaxKind::R_BOGUS,
+            RSyntaxKind::R_CALL => RSyntaxKind::R_BOGUS,
+            RSyntaxKind::R_CALL_ARGUMENTS => RSyntaxKind::R_BOGUS,
+            RSyntaxKind::R_ARGUMENT_LIST => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_EXPRESSION_LIST => RSyntaxKind::R_BOGUS,
             RSyntaxKind::__LAST => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_BOGUS => RSyntaxKind::R_BOGUS,

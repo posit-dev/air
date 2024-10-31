@@ -363,6 +363,9 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "if_statement" => RSyntaxKind::R_IF_STATEMENT,
         "for_statement" => RSyntaxKind::R_FOR_STATEMENT,
         "braced_expression" => RSyntaxKind::R_BRACED_EXPRESSIONS,
+        "call" => RSyntaxKind::R_CALL,
+        "arguments" => arguments_syntax_kind(x),
+        "argument" => argument_syntax_kind(x),
         "identifier" => RSyntaxKind::R_IDENTIFIER,
         "integer" => RSyntaxKind::R_INTEGER_VALUE,
         "float" => RSyntaxKind::R_DOUBLE_VALUE,
@@ -386,6 +389,7 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "for" => RSyntaxKind::FOR_KW,
         "in" => RSyntaxKind::IN_KW,
         "comma" => RSyntaxKind::COMMA,
+        "dots" => RSyntaxKind::DOTS,
         "comment" => RSyntaxKind::COMMENT,
         kind => unreachable!("Not implemented: '{kind}'."),
     }
@@ -431,6 +435,34 @@ fn parameter_syntax_kind(x: &Node) -> RSyntaxKind {
     }
 
     RSyntaxKind::R_IDENTIFIER_PARAMETER
+}
+
+// Disambiguate the 3 types of argument groups
+fn arguments_syntax_kind(x: &Node) -> RSyntaxKind {
+    let open = x.child_by_field_name("open").unwrap();
+
+    match open.kind() {
+        "(" => RSyntaxKind::R_CALL_ARGUMENTS,
+        // "[" => RSyntaxKind::R_SUBSET_ARGUMENTS,
+        // "[[" => RSyntaxKind::R_SUBSET2_ARGUMENTS,
+        _ => unreachable!("Unknown arguments `open` token: {}", open.kind()),
+    }
+}
+
+// Disambiguate the 3 types of argument kinds
+fn argument_syntax_kind(x: &Node) -> RSyntaxKind {
+    // Required field on `argument` for `R_NAMED_ARGUMENT` case
+    if x.child_by_field_name("name").is_some() {
+        return RSyntaxKind::R_NAMED_ARGUMENT;
+    }
+
+    // Required field on `argument` for `R_DOTS` ad `R_UNNAMED_ARGUMENT` cases
+    let value = x.child_by_field_name("value").unwrap();
+
+    match value.kind() {
+        "dots" => RSyntaxKind::R_DOTS_ARGUMENT,
+        _ => RSyntaxKind::R_UNNAMED_ARGUMENT,
+    }
 }
 
 pub trait NodeTypeExt: Sized {

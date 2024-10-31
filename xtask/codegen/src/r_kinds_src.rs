@@ -27,6 +27,8 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
     nodes: &[
         "R_ROOT",
         "R_IDENTIFIER",
+        "R_COMMA",
+        "R_DOTS",
         "R_BINARY_EXPRESSION",
         "R_FUNCTION_DEFINITION",
         "R_PARAMETERS",
@@ -38,6 +40,12 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
         "R_ELSE_CLAUSE",
         "R_FOR_STATEMENT",
         "R_BRACED_EXPRESSIONS",
+        "R_CALL",
+        "R_CALL_ARGUMENTS",
+        "R_ARGUMENT_LIST",
+        "R_NAMED_ARGUMENT",
+        "R_UNNAMED_ARGUMENT",
+        "R_DOTS_ARGUMENT",
         "R_EXPRESSION_LIST",
         "R_INTEGER_VALUE",
         "R_DOUBLE_VALUE",
@@ -50,5 +58,6 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
         "R_BOGUS_VALUE",
         "R_BOGUS_EXPRESSION",
         "R_BOGUS_PARAMETER",
+        "R_BOGUS_ARGUMENT",
     ],
 };

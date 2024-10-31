@@ -36,6 +36,7 @@ RBogus = SyntaxElement*
 RBogusValue = SyntaxElement*
 RBogusExpression = SyntaxElement*
 RBogusParameter = SyntaxElement*
+RBogusArgument = SyntaxElement*
 
 // ----------------------------------------------------------------
 // Root
@@ -121,6 +122,65 @@ RBracedExpressions =
 	'}'
 
 // ----------------------------------------------------------------
+// Call
+
+RCall =
+	function: AnyRExpression
+	arguments: RCallArguments
+
+RCallArguments =
+	'('
+	items: RArgumentList
+	')'
+
+// We want to allow:
+// - Any number of sequential commas
+// - But two arguments must be separated by at least 1 comma
+//
+// The most practical way to do this is to allow commas and
+// arguments to alternate, and rely on the parser to error
+// when two arguments are seen in a row.
+//
+// # Allowed
+// fn()
+// fn(,)
+// fn(,,)
+// fn(a)
+// fn(a, b)
+// fn(,,a,,b,,)
+// fn(a, # comment_between_commas
+// ,)
+//
+// # Not allowed
+// fn(a b)
+RArgumentList = AnyRArgumentListElement*
+
+AnyRArgumentListElement =
+	RComma
+	| AnyRArgument
+
+AnyRArgument =
+	RNamedArgument
+	| RUnnamedArgument
+	| RDotsArgument
+	| RBogusArgument
+
+RNamedArgument =
+	name: AnyRArgumentName
+	'='
+	value: AnyRExpression?
+
+RUnnamedArgument =
+	value: AnyRExpression
+
+RDotsArgument = value: '...'
+
+AnyRArgumentName =
+	RIdentifier
+	| RStringValue
+	| RDots
+
+// ----------------------------------------------------------------
 // Expression
 
 RExpressionList = AnyRExpression*
@@ -133,6 +193,7 @@ AnyRExpression =
 	| RIfStatement
 	| RForStatement
 	| RBracedExpressions
+	| RCall
 	| RBogusExpression
 
 // ----------------------------------------------------------------
@@ -158,3 +219,6 @@ RNullValue = value: 'r_null_literal'
 // Identifier
 
 RIdentifier = name: 'ident'
+
+RComma = value: ','
+RDots = value: '...'
