@@ -102,6 +102,7 @@ biome_parser        = { git = "https://github.com/biomejs/biome", rev = "561b54c
 biome_rowan         = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
 biome_string_case   = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
 biome_unicode_table = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
+clap                = { version = "4.5.20", features = ["derive"] }
 insta               = "1.40.0"
 proc-macro2         = "1.0.86"
 serde               = { version = "1.0.210", features = ["derive"] }

@@ -1,0 +1,26 @@
+[package]
+name = "air_cli"
+version = "0.1.0"
+authors.workspace = true
+categories.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+air_r_formatter = { workspace = true }
+air_r_parser = { workspace = true }
+anyhow = { workspace = true }
+clap = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3.9.0"
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "air"
+path = "src/main.rs"

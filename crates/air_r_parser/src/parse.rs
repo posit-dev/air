@@ -55,11 +55,23 @@ pub fn parse_text(
 }
 
 fn parse_failure() -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Vec<ParseDiagnostic>) {
-    let events = vec![];
+    // Must provide a root node on failures, otherwise `tree_sink.finish()` fails
+    let events = vec![
+        Event::Start {
+            kind: RSyntaxKind::R_ROOT,
+            forward_parent: None,
+        },
+        Event::Finish,
+    ];
+
+    // No trivia
     let trivia = vec![];
+
+    // Generate a single diagnostic
     let span: Option<TextRange> = None;
     let error = ParseDiagnostic::new("Tree-sitter failed", span);
     let errors = vec![error];
+
     (events, trivia, errors)
 }
 
