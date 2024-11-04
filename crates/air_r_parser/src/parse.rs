@@ -163,8 +163,8 @@ impl<'src> RWalk<'src> {
 
             // Unreachable directly
             RSyntaxKind::R_DOTS => unreachable!("{kind:?}"),
-            RSyntaxKind::R_COMMA => unreachable!("{kind:?}"),
             RSyntaxKind::R_ELSE_CLAUSE => unreachable!("{kind:?}"),
+            RSyntaxKind::R_HOLE_ARGUMENT => unreachable!("{kind:?}"),
             RSyntaxKind::R_PARAMETER_LIST => unreachable!("{kind:?}"),
             RSyntaxKind::R_ARGUMENT_LIST => unreachable!("{kind:?}"),
             RSyntaxKind::R_EXPRESSION_LIST => unreachable!("{kind:?}"),
@@ -242,8 +242,8 @@ impl<'src> RWalk<'src> {
 
             // Unreachable directly
             RSyntaxKind::R_DOTS => unreachable!("{kind:?}"),
-            RSyntaxKind::R_COMMA => unreachable!("{kind:?}"),
             RSyntaxKind::R_ELSE_CLAUSE => unreachable!("{kind:?}"),
+            RSyntaxKind::R_HOLE_ARGUMENT => unreachable!("{kind:?}"),
             RSyntaxKind::R_PARAMETER_LIST => unreachable!("{kind:?}"),
             RSyntaxKind::R_ARGUMENT_LIST => unreachable!("{kind:?}"),
             RSyntaxKind::R_EXPRESSION_LIST => unreachable!("{kind:?}"),
@@ -581,9 +581,6 @@ impl<'src> RWalk<'src> {
 
         let mut cursor = node.walk();
 
-        // TODO: In theory we'd return an error and refuse to parse successfully
-        // if we see `fn(a b)`, i.e. two arguments in a row. Can we handle in
-        // tree sitter instead?
         for child in node.children(&mut cursor) {
             let mut child_iter = child.preorder();
 
@@ -593,14 +590,14 @@ impl<'src> RWalk<'src> {
                     self.handle_node_enter(RSyntaxKind::R_ARGUMENT_LIST);
                 }
                 RSyntaxKind::R_PAREN => {
+                    self.handle_hole_before_r_paren(child);
+                    // Leave `R_ARGUMENT_LIST`
                     self.handle_node_leave();
                     self.walk(&mut child_iter);
                 }
                 RSyntaxKind::COMMA => {
-                    // Promote to an `R_COMMA` node, commas are very special in calls
-                    self.handle_node_enter(RSyntaxKind::R_COMMA);
-                    self.handle_token(child, RSyntaxKind::COMMA);
-                    self.handle_node_leave();
+                    self.handle_hole_before_comma(child);
+                    self.walk(&mut child_iter);
                 }
                 RSyntaxKind::R_DOTS_ARGUMENT => self.walk(&mut child_iter),
                 RSyntaxKind::R_NAMED_ARGUMENT => self.walk(&mut child_iter),
@@ -613,6 +610,64 @@ impl<'src> RWalk<'src> {
 
     fn handle_call_arguments_leave(&mut self) {
         self.handle_node_leave();
+    }
+
+    /// Is there a hole before this `)`?
+    ///
+    /// Ignores comments
+    ///
+    /// ```r
+    /// fn(,<here>)
+    ///
+    /// fn(
+    ///   x,
+    ///   # comment
+    ///   <here>
+    /// )
+    /// ```
+    fn handle_hole_before_r_paren(&mut self, mut node: tree_sitter::Node) {
+        while let Some(previous) = node.prev_sibling() {
+            match previous.syntax_kind() {
+                RSyntaxKind::COMMENT => (),
+                RSyntaxKind::COMMA => {
+                    self.handle_node_enter(RSyntaxKind::R_HOLE_ARGUMENT);
+                    self.handle_node_leave();
+                    break;
+                }
+                _ => break,
+            }
+            node = previous;
+        }
+    }
+
+    /// Is there a hole before this `,`?
+    ///
+    /// Ignores comments
+    ///
+    /// ```r
+    /// fn(<here>,)
+    ///
+    /// fn(x, <here>,)
+    ///
+    /// fn(
+    ///   x,
+    ///   # comment
+    ///   <here>,
+    /// )
+    /// ```
+    fn handle_hole_before_comma(&mut self, mut node: tree_sitter::Node) {
+        while let Some(previous) = node.prev_sibling() {
+            match previous.syntax_kind() {
+                RSyntaxKind::COMMENT => (),
+                RSyntaxKind::COMMA | RSyntaxKind::L_PAREN => {
+                    self.handle_node_enter(RSyntaxKind::R_HOLE_ARGUMENT);
+                    self.handle_node_leave();
+                    break;
+                }
+                _ => break,
+            }
+            node = previous;
+        }
     }
 
     fn handle_dots_argument_enter(&mut self, node: tree_sitter::Node, iter: &mut Preorder) {

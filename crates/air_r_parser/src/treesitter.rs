@@ -449,7 +449,8 @@ fn arguments_syntax_kind(x: &Node) -> RSyntaxKind {
     }
 }
 
-// Disambiguate the 3 types of argument kinds
+// Disambiguate the 3 main types of argument kinds.
+// Holes don't actually show up in the tree-sitter tree.
 fn argument_syntax_kind(x: &Node) -> RSyntaxKind {
     // Required field on `argument` for `R_NAMED_ARGUMENT` case
     if x.child_by_field_name("name").is_some() {

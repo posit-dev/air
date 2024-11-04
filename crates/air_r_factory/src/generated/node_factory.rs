@@ -57,12 +57,6 @@ pub fn r_call_arguments(
         ],
     ))
 }
-pub fn r_comma(value_token: SyntaxToken) -> RComma {
-    RComma::unwrap_cast(SyntaxNode::new_detached(
-        RSyntaxKind::R_COMMA,
-        [Some(SyntaxElement::Token(value_token))],
-    ))
-}
 pub fn r_complex_value(value_token: SyntaxToken) -> RComplexValue {
     RComplexValue::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_COMPLEX_VALUE,
@@ -169,6 +163,9 @@ pub fn r_function_definition(
             Some(SyntaxElement::Node(body.into_syntax())),
         ],
     ))
+}
+pub fn r_hole_argument() -> RHoleArgument {
+    RHoleArgument::unwrap_cast(SyntaxNode::new_detached(RSyntaxKind::R_HOLE_ARGUMENT, []))
 }
 pub fn r_identifier(name_token: SyntaxToken) -> RIdentifier {
     RIdentifier::unwrap_cast(SyntaxNode::new_detached(
@@ -327,16 +324,25 @@ pub fn r_unnamed_argument(value: AnyRExpression) -> RUnnamedArgument {
         [Some(SyntaxElement::Node(value.into_syntax()))],
     ))
 }
-pub fn r_argument_list<I>(items: I) -> RArgumentList
+pub fn r_argument_list<I, S>(items: I, separators: S) -> RArgumentList
 where
-    I: IntoIterator<Item = AnyRArgumentListElement>,
+    I: IntoIterator<Item = AnyRArgument>,
     I::IntoIter: ExactSizeIterator,
+    S: IntoIterator<Item = RSyntaxToken>,
+    S::IntoIter: ExactSizeIterator,
 {
+    let mut items = items.into_iter();
+    let mut separators = separators.into_iter();
+    let length = items.len() + separators.len();
     RArgumentList::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_ARGUMENT_LIST,
-        items
-            .into_iter()
-            .map(|item| Some(item.into_syntax().into())),
+        (0..length).map(|index| {
+            if index % 2 == 0 {
+                Some(items.next()?.into_syntax().into())
+            } else {
+                Some(separators.next()?.into())
+            }
+        }),
     ))
 }
 pub fn r_expression_list<I>(items: I) -> RExpressionList

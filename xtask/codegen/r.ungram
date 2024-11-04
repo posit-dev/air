@@ -137,9 +137,11 @@ RCallArguments =
 // - Any number of sequential commas
 // - But two arguments must be separated by at least 1 comma
 //
-// The most practical way to do this is to allow commas and
-// arguments to alternate, and rely on the parser to error
-// when two arguments are seen in a row.
+// The way we implement this is by physically representing
+// empty "holes" created by commas by a zero width `RHoleArgument`
+// node. This is similar to `JsArrayHole`, and allows us to use
+// standard repetition syntax while still enforcing the
+// above rules. It's quite elegant, really.
 //
 // # Allowed
 // fn()
@@ -153,16 +155,13 @@ RCallArguments =
 //
 // # Not allowed
 // fn(a b)
-RArgumentList = AnyRArgumentListElement*
-
-AnyRArgumentListElement =
-	RComma
-	| AnyRArgument
+RArgumentList = (AnyRArgument (',' AnyRArgument)*)
 
 AnyRArgument =
 	RNamedArgument
 	| RUnnamedArgument
 	| RDotsArgument
+	| RHoleArgument
 	| RBogusArgument
 
 RNamedArgument =
@@ -174,6 +173,8 @@ RUnnamedArgument =
 	value: AnyRExpression
 
 RDotsArgument = value: '...'
+
+RHoleArgument = hole: ''?
 
 AnyRArgumentName =
 	RIdentifier
@@ -220,5 +221,4 @@ RNullValue = value: 'r_null_literal'
 
 RIdentifier = name: 'ident'
 
-RComma = value: ','
 RDots = value: '...'

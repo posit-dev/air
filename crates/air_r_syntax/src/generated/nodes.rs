@@ -198,41 +198,6 @@ pub struct RCallArgumentsFields {
     pub r_paren_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub struct RComma {
-    pub(crate) syntax: SyntaxNode,
-}
-impl RComma {
-    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
-    #[doc = r""]
-    #[doc = r" # Safety"]
-    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
-    #[doc = r" or a match on [SyntaxNode::kind]"]
-    #[inline]
-    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
-        Self { syntax }
-    }
-    pub fn as_fields(&self) -> RCommaFields {
-        RCommaFields {
-            value_token: self.value_token(),
-        }
-    }
-    pub fn value_token(&self) -> SyntaxResult<SyntaxToken> {
-        support::required_token(&self.syntax, 0usize)
-    }
-}
-impl Serialize for RComma {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        self.as_fields().serialize(serializer)
-    }
-}
-#[derive(Serialize)]
-pub struct RCommaFields {
-    pub value_token: SyntaxResult<SyntaxToken>,
-}
-#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RComplexValue {
     pub(crate) syntax: SyntaxNode,
 }
@@ -602,6 +567,34 @@ pub struct RFunctionDefinitionFields {
     pub parameters: SyntaxResult<RParameters>,
     pub body: SyntaxResult<AnyRExpression>,
 }
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RHoleArgument {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RHoleArgument {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RHoleArgumentFields {
+        RHoleArgumentFields {}
+    }
+}
+impl Serialize for RHoleArgument {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RHoleArgumentFields {}
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RIdentifier {
     pub(crate) syntax: SyntaxNode,
@@ -1046,6 +1039,7 @@ pub struct RUnnamedArgumentFields {
 pub enum AnyRArgument {
     RBogusArgument(RBogusArgument),
     RDotsArgument(RDotsArgument),
+    RHoleArgument(RHoleArgument),
     RNamedArgument(RNamedArgument),
     RUnnamedArgument(RUnnamedArgument),
 }
@@ -1062,6 +1056,12 @@ impl AnyRArgument {
             _ => None,
         }
     }
+    pub fn as_r_hole_argument(&self) -> Option<&RHoleArgument> {
+        match &self {
+            AnyRArgument::RHoleArgument(item) => Some(item),
+            _ => None,
+        }
+    }
     pub fn as_r_named_argument(&self) -> Option<&RNamedArgument> {
         match &self {
             AnyRArgument::RNamedArgument(item) => Some(item),
@@ -1071,25 +1071,6 @@ impl AnyRArgument {
     pub fn as_r_unnamed_argument(&self) -> Option<&RUnnamedArgument> {
         match &self {
             AnyRArgument::RUnnamedArgument(item) => Some(item),
-            _ => None,
-        }
-    }
-}
-#[derive(Clone, PartialEq, Eq, Hash, Serialize)]
-pub enum AnyRArgumentListElement {
-    AnyRArgument(AnyRArgument),
-    RComma(RComma),
-}
-impl AnyRArgumentListElement {
-    pub fn as_any_r_argument(&self) -> Option<&AnyRArgument> {
-        match &self {
-            AnyRArgumentListElement::AnyRArgument(item) => Some(item),
-            _ => None,
-        }
-    }
-    pub fn as_r_comma(&self) -> Option<&RComma> {
-        match &self {
-            AnyRArgumentListElement::RComma(item) => Some(item),
             _ => None,
         }
     }
@@ -1445,47 +1426,6 @@ impl From<RCallArguments> for SyntaxNode {
 }
 impl From<RCallArguments> for SyntaxElement {
     fn from(n: RCallArguments) -> SyntaxElement {
-        n.syntax.into()
-    }
-}
-impl AstNode for RComma {
-    type Language = Language;
-    const KIND_SET: SyntaxKindSet<Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(R_COMMA as u16));
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == R_COMMA
-    }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        if Self::can_cast(syntax.kind()) {
-            Some(Self { syntax })
-        } else {
-            None
-        }
-    }
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode {
-        self.syntax
-    }
-}
-impl std::fmt::Debug for RComma {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("RComma")
-            .field(
-                "value_token",
-                &support::DebugSyntaxResult(self.value_token()),
-            )
-            .finish()
-    }
-}
-impl From<RComma> for SyntaxNode {
-    fn from(n: RComma) -> SyntaxNode {
-        n.syntax
-    }
-}
-impl From<RComma> for SyntaxElement {
-    fn from(n: RComma) -> SyntaxElement {
         n.syntax.into()
     }
 }
@@ -1859,6 +1799,42 @@ impl From<RFunctionDefinition> for SyntaxNode {
 }
 impl From<RFunctionDefinition> for SyntaxElement {
     fn from(n: RFunctionDefinition) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
+impl AstNode for RHoleArgument {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_HOLE_ARGUMENT as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_HOLE_ARGUMENT
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RHoleArgument {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RHoleArgument").finish()
+    }
+}
+impl From<RHoleArgument> for SyntaxNode {
+    fn from(n: RHoleArgument) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RHoleArgument> for SyntaxElement {
+    fn from(n: RHoleArgument) -> SyntaxElement {
         n.syntax.into()
     }
 }
@@ -2333,6 +2309,11 @@ impl From<RDotsArgument> for AnyRArgument {
         AnyRArgument::RDotsArgument(node)
     }
 }
+impl From<RHoleArgument> for AnyRArgument {
+    fn from(node: RHoleArgument) -> AnyRArgument {
+        AnyRArgument::RHoleArgument(node)
+    }
+}
 impl From<RNamedArgument> for AnyRArgument {
     fn from(node: RNamedArgument) -> AnyRArgument {
         AnyRArgument::RNamedArgument(node)
@@ -2347,18 +2328,24 @@ impl AstNode for AnyRArgument {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> = RBogusArgument::KIND_SET
         .union(RDotsArgument::KIND_SET)
+        .union(RHoleArgument::KIND_SET)
         .union(RNamedArgument::KIND_SET)
         .union(RUnnamedArgument::KIND_SET);
     fn can_cast(kind: SyntaxKind) -> bool {
         matches!(
             kind,
-            R_BOGUS_ARGUMENT | R_DOTS_ARGUMENT | R_NAMED_ARGUMENT | R_UNNAMED_ARGUMENT
+            R_BOGUS_ARGUMENT
+                | R_DOTS_ARGUMENT
+                | R_HOLE_ARGUMENT
+                | R_NAMED_ARGUMENT
+                | R_UNNAMED_ARGUMENT
         )
     }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         let res = match syntax.kind() {
             R_BOGUS_ARGUMENT => AnyRArgument::RBogusArgument(RBogusArgument { syntax }),
             R_DOTS_ARGUMENT => AnyRArgument::RDotsArgument(RDotsArgument { syntax }),
+            R_HOLE_ARGUMENT => AnyRArgument::RHoleArgument(RHoleArgument { syntax }),
             R_NAMED_ARGUMENT => AnyRArgument::RNamedArgument(RNamedArgument { syntax }),
             R_UNNAMED_ARGUMENT => AnyRArgument::RUnnamedArgument(RUnnamedArgument { syntax }),
             _ => return None,
@@ -2369,6 +2356,7 @@ impl AstNode for AnyRArgument {
         match self {
             AnyRArgument::RBogusArgument(it) => &it.syntax,
             AnyRArgument::RDotsArgument(it) => &it.syntax,
+            AnyRArgument::RHoleArgument(it) => &it.syntax,
             AnyRArgument::RNamedArgument(it) => &it.syntax,
             AnyRArgument::RUnnamedArgument(it) => &it.syntax,
         }
@@ -2377,6 +2365,7 @@ impl AstNode for AnyRArgument {
         match self {
             AnyRArgument::RBogusArgument(it) => it.syntax,
             AnyRArgument::RDotsArgument(it) => it.syntax,
+            AnyRArgument::RHoleArgument(it) => it.syntax,
             AnyRArgument::RNamedArgument(it) => it.syntax,
             AnyRArgument::RUnnamedArgument(it) => it.syntax,
         }
@@ -2387,6 +2376,7 @@ impl std::fmt::Debug for AnyRArgument {
         match self {
             AnyRArgument::RBogusArgument(it) => std::fmt::Debug::fmt(it, f),
             AnyRArgument::RDotsArgument(it) => std::fmt::Debug::fmt(it, f),
+            AnyRArgument::RHoleArgument(it) => std::fmt::Debug::fmt(it, f),
             AnyRArgument::RNamedArgument(it) => std::fmt::Debug::fmt(it, f),
             AnyRArgument::RUnnamedArgument(it) => std::fmt::Debug::fmt(it, f),
         }
@@ -2397,6 +2387,7 @@ impl From<AnyRArgument> for SyntaxNode {
         match n {
             AnyRArgument::RBogusArgument(it) => it.into(),
             AnyRArgument::RDotsArgument(it) => it.into(),
+            AnyRArgument::RHoleArgument(it) => it.into(),
             AnyRArgument::RNamedArgument(it) => it.into(),
             AnyRArgument::RUnnamedArgument(it) => it.into(),
         }
@@ -2404,68 +2395,6 @@ impl From<AnyRArgument> for SyntaxNode {
 }
 impl From<AnyRArgument> for SyntaxElement {
     fn from(n: AnyRArgument) -> SyntaxElement {
-        let node: SyntaxNode = n.into();
-        node.into()
-    }
-}
-impl From<RComma> for AnyRArgumentListElement {
-    fn from(node: RComma) -> AnyRArgumentListElement {
-        AnyRArgumentListElement::RComma(node)
-    }
-}
-impl AstNode for AnyRArgumentListElement {
-    type Language = Language;
-    const KIND_SET: SyntaxKindSet<Language> = AnyRArgument::KIND_SET.union(RComma::KIND_SET);
-    fn can_cast(kind: SyntaxKind) -> bool {
-        match kind {
-            R_COMMA => true,
-            k if AnyRArgument::can_cast(k) => true,
-            _ => false,
-        }
-    }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        let res = match syntax.kind() {
-            R_COMMA => AnyRArgumentListElement::RComma(RComma { syntax }),
-            _ => {
-                if let Some(any_r_argument) = AnyRArgument::cast(syntax) {
-                    return Some(AnyRArgumentListElement::AnyRArgument(any_r_argument));
-                }
-                return None;
-            }
-        };
-        Some(res)
-    }
-    fn syntax(&self) -> &SyntaxNode {
-        match self {
-            AnyRArgumentListElement::RComma(it) => &it.syntax,
-            AnyRArgumentListElement::AnyRArgument(it) => it.syntax(),
-        }
-    }
-    fn into_syntax(self) -> SyntaxNode {
-        match self {
-            AnyRArgumentListElement::RComma(it) => it.syntax,
-            AnyRArgumentListElement::AnyRArgument(it) => it.into_syntax(),
-        }
-    }
-}
-impl std::fmt::Debug for AnyRArgumentListElement {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            AnyRArgumentListElement::AnyRArgument(it) => std::fmt::Debug::fmt(it, f),
-            AnyRArgumentListElement::RComma(it) => std::fmt::Debug::fmt(it, f),
-        }
-    }
-}
-impl From<AnyRArgumentListElement> for SyntaxNode {
-    fn from(n: AnyRArgumentListElement) -> SyntaxNode {
-        match n {
-            AnyRArgumentListElement::AnyRArgument(it) => it.into(),
-            AnyRArgumentListElement::RComma(it) => it.into(),
-        }
-    }
-}
-impl From<AnyRArgumentListElement> for SyntaxElement {
-    fn from(n: AnyRArgumentListElement) -> SyntaxElement {
         let node: SyntaxNode = n.into();
         node.into()
     }
@@ -2908,11 +2837,6 @@ impl std::fmt::Display for AnyRArgument {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for AnyRArgumentListElement {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Display::fmt(self.syntax(), f)
-    }
-}
 impl std::fmt::Display for AnyRArgumentName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
@@ -2949,11 +2873,6 @@ impl std::fmt::Display for RCall {
     }
 }
 impl std::fmt::Display for RCallArguments {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Display::fmt(self.syntax(), f)
-    }
-}
-impl std::fmt::Display for RComma {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
@@ -2999,6 +2918,11 @@ impl std::fmt::Display for RForStatement {
     }
 }
 impl std::fmt::Display for RFunctionDefinition {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RHoleArgument {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
@@ -3390,9 +3314,9 @@ impl Serialize for RArgumentList {
         seq.end()
     }
 }
-impl AstNodeList for RArgumentList {
+impl AstSeparatedList for RArgumentList {
     type Language = Language;
-    type Node = AnyRArgumentListElement;
+    type Node = AnyRArgument;
     fn syntax_list(&self) -> &SyntaxList {
         &self.syntax_list
     }
@@ -3403,19 +3327,19 @@ impl AstNodeList for RArgumentList {
 impl Debug for RArgumentList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("RArgumentList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        f.debug_list().entries(self.elements()).finish()
     }
 }
-impl IntoIterator for &RArgumentList {
-    type Item = AnyRArgumentListElement;
-    type IntoIter = AstNodeListIterator<Language, AnyRArgumentListElement>;
+impl IntoIterator for RArgumentList {
+    type Item = SyntaxResult<AnyRArgument>;
+    type IntoIter = AstSeparatedListNodesIterator<Language, AnyRArgument>;
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
     }
 }
-impl IntoIterator for RArgumentList {
-    type Item = AnyRArgumentListElement;
-    type IntoIter = AstNodeListIterator<Language, AnyRArgumentListElement>;
+impl IntoIterator for &RArgumentList {
+    type Item = SyntaxResult<AnyRArgument>;
+    type IntoIter = AstSeparatedListNodesIterator<Language, AnyRArgument>;
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
     }

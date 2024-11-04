@@ -32,10 +32,6 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RCallArguments::new_unchecked(node) };
                     $body
                 }
-                $crate::RSyntaxKind::R_COMMA => {
-                    let $pattern = unsafe { $crate::RComma::new_unchecked(node) };
-                    $body
-                }
                 $crate::RSyntaxKind::R_COMPLEX_VALUE => {
                     let $pattern = unsafe { $crate::RComplexValue::new_unchecked(node) };
                     $body
@@ -70,6 +66,10 @@ macro_rules! map_syntax_node {
                 }
                 $crate::RSyntaxKind::R_FUNCTION_DEFINITION => {
                     let $pattern = unsafe { $crate::RFunctionDefinition::new_unchecked(node) };
+                    $body
+                }
+                $crate::RSyntaxKind::R_HOLE_ARGUMENT => {
+                    let $pattern = unsafe { $crate::RHoleArgument::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_IDENTIFIER => {

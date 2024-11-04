@@ -27,7 +27,6 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
     nodes: &[
         "R_ROOT",
         "R_IDENTIFIER",
-        "R_COMMA",
         "R_DOTS",
         "R_BINARY_EXPRESSION",
         "R_FUNCTION_DEFINITION",
@@ -46,6 +45,7 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
         "R_NAMED_ARGUMENT",
         "R_UNNAMED_ARGUMENT",
         "R_DOTS_ARGUMENT",
+        "R_HOLE_ARGUMENT",
         "R_EXPRESSION_LIST",
         "R_INTEGER_VALUE",
         "R_DOUBLE_VALUE",
