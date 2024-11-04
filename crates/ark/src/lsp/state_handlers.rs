@@ -11,6 +11,7 @@ use anyhow::anyhow;
 use serde_json::Value;
 use struct_field_names_as_array::FieldNamesAsArray;
 use tower_lsp::lsp_types::CompletionOptions;
+use tower_lsp::lsp_types::CompletionOptionsCompletionItem;
 use tower_lsp::lsp_types::ConfigurationItem;
 use tower_lsp::lsp_types::DidChangeConfigurationParams;
 use tower_lsp::lsp_types::DidChangeTextDocumentParams;
@@ -120,6 +121,9 @@ pub(crate) fn initialize(
                 trigger_characters: Some(vec!["$".to_string(), "@".to_string(), ":".to_string()]),
                 work_done_progress_options: Default::default(),
                 all_commit_characters: None,
+                completion_item: Some(CompletionOptionsCompletionItem {
+                    label_details_support: Some(true),
+                }),
                 ..Default::default()
             }),
             signature_help_provider: Some(SignatureHelpOptions {
