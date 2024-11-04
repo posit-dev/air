@@ -77,14 +77,6 @@ impl RCallArguments {
         )
     }
 }
-impl RComma {
-    pub fn with_value_token(self, element: SyntaxToken) -> Self {
-        Self::unwrap_cast(
-            self.syntax
-                .splice_slots(0usize..=0usize, once(Some(element.into()))),
-        )
-    }
-}
 impl RComplexValue {
     pub fn with_value_token(self, element: SyntaxToken) -> Self {
         Self::unwrap_cast(
@@ -223,6 +215,7 @@ impl RFunctionDefinition {
         )
     }
 }
+impl RHoleArgument {}
 impl RIdentifier {
     pub fn with_name_token(self, element: SyntaxToken) -> Self {
         Self::unwrap_cast(

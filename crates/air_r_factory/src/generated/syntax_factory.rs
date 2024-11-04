@@ -139,22 +139,6 @@ impl SyntaxFactory for RSyntaxFactory {
                 }
                 slots.into_node(R_CALL_ARGUMENTS, children)
             }
-            R_COMMA => {
-                let mut elements = (&children).into_iter();
-                let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
-                let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T ! [,] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
-                }
-                slots.next_slot();
-                if current_element.is_some() {
-                    return RawSyntaxNode::new(R_COMMA.to_bogus(), children.into_iter().map(Some));
-                }
-                slots.into_node(R_COMMA, children)
-            }
             R_COMPLEX_VALUE => {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
@@ -399,6 +383,18 @@ impl SyntaxFactory for RSyntaxFactory {
                     );
                 }
                 slots.into_node(R_FUNCTION_DEFINITION, children)
+            }
+            R_HOLE_ARGUMENT => {
+                let mut elements = (&children).into_iter();
+                let mut slots: RawNodeSlots<0usize> = RawNodeSlots::default();
+                let mut current_element = elements.next();
+                if current_element.is_some() {
+                    return RawSyntaxNode::new(
+                        R_HOLE_ARGUMENT.to_bogus(),
+                        children.into_iter().map(Some),
+                    );
+                }
+                slots.into_node(R_HOLE_ARGUMENT, children)
             }
             R_IDENTIFIER => {
                 let mut elements = (&children).into_iter();
@@ -683,9 +679,13 @@ impl SyntaxFactory for RSyntaxFactory {
                 }
                 slots.into_node(R_UNNAMED_ARGUMENT, children)
             }
-            R_ARGUMENT_LIST => {
-                Self::make_node_list_syntax(kind, children, AnyRArgumentListElement::can_cast)
-            }
+            R_ARGUMENT_LIST => Self::make_separated_list_syntax(
+                kind,
+                children,
+                AnyRArgument::can_cast,
+                T ! [,],
+                false,
+            ),
             R_EXPRESSION_LIST => {
                 Self::make_node_list_syntax(kind, children, AnyRExpression::can_cast)
             }

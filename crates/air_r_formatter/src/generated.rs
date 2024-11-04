@@ -134,29 +134,6 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RCallArguments {
         )
     }
 }
-impl FormatRule<air_r_syntax::RComma> for crate::r::auxiliary::comma::FormatRComma {
-    type Context = RFormatContext;
-    #[inline(always)]
-    fn fmt(&self, node: &air_r_syntax::RComma, f: &mut RFormatter) -> FormatResult<()> {
-        FormatNodeRule::<air_r_syntax::RComma>::fmt(self, node, f)
-    }
-}
-impl AsFormat<RFormatContext> for air_r_syntax::RComma {
-    type Format<'a> =
-        FormatRefWithRule<'a, air_r_syntax::RComma, crate::r::auxiliary::comma::FormatRComma>;
-    fn format(&self) -> Self::Format<'_> {
-        #![allow(clippy::default_constructed_unit_structs)]
-        FormatRefWithRule::new(self, crate::r::auxiliary::comma::FormatRComma::default())
-    }
-}
-impl IntoFormat<RFormatContext> for air_r_syntax::RComma {
-    type Format =
-        FormatOwnedWithRule<air_r_syntax::RComma, crate::r::auxiliary::comma::FormatRComma>;
-    fn into_format(self) -> Self::Format {
-        #![allow(clippy::default_constructed_unit_structs)]
-        FormatOwnedWithRule::new(self, crate::r::auxiliary::comma::FormatRComma::default())
-    }
-}
 impl FormatRule<air_r_syntax::RComplexValue>
     for crate::r::auxiliary::complex_value::FormatRComplexValue
 {
@@ -466,6 +443,42 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RFunctionDefinition {
         FormatOwnedWithRule::new(
             self,
             crate::r::auxiliary::function_definition::FormatRFunctionDefinition::default(),
+        )
+    }
+}
+impl FormatRule<air_r_syntax::RHoleArgument>
+    for crate::r::auxiliary::hole_argument::FormatRHoleArgument
+{
+    type Context = RFormatContext;
+    #[inline(always)]
+    fn fmt(&self, node: &air_r_syntax::RHoleArgument, f: &mut RFormatter) -> FormatResult<()> {
+        FormatNodeRule::<air_r_syntax::RHoleArgument>::fmt(self, node, f)
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::RHoleArgument {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::RHoleArgument,
+        crate::r::auxiliary::hole_argument::FormatRHoleArgument,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::auxiliary::hole_argument::FormatRHoleArgument::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::RHoleArgument {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::RHoleArgument,
+        crate::r::auxiliary::hole_argument::FormatRHoleArgument,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::auxiliary::hole_argument::FormatRHoleArgument::default(),
         )
     }
 }
@@ -1113,33 +1126,6 @@ impl IntoFormat<RFormatContext> for air_r_syntax::AnyRArgument {
     fn into_format(self) -> Self::Format {
         #![allow(clippy::default_constructed_unit_structs)]
         FormatOwnedWithRule::new(self, crate::r::any::argument::FormatAnyRArgument::default())
-    }
-}
-impl AsFormat<RFormatContext> for air_r_syntax::AnyRArgumentListElement {
-    type Format<'a> = FormatRefWithRule<
-        'a,
-        air_r_syntax::AnyRArgumentListElement,
-        crate::r::any::argument_list_element::FormatAnyRArgumentListElement,
-    >;
-    fn format(&self) -> Self::Format<'_> {
-        #![allow(clippy::default_constructed_unit_structs)]
-        FormatRefWithRule::new(
-            self,
-            crate::r::any::argument_list_element::FormatAnyRArgumentListElement::default(),
-        )
-    }
-}
-impl IntoFormat<RFormatContext> for air_r_syntax::AnyRArgumentListElement {
-    type Format = FormatOwnedWithRule<
-        air_r_syntax::AnyRArgumentListElement,
-        crate::r::any::argument_list_element::FormatAnyRArgumentListElement,
-    >;
-    fn into_format(self) -> Self::Format {
-        #![allow(clippy::default_constructed_unit_structs)]
-        FormatOwnedWithRule::new(
-            self,
-            crate::r::any::argument_list_element::FormatAnyRArgumentListElement::default(),
-        )
     }
 }
 impl AsFormat<RFormatContext> for air_r_syntax::AnyRArgumentName {
