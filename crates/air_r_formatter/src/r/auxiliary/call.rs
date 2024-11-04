@@ -1,10 +1,17 @@
 use crate::prelude::*;
 use air_r_syntax::RCall;
-use biome_rowan::AstNode;
+use air_r_syntax::RCallFields;
+use biome_formatter::write;
+
 #[derive(Debug, Clone, Default)]
 pub(crate) struct FormatRCall;
 impl FormatNodeRule<RCall> for FormatRCall {
     fn fmt_fields(&self, node: &RCall, f: &mut RFormatter) -> FormatResult<()> {
-        format_verbatim_node(node.syntax()).fmt(f)
+        let RCallFields {
+            function,
+            arguments,
+        } = node.as_fields();
+
+        write!(f, [function.format(), group(&arguments.format())])
     }
 }
