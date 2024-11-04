@@ -12,6 +12,6 @@ impl FormatNodeRule<RCall> for FormatRCall {
             arguments,
         } = node.as_fields();
 
-        write!(f, [function.format(), group(&arguments.format())])
+        write!(f, [function.format(), arguments.format()])
     }
 }

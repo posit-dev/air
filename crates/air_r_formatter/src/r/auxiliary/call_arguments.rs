@@ -13,11 +13,21 @@ impl FormatNodeRule<RCallArguments> for FormatRCallArguments {
             r_paren_token,
         } = node.as_fields();
 
+        // TODO:
+        // Look at `write_grouped_arguments()` on the JS side to figure out how
+        // to nicely format things like this, where the last node is a block
+        // expression:
+        //
+        // ```r
+        // test_that("description", {
+        //   1 + 1
+        // })
+        // ```
         write!(
             f,
             [
                 l_paren_token.format(),
-                soft_block_indent(&items.format()),
+                group(&soft_block_indent(&items.format())),
                 r_paren_token.format()
             ]
         )
