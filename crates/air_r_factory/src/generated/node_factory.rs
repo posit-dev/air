@@ -284,6 +284,20 @@ pub fn r_parameters(
         ],
     ))
 }
+pub fn r_parenthesized_expression(
+    l_paren_token: SyntaxToken,
+    body: AnyRExpression,
+    r_paren_token: SyntaxToken,
+) -> RParenthesizedExpression {
+    RParenthesizedExpression::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_PARENTHESIZED_EXPRESSION,
+        [
+            Some(SyntaxElement::Token(l_paren_token)),
+            Some(SyntaxElement::Node(body.into_syntax())),
+            Some(SyntaxElement::Token(r_paren_token)),
+        ],
+    ))
+}
 pub fn r_repeat_statement(repeat_token: SyntaxToken, body: AnyRExpression) -> RRepeatStatement {
     RRepeatStatement::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_REPEAT_STATEMENT,
