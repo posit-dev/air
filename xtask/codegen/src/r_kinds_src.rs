@@ -41,6 +41,7 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
         "R_WHILE_STATEMENT",
         "R_REPEAT_STATEMENT",
         "R_BRACED_EXPRESSIONS",
+        "R_PARENTHESIZED_EXPRESSION",
         "R_CALL",
         "R_CALL_ARGUMENTS",
         "R_ARGUMENT_LIST",

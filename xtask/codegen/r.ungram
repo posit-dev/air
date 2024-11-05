@@ -139,6 +139,18 @@ RBracedExpressions =
 	'}'
 
 // ----------------------------------------------------------------
+// Parenthesized expressions
+
+// Note that the R grammar requires exactly 1 expression inside parenthesis,
+// but tree-sitter-r currently allows 0 or >1, but we are going to fix that.
+// https://github.com/r-lib/tree-sitter-r/issues/144
+
+RParenthesizedExpression =
+	'('
+	body: AnyRExpression
+	')'
+
+// ----------------------------------------------------------------
 // Call
 
 RCall =
@@ -213,6 +225,7 @@ AnyRExpression =
 	| RWhileStatement
 	| RRepeatStatement
 	| RBracedExpressions
+	| RParenthesizedExpression
 	| RCall
 	| RBogusExpression
 
