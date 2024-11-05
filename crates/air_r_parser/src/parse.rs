@@ -136,6 +136,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_UNNAMED_ARGUMENT => self.handle_node_enter(kind),
             RSyntaxKind::R_DOTS_ARGUMENT => self.handle_dots_argument_enter(node, iter),
             RSyntaxKind::R_BRACED_EXPRESSIONS => self.handle_braced_expressions_enter(node, iter),
+            RSyntaxKind::R_PARENTHESIZED_EXPRESSION => self.handle_node_enter(kind),
             RSyntaxKind::R_INTEGER_VALUE => self.handle_integer_value_enter(iter),
             RSyntaxKind::R_COMPLEX_VALUE => self.handle_complex_value_enter(iter),
             RSyntaxKind::R_DOUBLE_VALUE => self.handle_value_enter(kind),
@@ -215,6 +216,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_UNNAMED_ARGUMENT => self.handle_node_leave(),
             RSyntaxKind::R_DOTS_ARGUMENT => self.handle_dots_argument_leave(),
             RSyntaxKind::R_BRACED_EXPRESSIONS => self.handle_braced_expressions_leave(),
+            RSyntaxKind::R_PARENTHESIZED_EXPRESSION => self.handle_node_leave(),
             RSyntaxKind::R_INTEGER_VALUE => self.handle_integer_value_leave(node),
             RSyntaxKind::R_DOUBLE_VALUE => {
                 self.handle_value_leave(node, RSyntaxKind::R_DOUBLE_LITERAL)

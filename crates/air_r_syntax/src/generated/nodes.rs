@@ -921,6 +921,51 @@ pub struct RParametersFields {
     pub r_paren_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RParenthesizedExpression {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RParenthesizedExpression {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RParenthesizedExpressionFields {
+        RParenthesizedExpressionFields {
+            l_paren_token: self.l_paren_token(),
+            body: self.body(),
+            r_paren_token: self.r_paren_token(),
+        }
+    }
+    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+    pub fn body(&self) -> SyntaxResult<AnyRExpression> {
+        support::required_node(&self.syntax, 1usize)
+    }
+    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 2usize)
+    }
+}
+impl Serialize for RParenthesizedExpression {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RParenthesizedExpressionFields {
+    pub l_paren_token: SyntaxResult<SyntaxToken>,
+    pub body: SyntaxResult<AnyRExpression>,
+    pub r_paren_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RRepeatStatement {
     pub(crate) syntax: SyntaxNode,
 }
@@ -1207,6 +1252,7 @@ pub enum AnyRExpression {
     RFunctionDefinition(RFunctionDefinition),
     RIdentifier(RIdentifier),
     RIfStatement(RIfStatement),
+    RParenthesizedExpression(RParenthesizedExpression),
     RRepeatStatement(RRepeatStatement),
     RWhileStatement(RWhileStatement),
 }
@@ -1262,6 +1308,12 @@ impl AnyRExpression {
     pub fn as_r_if_statement(&self) -> Option<&RIfStatement> {
         match &self {
             AnyRExpression::RIfStatement(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_parenthesized_expression(&self) -> Option<&RParenthesizedExpression> {
+        match &self {
+            AnyRExpression::RParenthesizedExpression(item) => Some(item),
             _ => None,
         }
     }
@@ -2287,6 +2339,52 @@ impl From<RParameters> for SyntaxElement {
         n.syntax.into()
     }
 }
+impl AstNode for RParenthesizedExpression {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_PARENTHESIZED_EXPRESSION as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_PARENTHESIZED_EXPRESSION
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RParenthesizedExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RParenthesizedExpression")
+            .field(
+                "l_paren_token",
+                &support::DebugSyntaxResult(self.l_paren_token()),
+            )
+            .field("body", &support::DebugSyntaxResult(self.body()))
+            .field(
+                "r_paren_token",
+                &support::DebugSyntaxResult(self.r_paren_token()),
+            )
+            .finish()
+    }
+}
+impl From<RParenthesizedExpression> for SyntaxNode {
+    fn from(n: RParenthesizedExpression) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RParenthesizedExpression> for SyntaxElement {
+    fn from(n: RParenthesizedExpression) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
 impl AstNode for RRepeatStatement {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> =
@@ -2712,6 +2810,11 @@ impl From<RIfStatement> for AnyRExpression {
         AnyRExpression::RIfStatement(node)
     }
 }
+impl From<RParenthesizedExpression> for AnyRExpression {
+    fn from(node: RParenthesizedExpression) -> AnyRExpression {
+        AnyRExpression::RParenthesizedExpression(node)
+    }
+}
 impl From<RRepeatStatement> for AnyRExpression {
     fn from(node: RRepeatStatement) -> AnyRExpression {
         AnyRExpression::RRepeatStatement(node)
@@ -2733,6 +2836,7 @@ impl AstNode for AnyRExpression {
         .union(RFunctionDefinition::KIND_SET)
         .union(RIdentifier::KIND_SET)
         .union(RIfStatement::KIND_SET)
+        .union(RParenthesizedExpression::KIND_SET)
         .union(RRepeatStatement::KIND_SET)
         .union(RWhileStatement::KIND_SET);
     fn can_cast(kind: SyntaxKind) -> bool {
@@ -2745,6 +2849,7 @@ impl AstNode for AnyRExpression {
             | R_FUNCTION_DEFINITION
             | R_IDENTIFIER
             | R_IF_STATEMENT
+            | R_PARENTHESIZED_EXPRESSION
             | R_REPEAT_STATEMENT
             | R_WHILE_STATEMENT => true,
             k if AnyRValue::can_cast(k) => true,
@@ -2765,6 +2870,9 @@ impl AstNode for AnyRExpression {
             }
             R_IDENTIFIER => AnyRExpression::RIdentifier(RIdentifier { syntax }),
             R_IF_STATEMENT => AnyRExpression::RIfStatement(RIfStatement { syntax }),
+            R_PARENTHESIZED_EXPRESSION => {
+                AnyRExpression::RParenthesizedExpression(RParenthesizedExpression { syntax })
+            }
             R_REPEAT_STATEMENT => AnyRExpression::RRepeatStatement(RRepeatStatement { syntax }),
             R_WHILE_STATEMENT => AnyRExpression::RWhileStatement(RWhileStatement { syntax }),
             _ => {
@@ -2786,6 +2894,7 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RFunctionDefinition(it) => &it.syntax,
             AnyRExpression::RIdentifier(it) => &it.syntax,
             AnyRExpression::RIfStatement(it) => &it.syntax,
+            AnyRExpression::RParenthesizedExpression(it) => &it.syntax,
             AnyRExpression::RRepeatStatement(it) => &it.syntax,
             AnyRExpression::RWhileStatement(it) => &it.syntax,
             AnyRExpression::AnyRValue(it) => it.syntax(),
@@ -2801,6 +2910,7 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RFunctionDefinition(it) => it.syntax,
             AnyRExpression::RIdentifier(it) => it.syntax,
             AnyRExpression::RIfStatement(it) => it.syntax,
+            AnyRExpression::RParenthesizedExpression(it) => it.syntax,
             AnyRExpression::RRepeatStatement(it) => it.syntax,
             AnyRExpression::RWhileStatement(it) => it.syntax,
             AnyRExpression::AnyRValue(it) => it.into_syntax(),
@@ -2819,6 +2929,7 @@ impl std::fmt::Debug for AnyRExpression {
             AnyRExpression::RFunctionDefinition(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RIdentifier(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RIfStatement(it) => std::fmt::Debug::fmt(it, f),
+            AnyRExpression::RParenthesizedExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RRepeatStatement(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RWhileStatement(it) => std::fmt::Debug::fmt(it, f),
         }
@@ -2836,6 +2947,7 @@ impl From<AnyRExpression> for SyntaxNode {
             AnyRExpression::RFunctionDefinition(it) => it.into(),
             AnyRExpression::RIdentifier(it) => it.into(),
             AnyRExpression::RIfStatement(it) => it.into(),
+            AnyRExpression::RParenthesizedExpression(it) => it.into(),
             AnyRExpression::RRepeatStatement(it) => it.into(),
             AnyRExpression::RWhileStatement(it) => it.into(),
         }
@@ -3189,6 +3301,11 @@ impl std::fmt::Display for RNullValue {
     }
 }
 impl std::fmt::Display for RParameters {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RParenthesizedExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }

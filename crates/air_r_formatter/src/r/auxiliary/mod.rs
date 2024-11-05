@@ -22,6 +22,7 @@ pub(crate) mod logical_value;
 pub(crate) mod named_argument;
 pub(crate) mod null_value;
 pub(crate) mod parameters;
+pub(crate) mod parenthesized_expression;
 pub(crate) mod repeat_statement;
 pub(crate) mod root;
 pub(crate) mod string_value;
