@@ -1,0 +1,65 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/while_statement.R
+---
+# Input
+
+```R
+while(a)a
+
+while(a){}
+
+while(a) {
+  1 + 1
+}
+
+while(a) # comment
+{}
+
+while(a) # comment
+1
+
+while(a) # comment1
+{
+  # comment2
+}
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Tab
+Indent width: 2
+Line ending: LF
+Line width: 80
+-----
+
+```R
+while (a) a
+
+while (a) {
+}
+
+while (a) {
+	1 + 1
+}
+
+while (a) {
+	# comment
+}
+
+while (a)
+	# comment
+	1
+
+while (a) {
+	# comment1
+	# comment2
+}
+```
