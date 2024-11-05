@@ -17,6 +17,7 @@ impl FormatRule<AnyRExpression> for FormatAnyRExpression {
             AnyRExpression::RFunctionDefinition(node) => node.format().fmt(f),
             AnyRExpression::RIdentifier(node) => node.format().fmt(f),
             AnyRExpression::RIfStatement(node) => node.format().fmt(f),
+            AnyRExpression::RRepeatStatement(node) => node.format().fmt(f),
         }
     }
 }
