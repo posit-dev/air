@@ -26,3 +26,4 @@ pub(crate) mod repeat_statement;
 pub(crate) mod root;
 pub(crate) mod string_value;
 pub(crate) mod unnamed_argument;
+pub(crate) mod while_statement;

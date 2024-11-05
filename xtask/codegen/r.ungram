@@ -114,6 +114,16 @@ RForStatement =
 	body: AnyRExpression
 
 // ----------------------------------------------------------------
+// While statement
+
+RWhileStatement =
+	'while'
+	'('
+	condition: AnyRExpression
+	')'
+	body: AnyRExpression
+
+// ----------------------------------------------------------------
 // Repeat statement
 
 RRepeatStatement =
@@ -200,6 +210,7 @@ AnyRExpression =
 	| RFunctionDefinition
 	| RIfStatement
 	| RForStatement
+	| RWhileStatement
 	| RRepeatStatement
 	| RBracedExpressions
 	| RCall

@@ -120,6 +120,10 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RUnnamedArgument::new_unchecked(node) };
                     $body
                 }
+                $crate::RSyntaxKind::R_WHILE_STATEMENT => {
+                    let $pattern = unsafe { $crate::RWhileStatement::new_unchecked(node) };
+                    $body
+                }
                 $crate::RSyntaxKind::R_BOGUS => {
                     let $pattern = unsafe { $crate::RBogus::new_unchecked(node) };
                     $body

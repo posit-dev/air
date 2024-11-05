@@ -3,6 +3,7 @@ use air_r_syntax::AnyRExpression;
 use air_r_syntax::RIfStatement;
 use air_r_syntax::RLanguage;
 use air_r_syntax::RSyntaxKind;
+use air_r_syntax::RWhileStatement;
 use biome_formatter::comments::CommentKind;
 use biome_formatter::comments::CommentPlacement;
 use biome_formatter::comments::CommentStyle;
@@ -56,10 +57,12 @@ impl CommentStyle for RCommentStyle {
         match comment.text_position() {
             CommentTextPosition::EndOfLine => handle_for_comment(comment)
                 .or_else(handle_function_comment)
+                .or_else(handle_while_comment)
                 .or_else(handle_repeat_comment)
                 .or_else(handle_if_statement_comment),
             CommentTextPosition::OwnLine => handle_for_comment(comment)
                 .or_else(handle_function_comment)
+                .or_else(handle_while_comment)
                 .or_else(handle_repeat_comment)
                 .or_else(handle_if_statement_comment),
             CommentTextPosition::SameLine => {
@@ -83,6 +86,53 @@ fn handle_for_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<
     }
 
     CommentPlacement::Default(comment)
+}
+
+fn handle_while_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
+    let Some(enclosing) = RWhileStatement::cast_ref(comment.enclosing_node()) else {
+        return CommentPlacement::Default(comment);
+    };
+
+    if let Some(preceding) = comment.preceding_node() {
+        // Make comments directly before the condition `)` trailing
+        // comments of the condition itself (rather than leading comments of
+        // the `body` node)
+        //
+        // ```r
+        // while (
+        //   cond
+        //   # comment
+        // ) {
+        // }
+        // ```
+        if comment
+            .following_token()
+            .map_or(false, |token| token.kind() == RSyntaxKind::R_PAREN)
+        {
+            return CommentPlacement::trailing(preceding.clone(), comment);
+        }
+    }
+
+    // Check that the `body` of the while loop is identical to the `following`
+    // node of the comment. While loops also have a `condition` that can be
+    // any R expression, so we need to differentiate here.
+    let Ok(body) = enclosing.body() else {
+        return CommentPlacement::Default(comment);
+    };
+    let Some(following) = comment.following_node() else {
+        return CommentPlacement::Default(comment);
+    };
+    if body.syntax() != following {
+        return CommentPlacement::Default(comment);
+    }
+
+    // Handle cases like:
+    //
+    // ```r
+    // while (a) # comment
+    // {}
+    // ```
+    place_leading_or_dangling_body_comment(body, comment)
 }
 
 fn handle_repeat_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
