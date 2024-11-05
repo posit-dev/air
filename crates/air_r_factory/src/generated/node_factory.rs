@@ -411,6 +411,52 @@ pub fn r_string_value(value_token: SyntaxToken) -> RStringValue {
         [Some(SyntaxElement::Token(value_token))],
     ))
 }
+pub fn r_subset(function: AnyRExpression, arguments: RSubsetArguments) -> RSubset {
+    RSubset::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_SUBSET,
+        [
+            Some(SyntaxElement::Node(function.into_syntax())),
+            Some(SyntaxElement::Node(arguments.into_syntax())),
+        ],
+    ))
+}
+pub fn r_subset2(function: AnyRExpression, arguments: RSubset2Arguments) -> RSubset2 {
+    RSubset2::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_SUBSET2,
+        [
+            Some(SyntaxElement::Node(function.into_syntax())),
+            Some(SyntaxElement::Node(arguments.into_syntax())),
+        ],
+    ))
+}
+pub fn r_subset2_arguments(
+    l_brack2_token: SyntaxToken,
+    items: RArgumentList,
+    r_brack2_token: SyntaxToken,
+) -> RSubset2Arguments {
+    RSubset2Arguments::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_SUBSET2_ARGUMENTS,
+        [
+            Some(SyntaxElement::Token(l_brack2_token)),
+            Some(SyntaxElement::Node(items.into_syntax())),
+            Some(SyntaxElement::Token(r_brack2_token)),
+        ],
+    ))
+}
+pub fn r_subset_arguments(
+    l_brack_token: SyntaxToken,
+    items: RArgumentList,
+    r_brack_token: SyntaxToken,
+) -> RSubsetArguments {
+    RSubsetArguments::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_SUBSET_ARGUMENTS,
+        [
+            Some(SyntaxElement::Token(l_brack_token)),
+            Some(SyntaxElement::Node(items.into_syntax())),
+            Some(SyntaxElement::Token(r_brack_token)),
+        ],
+    ))
+}
 pub fn r_true_expression(true_token: SyntaxToken) -> RTrueExpression {
     RTrueExpression::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_TRUE_EXPRESSION,
