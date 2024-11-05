@@ -284,6 +284,15 @@ pub fn r_parameters(
         ],
     ))
 }
+pub fn r_repeat_statement(repeat_token: SyntaxToken, body: AnyRExpression) -> RRepeatStatement {
+    RRepeatStatement::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_REPEAT_STATEMENT,
+        [
+            Some(SyntaxElement::Token(repeat_token)),
+            Some(SyntaxElement::Node(body.into_syntax())),
+        ],
+    ))
+}
 pub fn r_root(expressions: RExpressionList, eof_token: SyntaxToken) -> RRootBuilder {
     RRootBuilder {
         expressions,
