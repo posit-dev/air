@@ -921,6 +921,46 @@ pub struct RParametersFields {
     pub r_paren_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RRepeatStatement {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RRepeatStatement {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RRepeatStatementFields {
+        RRepeatStatementFields {
+            repeat_token: self.repeat_token(),
+            body: self.body(),
+        }
+    }
+    pub fn repeat_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+    pub fn body(&self) -> SyntaxResult<AnyRExpression> {
+        support::required_node(&self.syntax, 1usize)
+    }
+}
+impl Serialize for RRepeatStatement {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RRepeatStatementFields {
+    pub repeat_token: SyntaxResult<SyntaxToken>,
+    pub body: SyntaxResult<AnyRExpression>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RRoot {
     pub(crate) syntax: SyntaxNode,
 }
@@ -1112,6 +1152,7 @@ pub enum AnyRExpression {
     RFunctionDefinition(RFunctionDefinition),
     RIdentifier(RIdentifier),
     RIfStatement(RIfStatement),
+    RRepeatStatement(RRepeatStatement),
 }
 impl AnyRExpression {
     pub fn as_any_r_value(&self) -> Option<&AnyRValue> {
@@ -1165,6 +1206,12 @@ impl AnyRExpression {
     pub fn as_r_if_statement(&self) -> Option<&RIfStatement> {
         match &self {
             AnyRExpression::RIfStatement(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_repeat_statement(&self) -> Option<&RRepeatStatement> {
+        match &self {
+            AnyRExpression::RRepeatStatement(item) => Some(item),
             _ => None,
         }
     }
@@ -2178,6 +2225,48 @@ impl From<RParameters> for SyntaxElement {
         n.syntax.into()
     }
 }
+impl AstNode for RRepeatStatement {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_REPEAT_STATEMENT as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_REPEAT_STATEMENT
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RRepeatStatement {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RRepeatStatement")
+            .field(
+                "repeat_token",
+                &support::DebugSyntaxResult(self.repeat_token()),
+            )
+            .field("body", &support::DebugSyntaxResult(self.body()))
+            .finish()
+    }
+}
+impl From<RRepeatStatement> for SyntaxNode {
+    fn from(n: RRepeatStatement) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RRepeatStatement> for SyntaxElement {
+    fn from(n: RRepeatStatement) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
 impl AstNode for RRoot {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> = SyntaxKindSet::from_raw(RawSyntaxKind(R_ROOT as u16));
@@ -2510,6 +2599,11 @@ impl From<RIfStatement> for AnyRExpression {
         AnyRExpression::RIfStatement(node)
     }
 }
+impl From<RRepeatStatement> for AnyRExpression {
+    fn from(node: RRepeatStatement) -> AnyRExpression {
+        AnyRExpression::RRepeatStatement(node)
+    }
+}
 impl AstNode for AnyRExpression {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> = AnyRValue::KIND_SET
@@ -2520,7 +2614,8 @@ impl AstNode for AnyRExpression {
         .union(RForStatement::KIND_SET)
         .union(RFunctionDefinition::KIND_SET)
         .union(RIdentifier::KIND_SET)
-        .union(RIfStatement::KIND_SET);
+        .union(RIfStatement::KIND_SET)
+        .union(RRepeatStatement::KIND_SET);
     fn can_cast(kind: SyntaxKind) -> bool {
         match kind {
             R_BINARY_EXPRESSION
@@ -2530,7 +2625,8 @@ impl AstNode for AnyRExpression {
             | R_FOR_STATEMENT
             | R_FUNCTION_DEFINITION
             | R_IDENTIFIER
-            | R_IF_STATEMENT => true,
+            | R_IF_STATEMENT
+            | R_REPEAT_STATEMENT => true,
             k if AnyRValue::can_cast(k) => true,
             _ => false,
         }
@@ -2549,6 +2645,7 @@ impl AstNode for AnyRExpression {
             }
             R_IDENTIFIER => AnyRExpression::RIdentifier(RIdentifier { syntax }),
             R_IF_STATEMENT => AnyRExpression::RIfStatement(RIfStatement { syntax }),
+            R_REPEAT_STATEMENT => AnyRExpression::RRepeatStatement(RRepeatStatement { syntax }),
             _ => {
                 if let Some(any_r_value) = AnyRValue::cast(syntax) {
                     return Some(AnyRExpression::AnyRValue(any_r_value));
@@ -2568,6 +2665,7 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RFunctionDefinition(it) => &it.syntax,
             AnyRExpression::RIdentifier(it) => &it.syntax,
             AnyRExpression::RIfStatement(it) => &it.syntax,
+            AnyRExpression::RRepeatStatement(it) => &it.syntax,
             AnyRExpression::AnyRValue(it) => it.syntax(),
         }
     }
@@ -2581,6 +2679,7 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RFunctionDefinition(it) => it.syntax,
             AnyRExpression::RIdentifier(it) => it.syntax,
             AnyRExpression::RIfStatement(it) => it.syntax,
+            AnyRExpression::RRepeatStatement(it) => it.syntax,
             AnyRExpression::AnyRValue(it) => it.into_syntax(),
         }
     }
@@ -2597,6 +2696,7 @@ impl std::fmt::Debug for AnyRExpression {
             AnyRExpression::RFunctionDefinition(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RIdentifier(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RIfStatement(it) => std::fmt::Debug::fmt(it, f),
+            AnyRExpression::RRepeatStatement(it) => std::fmt::Debug::fmt(it, f),
         }
     }
 }
@@ -2612,6 +2712,7 @@ impl From<AnyRExpression> for SyntaxNode {
             AnyRExpression::RFunctionDefinition(it) => it.into(),
             AnyRExpression::RIdentifier(it) => it.into(),
             AnyRExpression::RIfStatement(it) => it.into(),
+            AnyRExpression::RRepeatStatement(it) => it.into(),
         }
     }
 }
@@ -2963,6 +3064,11 @@ impl std::fmt::Display for RNullValue {
     }
 }
 impl std::fmt::Display for RParameters {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RRepeatStatement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }

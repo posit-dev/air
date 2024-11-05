@@ -56,9 +56,11 @@ impl CommentStyle for RCommentStyle {
         match comment.text_position() {
             CommentTextPosition::EndOfLine => handle_for_comment(comment)
                 .or_else(handle_function_comment)
+                .or_else(handle_repeat_comment)
                 .or_else(handle_if_statement_comment),
             CommentTextPosition::OwnLine => handle_for_comment(comment)
                 .or_else(handle_function_comment)
+                .or_else(handle_repeat_comment)
                 .or_else(handle_if_statement_comment),
             CommentTextPosition::SameLine => {
                 // Not applicable for R, we don't have `/* */` comments
@@ -81,6 +83,29 @@ fn handle_for_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<
     }
 
     CommentPlacement::Default(comment)
+}
+
+fn handle_repeat_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
+    if !matches!(
+        comment.enclosing_node().kind(),
+        RSyntaxKind::R_REPEAT_STATEMENT
+    ) {
+        return CommentPlacement::Default(comment);
+    };
+
+    // Repeat statements have a `repeat` token and a `body` field, and
+    // only the `body` can be an `AnyRExpression`.
+    let Some(body) = comment.following_node().and_then(AnyRExpression::cast_ref) else {
+        return CommentPlacement::Default(comment);
+    };
+
+    // Handle cases like:
+    //
+    // ```r
+    // repeat # comment
+    // {}
+    // ```
+    place_leading_or_dangling_body_comment(body, comment)
 }
 
 fn handle_function_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {

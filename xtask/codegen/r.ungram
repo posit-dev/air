@@ -114,6 +114,13 @@ RForStatement =
 	body: AnyRExpression
 
 // ----------------------------------------------------------------
+// Repeat statement
+
+RRepeatStatement =
+	'repeat'
+	body: AnyRExpression
+
+// ----------------------------------------------------------------
 // Braced expressions
 
 RBracedExpressions =
@@ -193,6 +200,7 @@ AnyRExpression =
 	| RFunctionDefinition
 	| RIfStatement
 	| RForStatement
+	| RRepeatStatement
 	| RBracedExpressions
 	| RCall
 	| RBogusExpression
