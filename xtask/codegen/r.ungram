@@ -200,7 +200,7 @@ RParenthesizedExpression =
 	')'
 
 // ----------------------------------------------------------------
-// Call
+// Call / Subset / Subset2
 
 RCall =
 	function: AnyRExpression
@@ -210,6 +210,24 @@ RCallArguments =
 	'('
 	items: RArgumentList
 	')'
+
+RSubset =
+	function: AnyRExpression
+	arguments: RSubsetArguments
+
+RSubsetArguments =
+	'['
+	items: RArgumentList
+	']'
+
+RSubset2 =
+	function: AnyRExpression
+	arguments: RSubset2Arguments
+
+RSubset2Arguments =
+	'[['
+	items: RArgumentList
+	']]'
 
 // We want to allow:
 // - Any number of sequential commas
@@ -279,6 +297,8 @@ AnyRExpression =
 	| RBracedExpressions
 	| RParenthesizedExpression
 	| RCall
+	| RSubset
+	| RSubset2
 	| RReturnExpression
 	| RNextExpression
 	| RBreakExpression
