@@ -36,3 +36,12 @@ test_that(
 })
 
 fn(a = { 1 + 1 })
+
+# TODO: We need to fix this case. I think our `should_join_arguments_with_space()`
+# rule is wrong. We probably also need to use `will_break()` on the arguments
+# individually, and if any of them break then we fall back to full expansion?
+# Look for `non_grouped_breaks` in `call_arguments.rs` on the JS side for a
+# similar idea (but note this is likely an expensive operation).
+fn({ 1 + 1 }, {
+	1 + 1
+})
