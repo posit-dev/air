@@ -1,0 +1,65 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/repeat_statement.R
+---
+# Input
+
+```R
+repeat 1
+
+repeat {}
+
+repeat { # a comment
+}
+
+repeat { # comment1
+  # comment2
+  1 + 1
+}
+
+# TODO: `comment1` should go inside the `{`
+repeat # comment1
+{
+  # comment2
+  1 + 1
+}
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Tab
+Indent width: 2
+Line ending: LF
+Line width: 80
+-----
+
+```R
+repeat 1
+
+repeat {
+}
+
+repeat {
+	# a comment
+}
+
+repeat {
+	# comment1
+	# comment2
+	1 + 1
+}
+
+# TODO: `comment1` should go inside the `{`
+repeat # comment1
+{
+	# comment2
+	1 + 1
+}
+```

@@ -1,10 +1,22 @@
 use crate::prelude::*;
+use crate::statement_body::FormatStatementBody;
 use air_r_syntax::RRepeatStatement;
-use biome_rowan::AstNode;
+use air_r_syntax::RRepeatStatementFields;
+use biome_formatter::format_args;
+use biome_formatter::write;
+
 #[derive(Debug, Clone, Default)]
 pub(crate) struct FormatRRepeatStatement;
 impl FormatNodeRule<RRepeatStatement> for FormatRRepeatStatement {
     fn fmt_fields(&self, node: &RRepeatStatement, f: &mut RFormatter) -> FormatResult<()> {
-        format_verbatim_node(node.syntax()).fmt(f)
+        let RRepeatStatementFields { repeat_token, body } = node.as_fields();
+
+        write!(
+            f,
+            [group(&format_args!(
+                repeat_token.format(),
+                FormatStatementBody::new(&body?)
+            ))]
+        )
     }
 }
