@@ -45,3 +45,9 @@ fn(a = { 1 + 1 })
 fn({ 1 + 1 }, {
 	1 + 1
 })
+
+# Inline functions are not captured by the trailing braced expression feature,
+# we always allow for full expansion here
+lapply(my_long_list_my_long_list_my_long_list_my_long_list, function(my_long_argument) {
+  my_long_body_my_long_body_my_long_body_my_long_body_my_long_body
+})

@@ -1,7 +1,5 @@
-use air_formatter_test::check_reformat::CheckReformat;
 use air_r_formatter::context::RFormatOptions;
 use air_r_formatter::format_node;
-use air_r_formatter::RFormatLanguage;
 use air_r_parser::parse;
 use air_r_parser::RParserOptions;
 use air_r_syntax::RRoot;
@@ -17,23 +15,6 @@ mod language {
 #[ignore]
 #[test]
 fn quick_test() {
-    // let src = r#"
-    //     lapply(
-    //       my_long_list_my_long_list_my_long_list_my_long_list,
-    //       function(my_long_argument) {
-    //         my_long_body_my_long_body_my_long_body_my_long_body_my_long_body
-    //       }
-    //     )
-    // "#;
-
-    // let src = r#"
-    //     lapply(my_long_list_my_long_list_my_long_list_my_long_list, {
-    //         # foo
-    //         my_long_body_my_long_body_my_long_body_my_long_body_my_long_body()
-    //       }
-    //     )
-    // "#;
-
     let src = r#"
         map(x, {
             foo(a, b)
