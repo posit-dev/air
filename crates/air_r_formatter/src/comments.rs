@@ -93,6 +93,26 @@ fn handle_while_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacemen
         return CommentPlacement::Default(comment);
     };
 
+    if let Some(preceding) = comment.preceding_node() {
+        // Make comments directly before the condition `)` trailing
+        // comments of the condition itself (rather than leading comments of
+        // the `body` node)
+        //
+        // ```r
+        // while (
+        //   cond
+        //   # comment
+        // ) {
+        // }
+        // ```
+        if comment
+            .following_token()
+            .map_or(false, |token| token.kind() == RSyntaxKind::R_PAREN)
+        {
+            return CommentPlacement::trailing(preceding.clone(), comment);
+        }
+    }
+
     // Check that the `body` of the while loop is identical to the `following`
     // node of the comment. While loops also have a `condition` that can be
     // any R expression, so we need to differentiate here.

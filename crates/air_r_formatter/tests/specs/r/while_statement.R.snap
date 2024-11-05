@@ -23,6 +23,23 @@ while(super_long_function_name_is_true_man_this_is_a_really_really_long_function
   1 + 1
 }
 
+while(
+  # comment
+  a) {
+  1 + 1
+}
+
+while(a
+# comment
+) {
+  1 + 1
+}
+
+while(a # comment
+) {
+  1 + 1
+}
+
 while(a) # comment
 {}
 
@@ -72,6 +89,26 @@ while (
 
 while (
 	super_long_function_name_is_true_man_this_is_a_really_really_long_function()
+) {
+	1 + 1
+}
+
+while (
+	# comment
+	a
+) {
+	1 + 1
+}
+
+while (
+	a
+	# comment
+) {
+	1 + 1
+}
+
+while (
+	a # comment
 ) {
 	1 + 1
 }
