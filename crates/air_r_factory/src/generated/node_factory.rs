@@ -333,6 +333,24 @@ pub fn r_unnamed_argument(value: AnyRExpression) -> RUnnamedArgument {
         [Some(SyntaxElement::Node(value.into_syntax()))],
     ))
 }
+pub fn r_while_statement(
+    while_token: SyntaxToken,
+    l_paren_token: SyntaxToken,
+    condition: AnyRExpression,
+    r_paren_token: SyntaxToken,
+    body: AnyRExpression,
+) -> RWhileStatement {
+    RWhileStatement::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_WHILE_STATEMENT,
+        [
+            Some(SyntaxElement::Token(while_token)),
+            Some(SyntaxElement::Token(l_paren_token)),
+            Some(SyntaxElement::Node(condition.into_syntax())),
+            Some(SyntaxElement::Token(r_paren_token)),
+            Some(SyntaxElement::Node(body.into_syntax())),
+        ],
+    ))
+}
 pub fn r_argument_list<I, S>(items: I, separators: S) -> RArgumentList
 where
     I: IntoIterator<Item = AnyRArgument>,
