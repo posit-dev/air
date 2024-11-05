@@ -629,6 +629,9 @@ impl Field {
                     ("')'", _) => "r_paren",
                     ("'['", _) => "l_brack",
                     ("']'", _) => "r_brack",
+                    // NOTE(air): We also added `[[` and `]]` here
+                    ("[[", _) => "l_brack2",
+                    ("]]", _) => "r_brack2",
                     ("'`'", _) => "backtick",
                     ("<", _) => "l_angle",
                     (">", _) => "r_angle",
