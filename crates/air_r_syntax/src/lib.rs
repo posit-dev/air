@@ -53,6 +53,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::FUNCTION_KW
             | RSyntaxKind::FOR_KW
             | RSyntaxKind::IN_KW
+            | RSyntaxKind::REPEAT_KW
             | RSyntaxKind::IF_KW
             | RSyntaxKind::ELSE_KW
             | RSyntaxKind::R_INTEGER_LITERAL
@@ -79,6 +80,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_IF_STATEMENT
             | RSyntaxKind::R_ELSE_CLAUSE
             | RSyntaxKind::R_FOR_STATEMENT
+            | RSyntaxKind::R_REPEAT_STATEMENT
             | RSyntaxKind::R_BRACED_EXPRESSIONS
             | RSyntaxKind::R_CALL
             | RSyntaxKind::R_CALL_ARGUMENTS
@@ -144,6 +146,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             RSyntaxKind::FUNCTION_KW => RSyntaxKind::R_BOGUS,
             RSyntaxKind::FOR_KW => RSyntaxKind::R_BOGUS,
             RSyntaxKind::IN_KW => RSyntaxKind::R_BOGUS,
+            RSyntaxKind::REPEAT_KW => RSyntaxKind::R_BOGUS,
             RSyntaxKind::IF_KW => RSyntaxKind::R_BOGUS,
             RSyntaxKind::ELSE_KW => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_INTEGER_LITERAL => RSyntaxKind::R_BOGUS,
@@ -166,6 +169,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             RSyntaxKind::R_IF_STATEMENT => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_ELSE_CLAUSE => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_FOR_STATEMENT => RSyntaxKind::R_BOGUS,
+            RSyntaxKind::R_REPEAT_STATEMENT => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_BRACED_EXPRESSIONS => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_CALL => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_CALL_ARGUMENTS => RSyntaxKind::R_BOGUS,
