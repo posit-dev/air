@@ -104,6 +104,10 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RParameters::new_unchecked(node) };
                     $body
                 }
+                $crate::RSyntaxKind::R_PARENTHESIZED_EXPRESSION => {
+                    let $pattern = unsafe { $crate::RParenthesizedExpression::new_unchecked(node) };
+                    $body
+                }
                 $crate::RSyntaxKind::R_REPEAT_STATEMENT => {
                     let $pattern = unsafe { $crate::RRepeatStatement::new_unchecked(node) };
                     $body
