@@ -1075,6 +1075,61 @@ impl Serialize for RUnnamedArgument {
 pub struct RUnnamedArgumentFields {
     pub value: SyntaxResult<AnyRExpression>,
 }
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RWhileStatement {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RWhileStatement {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RWhileStatementFields {
+        RWhileStatementFields {
+            while_token: self.while_token(),
+            l_paren_token: self.l_paren_token(),
+            condition: self.condition(),
+            r_paren_token: self.r_paren_token(),
+            body: self.body(),
+        }
+    }
+    pub fn while_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 1usize)
+    }
+    pub fn condition(&self) -> SyntaxResult<AnyRExpression> {
+        support::required_node(&self.syntax, 2usize)
+    }
+    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 3usize)
+    }
+    pub fn body(&self) -> SyntaxResult<AnyRExpression> {
+        support::required_node(&self.syntax, 4usize)
+    }
+}
+impl Serialize for RWhileStatement {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RWhileStatementFields {
+    pub while_token: SyntaxResult<SyntaxToken>,
+    pub l_paren_token: SyntaxResult<SyntaxToken>,
+    pub condition: SyntaxResult<AnyRExpression>,
+    pub r_paren_token: SyntaxResult<SyntaxToken>,
+    pub body: SyntaxResult<AnyRExpression>,
+}
 #[derive(Clone, PartialEq, Eq, Hash, Serialize)]
 pub enum AnyRArgument {
     RBogusArgument(RBogusArgument),
@@ -1153,6 +1208,7 @@ pub enum AnyRExpression {
     RIdentifier(RIdentifier),
     RIfStatement(RIfStatement),
     RRepeatStatement(RRepeatStatement),
+    RWhileStatement(RWhileStatement),
 }
 impl AnyRExpression {
     pub fn as_any_r_value(&self) -> Option<&AnyRValue> {
@@ -1212,6 +1268,12 @@ impl AnyRExpression {
     pub fn as_r_repeat_statement(&self) -> Option<&RRepeatStatement> {
         match &self {
             AnyRExpression::RRepeatStatement(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_while_statement(&self) -> Option<&RWhileStatement> {
+        match &self {
+            AnyRExpression::RWhileStatement(item) => Some(item),
             _ => None,
         }
     }
@@ -2388,6 +2450,57 @@ impl From<RUnnamedArgument> for SyntaxElement {
         n.syntax.into()
     }
 }
+impl AstNode for RWhileStatement {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_WHILE_STATEMENT as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_WHILE_STATEMENT
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RWhileStatement {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RWhileStatement")
+            .field(
+                "while_token",
+                &support::DebugSyntaxResult(self.while_token()),
+            )
+            .field(
+                "l_paren_token",
+                &support::DebugSyntaxResult(self.l_paren_token()),
+            )
+            .field("condition", &support::DebugSyntaxResult(self.condition()))
+            .field(
+                "r_paren_token",
+                &support::DebugSyntaxResult(self.r_paren_token()),
+            )
+            .field("body", &support::DebugSyntaxResult(self.body()))
+            .finish()
+    }
+}
+impl From<RWhileStatement> for SyntaxNode {
+    fn from(n: RWhileStatement) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RWhileStatement> for SyntaxElement {
+    fn from(n: RWhileStatement) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
 impl From<RBogusArgument> for AnyRArgument {
     fn from(node: RBogusArgument) -> AnyRArgument {
         AnyRArgument::RBogusArgument(node)
@@ -2604,6 +2717,11 @@ impl From<RRepeatStatement> for AnyRExpression {
         AnyRExpression::RRepeatStatement(node)
     }
 }
+impl From<RWhileStatement> for AnyRExpression {
+    fn from(node: RWhileStatement) -> AnyRExpression {
+        AnyRExpression::RWhileStatement(node)
+    }
+}
 impl AstNode for AnyRExpression {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> = AnyRValue::KIND_SET
@@ -2615,7 +2733,8 @@ impl AstNode for AnyRExpression {
         .union(RFunctionDefinition::KIND_SET)
         .union(RIdentifier::KIND_SET)
         .union(RIfStatement::KIND_SET)
-        .union(RRepeatStatement::KIND_SET);
+        .union(RRepeatStatement::KIND_SET)
+        .union(RWhileStatement::KIND_SET);
     fn can_cast(kind: SyntaxKind) -> bool {
         match kind {
             R_BINARY_EXPRESSION
@@ -2626,7 +2745,8 @@ impl AstNode for AnyRExpression {
             | R_FUNCTION_DEFINITION
             | R_IDENTIFIER
             | R_IF_STATEMENT
-            | R_REPEAT_STATEMENT => true,
+            | R_REPEAT_STATEMENT
+            | R_WHILE_STATEMENT => true,
             k if AnyRValue::can_cast(k) => true,
             _ => false,
         }
@@ -2646,6 +2766,7 @@ impl AstNode for AnyRExpression {
             R_IDENTIFIER => AnyRExpression::RIdentifier(RIdentifier { syntax }),
             R_IF_STATEMENT => AnyRExpression::RIfStatement(RIfStatement { syntax }),
             R_REPEAT_STATEMENT => AnyRExpression::RRepeatStatement(RRepeatStatement { syntax }),
+            R_WHILE_STATEMENT => AnyRExpression::RWhileStatement(RWhileStatement { syntax }),
             _ => {
                 if let Some(any_r_value) = AnyRValue::cast(syntax) {
                     return Some(AnyRExpression::AnyRValue(any_r_value));
@@ -2666,6 +2787,7 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RIdentifier(it) => &it.syntax,
             AnyRExpression::RIfStatement(it) => &it.syntax,
             AnyRExpression::RRepeatStatement(it) => &it.syntax,
+            AnyRExpression::RWhileStatement(it) => &it.syntax,
             AnyRExpression::AnyRValue(it) => it.syntax(),
         }
     }
@@ -2680,6 +2802,7 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RIdentifier(it) => it.syntax,
             AnyRExpression::RIfStatement(it) => it.syntax,
             AnyRExpression::RRepeatStatement(it) => it.syntax,
+            AnyRExpression::RWhileStatement(it) => it.syntax,
             AnyRExpression::AnyRValue(it) => it.into_syntax(),
         }
     }
@@ -2697,6 +2820,7 @@ impl std::fmt::Debug for AnyRExpression {
             AnyRExpression::RIdentifier(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RIfStatement(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RRepeatStatement(it) => std::fmt::Debug::fmt(it, f),
+            AnyRExpression::RWhileStatement(it) => std::fmt::Debug::fmt(it, f),
         }
     }
 }
@@ -2713,6 +2837,7 @@ impl From<AnyRExpression> for SyntaxNode {
             AnyRExpression::RIdentifier(it) => it.into(),
             AnyRExpression::RIfStatement(it) => it.into(),
             AnyRExpression::RRepeatStatement(it) => it.into(),
+            AnyRExpression::RWhileStatement(it) => it.into(),
         }
     }
 }
@@ -3084,6 +3209,11 @@ impl std::fmt::Display for RStringValue {
     }
 }
 impl std::fmt::Display for RUnnamedArgument {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RWhileStatement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
