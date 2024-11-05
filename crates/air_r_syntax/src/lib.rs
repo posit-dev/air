@@ -84,6 +84,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_WHILE_STATEMENT
             | RSyntaxKind::R_REPEAT_STATEMENT
             | RSyntaxKind::R_BRACED_EXPRESSIONS
+            | RSyntaxKind::R_PARENTHESIZED_EXPRESSION
             | RSyntaxKind::R_CALL
             | RSyntaxKind::R_CALL_ARGUMENTS
             | RSyntaxKind::R_ARGUMENT_LIST
@@ -175,6 +176,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             RSyntaxKind::R_WHILE_STATEMENT => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_REPEAT_STATEMENT => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_BRACED_EXPRESSIONS => RSyntaxKind::R_BOGUS,
+            RSyntaxKind::R_PARENTHESIZED_EXPRESSION => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_CALL => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_CALL_ARGUMENTS => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_ARGUMENT_LIST => RSyntaxKind::R_BOGUS,
