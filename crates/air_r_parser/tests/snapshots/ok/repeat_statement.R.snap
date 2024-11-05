@@ -1,0 +1,93 @@
+---
+source: crates/air_r_parser/tests/spec_test.rs
+expression: snapshot
+---
+## Input
+
+```R
+repeat 1
+
+repeat {
+}
+
+repeat {
+  1 + 1
+}
+
+```
+
+
+## AST
+
+```
+RRoot {
+    bom_token: missing (optional),
+    expressions: RExpressionList [
+        RRepeatStatement {
+            repeat_token: REPEAT_KW@0..6 "repeat" [] [],
+            body: RDoubleValue {
+                value_token: R_DOUBLE_LITERAL@6..8 "1" [Whitespace(" ")] [],
+            },
+        },
+        RRepeatStatement {
+            repeat_token: REPEAT_KW@8..16 "repeat" [Newline("\n"), Newline("\n")] [],
+            body: RBracedExpressions {
+                l_curly_token: L_CURLY@16..18 "{" [Whitespace(" ")] [],
+                expressions: RExpressionList [],
+                r_curly_token: R_CURLY@18..20 "}" [Newline("\n")] [],
+            },
+        },
+        RRepeatStatement {
+            repeat_token: REPEAT_KW@20..28 "repeat" [Newline("\n"), Newline("\n")] [],
+            body: RBracedExpressions {
+                l_curly_token: L_CURLY@28..30 "{" [Whitespace(" ")] [],
+                expressions: RExpressionList [
+                    RBinaryExpression {
+                        left: RDoubleValue {
+                            value_token: R_DOUBLE_LITERAL@30..34 "1" [Newline("\n"), Whitespace("  ")] [],
+                        },
+                        operator_token: PLUS@34..36 "+" [Whitespace(" ")] [],
+                        right: RDoubleValue {
+                            value_token: R_DOUBLE_LITERAL@36..38 "1" [Whitespace(" ")] [],
+                        },
+                    },
+                ],
+                r_curly_token: R_CURLY@38..40 "}" [Newline("\n")] [],
+            },
+        },
+    ],
+    eof_token: EOF@40..41 "" [Newline("\n")] [],
+}
+```
+
+## CST
+
+```
+0: R_ROOT@0..41
+  0: (empty)
+  1: R_EXPRESSION_LIST@0..40
+    0: R_REPEAT_STATEMENT@0..8
+      0: REPEAT_KW@0..6 "repeat" [] []
+      1: R_DOUBLE_VALUE@6..8
+        0: R_DOUBLE_LITERAL@6..8 "1" [Whitespace(" ")] []
+    1: R_REPEAT_STATEMENT@8..20
+      0: REPEAT_KW@8..16 "repeat" [Newline("\n"), Newline("\n")] []
+      1: R_BRACED_EXPRESSIONS@16..20
+        0: L_CURLY@16..18 "{" [Whitespace(" ")] []
+        1: R_EXPRESSION_LIST@18..18
+        2: R_CURLY@18..20 "}" [Newline("\n")] []
+    2: R_REPEAT_STATEMENT@20..40
+      0: REPEAT_KW@20..28 "repeat" [Newline("\n"), Newline("\n")] []
+      1: R_BRACED_EXPRESSIONS@28..40
+        0: L_CURLY@28..30 "{" [Whitespace(" ")] []
+        1: R_EXPRESSION_LIST@30..38
+          0: R_BINARY_EXPRESSION@30..38
+            0: R_DOUBLE_VALUE@30..34
+              0: R_DOUBLE_LITERAL@30..34 "1" [Newline("\n"), Whitespace("  ")] []
+            1: PLUS@34..36 "+" [Whitespace(" ")] []
+            2: R_DOUBLE_VALUE@36..38
+              0: R_DOUBLE_LITERAL@36..38 "1" [Whitespace(" ")] []
+        2: R_CURLY@38..40 "}" [Newline("\n")] []
+  2: EOF@40..41 "" [Newline("\n")] []
+
+```
