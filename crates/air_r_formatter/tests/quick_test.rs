@@ -17,10 +17,27 @@ mod language {
 #[ignore]
 #[test]
 fn quick_test() {
+    // let src = r#"
+    //     lapply(
+    //       my_long_list_my_long_list_my_long_list_my_long_list,
+    //       function(my_long_argument) {
+    //         my_long_body_my_long_body_my_long_body_my_long_body_my_long_body
+    //       }
+    //     )
+    // "#;
+
+    // let src = r#"
+    //     lapply(my_long_list_my_long_list_my_long_list_my_long_list, {
+    //         # foo
+    //         my_long_body_my_long_body_my_long_body_my_long_body_my_long_body()
+    //       }
+    //     )
+    // "#;
+
     let src = r#"
-test_that("description", {
-  1 + 1
-})
+        map(x, {
+            foo(a, b)
+        })
     "#;
 
     let parse = parse(src, RParserOptions::default());
@@ -39,17 +56,4 @@ test_that("description", {
     println!();
     println!("---- Formatted Code ----");
     println!("start\n{}\nend", result.as_code());
-
-    let root = &parse.syntax();
-    let language = language::RTestFormatLanguage::default();
-
-    // Does a second pass of formatting to ensure nothing changes (i.e. stable)
-    let check_reformat = CheckReformat::new(
-        root,
-        result.as_code(),
-        "quick_test",
-        &language,
-        RFormatLanguage::new(options),
-    );
-    check_reformat.check_reformat();
 }

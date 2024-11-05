@@ -27,7 +27,7 @@ impl FormatNodeRule<RCallArguments> for FormatRCallArguments {
             f,
             [
                 l_paren_token.format(),
-                group(&soft_block_indent(&items.format())),
+                &items.format(),
                 r_paren_token.format()
             ]
         )
