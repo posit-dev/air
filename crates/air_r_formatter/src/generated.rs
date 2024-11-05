@@ -1230,6 +1230,133 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RStringValue {
         )
     }
 }
+impl FormatRule<air_r_syntax::RSubset> for crate::r::auxiliary::subset::FormatRSubset {
+    type Context = RFormatContext;
+    #[inline(always)]
+    fn fmt(&self, node: &air_r_syntax::RSubset, f: &mut RFormatter) -> FormatResult<()> {
+        FormatNodeRule::<air_r_syntax::RSubset>::fmt(self, node, f)
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::RSubset {
+    type Format<'a> =
+        FormatRefWithRule<'a, air_r_syntax::RSubset, crate::r::auxiliary::subset::FormatRSubset>;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(self, crate::r::auxiliary::subset::FormatRSubset::default())
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::RSubset {
+    type Format =
+        FormatOwnedWithRule<air_r_syntax::RSubset, crate::r::auxiliary::subset::FormatRSubset>;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(self, crate::r::auxiliary::subset::FormatRSubset::default())
+    }
+}
+impl FormatRule<air_r_syntax::RSubset2> for crate::r::auxiliary::subset_2::FormatRSubset2 {
+    type Context = RFormatContext;
+    #[inline(always)]
+    fn fmt(&self, node: &air_r_syntax::RSubset2, f: &mut RFormatter) -> FormatResult<()> {
+        FormatNodeRule::<air_r_syntax::RSubset2>::fmt(self, node, f)
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::RSubset2 {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::RSubset2,
+        crate::r::auxiliary::subset_2::FormatRSubset2,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::auxiliary::subset_2::FormatRSubset2::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::RSubset2 {
+    type Format =
+        FormatOwnedWithRule<air_r_syntax::RSubset2, crate::r::auxiliary::subset_2::FormatRSubset2>;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::auxiliary::subset_2::FormatRSubset2::default(),
+        )
+    }
+}
+impl FormatRule<air_r_syntax::RSubset2Arguments>
+    for crate::r::auxiliary::subset_2_arguments::FormatRSubset2Arguments
+{
+    type Context = RFormatContext;
+    #[inline(always)]
+    fn fmt(&self, node: &air_r_syntax::RSubset2Arguments, f: &mut RFormatter) -> FormatResult<()> {
+        FormatNodeRule::<air_r_syntax::RSubset2Arguments>::fmt(self, node, f)
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::RSubset2Arguments {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::RSubset2Arguments,
+        crate::r::auxiliary::subset_2_arguments::FormatRSubset2Arguments,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::auxiliary::subset_2_arguments::FormatRSubset2Arguments::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::RSubset2Arguments {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::RSubset2Arguments,
+        crate::r::auxiliary::subset_2_arguments::FormatRSubset2Arguments,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::auxiliary::subset_2_arguments::FormatRSubset2Arguments::default(),
+        )
+    }
+}
+impl FormatRule<air_r_syntax::RSubsetArguments>
+    for crate::r::auxiliary::subset_arguments::FormatRSubsetArguments
+{
+    type Context = RFormatContext;
+    #[inline(always)]
+    fn fmt(&self, node: &air_r_syntax::RSubsetArguments, f: &mut RFormatter) -> FormatResult<()> {
+        FormatNodeRule::<air_r_syntax::RSubsetArguments>::fmt(self, node, f)
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::RSubsetArguments {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::RSubsetArguments,
+        crate::r::auxiliary::subset_arguments::FormatRSubsetArguments,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::auxiliary::subset_arguments::FormatRSubsetArguments::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::RSubsetArguments {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::RSubsetArguments,
+        crate::r::auxiliary::subset_arguments::FormatRSubsetArguments,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::auxiliary::subset_arguments::FormatRSubsetArguments::default(),
+        )
+    }
+}
 impl FormatRule<air_r_syntax::RTrueExpression>
     for crate::r::auxiliary::true_expression::FormatRTrueExpression
 {

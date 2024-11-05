@@ -30,6 +30,8 @@ impl FormatRule<AnyRExpression> for FormatAnyRExpression {
             AnyRExpression::RParenthesizedExpression(node) => node.format().fmt(f),
             AnyRExpression::RRepeatStatement(node) => node.format().fmt(f),
             AnyRExpression::RReturnExpression(node) => node.format().fmt(f),
+            AnyRExpression::RSubset(node) => node.format().fmt(f),
+            AnyRExpression::RSubset2(node) => node.format().fmt(f),
             AnyRExpression::RTrueExpression(node) => node.format().fmt(f),
             AnyRExpression::RUnaryExpression(node) => node.format().fmt(f),
             AnyRExpression::RWhileStatement(node) => node.format().fmt(f),
