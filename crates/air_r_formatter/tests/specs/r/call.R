@@ -35,6 +35,14 @@ test_that(
 	1 + 1
 })
 
+# TODO: Since this fits, should it prefer putting `with(data, {` on 1 line?
+with(
+  data,
+  {
+    col
+  }
+)
+
 fn(a = { 1 + 1 })
 
 # TODO: We need to fix this case. I think our `should_join_arguments_with_space()`
