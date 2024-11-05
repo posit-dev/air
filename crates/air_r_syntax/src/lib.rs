@@ -46,6 +46,8 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_CURLY
             | RSyntaxKind::L_BRACK
             | RSyntaxKind::R_BRACK
+            | RSyntaxKind::L_BRACK2
+            | RSyntaxKind::R_BRACK2
             | RSyntaxKind::L_PAREN
             | RSyntaxKind::R_PAREN
             | RSyntaxKind::DOTS
@@ -102,6 +104,10 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_PARENTHESIZED_EXPRESSION
             | RSyntaxKind::R_CALL
             | RSyntaxKind::R_CALL_ARGUMENTS
+            | RSyntaxKind::R_SUBSET
+            | RSyntaxKind::R_SUBSET_ARGUMENTS
+            | RSyntaxKind::R_SUBSET2
+            | RSyntaxKind::R_SUBSET2_ARGUMENTS
             | RSyntaxKind::R_ARGUMENT_LIST
             | RSyntaxKind::R_NAMED_ARGUMENT
             | RSyntaxKind::R_UNNAMED_ARGUMENT
@@ -196,6 +202,8 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_CURLY
             | RSyntaxKind::L_BRACK
             | RSyntaxKind::R_BRACK
+            | RSyntaxKind::L_BRACK2
+            | RSyntaxKind::R_BRACK2
             | RSyntaxKind::L_PAREN
             | RSyntaxKind::R_PAREN
             | RSyntaxKind::DOTS
@@ -254,6 +262,10 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_PARENTHESIZED_EXPRESSION
             | RSyntaxKind::R_CALL
             | RSyntaxKind::R_CALL_ARGUMENTS
+            | RSyntaxKind::R_SUBSET
+            | RSyntaxKind::R_SUBSET_ARGUMENTS
+            | RSyntaxKind::R_SUBSET2
+            | RSyntaxKind::R_SUBSET2_ARGUMENTS
             | RSyntaxKind::R_ARGUMENT_LIST
             | RSyntaxKind::R_EXPRESSION_LIST
             | RSyntaxKind::TILDE
