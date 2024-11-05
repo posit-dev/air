@@ -768,6 +768,48 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RParameters {
         )
     }
 }
+impl FormatRule<air_r_syntax::RParenthesizedExpression>
+    for crate::r::auxiliary::parenthesized_expression::FormatRParenthesizedExpression
+{
+    type Context = RFormatContext;
+    #[inline(always)]
+    fn fmt(
+        &self,
+        node: &air_r_syntax::RParenthesizedExpression,
+        f: &mut RFormatter,
+    ) -> FormatResult<()> {
+        FormatNodeRule::<air_r_syntax::RParenthesizedExpression>::fmt(self, node, f)
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::RParenthesizedExpression {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::RParenthesizedExpression,
+        crate::r::auxiliary::parenthesized_expression::FormatRParenthesizedExpression,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::auxiliary::parenthesized_expression::FormatRParenthesizedExpression::default(
+            ),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::RParenthesizedExpression {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::RParenthesizedExpression,
+        crate::r::auxiliary::parenthesized_expression::FormatRParenthesizedExpression,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::auxiliary::parenthesized_expression::FormatRParenthesizedExpression::default(
+            ),
+        )
+    }
+}
 impl FormatRule<air_r_syntax::RRepeatStatement>
     for crate::r::auxiliary::repeat_statement::FormatRRepeatStatement
 {

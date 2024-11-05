@@ -1,0 +1,22 @@
+(1)
+
+# TODO: Should we keep it simple and say that fully expanding here (due to the
+# braced expression) is the best that we want to do?
+({ 1 + 1 })
+(function() { 1 + 1 })
+
+# Shouldn't automatically break in the function call
+(fn(a, b, c))
+
+(fn_call_that_is_really_long(with_really_long, arguments_like_this, and_this_one_too))
+
+((1))
+
+# All comments enclosed by the parenthesized expression node should belong to
+# the `body` node inside the `()`. Note `comment5` here is not enclosed by the
+# parenthesized expression node so it stays where it is.
+( # comment1
+  # comment2
+  1 # comment3
+  # comment4
+) # comment5

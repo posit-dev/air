@@ -2,6 +2,7 @@ use crate::prelude::*;
 use air_r_syntax::AnyRExpression;
 use air_r_syntax::RIfStatement;
 use air_r_syntax::RLanguage;
+use air_r_syntax::RParenthesizedExpression;
 use air_r_syntax::RSyntaxKind;
 use air_r_syntax::RWhileStatement;
 use biome_formatter::comments::CommentKind;
@@ -59,12 +60,14 @@ impl CommentStyle for RCommentStyle {
                 .or_else(handle_function_comment)
                 .or_else(handle_while_comment)
                 .or_else(handle_repeat_comment)
-                .or_else(handle_if_statement_comment),
+                .or_else(handle_if_statement_comment)
+                .or_else(handle_parenthesized_expression_comment),
             CommentTextPosition::OwnLine => handle_for_comment(comment)
                 .or_else(handle_function_comment)
                 .or_else(handle_while_comment)
                 .or_else(handle_repeat_comment)
-                .or_else(handle_if_statement_comment),
+                .or_else(handle_if_statement_comment)
+                .or_else(handle_parenthesized_expression_comment),
             CommentTextPosition::SameLine => {
                 // Not applicable for R, we don't have `/* */` comments
                 CommentPlacement::Default(comment)
@@ -224,6 +227,49 @@ fn handle_if_statement_comment(
         }
     }
 
+    CommentPlacement::Default(comment)
+}
+
+fn handle_parenthesized_expression_comment(
+    comment: DecoratedComment<RLanguage>,
+) -> CommentPlacement<RLanguage> {
+    let Some(enclosing) = RParenthesizedExpression::cast_ref(comment.enclosing_node()) else {
+        return CommentPlacement::Default(comment);
+    };
+
+    let Ok(body) = enclosing.body() else {
+        // Should always have a `body`
+        return CommentPlacement::Default(comment);
+    };
+
+    if let Some(following) = comment.following_node() {
+        // Make comments directly before the `body` leading comments of the `body`
+        //
+        // ```r
+        // ( # comment
+        //   body
+        // )
+        // ```
+        if body.syntax() == following {
+            return CommentPlacement::leading(following.clone(), comment);
+        }
+    }
+
+    if let Some(preceding) = comment.preceding_node() {
+        // Make comments directly after the `body` trailing comments of the `body`
+        //
+        // ```r
+        // (
+        //   body
+        //   # comment
+        // )
+        // ```
+        if body.syntax() == preceding {
+            return CommentPlacement::trailing(preceding.clone(), comment);
+        }
+    }
+
+    // Likely not possible
     CommentPlacement::Default(comment)
 }
 
