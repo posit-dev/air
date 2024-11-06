@@ -232,6 +232,15 @@ AnyRExpression =
 	| RBracedExpressions
 	| RParenthesizedExpression
 	| RCall
+	| RReturnExpression
+	| RNextExpression
+	| RBreakExpression
+	| RTrueExpression
+	| RFalseExpression
+	| RNullExpression
+	| RInfExpression
+	| RNanExpression
+	| RNaExpression
 	| RBogusExpression
 
 // ----------------------------------------------------------------
@@ -242,16 +251,40 @@ AnyRValue =
 	| RDoubleValue
 	| RComplexValue
 	| RStringValue
-	| RLogicalValue
-	| RNullValue
 	| RBogusValue
 
 RIntegerValue = value: 'r_integer_literal'
 RDoubleValue = value: 'r_double_literal'
 RComplexValue = value: 'r_complex_literal'
 RStringValue = value: 'r_string_literal'
-RLogicalValue = value: 'r_logical_literal'
-RNullValue = value: 'r_null_literal'
+
+// ----------------------------------------------------------------
+// Keywords
+
+RReturnExpression = 'return'
+
+RNextExpression = 'next'
+
+RBreakExpression = 'break'
+
+RTrueExpression = 'true'
+
+RFalseExpression = 'false'
+
+RNullExpression = 'null'
+
+RInfExpression = 'inf'
+
+RNanExpression = 'nan'
+
+RNaExpression =
+	value: (
+		'na_logical'
+		| 'na_integer'
+		| 'na_double'
+		| 'na_complex'
+		| 'na_character'
+	)
 
 // ----------------------------------------------------------------
 // Identifier
