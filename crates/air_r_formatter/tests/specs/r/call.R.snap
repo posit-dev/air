@@ -77,6 +77,13 @@ test_that(
 	1 + 1
 })
 
+# The first argument isn't a string, so this isn't special cased and
+# it gets expanded
+# TODO: The expansion doesn't look right though
+test_that(identity("description that is super long and actually exceeds the line limit but we arent going to break!"), {
+	1 + 1
+})
+
 ```
 
 
@@ -180,6 +187,15 @@ test_that("description that is super long and actually exceeds the line limit bu
 test_that("description that is super long and actually exceeds the line limit but we arent going to break!", {
 	1 + 1
 })
+
+# The first argument isn't a string, so this isn't special cased and
+# it gets expanded
+# TODO: The expansion doesn't look right though
+test_that(identity(
+	"description that is super long and actually exceeds the line limit but we arent going to break!"
+), {
+	1 + 1
+})
 ```
 
 # Lines exceeding max width of 80 characters
@@ -189,4 +205,5 @@ test_that("description that is super long and actually exceeds the line limit bu
    74: test_that(desc = "description that is super long and actually exceeds the line limit but we arent going to break!", code = {
    79: test_that("description that is super long and actually exceeds the line limit but we arent going to break!", {
    84: test_that("description that is super long and actually exceeds the line limit but we arent going to break!", {
+   92: 	"description that is super long and actually exceeds the line limit but we arent going to break!"
 ```

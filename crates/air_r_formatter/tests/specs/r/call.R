@@ -69,3 +69,10 @@ test_that(
   "description that is super long and actually exceeds the line limit but we arent going to break!", {
 	1 + 1
 })
+
+# The first argument isn't a string, so this isn't special cased and
+# it gets expanded
+# TODO: The expansion doesn't look right though
+test_that(identity("description that is super long and actually exceeds the line limit but we arent going to break!"), {
+	1 + 1
+})
