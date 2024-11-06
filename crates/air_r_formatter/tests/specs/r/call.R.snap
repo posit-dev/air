@@ -67,6 +67,11 @@ lapply(my_long_list_my_long_list_my_long_list_my_long_list, function(my_long_arg
   my_long_body_my_long_body_my_long_body_my_long_body_my_long_body
 })
 
+# Comments
+fn(
+  # dangling special case
+)
+
 ```
 
 
@@ -165,6 +170,11 @@ lapply(
 	function(my_long_argument) {
 		my_long_body_my_long_body_my_long_body_my_long_body_my_long_body
 	}
+)
+
+# Comments
+fn(
+	# dangling special case
 )
 ```
 

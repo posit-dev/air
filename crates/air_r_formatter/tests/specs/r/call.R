@@ -59,3 +59,8 @@ fn({ 1 + 1 }, {
 lapply(my_long_list_my_long_list_my_long_list_my_long_list, function(my_long_argument) {
   my_long_body_my_long_body_my_long_body_my_long_body_my_long_body
 })
+
+# Comments
+fn(
+  # dangling special case
+)
