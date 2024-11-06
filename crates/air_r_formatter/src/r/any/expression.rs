@@ -19,6 +19,7 @@ impl FormatRule<AnyRExpression> for FormatAnyRExpression {
             AnyRExpression::RIfStatement(node) => node.format().fmt(f),
             AnyRExpression::RParenthesizedExpression(node) => node.format().fmt(f),
             AnyRExpression::RRepeatStatement(node) => node.format().fmt(f),
+            AnyRExpression::RUnaryExpression(node) => node.format().fmt(f),
             AnyRExpression::RWhileStatement(node) => node.format().fmt(f),
         }
     }
