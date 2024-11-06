@@ -40,7 +40,6 @@ impl FormatNodeRule<RCallArguments> for FormatRCallArguments {
         // even if we exceed the line length
         let is_test_call = node
             .parent::<RCall>()
-            .as_ref()
             .map_or(Ok(false), |call| call.is_test_call())?;
 
         if is_test_call {
