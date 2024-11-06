@@ -341,6 +341,18 @@ pub fn r_string_value(value_token: SyntaxToken) -> RStringValue {
         [Some(SyntaxElement::Token(value_token))],
     ))
 }
+pub fn r_unary_expression(
+    operator_token: SyntaxToken,
+    argument: AnyRExpression,
+) -> RUnaryExpression {
+    RUnaryExpression::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_UNARY_EXPRESSION,
+        [
+            Some(SyntaxElement::Token(operator_token)),
+            Some(SyntaxElement::Node(argument.into_syntax())),
+        ],
+    ))
+}
 pub fn r_unnamed_argument(value: AnyRExpression) -> RUnnamedArgument {
     RUnnamedArgument::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_UNNAMED_ARGUMENT,

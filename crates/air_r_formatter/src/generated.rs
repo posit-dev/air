@@ -904,6 +904,42 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RStringValue {
         )
     }
 }
+impl FormatRule<air_r_syntax::RUnaryExpression>
+    for crate::r::auxiliary::unary_expression::FormatRUnaryExpression
+{
+    type Context = RFormatContext;
+    #[inline(always)]
+    fn fmt(&self, node: &air_r_syntax::RUnaryExpression, f: &mut RFormatter) -> FormatResult<()> {
+        FormatNodeRule::<air_r_syntax::RUnaryExpression>::fmt(self, node, f)
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::RUnaryExpression {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::RUnaryExpression,
+        crate::r::auxiliary::unary_expression::FormatRUnaryExpression,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::auxiliary::unary_expression::FormatRUnaryExpression::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::RUnaryExpression {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::RUnaryExpression,
+        crate::r::auxiliary::unary_expression::FormatRUnaryExpression,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::auxiliary::unary_expression::FormatRUnaryExpression::default(),
+        )
+    }
+}
 impl FormatRule<air_r_syntax::RUnnamedArgument>
     for crate::r::auxiliary::unnamed_argument::FormatRUnnamedArgument
 {

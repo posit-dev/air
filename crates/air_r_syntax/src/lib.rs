@@ -71,6 +71,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_ROOT
             | RSyntaxKind::R_DOTS
             | RSyntaxKind::R_IDENTIFIER
+            | RSyntaxKind::R_UNARY_EXPRESSION
             | RSyntaxKind::R_BINARY_EXPRESSION
             | RSyntaxKind::R_FUNCTION_DEFINITION
             | RSyntaxKind::R_PARAMETERS
@@ -99,6 +100,10 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_STRING_VALUE
             | RSyntaxKind::R_LOGICAL_VALUE
             | RSyntaxKind::R_NULL_VALUE
+            | RSyntaxKind::MINUS
+            | RSyntaxKind::TILDE
+            | RSyntaxKind::BANG
+            | RSyntaxKind::WAT
             | RSyntaxKind::__LAST => false,
         }
     }
@@ -114,15 +119,16 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             RSyntaxKind::R_NULL_VALUE => RSyntaxKind::R_BOGUS_VALUE,
             RSyntaxKind::R_BOGUS_VALUE => RSyntaxKind::R_BOGUS_VALUE,
 
+            // Bogus expression
+            RSyntaxKind::R_UNARY_EXPRESSION => RSyntaxKind::R_BOGUS_EXPRESSION,
+            RSyntaxKind::R_BINARY_EXPRESSION => RSyntaxKind::R_BOGUS_EXPRESSION,
+            RSyntaxKind::R_BOGUS_EXPRESSION => RSyntaxKind::R_BOGUS_EXPRESSION,
+
             // Bogus parameter
             RSyntaxKind::R_DOTS_PARAMETER => RSyntaxKind::R_BOGUS_PARAMETER,
             RSyntaxKind::R_IDENTIFIER_PARAMETER => RSyntaxKind::R_BOGUS_PARAMETER,
             RSyntaxKind::R_DEFAULT_PARAMETER => RSyntaxKind::R_BOGUS_PARAMETER,
             RSyntaxKind::R_BOGUS_PARAMETER => RSyntaxKind::R_BOGUS_PARAMETER,
-
-            // Bogus expression
-            RSyntaxKind::R_BINARY_EXPRESSION => RSyntaxKind::R_BOGUS_EXPRESSION,
-            RSyntaxKind::R_BOGUS_EXPRESSION => RSyntaxKind::R_BOGUS_EXPRESSION,
 
             // Bogus argument
             RSyntaxKind::R_NAMED_ARGUMENT => RSyntaxKind::R_BOGUS_ARGUMENT,
@@ -181,6 +187,10 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             RSyntaxKind::R_CALL_ARGUMENTS => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_ARGUMENT_LIST => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_EXPRESSION_LIST => RSyntaxKind::R_BOGUS,
+            RSyntaxKind::MINUS => RSyntaxKind::R_BOGUS,
+            RSyntaxKind::TILDE => RSyntaxKind::R_BOGUS,
+            RSyntaxKind::BANG => RSyntaxKind::R_BOGUS,
+            RSyntaxKind::WAT => RSyntaxKind::R_BOGUS,
             RSyntaxKind::__LAST => RSyntaxKind::R_BOGUS,
             RSyntaxKind::R_BOGUS => RSyntaxKind::R_BOGUS,
         }

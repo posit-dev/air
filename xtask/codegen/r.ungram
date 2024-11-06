@@ -47,7 +47,11 @@ RRoot =
 	eof: 'EOF'
 
 // ----------------------------------------------------------------
-// Binary
+// Operators
+
+RUnaryExpression =
+  operator: ('+' | '-' | '~' | '!' | '?')
+  argument: AnyRExpression
 
 RBinaryExpression =
 	left: AnyRExpression
@@ -218,6 +222,7 @@ RExpressionList = AnyRExpression*
 AnyRExpression =
 	AnyRValue
 	| RIdentifier
+	| RUnaryExpression
 	| RBinaryExpression
 	| RFunctionDefinition
 	| RIfStatement

@@ -356,6 +356,7 @@ impl<'tree> Iterator for Preorder<'tree> {
 fn node_syntax_kind(x: &Node) -> RSyntaxKind {
     match x.kind() {
         "program" => RSyntaxKind::R_ROOT,
+        "unary_operator" => RSyntaxKind::R_UNARY_EXPRESSION,
         "binary_operator" => RSyntaxKind::R_BINARY_EXPRESSION,
         "function_definition" => RSyntaxKind::R_FUNCTION_DEFINITION,
         "parameters" => RSyntaxKind::R_PARAMETERS,
@@ -384,6 +385,10 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "(" => RSyntaxKind::L_PAREN,
         ")" => RSyntaxKind::R_PAREN,
         "+" => RSyntaxKind::PLUS,
+        "-" => RSyntaxKind::MINUS,
+        "?" => RSyntaxKind::WAT,
+        "!" => RSyntaxKind::BANG,
+        "~" => RSyntaxKind::TILDE,
         "=" => equal_syntax_kind(x),
         "function" => RSyntaxKind::FUNCTION_KW,
         "\\" => RSyntaxKind::BACKSLASH,

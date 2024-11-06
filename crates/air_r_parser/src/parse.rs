@@ -121,7 +121,8 @@ impl<'src> RWalk<'src> {
         match kind {
             RSyntaxKind::R_ROOT => self.handle_root_enter(),
 
-            RSyntaxKind::R_BINARY_EXPRESSION
+            RSyntaxKind::R_UNARY_EXPRESSION
+            | RSyntaxKind::R_BINARY_EXPRESSION
             | RSyntaxKind::R_FUNCTION_DEFINITION
             | RSyntaxKind::R_FOR_STATEMENT
             | RSyntaxKind::R_WHILE_STATEMENT
@@ -152,6 +153,10 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::SEMICOLON
             | RSyntaxKind::COMMA
             | RSyntaxKind::PLUS
+            | RSyntaxKind::MINUS
+            | RSyntaxKind::TILDE
+            | RSyntaxKind::BANG
+            | RSyntaxKind::WAT
             | RSyntaxKind::EQUAL
             | RSyntaxKind::BACKSLASH
             | RSyntaxKind::FUNCTION_KW
@@ -204,7 +209,8 @@ impl<'src> RWalk<'src> {
         match kind {
             RSyntaxKind::R_ROOT => self.handle_root_leave(node),
 
-            RSyntaxKind::R_BINARY_EXPRESSION
+            RSyntaxKind::R_UNARY_EXPRESSION
+            | RSyntaxKind::R_BINARY_EXPRESSION
             | RSyntaxKind::R_FUNCTION_DEFINITION
             | RSyntaxKind::R_FOR_STATEMENT
             | RSyntaxKind::R_WHILE_STATEMENT
@@ -239,6 +245,10 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::SEMICOLON
             | RSyntaxKind::COMMA
             | RSyntaxKind::PLUS
+            | RSyntaxKind::MINUS
+            | RSyntaxKind::TILDE
+            | RSyntaxKind::BANG
+            | RSyntaxKind::WAT
             | RSyntaxKind::EQUAL
             | RSyntaxKind::BACKSLASH
             | RSyntaxKind::FUNCTION_KW
