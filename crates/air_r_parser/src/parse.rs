@@ -143,6 +143,8 @@ impl<'src> RWalk<'src> {
 
             // Literals / wrapped keywords
             RSyntaxKind::R_DOUBLE_VALUE
+            | RSyntaxKind::R_LOGICAL_VALUE
+            | RSyntaxKind::R_NULL_VALUE
             | RSyntaxKind::R_IDENTIFIER
             | RSyntaxKind::R_DOT_DOT_I
             | RSyntaxKind::R_RETURN_EXPRESSION
@@ -162,12 +164,33 @@ impl<'src> RWalk<'src> {
             // Tokens are no-ops on `Enter`, handled on `Leave`
             RSyntaxKind::SEMICOLON
             | RSyntaxKind::COMMA
+            | RSyntaxKind::TILDE
+            | RSyntaxKind::ASSIGN
+            | RSyntaxKind::SUPER_ASSIGN
+            | RSyntaxKind::WALRUS
+            | RSyntaxKind::ASSIGN_RIGHT
+            | RSyntaxKind::SUPER_ASSIGN_RIGHT
+            | RSyntaxKind::EQUAL
+            | RSyntaxKind::OR
+            | RSyntaxKind::AND
+            | RSyntaxKind::OR2
+            | RSyntaxKind::AND2
+            | RSyntaxKind::LESS_THAN
+            | RSyntaxKind::LESS_THAN_OR_EQUAL_TO
+            | RSyntaxKind::GREATER_THAN
+            | RSyntaxKind::GREATER_THAN_OR_EQUAL_TO
+            | RSyntaxKind::EQUAL2
+            | RSyntaxKind::NOT_EQUAL
             | RSyntaxKind::PLUS
             | RSyntaxKind::MINUS
-            | RSyntaxKind::TILDE
+            | RSyntaxKind::MULTIPLY
+            | RSyntaxKind::DIVIDE
+            | RSyntaxKind::EXPONENTIATE
+            | RSyntaxKind::EXPONENTIATE2
+            | RSyntaxKind::PIPE
+            | RSyntaxKind::COLON
             | RSyntaxKind::BANG
             | RSyntaxKind::WAT
-            | RSyntaxKind::EQUAL
             | RSyntaxKind::BACKSLASH
             | RSyntaxKind::FUNCTION_KW
             | RSyntaxKind::FOR_KW
@@ -275,12 +298,33 @@ impl<'src> RWalk<'src> {
             // Tokens
             RSyntaxKind::SEMICOLON
             | RSyntaxKind::COMMA
+            | RSyntaxKind::TILDE
+            | RSyntaxKind::ASSIGN
+            | RSyntaxKind::SUPER_ASSIGN
+            | RSyntaxKind::WALRUS
+            | RSyntaxKind::ASSIGN_RIGHT
+            | RSyntaxKind::SUPER_ASSIGN_RIGHT
+            | RSyntaxKind::EQUAL
+            | RSyntaxKind::OR
+            | RSyntaxKind::AND
+            | RSyntaxKind::OR2
+            | RSyntaxKind::AND2
+            | RSyntaxKind::LESS_THAN
+            | RSyntaxKind::LESS_THAN_OR_EQUAL_TO
+            | RSyntaxKind::GREATER_THAN
+            | RSyntaxKind::GREATER_THAN_OR_EQUAL_TO
+            | RSyntaxKind::EQUAL2
+            | RSyntaxKind::NOT_EQUAL
             | RSyntaxKind::PLUS
             | RSyntaxKind::MINUS
-            | RSyntaxKind::TILDE
+            | RSyntaxKind::MULTIPLY
+            | RSyntaxKind::DIVIDE
+            | RSyntaxKind::EXPONENTIATE
+            | RSyntaxKind::EXPONENTIATE2
+            | RSyntaxKind::PIPE
+            | RSyntaxKind::COLON
             | RSyntaxKind::BANG
             | RSyntaxKind::WAT
-            | RSyntaxKind::EQUAL
             | RSyntaxKind::BACKSLASH
             | RSyntaxKind::FUNCTION_KW
             | RSyntaxKind::FOR_KW

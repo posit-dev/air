@@ -29,7 +29,36 @@ impl SyntaxFactory for RSyntaxFactory {
                 }
                 slots.next_slot();
                 if let Some(element) = &current_element {
-                    if element.kind() == T ! [+] {
+                    if matches!(
+                        element.kind(),
+                        T ! [?]
+                            | T ! [~]
+                            | T ! [<-]
+                            | T ! [<<-]
+                            | T ! [:=]
+                            | T ! [->]
+                            | T ! [->>]
+                            | T ! [=]
+                            | T ! [|]
+                            | T ! [&]
+                            | T ! [||]
+                            | T ! [&&]
+                            | T ! [<]
+                            | T ! [<=]
+                            | T ! [>]
+                            | T ! [>=]
+                            | T ! [==]
+                            | T ! [!=]
+                            | T ! [~]
+                            | T ! [+]
+                            | T ! [-]
+                            | T ! [*]
+                            | T ! [/]
+                            | T ! [^]
+                            | T ! [**]
+                            | T ! [|>]
+                            | T ! [:]
+                    ) {
                         slots.mark_present();
                         current_element = elements.next();
                     }

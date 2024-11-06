@@ -53,10 +53,42 @@ RUnaryExpression =
   operator: ('+' | '-' | '~' | '!' | '?')
   argument: AnyRExpression
 
+// TODO: User-defined infix operators
 RBinaryExpression =
 	left: AnyRExpression
     operator: (
-		'+'
+		'?' |
+		'~' |
+		'<-' |
+		'<<-' |
+		':=' |
+		'->' |
+		'->>' |
+		'=' |
+
+		'|' |
+		'&' |
+		'||' |
+		'&&' |
+
+		'<' |
+		'<=' |
+		'>' |
+		'>=' |
+		'==' |
+		'!=' |
+
+		'~' |
+		'+' |
+		'-' |
+		'*' |
+		'/' |
+		'^' |
+		'**' |
+
+		'|>' |
+
+		':'
 	)
 	right: AnyRExpression
 

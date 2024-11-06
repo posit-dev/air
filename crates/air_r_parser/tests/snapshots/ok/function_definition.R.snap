@@ -76,7 +76,7 @@ RRoot {
                 left: RIdentifier {
                     name_token: IDENT@41..43 "a" [Whitespace(" ")] [],
                 },
-                operator_token: PLUS@43..45 "+" [Whitespace(" ")] [],
+                operator: PLUS@43..45 "+" [Whitespace(" ")] [],
                 right: RIdentifier {
                     name_token: IDENT@45..47 "b" [Whitespace(" ")] [],
                 },

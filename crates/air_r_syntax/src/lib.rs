@@ -47,8 +47,6 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_BRACK
             | RSyntaxKind::L_PAREN
             | RSyntaxKind::R_PAREN
-            | RSyntaxKind::PLUS
-            | RSyntaxKind::EQUAL
             | RSyntaxKind::DOTS
             | RSyntaxKind::DOTDOTI
             | RSyntaxKind::FUNCTION_KW
@@ -120,8 +118,33 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_INF_EXPRESSION
             | RSyntaxKind::R_NAN_EXPRESSION
             | RSyntaxKind::R_NA_EXPRESSION
-            | RSyntaxKind::MINUS
+            | RSyntaxKind::R_LOGICAL_VALUE
+            | RSyntaxKind::R_NULL_VALUE
             | RSyntaxKind::TILDE
+            | RSyntaxKind::ASSIGN
+            | RSyntaxKind::SUPER_ASSIGN
+            | RSyntaxKind::WALRUS
+            | RSyntaxKind::ASSIGN_RIGHT
+            | RSyntaxKind::SUPER_ASSIGN_RIGHT
+            | RSyntaxKind::EQUAL
+            | RSyntaxKind::OR
+            | RSyntaxKind::AND
+            | RSyntaxKind::OR2
+            | RSyntaxKind::AND2
+            | RSyntaxKind::LESS_THAN
+            | RSyntaxKind::LESS_THAN_OR_EQUAL_TO
+            | RSyntaxKind::GREATER_THAN
+            | RSyntaxKind::GREATER_THAN_OR_EQUAL_TO
+            | RSyntaxKind::EQUAL2
+            | RSyntaxKind::NOT_EQUAL
+            | RSyntaxKind::PLUS
+            | RSyntaxKind::MINUS
+            | RSyntaxKind::MULTIPLY
+            | RSyntaxKind::DIVIDE
+            | RSyntaxKind::EXPONENTIATE
+            | RSyntaxKind::EXPONENTIATE2
+            | RSyntaxKind::PIPE
+            | RSyntaxKind::COLON
             | RSyntaxKind::BANG
             | RSyntaxKind::WAT
             | RSyntaxKind::__LAST => false,
@@ -167,8 +190,6 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_BRACK
             | RSyntaxKind::L_PAREN
             | RSyntaxKind::R_PAREN
-            | RSyntaxKind::PLUS
-            | RSyntaxKind::EQUAL
             | RSyntaxKind::DOTS
             | RSyntaxKind::DOTDOTI
             | RSyntaxKind::FUNCTION_KW
@@ -227,8 +248,31 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_CALL_ARGUMENTS
             | RSyntaxKind::R_ARGUMENT_LIST
             | RSyntaxKind::R_EXPRESSION_LIST
-            | RSyntaxKind::MINUS
             | RSyntaxKind::TILDE
+            | RSyntaxKind::ASSIGN
+            | RSyntaxKind::SUPER_ASSIGN
+            | RSyntaxKind::WALRUS
+            | RSyntaxKind::ASSIGN_RIGHT
+            | RSyntaxKind::SUPER_ASSIGN_RIGHT
+            | RSyntaxKind::EQUAL
+            | RSyntaxKind::OR
+            | RSyntaxKind::AND
+            | RSyntaxKind::OR2
+            | RSyntaxKind::AND2
+            | RSyntaxKind::LESS_THAN
+            | RSyntaxKind::LESS_THAN_OR_EQUAL_TO
+            | RSyntaxKind::GREATER_THAN
+            | RSyntaxKind::GREATER_THAN_OR_EQUAL_TO
+            | RSyntaxKind::EQUAL2
+            | RSyntaxKind::NOT_EQUAL
+            | RSyntaxKind::PLUS
+            | RSyntaxKind::MINUS
+            | RSyntaxKind::MULTIPLY
+            | RSyntaxKind::DIVIDE
+            | RSyntaxKind::EXPONENTIATE
+            | RSyntaxKind::EXPONENTIATE2
+            | RSyntaxKind::PIPE
+            | RSyntaxKind::COLON
             | RSyntaxKind::BANG
             | RSyntaxKind::WAT
             | RSyntaxKind::__LAST

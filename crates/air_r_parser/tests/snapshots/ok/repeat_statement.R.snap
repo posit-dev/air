@@ -46,7 +46,7 @@ RRoot {
                         left: RDoubleValue {
                             value_token: R_DOUBLE_LITERAL@30..34 "1" [Newline("\n"), Whitespace("  ")] [],
                         },
-                        operator_token: PLUS@34..36 "+" [Whitespace(" ")] [],
+                        operator: PLUS@34..36 "+" [Whitespace(" ")] [],
                         right: RDoubleValue {
                             value_token: R_DOUBLE_LITERAL@36..38 "1" [Whitespace(" ")] [],
                         },

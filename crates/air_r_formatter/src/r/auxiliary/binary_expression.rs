@@ -10,7 +10,7 @@ impl FormatNodeRule<RBinaryExpression> for FormatRBinaryExpression {
     fn fmt_fields(&self, node: &RBinaryExpression, f: &mut RFormatter) -> FormatResult<()> {
         let RBinaryExpressionFields {
             left,
-            operator_token,
+            operator,
             right,
         } = node.as_fields();
 
@@ -23,7 +23,7 @@ impl FormatNodeRule<RBinaryExpression> for FormatRBinaryExpression {
                         f,
                         [
                             space(),
-                            operator_token.format(),
+                            operator.format(),
                             soft_line_break_or_space(),
                             right.format()
                         ]

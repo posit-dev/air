@@ -22,7 +22,7 @@ RRoot {
             left: RDoubleValue {
                 value_token: R_DOUBLE_LITERAL@0..11 "1" [Comments("# Leading"), Newline("\n")] [],
             },
-            operator_token: PLUS@11..13 "+" [Whitespace(" ")] [],
+            operator: PLUS@11..13 "+" [Whitespace(" ")] [],
             right: RDoubleValue {
                 value_token: R_DOUBLE_LITERAL@13..26 "1" [Whitespace(" ")] [Whitespace(" "), Comments("# Trailing")],
             },
