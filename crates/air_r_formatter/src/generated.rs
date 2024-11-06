@@ -242,6 +242,38 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RDefaultParameter {
         )
     }
 }
+impl FormatRule<air_r_syntax::RDotDotI> for crate::r::auxiliary::dot_dot_i::FormatRDotDotI {
+    type Context = RFormatContext;
+    #[inline(always)]
+    fn fmt(&self, node: &air_r_syntax::RDotDotI, f: &mut RFormatter) -> FormatResult<()> {
+        FormatNodeRule::<air_r_syntax::RDotDotI>::fmt(self, node, f)
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::RDotDotI {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::RDotDotI,
+        crate::r::auxiliary::dot_dot_i::FormatRDotDotI,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::auxiliary::dot_dot_i::FormatRDotDotI::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::RDotDotI {
+    type Format =
+        FormatOwnedWithRule<air_r_syntax::RDotDotI, crate::r::auxiliary::dot_dot_i::FormatRDotDotI>;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::auxiliary::dot_dot_i::FormatRDotDotI::default(),
+        )
+    }
+}
 impl FormatRule<air_r_syntax::RDots> for crate::r::auxiliary::dots::FormatRDots {
     type Context = RFormatContext;
     #[inline(always)]

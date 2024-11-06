@@ -1,10 +1,13 @@
 use crate::prelude::*;
 use air_r_syntax::RDotsParameter;
-use biome_rowan::AstNode;
+use air_r_syntax::RDotsParameterFields;
+use biome_formatter::write;
+
 #[derive(Debug, Clone, Default)]
 pub(crate) struct FormatRDotsParameter;
 impl FormatNodeRule<RDotsParameter> for FormatRDotsParameter {
     fn fmt_fields(&self, node: &RDotsParameter, f: &mut RFormatter) -> FormatResult<()> {
-        format_verbatim_node(node.syntax()).fmt(f)
+        let RDotsParameterFields { name_token } = node.as_fields();
+        write!(f, [name_token.format()])
     }
 }
