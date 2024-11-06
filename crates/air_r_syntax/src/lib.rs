@@ -111,88 +111,88 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
     fn to_bogus(&self) -> Self {
         match self {
             // Bogus value
-            RSyntaxKind::R_INTEGER_VALUE => RSyntaxKind::R_BOGUS_VALUE,
-            RSyntaxKind::R_DOUBLE_VALUE => RSyntaxKind::R_BOGUS_VALUE,
-            RSyntaxKind::R_COMPLEX_VALUE => RSyntaxKind::R_BOGUS_VALUE,
-            RSyntaxKind::R_STRING_VALUE => RSyntaxKind::R_BOGUS_VALUE,
-            RSyntaxKind::R_LOGICAL_VALUE => RSyntaxKind::R_BOGUS_VALUE,
-            RSyntaxKind::R_NULL_VALUE => RSyntaxKind::R_BOGUS_VALUE,
-            RSyntaxKind::R_BOGUS_VALUE => RSyntaxKind::R_BOGUS_VALUE,
+            RSyntaxKind::R_INTEGER_VALUE
+            | RSyntaxKind::R_DOUBLE_VALUE
+            | RSyntaxKind::R_COMPLEX_VALUE
+            | RSyntaxKind::R_STRING_VALUE
+            | RSyntaxKind::R_LOGICAL_VALUE
+            | RSyntaxKind::R_NULL_VALUE
+            | RSyntaxKind::R_BOGUS_VALUE => RSyntaxKind::R_BOGUS_VALUE,
 
             // Bogus expression
-            RSyntaxKind::R_UNARY_EXPRESSION => RSyntaxKind::R_BOGUS_EXPRESSION,
-            RSyntaxKind::R_BINARY_EXPRESSION => RSyntaxKind::R_BOGUS_EXPRESSION,
-            RSyntaxKind::R_BOGUS_EXPRESSION => RSyntaxKind::R_BOGUS_EXPRESSION,
+            RSyntaxKind::R_UNARY_EXPRESSION
+            | RSyntaxKind::R_BINARY_EXPRESSION
+            | RSyntaxKind::R_BOGUS_EXPRESSION => RSyntaxKind::R_BOGUS_EXPRESSION,
 
             // Bogus parameter
-            RSyntaxKind::R_DOTS_PARAMETER => RSyntaxKind::R_BOGUS_PARAMETER,
-            RSyntaxKind::R_IDENTIFIER_PARAMETER => RSyntaxKind::R_BOGUS_PARAMETER,
-            RSyntaxKind::R_DEFAULT_PARAMETER => RSyntaxKind::R_BOGUS_PARAMETER,
-            RSyntaxKind::R_BOGUS_PARAMETER => RSyntaxKind::R_BOGUS_PARAMETER,
+            RSyntaxKind::R_DOTS_PARAMETER
+            | RSyntaxKind::R_IDENTIFIER_PARAMETER
+            | RSyntaxKind::R_DEFAULT_PARAMETER
+            | RSyntaxKind::R_BOGUS_PARAMETER => RSyntaxKind::R_BOGUS_PARAMETER,
 
             // Bogus argument
-            RSyntaxKind::R_NAMED_ARGUMENT => RSyntaxKind::R_BOGUS_ARGUMENT,
-            RSyntaxKind::R_UNNAMED_ARGUMENT => RSyntaxKind::R_BOGUS_ARGUMENT,
-            RSyntaxKind::R_DOTS_ARGUMENT => RSyntaxKind::R_BOGUS_ARGUMENT,
-            RSyntaxKind::R_HOLE_ARGUMENT => RSyntaxKind::R_BOGUS_ARGUMENT,
-            RSyntaxKind::R_BOGUS_ARGUMENT => RSyntaxKind::R_BOGUS_ARGUMENT,
+            RSyntaxKind::R_NAMED_ARGUMENT
+            | RSyntaxKind::R_UNNAMED_ARGUMENT
+            | RSyntaxKind::R_DOTS_ARGUMENT
+            | RSyntaxKind::R_HOLE_ARGUMENT
+            | RSyntaxKind::R_BOGUS_ARGUMENT => RSyntaxKind::R_BOGUS_ARGUMENT,
 
             // Bogus
-            RSyntaxKind::TOMBSTONE => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::EOF => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::UNICODE_BOM => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::SEMICOLON => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::COMMA => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::L_CURLY => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_CURLY => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::L_BRACK => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_BRACK => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::L_PAREN => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_PAREN => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::PLUS => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::EQUAL => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::DOTS => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::FUNCTION_KW => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::FOR_KW => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::IN_KW => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::WHILE_KW => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::REPEAT_KW => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::IF_KW => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::ELSE_KW => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_INTEGER_LITERAL => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_DOUBLE_LITERAL => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_COMPLEX_LITERAL => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_STRING_LITERAL => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_LOGICAL_LITERAL => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_NULL_LITERAL => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::NEWLINE => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::WHITESPACE => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::IDENT => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::COMMENT => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::BACKSLASH => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_ROOT => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_IDENTIFIER => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_DOTS => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_FUNCTION_DEFINITION => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_PARAMETERS => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_PARAMETER_LIST => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_IF_STATEMENT => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_ELSE_CLAUSE => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_FOR_STATEMENT => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_WHILE_STATEMENT => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_REPEAT_STATEMENT => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_BRACED_EXPRESSIONS => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_PARENTHESIZED_EXPRESSION => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_CALL => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_CALL_ARGUMENTS => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_ARGUMENT_LIST => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_EXPRESSION_LIST => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::MINUS => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::TILDE => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::BANG => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::WAT => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::__LAST => RSyntaxKind::R_BOGUS,
-            RSyntaxKind::R_BOGUS => RSyntaxKind::R_BOGUS,
+            RSyntaxKind::TOMBSTONE
+            | RSyntaxKind::EOF
+            | RSyntaxKind::UNICODE_BOM
+            | RSyntaxKind::SEMICOLON
+            | RSyntaxKind::COMMA
+            | RSyntaxKind::L_CURLY
+            | RSyntaxKind::R_CURLY
+            | RSyntaxKind::L_BRACK
+            | RSyntaxKind::R_BRACK
+            | RSyntaxKind::L_PAREN
+            | RSyntaxKind::R_PAREN
+            | RSyntaxKind::PLUS
+            | RSyntaxKind::EQUAL
+            | RSyntaxKind::DOTS
+            | RSyntaxKind::FUNCTION_KW
+            | RSyntaxKind::FOR_KW
+            | RSyntaxKind::IN_KW
+            | RSyntaxKind::WHILE_KW
+            | RSyntaxKind::REPEAT_KW
+            | RSyntaxKind::IF_KW
+            | RSyntaxKind::ELSE_KW
+            | RSyntaxKind::R_INTEGER_LITERAL
+            | RSyntaxKind::R_DOUBLE_LITERAL
+            | RSyntaxKind::R_COMPLEX_LITERAL
+            | RSyntaxKind::R_STRING_LITERAL
+            | RSyntaxKind::R_LOGICAL_LITERAL
+            | RSyntaxKind::R_NULL_LITERAL
+            | RSyntaxKind::NEWLINE
+            | RSyntaxKind::WHITESPACE
+            | RSyntaxKind::IDENT
+            | RSyntaxKind::COMMENT
+            | RSyntaxKind::BACKSLASH
+            | RSyntaxKind::R_ROOT
+            | RSyntaxKind::R_IDENTIFIER
+            | RSyntaxKind::R_DOTS
+            | RSyntaxKind::R_FUNCTION_DEFINITION
+            | RSyntaxKind::R_PARAMETERS
+            | RSyntaxKind::R_PARAMETER_LIST
+            | RSyntaxKind::R_IF_STATEMENT
+            | RSyntaxKind::R_ELSE_CLAUSE
+            | RSyntaxKind::R_FOR_STATEMENT
+            | RSyntaxKind::R_WHILE_STATEMENT
+            | RSyntaxKind::R_REPEAT_STATEMENT
+            | RSyntaxKind::R_BRACED_EXPRESSIONS
+            | RSyntaxKind::R_PARENTHESIZED_EXPRESSION
+            | RSyntaxKind::R_CALL
+            | RSyntaxKind::R_CALL_ARGUMENTS
+            | RSyntaxKind::R_ARGUMENT_LIST
+            | RSyntaxKind::R_EXPRESSION_LIST
+            | RSyntaxKind::MINUS
+            | RSyntaxKind::TILDE
+            | RSyntaxKind::BANG
+            | RSyntaxKind::WAT
+            | RSyntaxKind::__LAST
+            | RSyntaxKind::R_BOGUS => RSyntaxKind::R_BOGUS,
         }
     }
 
