@@ -120,6 +120,10 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RStringValue::new_unchecked(node) };
                     $body
                 }
+                $crate::RSyntaxKind::R_UNARY_EXPRESSION => {
+                    let $pattern = unsafe { $crate::RUnaryExpression::new_unchecked(node) };
+                    $body
+                }
                 $crate::RSyntaxKind::R_UNNAMED_ARGUMENT => {
                     let $pattern = unsafe { $crate::RUnnamedArgument::new_unchecked(node) };
                     $body

@@ -22,6 +22,10 @@ pub enum RSyntaxKind {
     L_PAREN,
     R_PAREN,
     PLUS,
+    MINUS,
+    TILDE,
+    BANG,
+    WAT,
     EQUAL,
     DOTS,
     FUNCTION_KW,
@@ -45,6 +49,7 @@ pub enum RSyntaxKind {
     R_ROOT,
     R_IDENTIFIER,
     R_DOTS,
+    R_UNARY_EXPRESSION,
     R_BINARY_EXPRESSION,
     R_FUNCTION_DEFINITION,
     R_PARAMETERS,
@@ -86,7 +91,7 @@ impl RSyntaxKind {
     pub const fn is_punct(self) -> bool {
         match self {
             SEMICOLON | COMMA | L_CURLY | R_CURLY | L_BRACK | R_BRACK | L_PAREN | R_PAREN
-            | PLUS | EQUAL | DOTS => true,
+            | PLUS | MINUS | TILDE | BANG | WAT | EQUAL | DOTS => true,
             _ => false,
         }
     }
@@ -127,6 +132,10 @@ impl RSyntaxKind {
             L_PAREN => "(",
             R_PAREN => ")",
             PLUS => "+",
+            MINUS => "-",
+            TILDE => "~",
+            BANG => "!",
+            WAT => "?",
             EQUAL => "=",
             DOTS => "...",
             FUNCTION_KW => "function",
@@ -144,4 +153,4 @@ impl RSyntaxKind {
 }
 #[doc = r" Utility macro for creating a SyntaxKind through simple macro syntax"]
 #[macro_export]
-macro_rules ! T { [;] => { $ crate :: RSyntaxKind :: SEMICOLON } ; [,] => { $ crate :: RSyntaxKind :: COMMA } ; ['{'] => { $ crate :: RSyntaxKind :: L_CURLY } ; ['}'] => { $ crate :: RSyntaxKind :: R_CURLY } ; ['['] => { $ crate :: RSyntaxKind :: L_BRACK } ; [']'] => { $ crate :: RSyntaxKind :: R_BRACK } ; ['('] => { $ crate :: RSyntaxKind :: L_PAREN } ; [')'] => { $ crate :: RSyntaxKind :: R_PAREN } ; [+] => { $ crate :: RSyntaxKind :: PLUS } ; [=] => { $ crate :: RSyntaxKind :: EQUAL } ; [...] => { $ crate :: RSyntaxKind :: DOTS } ; [function] => { $ crate :: RSyntaxKind :: FUNCTION_KW } ; [for] => { $ crate :: RSyntaxKind :: FOR_KW } ; [in] => { $ crate :: RSyntaxKind :: IN_KW } ; [while] => { $ crate :: RSyntaxKind :: WHILE_KW } ; [repeat] => { $ crate :: RSyntaxKind :: REPEAT_KW } ; [if] => { $ crate :: RSyntaxKind :: IF_KW } ; [else] => { $ crate :: RSyntaxKind :: ELSE_KW } ; [ident] => { $ crate :: RSyntaxKind :: IDENT } ; [EOF] => { $ crate :: RSyntaxKind :: EOF } ; [UNICODE_BOM] => { $ crate :: RSyntaxKind :: UNICODE_BOM } ; [#] => { $ crate :: RSyntaxKind :: HASH } ; }
+macro_rules ! T { [;] => { $ crate :: RSyntaxKind :: SEMICOLON } ; [,] => { $ crate :: RSyntaxKind :: COMMA } ; ['{'] => { $ crate :: RSyntaxKind :: L_CURLY } ; ['}'] => { $ crate :: RSyntaxKind :: R_CURLY } ; ['['] => { $ crate :: RSyntaxKind :: L_BRACK } ; [']'] => { $ crate :: RSyntaxKind :: R_BRACK } ; ['('] => { $ crate :: RSyntaxKind :: L_PAREN } ; [')'] => { $ crate :: RSyntaxKind :: R_PAREN } ; [+] => { $ crate :: RSyntaxKind :: PLUS } ; [-] => { $ crate :: RSyntaxKind :: MINUS } ; [~] => { $ crate :: RSyntaxKind :: TILDE } ; [!] => { $ crate :: RSyntaxKind :: BANG } ; [?] => { $ crate :: RSyntaxKind :: WAT } ; [=] => { $ crate :: RSyntaxKind :: EQUAL } ; [...] => { $ crate :: RSyntaxKind :: DOTS } ; [function] => { $ crate :: RSyntaxKind :: FUNCTION_KW } ; [for] => { $ crate :: RSyntaxKind :: FOR_KW } ; [in] => { $ crate :: RSyntaxKind :: IN_KW } ; [while] => { $ crate :: RSyntaxKind :: WHILE_KW } ; [repeat] => { $ crate :: RSyntaxKind :: REPEAT_KW } ; [if] => { $ crate :: RSyntaxKind :: IF_KW } ; [else] => { $ crate :: RSyntaxKind :: ELSE_KW } ; [ident] => { $ crate :: RSyntaxKind :: IDENT } ; [EOF] => { $ crate :: RSyntaxKind :: EOF } ; [UNICODE_BOM] => { $ crate :: RSyntaxKind :: UNICODE_BOM } ; [#] => { $ crate :: RSyntaxKind :: HASH } ; }
