@@ -210,6 +210,25 @@ impl SyntaxFactory for RSyntaxFactory {
                 }
                 slots.into_node(R_DEFAULT_PARAMETER, children)
             }
+            R_DOT_DOT_I => {
+                let mut elements = (&children).into_iter();
+                let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
+                let mut current_element = elements.next();
+                if let Some(element) = &current_element {
+                    if element.kind() == DOTDOTI {
+                        slots.mark_present();
+                        current_element = elements.next();
+                    }
+                }
+                slots.next_slot();
+                if current_element.is_some() {
+                    return RawSyntaxNode::new(
+                        R_DOT_DOT_I.to_bogus(),
+                        children.into_iter().map(Some),
+                    );
+                }
+                slots.into_node(R_DOT_DOT_I, children)
+            }
             R_DOTS => {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
