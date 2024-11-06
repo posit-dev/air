@@ -44,6 +44,7 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
         ("@", "AT"),
         ("!", "BANG"),
         ("...", "DOTS"),
+        ("\\", "BACKSLASH"),
     ],
     keywords: &[
         "function",
@@ -78,7 +79,6 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
         "WHITESPACE",
         "IDENT",
         "COMMENT",
-        "BACKSLASH",
         "DOTDOTI",
         "SPECIAL",
     ],
