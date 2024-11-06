@@ -101,6 +101,12 @@ impl RDefaultParameterBuilder {
         ))
     }
 }
+pub fn r_dot_dot_i(value_token: SyntaxToken) -> RDotDotI {
+    RDotDotI::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_DOT_DOT_I,
+        [Some(SyntaxElement::Token(value_token))],
+    ))
+}
 pub fn r_dots(value_token: SyntaxToken) -> RDots {
     RDots::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_DOTS,

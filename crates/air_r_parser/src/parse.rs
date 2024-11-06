@@ -144,6 +144,7 @@ impl<'src> RWalk<'src> {
             // Literals / wrapped keywords
             RSyntaxKind::R_DOUBLE_VALUE
             | RSyntaxKind::R_IDENTIFIER
+            | RSyntaxKind::R_DOT_DOT_I
             | RSyntaxKind::R_RETURN_EXPRESSION
             | RSyntaxKind::R_NEXT_EXPRESSION
             | RSyntaxKind::R_BREAK_EXPRESSION
@@ -202,6 +203,7 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::NEWLINE
             | RSyntaxKind::WHITESPACE
             | RSyntaxKind::IDENT
+            | RSyntaxKind::DOTDOTI
             | RSyntaxKind::RETURN_KW
             | RSyntaxKind::NEXT_KW
             | RSyntaxKind::BREAK_KW
@@ -254,6 +256,7 @@ impl<'src> RWalk<'src> {
                 self.handle_value_leave(node, RSyntaxKind::R_DOUBLE_LITERAL)
             }
             RSyntaxKind::R_IDENTIFIER => self.handle_value_leave(node, RSyntaxKind::IDENT),
+            RSyntaxKind::R_DOT_DOT_I => self.handle_value_leave(node, RSyntaxKind::DOTDOTI),
             RSyntaxKind::R_RETURN_EXPRESSION => {
                 self.handle_value_leave(node, RSyntaxKind::RETURN_KW)
             }
@@ -306,6 +309,7 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::L_BRACK
             | RSyntaxKind::R_BRACK
             | RSyntaxKind::DOTS
+            | RSyntaxKind::DOTDOTI
             | RSyntaxKind::R_INTEGER_LITERAL
             | RSyntaxKind::R_DOUBLE_LITERAL
             | RSyntaxKind::R_COMPLEX_LITERAL

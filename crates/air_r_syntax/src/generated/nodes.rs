@@ -313,6 +313,41 @@ pub struct RDefaultParameterFields {
     pub default: Option<AnyRExpression>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RDotDotI {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RDotDotI {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RDotDotIFields {
+        RDotDotIFields {
+            value_token: self.value_token(),
+        }
+    }
+    pub fn value_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+}
+impl Serialize for RDotDotI {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RDotDotIFields {
+    pub value_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RDots {
     pub(crate) syntax: SyntaxNode,
 }
@@ -1534,6 +1569,7 @@ pub enum AnyRExpression {
     RBracedExpressions(RBracedExpressions),
     RBreakExpression(RBreakExpression),
     RCall(RCall),
+    RDotDotI(RDotDotI),
     RFalseExpression(RFalseExpression),
     RForStatement(RForStatement),
     RFunctionDefinition(RFunctionDefinition),
@@ -1585,6 +1621,12 @@ impl AnyRExpression {
     pub fn as_r_call(&self) -> Option<&RCall> {
         match &self {
             AnyRExpression::RCall(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_dot_dot_i(&self) -> Option<&RDotDotI> {
+        match &self {
+            AnyRExpression::RDotDotI(item) => Some(item),
             _ => None,
         }
     }
@@ -2050,6 +2092,47 @@ impl From<RDefaultParameter> for SyntaxNode {
 }
 impl From<RDefaultParameter> for SyntaxElement {
     fn from(n: RDefaultParameter) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
+impl AstNode for RDotDotI {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_DOT_DOT_I as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_DOT_DOT_I
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RDotDotI {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RDotDotI")
+            .field(
+                "value_token",
+                &support::DebugSyntaxResult(self.value_token()),
+            )
+            .finish()
+    }
+}
+impl From<RDotDotI> for SyntaxNode {
+    fn from(n: RDotDotI) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RDotDotI> for SyntaxElement {
+    fn from(n: RDotDotI) -> SyntaxElement {
         n.syntax.into()
     }
 }
@@ -3444,6 +3527,11 @@ impl From<RCall> for AnyRExpression {
         AnyRExpression::RCall(node)
     }
 }
+impl From<RDotDotI> for AnyRExpression {
+    fn from(node: RDotDotI) -> AnyRExpression {
+        AnyRExpression::RDotDotI(node)
+    }
+}
 impl From<RFalseExpression> for AnyRExpression {
     fn from(node: RFalseExpression) -> AnyRExpression {
         AnyRExpression::RFalseExpression(node)
@@ -3532,6 +3620,7 @@ impl AstNode for AnyRExpression {
         .union(RBracedExpressions::KIND_SET)
         .union(RBreakExpression::KIND_SET)
         .union(RCall::KIND_SET)
+        .union(RDotDotI::KIND_SET)
         .union(RFalseExpression::KIND_SET)
         .union(RForStatement::KIND_SET)
         .union(RFunctionDefinition::KIND_SET)
@@ -3555,6 +3644,7 @@ impl AstNode for AnyRExpression {
             | R_BRACED_EXPRESSIONS
             | R_BREAK_EXPRESSION
             | R_CALL
+            | R_DOT_DOT_I
             | R_FALSE_EXPRESSION
             | R_FOR_STATEMENT
             | R_FUNCTION_DEFINITION
@@ -3584,6 +3674,7 @@ impl AstNode for AnyRExpression {
             }
             R_BREAK_EXPRESSION => AnyRExpression::RBreakExpression(RBreakExpression { syntax }),
             R_CALL => AnyRExpression::RCall(RCall { syntax }),
+            R_DOT_DOT_I => AnyRExpression::RDotDotI(RDotDotI { syntax }),
             R_FALSE_EXPRESSION => AnyRExpression::RFalseExpression(RFalseExpression { syntax }),
             R_FOR_STATEMENT => AnyRExpression::RForStatement(RForStatement { syntax }),
             R_FUNCTION_DEFINITION => {
@@ -3620,6 +3711,7 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RBracedExpressions(it) => &it.syntax,
             AnyRExpression::RBreakExpression(it) => &it.syntax,
             AnyRExpression::RCall(it) => &it.syntax,
+            AnyRExpression::RDotDotI(it) => &it.syntax,
             AnyRExpression::RFalseExpression(it) => &it.syntax,
             AnyRExpression::RForStatement(it) => &it.syntax,
             AnyRExpression::RFunctionDefinition(it) => &it.syntax,
@@ -3646,6 +3738,7 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RBracedExpressions(it) => it.syntax,
             AnyRExpression::RBreakExpression(it) => it.syntax,
             AnyRExpression::RCall(it) => it.syntax,
+            AnyRExpression::RDotDotI(it) => it.syntax,
             AnyRExpression::RFalseExpression(it) => it.syntax,
             AnyRExpression::RForStatement(it) => it.syntax,
             AnyRExpression::RFunctionDefinition(it) => it.syntax,
@@ -3675,6 +3768,7 @@ impl std::fmt::Debug for AnyRExpression {
             AnyRExpression::RBracedExpressions(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RBreakExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RCall(it) => std::fmt::Debug::fmt(it, f),
+            AnyRExpression::RDotDotI(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RFalseExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RForStatement(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RFunctionDefinition(it) => std::fmt::Debug::fmt(it, f),
@@ -3703,6 +3797,7 @@ impl From<AnyRExpression> for SyntaxNode {
             AnyRExpression::RBracedExpressions(it) => it.into(),
             AnyRExpression::RBreakExpression(it) => it.into(),
             AnyRExpression::RCall(it) => it.into(),
+            AnyRExpression::RDotDotI(it) => it.into(),
             AnyRExpression::RFalseExpression(it) => it.into(),
             AnyRExpression::RForStatement(it) => it.into(),
             AnyRExpression::RFunctionDefinition(it) => it.into(),
@@ -3967,6 +4062,11 @@ impl std::fmt::Display for RComplexValue {
     }
 }
 impl std::fmt::Display for RDefaultParameter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RDotDotI {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }

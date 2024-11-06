@@ -241,6 +241,7 @@ AnyRExpression =
 	| RInfExpression
 	| RNanExpression
 	| RNaExpression
+	| RDotDotI
 	| RBogusExpression
 
 // ----------------------------------------------------------------
@@ -287,8 +288,13 @@ RNaExpression =
 	)
 
 // ----------------------------------------------------------------
+// Dots
+
+RDots = value: '...'
+
+RDotDotI = value: 'dotdoti'
+
+// ----------------------------------------------------------------
 // Identifier
 
 RIdentifier = name: 'ident'
-
-RDots = value: '...'

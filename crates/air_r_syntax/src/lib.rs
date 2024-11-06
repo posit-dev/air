@@ -50,6 +50,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::PLUS
             | RSyntaxKind::EQUAL
             | RSyntaxKind::DOTS
+            | RSyntaxKind::DOTDOTI
             | RSyntaxKind::FUNCTION_KW
             | RSyntaxKind::FOR_KW
             | RSyntaxKind::IN_KW
@@ -81,6 +82,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::BACKSLASH
             | RSyntaxKind::R_ROOT
             | RSyntaxKind::R_DOTS
+            | RSyntaxKind::R_DOT_DOT_I
             | RSyntaxKind::R_IDENTIFIER
             | RSyntaxKind::R_UNARY_EXPRESSION
             | RSyntaxKind::R_BINARY_EXPRESSION
@@ -168,6 +170,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::PLUS
             | RSyntaxKind::EQUAL
             | RSyntaxKind::DOTS
+            | RSyntaxKind::DOTDOTI
             | RSyntaxKind::FUNCTION_KW
             | RSyntaxKind::FOR_KW
             | RSyntaxKind::IN_KW
@@ -209,6 +212,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_ROOT
             | RSyntaxKind::R_IDENTIFIER
             | RSyntaxKind::R_DOTS
+            | RSyntaxKind::R_DOT_DOT_I
             | RSyntaxKind::R_FUNCTION_DEFINITION
             | RSyntaxKind::R_PARAMETERS
             | RSyntaxKind::R_PARAMETER_LIST
