@@ -22,14 +22,13 @@ test_that("description that is super long and actually exceeds the line limit bu
 	1 + 1
 })
 
-# TODO: This one should probably align the `{` on the opening line
-# (all arguments before the trailing braced expression are on the opening line)
+# Opening brace it moved back onto first line because this is `test_that`
 test_that("description that is super long and actually exceeds the line limit but we arent going to break!",
 {
 	1 + 1
 })
 
-# User broke it manually
+# Both arguments are reflowed because this is `test_that`
 test_that(
   "description that is super long and actually exceeds the line limit but we arent going to break!", {
 	1 + 1

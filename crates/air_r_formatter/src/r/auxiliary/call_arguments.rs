@@ -1,6 +1,9 @@
 use crate::prelude::*;
+use crate::separated::FormatAstSeparatedListExtension;
+use air_r_syntax::RCall;
 use air_r_syntax::RCallArguments;
 use air_r_syntax::RCallArgumentsFields;
+use biome_formatter::separated::TrailingSeparator;
 use biome_formatter::write;
 
 #[derive(Debug, Clone, Default)]
@@ -31,6 +34,27 @@ impl FormatNodeRule<RCallArguments> for FormatRCallArguments {
                     r_paren_token.format()
                 ]
             );
+        }
+
+        // Special case where we have a test call where we never want to break
+        // even if we exceed the line length
+        let is_test_call = node
+            .parent::<RCall>()
+            .as_ref()
+            .map_or(Ok(false), |call| call.is_test_call())?;
+
+        if is_test_call {
+            let items = format_with(|f| {
+                f.join_with(space())
+                    .entries(
+                        items
+                            .format_separated(",")
+                            .with_trailing_separator(TrailingSeparator::Disallowed),
+                    )
+                    .finish()
+            });
+
+            return write!(f, [l_paren_token.format(), &items, r_paren_token.format()]);
         }
 
         write!(
