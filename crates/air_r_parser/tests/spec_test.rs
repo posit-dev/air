@@ -22,11 +22,13 @@ pub enum ExpectedOutcome {
 #[ignore]
 #[test]
 fn quick_test() {
-    let code = "+1";
+    let code = "
+    1$foo
+    1$2";
     let options = RParserOptions::default();
     let parsed = parse(code, options);
     let root = RRoot::unwrap_cast(parsed.syntax());
-    writeln!(format!("{:#?}", root)).unwrap();
+    println!("{root:#?}");
 }
 
 pub fn run(test_case: &str, _snapshot_name: &str, test_directory: &str, outcome_str: &str) {

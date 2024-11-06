@@ -58,6 +58,10 @@ impl SyntaxFactory for RSyntaxFactory {
                             | T ! [**]
                             | T ! [|>]
                             | T ! [:]
+                            | T ! [::]
+                            | T ! [:::]
+                            | T ! [$]
+                            | T ! [@]
                     ) {
                         slots.mark_present();
                         current_element = elements.next();

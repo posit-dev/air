@@ -145,6 +145,10 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::EXPONENTIATE2
             | RSyntaxKind::PIPE
             | RSyntaxKind::COLON
+            | RSyntaxKind::COLON2
+            | RSyntaxKind::COLON3
+            | RSyntaxKind::DOLLAR
+            | RSyntaxKind::AT
             | RSyntaxKind::BANG
             | RSyntaxKind::WAT
             | RSyntaxKind::__LAST => false,
@@ -273,6 +277,10 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::EXPONENTIATE2
             | RSyntaxKind::PIPE
             | RSyntaxKind::COLON
+            | RSyntaxKind::COLON2
+            | RSyntaxKind::COLON3
+            | RSyntaxKind::DOLLAR
+            | RSyntaxKind::AT
             | RSyntaxKind::BANG
             | RSyntaxKind::WAT
             | RSyntaxKind::__LAST
