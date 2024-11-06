@@ -406,6 +406,7 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "repeat" => RSyntaxKind::REPEAT_KW,
         "comma" => RSyntaxKind::COMMA,
         "dots" => RSyntaxKind::DOTS,
+        "dot_dot_i" => RSyntaxKind::R_DOT_DOT_I,
         "comment" => RSyntaxKind::COMMENT,
         kind => unreachable!("Not implemented: '{kind}'."),
     }
