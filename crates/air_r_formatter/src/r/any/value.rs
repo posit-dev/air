@@ -12,8 +12,6 @@ impl FormatRule<AnyRValue> for FormatAnyRValue {
             AnyRValue::RComplexValue(node) => node.format().fmt(f),
             AnyRValue::RDoubleValue(node) => node.format().fmt(f),
             AnyRValue::RIntegerValue(node) => node.format().fmt(f),
-            AnyRValue::RLogicalValue(node) => node.format().fmt(f),
-            AnyRValue::RNullValue(node) => node.format().fmt(f),
             AnyRValue::RStringValue(node) => node.format().fmt(f),
         }
     }

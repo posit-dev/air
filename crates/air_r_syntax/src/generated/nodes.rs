@@ -113,6 +113,41 @@ pub struct RBracedExpressionsFields {
     pub r_curly_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RBreakExpression {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RBreakExpression {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RBreakExpressionFields {
+        RBreakExpressionFields {
+            break_token: self.break_token(),
+        }
+    }
+    pub fn break_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+}
+impl Serialize for RBreakExpression {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RBreakExpressionFields {
+    pub break_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RCall {
     pub(crate) syntax: SyntaxNode,
 }
@@ -458,6 +493,41 @@ pub struct RElseClauseFields {
     pub alternative: SyntaxResult<AnyRExpression>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RFalseExpression {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RFalseExpression {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RFalseExpressionFields {
+        RFalseExpressionFields {
+            false_token: self.false_token(),
+        }
+    }
+    pub fn false_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+}
+impl Serialize for RFalseExpression {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RFalseExpressionFields {
+    pub false_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RForStatement {
     pub(crate) syntax: SyntaxNode,
 }
@@ -726,6 +796,41 @@ pub struct RIfStatementFields {
     pub else_clause: Option<RElseClause>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RInfExpression {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RInfExpression {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RInfExpressionFields {
+        RInfExpressionFields {
+            inf_token: self.inf_token(),
+        }
+    }
+    pub fn inf_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+}
+impl Serialize for RInfExpression {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RInfExpressionFields {
+    pub inf_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RIntegerValue {
     pub(crate) syntax: SyntaxNode,
 }
@@ -761,10 +866,10 @@ pub struct RIntegerValueFields {
     pub value_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub struct RLogicalValue {
+pub struct RNaExpression {
     pub(crate) syntax: SyntaxNode,
 }
-impl RLogicalValue {
+impl RNaExpression {
     #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
     #[doc = r""]
     #[doc = r" # Safety"]
@@ -774,16 +879,16 @@ impl RLogicalValue {
     pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
         Self { syntax }
     }
-    pub fn as_fields(&self) -> RLogicalValueFields {
-        RLogicalValueFields {
-            value_token: self.value_token(),
+    pub fn as_fields(&self) -> RNaExpressionFields {
+        RNaExpressionFields {
+            value: self.value(),
         }
     }
-    pub fn value_token(&self) -> SyntaxResult<SyntaxToken> {
+    pub fn value(&self) -> SyntaxResult<SyntaxToken> {
         support::required_token(&self.syntax, 0usize)
     }
 }
-impl Serialize for RLogicalValue {
+impl Serialize for RNaExpression {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -792,8 +897,8 @@ impl Serialize for RLogicalValue {
     }
 }
 #[derive(Serialize)]
-pub struct RLogicalValueFields {
-    pub value_token: SyntaxResult<SyntaxToken>,
+pub struct RNaExpressionFields {
+    pub value: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RNamedArgument {
@@ -841,10 +946,10 @@ pub struct RNamedArgumentFields {
     pub value: Option<AnyRExpression>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub struct RNullValue {
+pub struct RNanExpression {
     pub(crate) syntax: SyntaxNode,
 }
-impl RNullValue {
+impl RNanExpression {
     #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
     #[doc = r""]
     #[doc = r" # Safety"]
@@ -854,16 +959,16 @@ impl RNullValue {
     pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
         Self { syntax }
     }
-    pub fn as_fields(&self) -> RNullValueFields {
-        RNullValueFields {
-            value_token: self.value_token(),
+    pub fn as_fields(&self) -> RNanExpressionFields {
+        RNanExpressionFields {
+            nan_token: self.nan_token(),
         }
     }
-    pub fn value_token(&self) -> SyntaxResult<SyntaxToken> {
+    pub fn nan_token(&self) -> SyntaxResult<SyntaxToken> {
         support::required_token(&self.syntax, 0usize)
     }
 }
-impl Serialize for RNullValue {
+impl Serialize for RNanExpression {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -872,8 +977,78 @@ impl Serialize for RNullValue {
     }
 }
 #[derive(Serialize)]
-pub struct RNullValueFields {
-    pub value_token: SyntaxResult<SyntaxToken>,
+pub struct RNanExpressionFields {
+    pub nan_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RNextExpression {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RNextExpression {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RNextExpressionFields {
+        RNextExpressionFields {
+            next_token: self.next_token(),
+        }
+    }
+    pub fn next_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+}
+impl Serialize for RNextExpression {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RNextExpressionFields {
+    pub next_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RNullExpression {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RNullExpression {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RNullExpressionFields {
+        RNullExpressionFields {
+            null_token: self.null_token(),
+        }
+    }
+    pub fn null_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+}
+impl Serialize for RNullExpression {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RNullExpressionFields {
+    pub null_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RParameters {
@@ -1006,6 +1181,41 @@ pub struct RRepeatStatementFields {
     pub body: SyntaxResult<AnyRExpression>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RReturnExpression {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RReturnExpression {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RReturnExpressionFields {
+        RReturnExpressionFields {
+            return_token: self.return_token(),
+        }
+    }
+    pub fn return_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+}
+impl Serialize for RReturnExpression {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RReturnExpressionFields {
+    pub return_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RRoot {
     pub(crate) syntax: SyntaxNode,
 }
@@ -1084,6 +1294,41 @@ impl Serialize for RStringValue {
 #[derive(Serialize)]
 pub struct RStringValueFields {
     pub value_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RTrueExpression {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RTrueExpression {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RTrueExpressionFields {
+        RTrueExpressionFields {
+            true_token: self.true_token(),
+        }
+    }
+    pub fn true_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+}
+impl Serialize for RTrueExpression {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RTrueExpressionFields {
+    pub true_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RUnaryExpression {
@@ -1287,13 +1532,22 @@ pub enum AnyRExpression {
     RBinaryExpression(RBinaryExpression),
     RBogusExpression(RBogusExpression),
     RBracedExpressions(RBracedExpressions),
+    RBreakExpression(RBreakExpression),
     RCall(RCall),
+    RFalseExpression(RFalseExpression),
     RForStatement(RForStatement),
     RFunctionDefinition(RFunctionDefinition),
     RIdentifier(RIdentifier),
     RIfStatement(RIfStatement),
+    RInfExpression(RInfExpression),
+    RNaExpression(RNaExpression),
+    RNanExpression(RNanExpression),
+    RNextExpression(RNextExpression),
+    RNullExpression(RNullExpression),
     RParenthesizedExpression(RParenthesizedExpression),
     RRepeatStatement(RRepeatStatement),
+    RReturnExpression(RReturnExpression),
+    RTrueExpression(RTrueExpression),
     RUnaryExpression(RUnaryExpression),
     RWhileStatement(RWhileStatement),
 }
@@ -1322,9 +1576,21 @@ impl AnyRExpression {
             _ => None,
         }
     }
+    pub fn as_r_break_expression(&self) -> Option<&RBreakExpression> {
+        match &self {
+            AnyRExpression::RBreakExpression(item) => Some(item),
+            _ => None,
+        }
+    }
     pub fn as_r_call(&self) -> Option<&RCall> {
         match &self {
             AnyRExpression::RCall(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_false_expression(&self) -> Option<&RFalseExpression> {
+        match &self {
+            AnyRExpression::RFalseExpression(item) => Some(item),
             _ => None,
         }
     }
@@ -1352,6 +1618,36 @@ impl AnyRExpression {
             _ => None,
         }
     }
+    pub fn as_r_inf_expression(&self) -> Option<&RInfExpression> {
+        match &self {
+            AnyRExpression::RInfExpression(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_na_expression(&self) -> Option<&RNaExpression> {
+        match &self {
+            AnyRExpression::RNaExpression(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_nan_expression(&self) -> Option<&RNanExpression> {
+        match &self {
+            AnyRExpression::RNanExpression(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_next_expression(&self) -> Option<&RNextExpression> {
+        match &self {
+            AnyRExpression::RNextExpression(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_null_expression(&self) -> Option<&RNullExpression> {
+        match &self {
+            AnyRExpression::RNullExpression(item) => Some(item),
+            _ => None,
+        }
+    }
     pub fn as_r_parenthesized_expression(&self) -> Option<&RParenthesizedExpression> {
         match &self {
             AnyRExpression::RParenthesizedExpression(item) => Some(item),
@@ -1361,6 +1657,18 @@ impl AnyRExpression {
     pub fn as_r_repeat_statement(&self) -> Option<&RRepeatStatement> {
         match &self {
             AnyRExpression::RRepeatStatement(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_return_expression(&self) -> Option<&RReturnExpression> {
+        match &self {
+            AnyRExpression::RReturnExpression(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_true_expression(&self) -> Option<&RTrueExpression> {
+        match &self {
+            AnyRExpression::RTrueExpression(item) => Some(item),
             _ => None,
         }
     }
@@ -1416,8 +1724,6 @@ pub enum AnyRValue {
     RComplexValue(RComplexValue),
     RDoubleValue(RDoubleValue),
     RIntegerValue(RIntegerValue),
-    RLogicalValue(RLogicalValue),
-    RNullValue(RNullValue),
     RStringValue(RStringValue),
 }
 impl AnyRValue {
@@ -1442,18 +1748,6 @@ impl AnyRValue {
     pub fn as_r_integer_value(&self) -> Option<&RIntegerValue> {
         match &self {
             AnyRValue::RIntegerValue(item) => Some(item),
-            _ => None,
-        }
-    }
-    pub fn as_r_logical_value(&self) -> Option<&RLogicalValue> {
-        match &self {
-            AnyRValue::RLogicalValue(item) => Some(item),
-            _ => None,
-        }
-    }
-    pub fn as_r_null_value(&self) -> Option<&RNullValue> {
-        match &self {
-            AnyRValue::RNullValue(item) => Some(item),
             _ => None,
         }
     }
@@ -1550,6 +1844,47 @@ impl From<RBracedExpressions> for SyntaxNode {
 }
 impl From<RBracedExpressions> for SyntaxElement {
     fn from(n: RBracedExpressions) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
+impl AstNode for RBreakExpression {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_BREAK_EXPRESSION as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_BREAK_EXPRESSION
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RBreakExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RBreakExpression")
+            .field(
+                "break_token",
+                &support::DebugSyntaxResult(self.break_token()),
+            )
+            .finish()
+    }
+}
+impl From<RBreakExpression> for SyntaxNode {
+    fn from(n: RBreakExpression) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RBreakExpression> for SyntaxElement {
+    fn from(n: RBreakExpression) -> SyntaxElement {
         n.syntax.into()
     }
 }
@@ -1920,6 +2255,47 @@ impl From<RElseClause> for SyntaxElement {
         n.syntax.into()
     }
 }
+impl AstNode for RFalseExpression {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_FALSE_EXPRESSION as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_FALSE_EXPRESSION
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RFalseExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RFalseExpression")
+            .field(
+                "false_token",
+                &support::DebugSyntaxResult(self.false_token()),
+            )
+            .finish()
+    }
+}
+impl From<RFalseExpression> for SyntaxNode {
+    fn from(n: RFalseExpression) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RFalseExpression> for SyntaxElement {
+    fn from(n: RFalseExpression) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
 impl AstNode for RForStatement {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> =
@@ -2177,6 +2553,44 @@ impl From<RIfStatement> for SyntaxElement {
         n.syntax.into()
     }
 }
+impl AstNode for RInfExpression {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_INF_EXPRESSION as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_INF_EXPRESSION
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RInfExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RInfExpression")
+            .field("inf_token", &support::DebugSyntaxResult(self.inf_token()))
+            .finish()
+    }
+}
+impl From<RInfExpression> for SyntaxNode {
+    fn from(n: RInfExpression) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RInfExpression> for SyntaxElement {
+    fn from(n: RInfExpression) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
 impl AstNode for RIntegerValue {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> =
@@ -2218,12 +2632,12 @@ impl From<RIntegerValue> for SyntaxElement {
         n.syntax.into()
     }
 }
-impl AstNode for RLogicalValue {
+impl AstNode for RNaExpression {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(R_LOGICAL_VALUE as u16));
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_NA_EXPRESSION as u16));
     fn can_cast(kind: SyntaxKind) -> bool {
-        kind == R_LOGICAL_VALUE
+        kind == R_NA_EXPRESSION
     }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
@@ -2239,23 +2653,20 @@ impl AstNode for RLogicalValue {
         self.syntax
     }
 }
-impl std::fmt::Debug for RLogicalValue {
+impl std::fmt::Debug for RNaExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("RLogicalValue")
-            .field(
-                "value_token",
-                &support::DebugSyntaxResult(self.value_token()),
-            )
+        f.debug_struct("RNaExpression")
+            .field("value", &support::DebugSyntaxResult(self.value()))
             .finish()
     }
 }
-impl From<RLogicalValue> for SyntaxNode {
-    fn from(n: RLogicalValue) -> SyntaxNode {
+impl From<RNaExpression> for SyntaxNode {
+    fn from(n: RNaExpression) -> SyntaxNode {
         n.syntax
     }
 }
-impl From<RLogicalValue> for SyntaxElement {
-    fn from(n: RLogicalValue) -> SyntaxElement {
+impl From<RNaExpression> for SyntaxElement {
+    fn from(n: RNaExpression) -> SyntaxElement {
         n.syntax.into()
     }
 }
@@ -2299,12 +2710,12 @@ impl From<RNamedArgument> for SyntaxElement {
         n.syntax.into()
     }
 }
-impl AstNode for RNullValue {
+impl AstNode for RNanExpression {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(R_NULL_VALUE as u16));
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_NAN_EXPRESSION as u16));
     fn can_cast(kind: SyntaxKind) -> bool {
-        kind == R_NULL_VALUE
+        kind == R_NAN_EXPRESSION
     }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
@@ -2320,23 +2731,96 @@ impl AstNode for RNullValue {
         self.syntax
     }
 }
-impl std::fmt::Debug for RNullValue {
+impl std::fmt::Debug for RNanExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("RNullValue")
-            .field(
-                "value_token",
-                &support::DebugSyntaxResult(self.value_token()),
-            )
+        f.debug_struct("RNanExpression")
+            .field("nan_token", &support::DebugSyntaxResult(self.nan_token()))
             .finish()
     }
 }
-impl From<RNullValue> for SyntaxNode {
-    fn from(n: RNullValue) -> SyntaxNode {
+impl From<RNanExpression> for SyntaxNode {
+    fn from(n: RNanExpression) -> SyntaxNode {
         n.syntax
     }
 }
-impl From<RNullValue> for SyntaxElement {
-    fn from(n: RNullValue) -> SyntaxElement {
+impl From<RNanExpression> for SyntaxElement {
+    fn from(n: RNanExpression) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
+impl AstNode for RNextExpression {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_NEXT_EXPRESSION as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_NEXT_EXPRESSION
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RNextExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RNextExpression")
+            .field("next_token", &support::DebugSyntaxResult(self.next_token()))
+            .finish()
+    }
+}
+impl From<RNextExpression> for SyntaxNode {
+    fn from(n: RNextExpression) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RNextExpression> for SyntaxElement {
+    fn from(n: RNextExpression) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
+impl AstNode for RNullExpression {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_NULL_EXPRESSION as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_NULL_EXPRESSION
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RNullExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RNullExpression")
+            .field("null_token", &support::DebugSyntaxResult(self.null_token()))
+            .finish()
+    }
+}
+impl From<RNullExpression> for SyntaxNode {
+    fn from(n: RNullExpression) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RNullExpression> for SyntaxElement {
+    fn from(n: RNullExpression) -> SyntaxElement {
         n.syntax.into()
     }
 }
@@ -2474,6 +2958,47 @@ impl From<RRepeatStatement> for SyntaxElement {
         n.syntax.into()
     }
 }
+impl AstNode for RReturnExpression {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_RETURN_EXPRESSION as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_RETURN_EXPRESSION
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RReturnExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RReturnExpression")
+            .field(
+                "return_token",
+                &support::DebugSyntaxResult(self.return_token()),
+            )
+            .finish()
+    }
+}
+impl From<RReturnExpression> for SyntaxNode {
+    fn from(n: RReturnExpression) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RReturnExpression> for SyntaxElement {
+    fn from(n: RReturnExpression) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
 impl AstNode for RRoot {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> = SyntaxKindSet::from_raw(RawSyntaxKind(R_ROOT as u16));
@@ -2554,6 +3079,44 @@ impl From<RStringValue> for SyntaxNode {
 }
 impl From<RStringValue> for SyntaxElement {
     fn from(n: RStringValue) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
+impl AstNode for RTrueExpression {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_TRUE_EXPRESSION as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_TRUE_EXPRESSION
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RTrueExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RTrueExpression")
+            .field("true_token", &support::DebugSyntaxResult(self.true_token()))
+            .finish()
+    }
+}
+impl From<RTrueExpression> for SyntaxNode {
+    fn from(n: RTrueExpression) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RTrueExpression> for SyntaxElement {
+    fn from(n: RTrueExpression) -> SyntaxElement {
         n.syntax.into()
     }
 }
@@ -2871,9 +3434,19 @@ impl From<RBracedExpressions> for AnyRExpression {
         AnyRExpression::RBracedExpressions(node)
     }
 }
+impl From<RBreakExpression> for AnyRExpression {
+    fn from(node: RBreakExpression) -> AnyRExpression {
+        AnyRExpression::RBreakExpression(node)
+    }
+}
 impl From<RCall> for AnyRExpression {
     fn from(node: RCall) -> AnyRExpression {
         AnyRExpression::RCall(node)
+    }
+}
+impl From<RFalseExpression> for AnyRExpression {
+    fn from(node: RFalseExpression) -> AnyRExpression {
+        AnyRExpression::RFalseExpression(node)
     }
 }
 impl From<RForStatement> for AnyRExpression {
@@ -2896,6 +3469,31 @@ impl From<RIfStatement> for AnyRExpression {
         AnyRExpression::RIfStatement(node)
     }
 }
+impl From<RInfExpression> for AnyRExpression {
+    fn from(node: RInfExpression) -> AnyRExpression {
+        AnyRExpression::RInfExpression(node)
+    }
+}
+impl From<RNaExpression> for AnyRExpression {
+    fn from(node: RNaExpression) -> AnyRExpression {
+        AnyRExpression::RNaExpression(node)
+    }
+}
+impl From<RNanExpression> for AnyRExpression {
+    fn from(node: RNanExpression) -> AnyRExpression {
+        AnyRExpression::RNanExpression(node)
+    }
+}
+impl From<RNextExpression> for AnyRExpression {
+    fn from(node: RNextExpression) -> AnyRExpression {
+        AnyRExpression::RNextExpression(node)
+    }
+}
+impl From<RNullExpression> for AnyRExpression {
+    fn from(node: RNullExpression) -> AnyRExpression {
+        AnyRExpression::RNullExpression(node)
+    }
+}
 impl From<RParenthesizedExpression> for AnyRExpression {
     fn from(node: RParenthesizedExpression) -> AnyRExpression {
         AnyRExpression::RParenthesizedExpression(node)
@@ -2904,6 +3502,16 @@ impl From<RParenthesizedExpression> for AnyRExpression {
 impl From<RRepeatStatement> for AnyRExpression {
     fn from(node: RRepeatStatement) -> AnyRExpression {
         AnyRExpression::RRepeatStatement(node)
+    }
+}
+impl From<RReturnExpression> for AnyRExpression {
+    fn from(node: RReturnExpression) -> AnyRExpression {
+        AnyRExpression::RReturnExpression(node)
+    }
+}
+impl From<RTrueExpression> for AnyRExpression {
+    fn from(node: RTrueExpression) -> AnyRExpression {
+        AnyRExpression::RTrueExpression(node)
     }
 }
 impl From<RUnaryExpression> for AnyRExpression {
@@ -2922,13 +3530,22 @@ impl AstNode for AnyRExpression {
         .union(RBinaryExpression::KIND_SET)
         .union(RBogusExpression::KIND_SET)
         .union(RBracedExpressions::KIND_SET)
+        .union(RBreakExpression::KIND_SET)
         .union(RCall::KIND_SET)
+        .union(RFalseExpression::KIND_SET)
         .union(RForStatement::KIND_SET)
         .union(RFunctionDefinition::KIND_SET)
         .union(RIdentifier::KIND_SET)
         .union(RIfStatement::KIND_SET)
+        .union(RInfExpression::KIND_SET)
+        .union(RNaExpression::KIND_SET)
+        .union(RNanExpression::KIND_SET)
+        .union(RNextExpression::KIND_SET)
+        .union(RNullExpression::KIND_SET)
         .union(RParenthesizedExpression::KIND_SET)
         .union(RRepeatStatement::KIND_SET)
+        .union(RReturnExpression::KIND_SET)
+        .union(RTrueExpression::KIND_SET)
         .union(RUnaryExpression::KIND_SET)
         .union(RWhileStatement::KIND_SET);
     fn can_cast(kind: SyntaxKind) -> bool {
@@ -2936,13 +3553,22 @@ impl AstNode for AnyRExpression {
             R_BINARY_EXPRESSION
             | R_BOGUS_EXPRESSION
             | R_BRACED_EXPRESSIONS
+            | R_BREAK_EXPRESSION
             | R_CALL
+            | R_FALSE_EXPRESSION
             | R_FOR_STATEMENT
             | R_FUNCTION_DEFINITION
             | R_IDENTIFIER
             | R_IF_STATEMENT
+            | R_INF_EXPRESSION
+            | R_NA_EXPRESSION
+            | R_NAN_EXPRESSION
+            | R_NEXT_EXPRESSION
+            | R_NULL_EXPRESSION
             | R_PARENTHESIZED_EXPRESSION
             | R_REPEAT_STATEMENT
+            | R_RETURN_EXPRESSION
+            | R_TRUE_EXPRESSION
             | R_UNARY_EXPRESSION
             | R_WHILE_STATEMENT => true,
             k if AnyRValue::can_cast(k) => true,
@@ -2956,17 +3582,26 @@ impl AstNode for AnyRExpression {
             R_BRACED_EXPRESSIONS => {
                 AnyRExpression::RBracedExpressions(RBracedExpressions { syntax })
             }
+            R_BREAK_EXPRESSION => AnyRExpression::RBreakExpression(RBreakExpression { syntax }),
             R_CALL => AnyRExpression::RCall(RCall { syntax }),
+            R_FALSE_EXPRESSION => AnyRExpression::RFalseExpression(RFalseExpression { syntax }),
             R_FOR_STATEMENT => AnyRExpression::RForStatement(RForStatement { syntax }),
             R_FUNCTION_DEFINITION => {
                 AnyRExpression::RFunctionDefinition(RFunctionDefinition { syntax })
             }
             R_IDENTIFIER => AnyRExpression::RIdentifier(RIdentifier { syntax }),
             R_IF_STATEMENT => AnyRExpression::RIfStatement(RIfStatement { syntax }),
+            R_INF_EXPRESSION => AnyRExpression::RInfExpression(RInfExpression { syntax }),
+            R_NA_EXPRESSION => AnyRExpression::RNaExpression(RNaExpression { syntax }),
+            R_NAN_EXPRESSION => AnyRExpression::RNanExpression(RNanExpression { syntax }),
+            R_NEXT_EXPRESSION => AnyRExpression::RNextExpression(RNextExpression { syntax }),
+            R_NULL_EXPRESSION => AnyRExpression::RNullExpression(RNullExpression { syntax }),
             R_PARENTHESIZED_EXPRESSION => {
                 AnyRExpression::RParenthesizedExpression(RParenthesizedExpression { syntax })
             }
             R_REPEAT_STATEMENT => AnyRExpression::RRepeatStatement(RRepeatStatement { syntax }),
+            R_RETURN_EXPRESSION => AnyRExpression::RReturnExpression(RReturnExpression { syntax }),
+            R_TRUE_EXPRESSION => AnyRExpression::RTrueExpression(RTrueExpression { syntax }),
             R_UNARY_EXPRESSION => AnyRExpression::RUnaryExpression(RUnaryExpression { syntax }),
             R_WHILE_STATEMENT => AnyRExpression::RWhileStatement(RWhileStatement { syntax }),
             _ => {
@@ -2983,13 +3618,22 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RBinaryExpression(it) => &it.syntax,
             AnyRExpression::RBogusExpression(it) => &it.syntax,
             AnyRExpression::RBracedExpressions(it) => &it.syntax,
+            AnyRExpression::RBreakExpression(it) => &it.syntax,
             AnyRExpression::RCall(it) => &it.syntax,
+            AnyRExpression::RFalseExpression(it) => &it.syntax,
             AnyRExpression::RForStatement(it) => &it.syntax,
             AnyRExpression::RFunctionDefinition(it) => &it.syntax,
             AnyRExpression::RIdentifier(it) => &it.syntax,
             AnyRExpression::RIfStatement(it) => &it.syntax,
+            AnyRExpression::RInfExpression(it) => &it.syntax,
+            AnyRExpression::RNaExpression(it) => &it.syntax,
+            AnyRExpression::RNanExpression(it) => &it.syntax,
+            AnyRExpression::RNextExpression(it) => &it.syntax,
+            AnyRExpression::RNullExpression(it) => &it.syntax,
             AnyRExpression::RParenthesizedExpression(it) => &it.syntax,
             AnyRExpression::RRepeatStatement(it) => &it.syntax,
+            AnyRExpression::RReturnExpression(it) => &it.syntax,
+            AnyRExpression::RTrueExpression(it) => &it.syntax,
             AnyRExpression::RUnaryExpression(it) => &it.syntax,
             AnyRExpression::RWhileStatement(it) => &it.syntax,
             AnyRExpression::AnyRValue(it) => it.syntax(),
@@ -3000,13 +3644,22 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RBinaryExpression(it) => it.syntax,
             AnyRExpression::RBogusExpression(it) => it.syntax,
             AnyRExpression::RBracedExpressions(it) => it.syntax,
+            AnyRExpression::RBreakExpression(it) => it.syntax,
             AnyRExpression::RCall(it) => it.syntax,
+            AnyRExpression::RFalseExpression(it) => it.syntax,
             AnyRExpression::RForStatement(it) => it.syntax,
             AnyRExpression::RFunctionDefinition(it) => it.syntax,
             AnyRExpression::RIdentifier(it) => it.syntax,
             AnyRExpression::RIfStatement(it) => it.syntax,
+            AnyRExpression::RInfExpression(it) => it.syntax,
+            AnyRExpression::RNaExpression(it) => it.syntax,
+            AnyRExpression::RNanExpression(it) => it.syntax,
+            AnyRExpression::RNextExpression(it) => it.syntax,
+            AnyRExpression::RNullExpression(it) => it.syntax,
             AnyRExpression::RParenthesizedExpression(it) => it.syntax,
             AnyRExpression::RRepeatStatement(it) => it.syntax,
+            AnyRExpression::RReturnExpression(it) => it.syntax,
+            AnyRExpression::RTrueExpression(it) => it.syntax,
             AnyRExpression::RUnaryExpression(it) => it.syntax,
             AnyRExpression::RWhileStatement(it) => it.syntax,
             AnyRExpression::AnyRValue(it) => it.into_syntax(),
@@ -3020,13 +3673,22 @@ impl std::fmt::Debug for AnyRExpression {
             AnyRExpression::RBinaryExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RBogusExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RBracedExpressions(it) => std::fmt::Debug::fmt(it, f),
+            AnyRExpression::RBreakExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RCall(it) => std::fmt::Debug::fmt(it, f),
+            AnyRExpression::RFalseExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RForStatement(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RFunctionDefinition(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RIdentifier(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RIfStatement(it) => std::fmt::Debug::fmt(it, f),
+            AnyRExpression::RInfExpression(it) => std::fmt::Debug::fmt(it, f),
+            AnyRExpression::RNaExpression(it) => std::fmt::Debug::fmt(it, f),
+            AnyRExpression::RNanExpression(it) => std::fmt::Debug::fmt(it, f),
+            AnyRExpression::RNextExpression(it) => std::fmt::Debug::fmt(it, f),
+            AnyRExpression::RNullExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RParenthesizedExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RRepeatStatement(it) => std::fmt::Debug::fmt(it, f),
+            AnyRExpression::RReturnExpression(it) => std::fmt::Debug::fmt(it, f),
+            AnyRExpression::RTrueExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RUnaryExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RWhileStatement(it) => std::fmt::Debug::fmt(it, f),
         }
@@ -3039,13 +3701,22 @@ impl From<AnyRExpression> for SyntaxNode {
             AnyRExpression::RBinaryExpression(it) => it.into(),
             AnyRExpression::RBogusExpression(it) => it.into(),
             AnyRExpression::RBracedExpressions(it) => it.into(),
+            AnyRExpression::RBreakExpression(it) => it.into(),
             AnyRExpression::RCall(it) => it.into(),
+            AnyRExpression::RFalseExpression(it) => it.into(),
             AnyRExpression::RForStatement(it) => it.into(),
             AnyRExpression::RFunctionDefinition(it) => it.into(),
             AnyRExpression::RIdentifier(it) => it.into(),
             AnyRExpression::RIfStatement(it) => it.into(),
+            AnyRExpression::RInfExpression(it) => it.into(),
+            AnyRExpression::RNaExpression(it) => it.into(),
+            AnyRExpression::RNanExpression(it) => it.into(),
+            AnyRExpression::RNextExpression(it) => it.into(),
+            AnyRExpression::RNullExpression(it) => it.into(),
             AnyRExpression::RParenthesizedExpression(it) => it.into(),
             AnyRExpression::RRepeatStatement(it) => it.into(),
+            AnyRExpression::RReturnExpression(it) => it.into(),
+            AnyRExpression::RTrueExpression(it) => it.into(),
             AnyRExpression::RUnaryExpression(it) => it.into(),
             AnyRExpression::RWhileStatement(it) => it.into(),
         }
@@ -3164,16 +3835,6 @@ impl From<RIntegerValue> for AnyRValue {
         AnyRValue::RIntegerValue(node)
     }
 }
-impl From<RLogicalValue> for AnyRValue {
-    fn from(node: RLogicalValue) -> AnyRValue {
-        AnyRValue::RLogicalValue(node)
-    }
-}
-impl From<RNullValue> for AnyRValue {
-    fn from(node: RNullValue) -> AnyRValue {
-        AnyRValue::RNullValue(node)
-    }
-}
 impl From<RStringValue> for AnyRValue {
     fn from(node: RStringValue) -> AnyRValue {
         AnyRValue::RStringValue(node)
@@ -3185,19 +3846,11 @@ impl AstNode for AnyRValue {
         .union(RComplexValue::KIND_SET)
         .union(RDoubleValue::KIND_SET)
         .union(RIntegerValue::KIND_SET)
-        .union(RLogicalValue::KIND_SET)
-        .union(RNullValue::KIND_SET)
         .union(RStringValue::KIND_SET);
     fn can_cast(kind: SyntaxKind) -> bool {
         matches!(
             kind,
-            R_BOGUS_VALUE
-                | R_COMPLEX_VALUE
-                | R_DOUBLE_VALUE
-                | R_INTEGER_VALUE
-                | R_LOGICAL_VALUE
-                | R_NULL_VALUE
-                | R_STRING_VALUE
+            R_BOGUS_VALUE | R_COMPLEX_VALUE | R_DOUBLE_VALUE | R_INTEGER_VALUE | R_STRING_VALUE
         )
     }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
@@ -3206,8 +3859,6 @@ impl AstNode for AnyRValue {
             R_COMPLEX_VALUE => AnyRValue::RComplexValue(RComplexValue { syntax }),
             R_DOUBLE_VALUE => AnyRValue::RDoubleValue(RDoubleValue { syntax }),
             R_INTEGER_VALUE => AnyRValue::RIntegerValue(RIntegerValue { syntax }),
-            R_LOGICAL_VALUE => AnyRValue::RLogicalValue(RLogicalValue { syntax }),
-            R_NULL_VALUE => AnyRValue::RNullValue(RNullValue { syntax }),
             R_STRING_VALUE => AnyRValue::RStringValue(RStringValue { syntax }),
             _ => return None,
         };
@@ -3219,8 +3870,6 @@ impl AstNode for AnyRValue {
             AnyRValue::RComplexValue(it) => &it.syntax,
             AnyRValue::RDoubleValue(it) => &it.syntax,
             AnyRValue::RIntegerValue(it) => &it.syntax,
-            AnyRValue::RLogicalValue(it) => &it.syntax,
-            AnyRValue::RNullValue(it) => &it.syntax,
             AnyRValue::RStringValue(it) => &it.syntax,
         }
     }
@@ -3230,8 +3879,6 @@ impl AstNode for AnyRValue {
             AnyRValue::RComplexValue(it) => it.syntax,
             AnyRValue::RDoubleValue(it) => it.syntax,
             AnyRValue::RIntegerValue(it) => it.syntax,
-            AnyRValue::RLogicalValue(it) => it.syntax,
-            AnyRValue::RNullValue(it) => it.syntax,
             AnyRValue::RStringValue(it) => it.syntax,
         }
     }
@@ -3243,8 +3890,6 @@ impl std::fmt::Debug for AnyRValue {
             AnyRValue::RComplexValue(it) => std::fmt::Debug::fmt(it, f),
             AnyRValue::RDoubleValue(it) => std::fmt::Debug::fmt(it, f),
             AnyRValue::RIntegerValue(it) => std::fmt::Debug::fmt(it, f),
-            AnyRValue::RLogicalValue(it) => std::fmt::Debug::fmt(it, f),
-            AnyRValue::RNullValue(it) => std::fmt::Debug::fmt(it, f),
             AnyRValue::RStringValue(it) => std::fmt::Debug::fmt(it, f),
         }
     }
@@ -3256,8 +3901,6 @@ impl From<AnyRValue> for SyntaxNode {
             AnyRValue::RComplexValue(it) => it.into(),
             AnyRValue::RDoubleValue(it) => it.into(),
             AnyRValue::RIntegerValue(it) => it.into(),
-            AnyRValue::RLogicalValue(it) => it.into(),
-            AnyRValue::RNullValue(it) => it.into(),
             AnyRValue::RStringValue(it) => it.into(),
         }
     }
@@ -3299,6 +3942,11 @@ impl std::fmt::Display for RBinaryExpression {
     }
 }
 impl std::fmt::Display for RBracedExpressions {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RBreakExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
@@ -3348,6 +3996,11 @@ impl std::fmt::Display for RElseClause {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
+impl std::fmt::Display for RFalseExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
 impl std::fmt::Display for RForStatement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
@@ -3378,12 +4031,17 @@ impl std::fmt::Display for RIfStatement {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
+impl std::fmt::Display for RInfExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
 impl std::fmt::Display for RIntegerValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for RLogicalValue {
+impl std::fmt::Display for RNaExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
@@ -3393,7 +4051,17 @@ impl std::fmt::Display for RNamedArgument {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for RNullValue {
+impl std::fmt::Display for RNanExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RNextExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RNullExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
@@ -3413,12 +4081,22 @@ impl std::fmt::Display for RRepeatStatement {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
+impl std::fmt::Display for RReturnExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
 impl std::fmt::Display for RRoot {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
 impl std::fmt::Display for RStringValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RTrueExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }

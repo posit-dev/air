@@ -34,6 +34,12 @@ pub fn r_braced_expressions(
         ],
     ))
 }
+pub fn r_break_expression(break_token: SyntaxToken) -> RBreakExpression {
+    RBreakExpression::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_BREAK_EXPRESSION,
+        [Some(SyntaxElement::Token(break_token))],
+    ))
+}
 pub fn r_call(function: AnyRExpression, arguments: RCallArguments) -> RCall {
     RCall::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_CALL,
@@ -126,6 +132,12 @@ pub fn r_else_clause(else_token: SyntaxToken, alternative: AnyRExpression) -> RE
             Some(SyntaxElement::Token(else_token)),
             Some(SyntaxElement::Node(alternative.into_syntax())),
         ],
+    ))
+}
+pub fn r_false_expression(false_token: SyntaxToken) -> RFalseExpression {
+    RFalseExpression::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_FALSE_EXPRESSION,
+        [Some(SyntaxElement::Token(false_token))],
     ))
 }
 pub fn r_for_statement(
@@ -223,15 +235,21 @@ impl RIfStatementBuilder {
         ))
     }
 }
+pub fn r_inf_expression(inf_token: SyntaxToken) -> RInfExpression {
+    RInfExpression::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_INF_EXPRESSION,
+        [Some(SyntaxElement::Token(inf_token))],
+    ))
+}
 pub fn r_integer_value(value_token: SyntaxToken) -> RIntegerValue {
     RIntegerValue::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_INTEGER_VALUE,
         [Some(SyntaxElement::Token(value_token))],
     ))
 }
-pub fn r_logical_value(value_token: SyntaxToken) -> RLogicalValue {
-    RLogicalValue::unwrap_cast(SyntaxNode::new_detached(
-        RSyntaxKind::R_LOGICAL_VALUE,
+pub fn r_na_expression(value_token: SyntaxToken) -> RNaExpression {
+    RNaExpression::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_NA_EXPRESSION,
         [Some(SyntaxElement::Token(value_token))],
     ))
 }
@@ -264,10 +282,22 @@ impl RNamedArgumentBuilder {
         ))
     }
 }
-pub fn r_null_value(value_token: SyntaxToken) -> RNullValue {
-    RNullValue::unwrap_cast(SyntaxNode::new_detached(
-        RSyntaxKind::R_NULL_VALUE,
-        [Some(SyntaxElement::Token(value_token))],
+pub fn r_nan_expression(nan_token: SyntaxToken) -> RNanExpression {
+    RNanExpression::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_NAN_EXPRESSION,
+        [Some(SyntaxElement::Token(nan_token))],
+    ))
+}
+pub fn r_next_expression(next_token: SyntaxToken) -> RNextExpression {
+    RNextExpression::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_NEXT_EXPRESSION,
+        [Some(SyntaxElement::Token(next_token))],
+    ))
+}
+pub fn r_null_expression(null_token: SyntaxToken) -> RNullExpression {
+    RNullExpression::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_NULL_EXPRESSION,
+        [Some(SyntaxElement::Token(null_token))],
     ))
 }
 pub fn r_parameters(
@@ -307,6 +337,12 @@ pub fn r_repeat_statement(repeat_token: SyntaxToken, body: AnyRExpression) -> RR
         ],
     ))
 }
+pub fn r_return_expression(return_token: SyntaxToken) -> RReturnExpression {
+    RReturnExpression::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_RETURN_EXPRESSION,
+        [Some(SyntaxElement::Token(return_token))],
+    ))
+}
 pub fn r_root(expressions: RExpressionList, eof_token: SyntaxToken) -> RRootBuilder {
     RRootBuilder {
         expressions,
@@ -339,6 +375,12 @@ pub fn r_string_value(value_token: SyntaxToken) -> RStringValue {
     RStringValue::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_STRING_VALUE,
         [Some(SyntaxElement::Token(value_token))],
+    ))
+}
+pub fn r_true_expression(true_token: SyntaxToken) -> RTrueExpression {
+    RTrueExpression::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_TRUE_EXPRESSION,
+        [Some(SyntaxElement::Token(true_token))],
     ))
 }
 pub fn r_unary_expression(

@@ -29,19 +29,19 @@ RRoot {
         RWhileStatement {
             while_token: WHILE_KW@0..5 "while" [] [],
             l_paren_token: L_PAREN@5..6 "(" [] [],
-            condition: RLogicalValue {
-                value_token: R_LOGICAL_LITERAL@6..10 "TRUE" [] [],
+            condition: RTrueExpression {
+                true_token: TRUE_KW@6..10 "TRUE" [] [],
             },
             r_paren_token: R_PAREN@10..11 ")" [] [],
-            body: RLogicalValue {
-                value_token: R_LOGICAL_LITERAL@11..17 "FALSE" [Whitespace(" ")] [],
+            body: RFalseExpression {
+                false_token: FALSE_KW@11..17 "FALSE" [Whitespace(" ")] [],
             },
         },
         RWhileStatement {
             while_token: WHILE_KW@17..24 "while" [Newline("\n"), Newline("\n")] [],
             l_paren_token: L_PAREN@24..25 "(" [] [],
-            condition: RLogicalValue {
-                value_token: R_LOGICAL_LITERAL@25..29 "TRUE" [] [],
+            condition: RTrueExpression {
+                true_token: TRUE_KW@25..29 "TRUE" [] [],
             },
             r_paren_token: R_PAREN@29..30 ")" [] [],
             body: RBracedExpressions {
@@ -97,16 +97,16 @@ RRoot {
     0: R_WHILE_STATEMENT@0..17
       0: WHILE_KW@0..5 "while" [] []
       1: L_PAREN@5..6 "(" [] []
-      2: R_LOGICAL_VALUE@6..10
-        0: R_LOGICAL_LITERAL@6..10 "TRUE" [] []
+      2: R_TRUE_EXPRESSION@6..10
+        0: TRUE_KW@6..10 "TRUE" [] []
       3: R_PAREN@10..11 ")" [] []
-      4: R_LOGICAL_VALUE@11..17
-        0: R_LOGICAL_LITERAL@11..17 "FALSE" [Whitespace(" ")] []
+      4: R_FALSE_EXPRESSION@11..17
+        0: FALSE_KW@11..17 "FALSE" [Whitespace(" ")] []
     1: R_WHILE_STATEMENT@17..33
       0: WHILE_KW@17..24 "while" [Newline("\n"), Newline("\n")] []
       1: L_PAREN@24..25 "(" [] []
-      2: R_LOGICAL_VALUE@25..29
-        0: R_LOGICAL_LITERAL@25..29 "TRUE" [] []
+      2: R_TRUE_EXPRESSION@25..29
+        0: TRUE_KW@25..29 "TRUE" [] []
       3: R_PAREN@29..30 ")" [] []
       4: R_BRACED_EXPRESSIONS@30..33
         0: L_CURLY@30..32 "{" [Whitespace(" ")] []

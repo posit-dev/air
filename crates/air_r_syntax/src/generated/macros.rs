@@ -24,6 +24,10 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RBracedExpressions::new_unchecked(node) };
                     $body
                 }
+                $crate::RSyntaxKind::R_BREAK_EXPRESSION => {
+                    let $pattern = unsafe { $crate::RBreakExpression::new_unchecked(node) };
+                    $body
+                }
                 $crate::RSyntaxKind::R_CALL => {
                     let $pattern = unsafe { $crate::RCall::new_unchecked(node) };
                     $body
@@ -60,6 +64,10 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RElseClause::new_unchecked(node) };
                     $body
                 }
+                $crate::RSyntaxKind::R_FALSE_EXPRESSION => {
+                    let $pattern = unsafe { $crate::RFalseExpression::new_unchecked(node) };
+                    $body
+                }
                 $crate::RSyntaxKind::R_FOR_STATEMENT => {
                     let $pattern = unsafe { $crate::RForStatement::new_unchecked(node) };
                     $body
@@ -84,20 +92,32 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RIfStatement::new_unchecked(node) };
                     $body
                 }
+                $crate::RSyntaxKind::R_INF_EXPRESSION => {
+                    let $pattern = unsafe { $crate::RInfExpression::new_unchecked(node) };
+                    $body
+                }
                 $crate::RSyntaxKind::R_INTEGER_VALUE => {
                     let $pattern = unsafe { $crate::RIntegerValue::new_unchecked(node) };
                     $body
                 }
-                $crate::RSyntaxKind::R_LOGICAL_VALUE => {
-                    let $pattern = unsafe { $crate::RLogicalValue::new_unchecked(node) };
+                $crate::RSyntaxKind::R_NA_EXPRESSION => {
+                    let $pattern = unsafe { $crate::RNaExpression::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_NAMED_ARGUMENT => {
                     let $pattern = unsafe { $crate::RNamedArgument::new_unchecked(node) };
                     $body
                 }
-                $crate::RSyntaxKind::R_NULL_VALUE => {
-                    let $pattern = unsafe { $crate::RNullValue::new_unchecked(node) };
+                $crate::RSyntaxKind::R_NAN_EXPRESSION => {
+                    let $pattern = unsafe { $crate::RNanExpression::new_unchecked(node) };
+                    $body
+                }
+                $crate::RSyntaxKind::R_NEXT_EXPRESSION => {
+                    let $pattern = unsafe { $crate::RNextExpression::new_unchecked(node) };
+                    $body
+                }
+                $crate::RSyntaxKind::R_NULL_EXPRESSION => {
+                    let $pattern = unsafe { $crate::RNullExpression::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_PARAMETERS => {
@@ -112,12 +132,20 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RRepeatStatement::new_unchecked(node) };
                     $body
                 }
+                $crate::RSyntaxKind::R_RETURN_EXPRESSION => {
+                    let $pattern = unsafe { $crate::RReturnExpression::new_unchecked(node) };
+                    $body
+                }
                 $crate::RSyntaxKind::R_ROOT => {
                     let $pattern = unsafe { $crate::RRoot::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_STRING_VALUE => {
                     let $pattern = unsafe { $crate::RStringValue::new_unchecked(node) };
+                    $body
+                }
+                $crate::RSyntaxKind::R_TRUE_EXPRESSION => {
+                    let $pattern = unsafe { $crate::RTrueExpression::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_UNARY_EXPRESSION => {
