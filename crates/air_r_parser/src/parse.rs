@@ -120,164 +120,170 @@ impl<'src> RWalk<'src> {
     fn handle_enter(&mut self, node: tree_sitter::Node, kind: RSyntaxKind, iter: &mut Preorder) {
         match kind {
             RSyntaxKind::R_ROOT => self.handle_root_enter(),
-            RSyntaxKind::R_BINARY_EXPRESSION => self.handle_node_enter(kind),
-            RSyntaxKind::R_FUNCTION_DEFINITION => self.handle_node_enter(kind),
+
+            RSyntaxKind::R_BINARY_EXPRESSION
+            | RSyntaxKind::R_FUNCTION_DEFINITION
+            | RSyntaxKind::R_FOR_STATEMENT
+            | RSyntaxKind::R_WHILE_STATEMENT
+            | RSyntaxKind::R_REPEAT_STATEMENT
+            | RSyntaxKind::R_CALL
+            | RSyntaxKind::R_UNNAMED_ARGUMENT
+            | RSyntaxKind::R_PARENTHESIZED_EXPRESSION => self.handle_node_enter(kind),
             RSyntaxKind::R_PARAMETERS => self.handle_parameters_enter(node, iter),
             RSyntaxKind::R_DOTS_PARAMETER => self.handle_dots_parameter_enter(iter),
             RSyntaxKind::R_IDENTIFIER_PARAMETER => self.handle_identifier_parameter_enter(iter),
             RSyntaxKind::R_DEFAULT_PARAMETER => self.handle_default_parameter_enter(node, iter),
             RSyntaxKind::R_IF_STATEMENT => self.handle_if_statement_enter(node, iter),
-            RSyntaxKind::R_FOR_STATEMENT => self.handle_node_enter(kind),
-            RSyntaxKind::R_WHILE_STATEMENT => self.handle_node_enter(kind),
-            RSyntaxKind::R_REPEAT_STATEMENT => self.handle_node_enter(kind),
-            RSyntaxKind::R_CALL => self.handle_node_enter(kind),
             RSyntaxKind::R_CALL_ARGUMENTS => self.handle_call_arguments_enter(node, iter),
             RSyntaxKind::R_NAMED_ARGUMENT => self.handle_named_argument_enter(node, iter),
-            RSyntaxKind::R_UNNAMED_ARGUMENT => self.handle_node_enter(kind),
             RSyntaxKind::R_DOTS_ARGUMENT => self.handle_dots_argument_enter(node, iter),
             RSyntaxKind::R_BRACED_EXPRESSIONS => self.handle_braced_expressions_enter(node, iter),
-            RSyntaxKind::R_PARENTHESIZED_EXPRESSION => self.handle_node_enter(kind),
+
+            // Literals
+            RSyntaxKind::R_DOUBLE_VALUE
+            | RSyntaxKind::R_LOGICAL_VALUE
+            | RSyntaxKind::R_NULL_VALUE
+            | RSyntaxKind::R_IDENTIFIER => self.handle_value_enter(kind),
             RSyntaxKind::R_INTEGER_VALUE => self.handle_integer_value_enter(iter),
             RSyntaxKind::R_COMPLEX_VALUE => self.handle_complex_value_enter(iter),
-            RSyntaxKind::R_DOUBLE_VALUE => self.handle_value_enter(kind),
             RSyntaxKind::R_STRING_VALUE => self.handle_string_value_enter(iter),
-            RSyntaxKind::R_LOGICAL_VALUE => self.handle_value_enter(kind),
-            RSyntaxKind::R_NULL_VALUE => self.handle_value_enter(kind),
-            RSyntaxKind::R_IDENTIFIER => self.handle_value_enter(kind),
 
             // Tokens are no-ops on `Enter`, handled on `Leave`
-            RSyntaxKind::SEMICOLON => (),
-            RSyntaxKind::COMMA => (),
-            RSyntaxKind::PLUS => (),
-            RSyntaxKind::EQUAL => (),
-            RSyntaxKind::BACKSLASH => (),
-            RSyntaxKind::FUNCTION_KW => (),
-            RSyntaxKind::FOR_KW => (),
-            RSyntaxKind::IN_KW => (),
-            RSyntaxKind::WHILE_KW => (),
-            RSyntaxKind::REPEAT_KW => (),
-            RSyntaxKind::IF_KW => (),
-            RSyntaxKind::ELSE_KW => (),
-            RSyntaxKind::L_PAREN => (),
-            RSyntaxKind::R_PAREN => (),
-            RSyntaxKind::L_CURLY => (),
-            RSyntaxKind::R_CURLY => (),
+            RSyntaxKind::SEMICOLON
+            | RSyntaxKind::COMMA
+            | RSyntaxKind::PLUS
+            | RSyntaxKind::EQUAL
+            | RSyntaxKind::BACKSLASH
+            | RSyntaxKind::FUNCTION_KW
+            | RSyntaxKind::FOR_KW
+            | RSyntaxKind::IN_KW
+            | RSyntaxKind::WHILE_KW
+            | RSyntaxKind::REPEAT_KW
+            | RSyntaxKind::IF_KW
+            | RSyntaxKind::ELSE_KW
+            | RSyntaxKind::L_PAREN
+            | RSyntaxKind::R_PAREN
+            | RSyntaxKind::L_CURLY
+            | RSyntaxKind::R_CURLY => (),
 
             // Comments
             RSyntaxKind::COMMENT => self.handle_comment_enter(),
 
-            // Unreachable directly
-            RSyntaxKind::R_DOTS => unreachable!("{kind:?}"),
-            RSyntaxKind::R_ELSE_CLAUSE => unreachable!("{kind:?}"),
-            RSyntaxKind::R_HOLE_ARGUMENT => unreachable!("{kind:?}"),
-            RSyntaxKind::R_PARAMETER_LIST => unreachable!("{kind:?}"),
-            RSyntaxKind::R_ARGUMENT_LIST => unreachable!("{kind:?}"),
-            RSyntaxKind::R_EXPRESSION_LIST => unreachable!("{kind:?}"),
-            RSyntaxKind::EOF => unreachable!("{kind:?}"),
-            RSyntaxKind::UNICODE_BOM => unreachable!("{kind:?}"),
-            RSyntaxKind::L_BRACK => unreachable!("{kind:?}"),
-            RSyntaxKind::R_BRACK => unreachable!("{kind:?}"),
-            RSyntaxKind::DOTS => unreachable!("{kind:?}"),
-            RSyntaxKind::R_INTEGER_LITERAL => unreachable!("{kind:?}"),
-            RSyntaxKind::R_DOUBLE_LITERAL => unreachable!("{kind:?}"),
-            RSyntaxKind::R_COMPLEX_LITERAL => unreachable!("{kind:?}"),
-            RSyntaxKind::R_STRING_LITERAL => unreachable!("{kind:?}"),
-            RSyntaxKind::R_LOGICAL_LITERAL => unreachable!("{kind:?}"),
-            RSyntaxKind::R_NULL_LITERAL => unreachable!("{kind:?}"),
-            RSyntaxKind::NEWLINE => unreachable!("{kind:?}"),
-            RSyntaxKind::WHITESPACE => unreachable!("{kind:?}"),
-            RSyntaxKind::IDENT => unreachable!("{kind:?}"),
-            RSyntaxKind::R_BOGUS => unreachable!("{kind:?}"),
-            RSyntaxKind::R_BOGUS_VALUE => unreachable!("{kind:?}"),
-            RSyntaxKind::R_BOGUS_EXPRESSION => unreachable!("{kind:?}"),
-            RSyntaxKind::R_BOGUS_PARAMETER => unreachable!("{kind:?}"),
-            RSyntaxKind::R_BOGUS_ARGUMENT => unreachable!("{kind:?}"),
-            RSyntaxKind::TOMBSTONE => unreachable!("{kind:?}"),
-            RSyntaxKind::__LAST => unreachable!("{kind:?}"),
+            // Unreachable |=> unreachable!("{|=> unreachable!("{kind:?}"),
+            RSyntaxKind::R_DOTS
+            | RSyntaxKind::R_ELSE_CLAUSE
+            | RSyntaxKind::R_HOLE_ARGUMENT
+            | RSyntaxKind::R_PARAMETER_LIST
+            | RSyntaxKind::R_ARGUMENT_LIST
+            | RSyntaxKind::R_EXPRESSION_LIST
+            | RSyntaxKind::EOF
+            | RSyntaxKind::UNICODE_BOM
+            | RSyntaxKind::L_BRACK
+            | RSyntaxKind::R_BRACK
+            | RSyntaxKind::DOTS
+            | RSyntaxKind::R_INTEGER_LITERAL
+            | RSyntaxKind::R_DOUBLE_LITERAL
+            | RSyntaxKind::R_COMPLEX_LITERAL
+            | RSyntaxKind::R_STRING_LITERAL
+            | RSyntaxKind::R_LOGICAL_LITERAL
+            | RSyntaxKind::R_NULL_LITERAL
+            | RSyntaxKind::NEWLINE
+            | RSyntaxKind::WHITESPACE
+            | RSyntaxKind::IDENT
+            | RSyntaxKind::R_BOGUS
+            | RSyntaxKind::R_BOGUS_VALUE
+            | RSyntaxKind::R_BOGUS_EXPRESSION
+            | RSyntaxKind::R_BOGUS_PARAMETER
+            | RSyntaxKind::R_BOGUS_ARGUMENT
+            | RSyntaxKind::TOMBSTONE
+            | RSyntaxKind::__LAST => unreachable!("{kind:?}"),
         }
     }
 
     fn handle_leave(&mut self, node: tree_sitter::Node, kind: RSyntaxKind) {
         match kind {
             RSyntaxKind::R_ROOT => self.handle_root_leave(node),
-            RSyntaxKind::R_BINARY_EXPRESSION => self.handle_node_leave(),
-            RSyntaxKind::R_FUNCTION_DEFINITION => self.handle_node_leave(),
+
+            RSyntaxKind::R_BINARY_EXPRESSION
+            | RSyntaxKind::R_FUNCTION_DEFINITION
+            | RSyntaxKind::R_FOR_STATEMENT
+            | RSyntaxKind::R_WHILE_STATEMENT
+            | RSyntaxKind::R_REPEAT_STATEMENT
+            | RSyntaxKind::R_UNNAMED_ARGUMENT
+            | RSyntaxKind::R_PARENTHESIZED_EXPRESSION
+            | RSyntaxKind::R_CALL => self.handle_node_leave(),
             RSyntaxKind::R_PARAMETERS => self.handle_parameters_leave(),
             RSyntaxKind::R_DOTS_PARAMETER => self.handle_dots_parameter_leave(node),
             RSyntaxKind::R_IDENTIFIER_PARAMETER => self.handle_identifier_parameter_leave(node),
             RSyntaxKind::R_DEFAULT_PARAMETER => self.handle_default_parameter_leave(),
             RSyntaxKind::R_IF_STATEMENT => self.handle_if_statement_leave(),
-            RSyntaxKind::R_FOR_STATEMENT => self.handle_node_leave(),
-            RSyntaxKind::R_WHILE_STATEMENT => self.handle_node_leave(),
-            RSyntaxKind::R_REPEAT_STATEMENT => self.handle_node_leave(),
-            RSyntaxKind::R_CALL => self.handle_node_leave(),
             RSyntaxKind::R_CALL_ARGUMENTS => self.handle_call_arguments_leave(),
             RSyntaxKind::R_NAMED_ARGUMENT => self.handle_named_argument_leave(),
-            RSyntaxKind::R_UNNAMED_ARGUMENT => self.handle_node_leave(),
             RSyntaxKind::R_DOTS_ARGUMENT => self.handle_dots_argument_leave(),
             RSyntaxKind::R_BRACED_EXPRESSIONS => self.handle_braced_expressions_leave(),
-            RSyntaxKind::R_PARENTHESIZED_EXPRESSION => self.handle_node_leave(),
-            RSyntaxKind::R_INTEGER_VALUE => self.handle_integer_value_leave(node),
+
+            // Literals
             RSyntaxKind::R_DOUBLE_VALUE => {
                 self.handle_value_leave(node, RSyntaxKind::R_DOUBLE_LITERAL)
             }
-            RSyntaxKind::R_COMPLEX_VALUE => self.handle_complex_value_leave(node),
-            RSyntaxKind::R_STRING_VALUE => self.handle_string_value_leave(node),
             RSyntaxKind::R_LOGICAL_VALUE => {
                 self.handle_value_leave(node, RSyntaxKind::R_LOGICAL_LITERAL)
             }
             RSyntaxKind::R_NULL_VALUE => self.handle_value_leave(node, RSyntaxKind::R_NULL_LITERAL),
             RSyntaxKind::R_IDENTIFIER => self.handle_value_leave(node, RSyntaxKind::IDENT),
+            RSyntaxKind::R_INTEGER_VALUE => self.handle_integer_value_leave(node),
+            RSyntaxKind::R_COMPLEX_VALUE => self.handle_complex_value_leave(node),
+            RSyntaxKind::R_STRING_VALUE => self.handle_string_value_leave(node),
 
             // Tokens
-            RSyntaxKind::SEMICOLON => self.handle_token(node, kind),
-            RSyntaxKind::COMMA => self.handle_token(node, kind),
-            RSyntaxKind::PLUS => self.handle_token(node, kind),
-            RSyntaxKind::EQUAL => self.handle_token(node, kind),
-            RSyntaxKind::BACKSLASH => self.handle_token(node, kind),
-            RSyntaxKind::FUNCTION_KW => self.handle_token(node, kind),
-            RSyntaxKind::FOR_KW => self.handle_token(node, kind),
-            RSyntaxKind::IN_KW => self.handle_token(node, kind),
-            RSyntaxKind::WHILE_KW => self.handle_token(node, kind),
-            RSyntaxKind::REPEAT_KW => self.handle_token(node, kind),
-            RSyntaxKind::IF_KW => self.handle_token(node, kind),
-            RSyntaxKind::ELSE_KW => self.handle_token(node, kind),
-            RSyntaxKind::L_PAREN => self.handle_token(node, kind),
-            RSyntaxKind::R_PAREN => self.handle_token(node, kind),
-            RSyntaxKind::L_CURLY => self.handle_token(node, kind),
-            RSyntaxKind::R_CURLY => self.handle_token(node, kind),
+            RSyntaxKind::SEMICOLON
+            | RSyntaxKind::COMMA
+            | RSyntaxKind::PLUS
+            | RSyntaxKind::EQUAL
+            | RSyntaxKind::BACKSLASH
+            | RSyntaxKind::FUNCTION_KW
+            | RSyntaxKind::FOR_KW
+            | RSyntaxKind::IN_KW
+            | RSyntaxKind::WHILE_KW
+            | RSyntaxKind::REPEAT_KW
+            | RSyntaxKind::IF_KW
+            | RSyntaxKind::ELSE_KW
+            | RSyntaxKind::L_PAREN
+            | RSyntaxKind::R_PAREN
+            | RSyntaxKind::L_CURLY
+            | RSyntaxKind::R_CURLY => self.handle_token(node, kind),
 
             // Comments
             RSyntaxKind::COMMENT => self.handle_comment_leave(node),
 
             // Unreachable directly
-            RSyntaxKind::R_DOTS => unreachable!("{kind:?}"),
-            RSyntaxKind::R_ELSE_CLAUSE => unreachable!("{kind:?}"),
-            RSyntaxKind::R_HOLE_ARGUMENT => unreachable!("{kind:?}"),
-            RSyntaxKind::R_PARAMETER_LIST => unreachable!("{kind:?}"),
-            RSyntaxKind::R_ARGUMENT_LIST => unreachable!("{kind:?}"),
-            RSyntaxKind::R_EXPRESSION_LIST => unreachable!("{kind:?}"),
-            RSyntaxKind::EOF => unreachable!("{kind:?}"),
-            RSyntaxKind::UNICODE_BOM => unreachable!("{kind:?}"),
-            RSyntaxKind::L_BRACK => unreachable!("{kind:?}"),
-            RSyntaxKind::R_BRACK => unreachable!("{kind:?}"),
-            RSyntaxKind::DOTS => unreachable!("{kind:?}"),
-            RSyntaxKind::R_INTEGER_LITERAL => unreachable!("{kind:?}"),
-            RSyntaxKind::R_DOUBLE_LITERAL => unreachable!("{kind:?}"),
-            RSyntaxKind::R_COMPLEX_LITERAL => unreachable!("{kind:?}"),
-            RSyntaxKind::R_STRING_LITERAL => unreachable!("{kind:?}"),
-            RSyntaxKind::R_LOGICAL_LITERAL => unreachable!("{kind:?}"),
-            RSyntaxKind::R_NULL_LITERAL => unreachable!("{kind:?}"),
-            RSyntaxKind::NEWLINE => unreachable!("{kind:?}"),
-            RSyntaxKind::WHITESPACE => unreachable!("{kind:?}"),
-            RSyntaxKind::IDENT => unreachable!("{kind:?}"),
-            RSyntaxKind::R_BOGUS => unreachable!("{kind:?}"),
-            RSyntaxKind::R_BOGUS_VALUE => unreachable!("{kind:?}"),
-            RSyntaxKind::R_BOGUS_EXPRESSION => unreachable!("{kind:?}"),
-            RSyntaxKind::R_BOGUS_PARAMETER => unreachable!("{kind:?}"),
-            RSyntaxKind::R_BOGUS_ARGUMENT => unreachable!("{kind:?}"),
-            RSyntaxKind::TOMBSTONE => unreachable!("{kind:?}"),
-            RSyntaxKind::__LAST => unreachable!("{kind:?}"),
+            RSyntaxKind::R_DOTS
+            | RSyntaxKind::R_ELSE_CLAUSE
+            | RSyntaxKind::R_HOLE_ARGUMENT
+            | RSyntaxKind::R_PARAMETER_LIST
+            | RSyntaxKind::R_ARGUMENT_LIST
+            | RSyntaxKind::R_EXPRESSION_LIST
+            | RSyntaxKind::EOF
+            | RSyntaxKind::UNICODE_BOM
+            | RSyntaxKind::L_BRACK
+            | RSyntaxKind::R_BRACK
+            | RSyntaxKind::DOTS
+            | RSyntaxKind::R_INTEGER_LITERAL
+            | RSyntaxKind::R_DOUBLE_LITERAL
+            | RSyntaxKind::R_COMPLEX_LITERAL
+            | RSyntaxKind::R_STRING_LITERAL
+            | RSyntaxKind::R_LOGICAL_LITERAL
+            | RSyntaxKind::R_NULL_LITERAL
+            | RSyntaxKind::NEWLINE
+            | RSyntaxKind::WHITESPACE
+            | RSyntaxKind::IDENT
+            | RSyntaxKind::R_BOGUS
+            | RSyntaxKind::R_BOGUS_VALUE
+            | RSyntaxKind::R_BOGUS_EXPRESSION
+            | RSyntaxKind::R_BOGUS_PARAMETER
+            | RSyntaxKind::R_BOGUS_ARGUMENT
+            | RSyntaxKind::TOMBSTONE
+            | RSyntaxKind::__LAST => unreachable!("{kind:?}"),
         }
     }
 
