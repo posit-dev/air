@@ -13,27 +13,6 @@ fn(...)
 fn(..., a = 1)
 fn(a = 1, another_really_really_long_argument_to_test_this_feature, a_really_long_argument_here, ...)
 
-# Trailing braced expression
-test_that("description", {
-	1 + 1
-})
-
-test_that("description that is super long and actually exceeds the line limit but we arent going to break!", {
-	1 + 1
-})
-
-# Opening brace it moved back onto first line because this is `test_that`
-test_that("description that is super long and actually exceeds the line limit but we arent going to break!",
-{
-	1 + 1
-})
-
-# Both arguments are reflowed because this is `test_that`
-test_that(
-  "description that is super long and actually exceeds the line limit but we arent going to break!", {
-	1 + 1
-})
-
 # TODO: Since this fits, should it prefer putting `with(data, {` on 1 line?
 with(
   data,
@@ -63,3 +42,26 @@ lapply(my_long_list_my_long_list_my_long_list_my_long_list, function(my_long_arg
 fn(
   # dangling special case
 )
+
+# Test calls
+
+# Trailing braced expression
+test_that("description", {
+	1 + 1
+})
+
+test_that("description that is super long and actually exceeds the line limit but we arent going to break!", {
+	1 + 1
+})
+
+# Opening brace it moved back onto first line because this is `test_that`
+test_that("description that is super long and actually exceeds the line limit but we arent going to break!",
+{
+	1 + 1
+})
+
+# Both arguments are reflowed because this is `test_that`
+test_that(
+  "description that is super long and actually exceeds the line limit but we arent going to break!", {
+	1 + 1
+})
