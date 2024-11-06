@@ -43,6 +43,14 @@ impl RBracedExpressions {
         )
     }
 }
+impl RBreakExpression {
+    pub fn with_break_token(self, element: SyntaxToken) -> Self {
+        Self::unwrap_cast(
+            self.syntax
+                .splice_slots(0usize..=0usize, once(Some(element.into()))),
+        )
+    }
+}
 impl RCall {
     pub fn with_function(self, element: AnyRExpression) -> Self {
         Self::unwrap_cast(
@@ -148,6 +156,14 @@ impl RElseClause {
         Self::unwrap_cast(
             self.syntax
                 .splice_slots(1usize..=1usize, once(Some(element.into_syntax().into()))),
+        )
+    }
+}
+impl RFalseExpression {
+    pub fn with_false_token(self, element: SyntaxToken) -> Self {
+        Self::unwrap_cast(
+            self.syntax
+                .splice_slots(0usize..=0usize, once(Some(element.into()))),
         )
     }
 }
@@ -270,6 +286,14 @@ impl RIfStatement {
         ))
     }
 }
+impl RInfExpression {
+    pub fn with_inf_token(self, element: SyntaxToken) -> Self {
+        Self::unwrap_cast(
+            self.syntax
+                .splice_slots(0usize..=0usize, once(Some(element.into()))),
+        )
+    }
+}
 impl RIntegerValue {
     pub fn with_value_token(self, element: SyntaxToken) -> Self {
         Self::unwrap_cast(
@@ -278,7 +302,7 @@ impl RIntegerValue {
         )
     }
 }
-impl RLogicalValue {
+impl RNaExpression {
     pub fn with_value_token(self, element: SyntaxToken) -> Self {
         Self::unwrap_cast(
             self.syntax
@@ -306,8 +330,24 @@ impl RNamedArgument {
         ))
     }
 }
-impl RNullValue {
-    pub fn with_value_token(self, element: SyntaxToken) -> Self {
+impl RNanExpression {
+    pub fn with_nan_token(self, element: SyntaxToken) -> Self {
+        Self::unwrap_cast(
+            self.syntax
+                .splice_slots(0usize..=0usize, once(Some(element.into()))),
+        )
+    }
+}
+impl RNextExpression {
+    pub fn with_next_token(self, element: SyntaxToken) -> Self {
+        Self::unwrap_cast(
+            self.syntax
+                .splice_slots(0usize..=0usize, once(Some(element.into()))),
+        )
+    }
+}
+impl RNullExpression {
+    pub fn with_null_token(self, element: SyntaxToken) -> Self {
         Self::unwrap_cast(
             self.syntax
                 .splice_slots(0usize..=0usize, once(Some(element.into()))),
@@ -368,6 +408,14 @@ impl RRepeatStatement {
         )
     }
 }
+impl RReturnExpression {
+    pub fn with_return_token(self, element: SyntaxToken) -> Self {
+        Self::unwrap_cast(
+            self.syntax
+                .splice_slots(0usize..=0usize, once(Some(element.into()))),
+        )
+    }
+}
 impl RRoot {
     pub fn with_bom_token(self, element: Option<SyntaxToken>) -> Self {
         Self::unwrap_cast(
@@ -390,6 +438,14 @@ impl RRoot {
 }
 impl RStringValue {
     pub fn with_value_token(self, element: SyntaxToken) -> Self {
+        Self::unwrap_cast(
+            self.syntax
+                .splice_slots(0usize..=0usize, once(Some(element.into()))),
+        )
+    }
+}
+impl RTrueExpression {
+    pub fn with_true_token(self, element: SyntaxToken) -> Self {
         Self::unwrap_cast(
             self.syntax
                 .splice_slots(0usize..=0usize, once(Some(element.into()))),
