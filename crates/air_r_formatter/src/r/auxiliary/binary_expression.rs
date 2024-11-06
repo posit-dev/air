@@ -33,18 +33,3 @@ impl FormatNodeRule<RBinaryExpression> for FormatRBinaryExpression {
         )
     }
 }
-
-//     group(&format_args![
-//     left.format(),
-//     indent(&format_once(|f| {
-//         write!(
-//             f,
-//             [
-//                 space(),
-//                 operator_token.format(),
-//                 soft_line_break_or_space(),
-//                 right.format()
-//             ]
-//         )
-//     }))
-// ])]
