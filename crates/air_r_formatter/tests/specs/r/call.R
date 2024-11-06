@@ -54,6 +54,10 @@ test_that("description that is super long and actually exceeds the line limit bu
 	1 + 1
 })
 
+test_that(desc = "description that is super long and actually exceeds the line limit but we arent going to break!", code = {
+	1 + 1
+})
+
 # Opening brace it moved back onto first line because this is `test_that`
 test_that("description that is super long and actually exceeds the line limit but we arent going to break!",
 {
