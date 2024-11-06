@@ -57,12 +57,23 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::REPEAT_KW
             | RSyntaxKind::IF_KW
             | RSyntaxKind::ELSE_KW
+            | RSyntaxKind::RETURN_KW
+            | RSyntaxKind::NEXT_KW
+            | RSyntaxKind::BREAK_KW
+            | RSyntaxKind::TRUE_KW
+            | RSyntaxKind::FALSE_KW
+            | RSyntaxKind::NULL_KW
+            | RSyntaxKind::INF_KW
+            | RSyntaxKind::NAN_KW
+            | RSyntaxKind::NA_LOGICAL_KW
+            | RSyntaxKind::NA_INTEGER_KW
+            | RSyntaxKind::NA_DOUBLE_KW
+            | RSyntaxKind::NA_COMPLEX_KW
+            | RSyntaxKind::NA_CHARACTER_KW
             | RSyntaxKind::R_INTEGER_LITERAL
             | RSyntaxKind::R_DOUBLE_LITERAL
             | RSyntaxKind::R_COMPLEX_LITERAL
             | RSyntaxKind::R_STRING_LITERAL
-            | RSyntaxKind::R_LOGICAL_LITERAL
-            | RSyntaxKind::R_NULL_LITERAL
             | RSyntaxKind::NEWLINE
             | RSyntaxKind::WHITESPACE
             | RSyntaxKind::IDENT
@@ -98,8 +109,15 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_DOUBLE_VALUE
             | RSyntaxKind::R_COMPLEX_VALUE
             | RSyntaxKind::R_STRING_VALUE
-            | RSyntaxKind::R_LOGICAL_VALUE
-            | RSyntaxKind::R_NULL_VALUE
+            | RSyntaxKind::R_RETURN_EXPRESSION
+            | RSyntaxKind::R_NEXT_EXPRESSION
+            | RSyntaxKind::R_BREAK_EXPRESSION
+            | RSyntaxKind::R_TRUE_EXPRESSION
+            | RSyntaxKind::R_FALSE_EXPRESSION
+            | RSyntaxKind::R_NULL_EXPRESSION
+            | RSyntaxKind::R_INF_EXPRESSION
+            | RSyntaxKind::R_NAN_EXPRESSION
+            | RSyntaxKind::R_NA_EXPRESSION
             | RSyntaxKind::MINUS
             | RSyntaxKind::TILDE
             | RSyntaxKind::BANG
@@ -115,8 +133,6 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_DOUBLE_VALUE
             | RSyntaxKind::R_COMPLEX_VALUE
             | RSyntaxKind::R_STRING_VALUE
-            | RSyntaxKind::R_LOGICAL_VALUE
-            | RSyntaxKind::R_NULL_VALUE
             | RSyntaxKind::R_BOGUS_VALUE => RSyntaxKind::R_BOGUS_VALUE,
 
             // Bogus expression
@@ -159,12 +175,32 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::REPEAT_KW
             | RSyntaxKind::IF_KW
             | RSyntaxKind::ELSE_KW
+            | RSyntaxKind::RETURN_KW
+            | RSyntaxKind::NEXT_KW
+            | RSyntaxKind::BREAK_KW
+            | RSyntaxKind::TRUE_KW
+            | RSyntaxKind::FALSE_KW
+            | RSyntaxKind::NULL_KW
+            | RSyntaxKind::INF_KW
+            | RSyntaxKind::NAN_KW
+            | RSyntaxKind::NA_LOGICAL_KW
+            | RSyntaxKind::NA_INTEGER_KW
+            | RSyntaxKind::NA_DOUBLE_KW
+            | RSyntaxKind::NA_COMPLEX_KW
+            | RSyntaxKind::NA_CHARACTER_KW
             | RSyntaxKind::R_INTEGER_LITERAL
             | RSyntaxKind::R_DOUBLE_LITERAL
             | RSyntaxKind::R_COMPLEX_LITERAL
             | RSyntaxKind::R_STRING_LITERAL
-            | RSyntaxKind::R_LOGICAL_LITERAL
-            | RSyntaxKind::R_NULL_LITERAL
+            | RSyntaxKind::R_RETURN_EXPRESSION
+            | RSyntaxKind::R_NEXT_EXPRESSION
+            | RSyntaxKind::R_BREAK_EXPRESSION
+            | RSyntaxKind::R_TRUE_EXPRESSION
+            | RSyntaxKind::R_FALSE_EXPRESSION
+            | RSyntaxKind::R_NULL_EXPRESSION
+            | RSyntaxKind::R_INF_EXPRESSION
+            | RSyntaxKind::R_NAN_EXPRESSION
+            | RSyntaxKind::R_NA_EXPRESSION
             | RSyntaxKind::NEWLINE
             | RSyntaxKind::WHITESPACE
             | RSyntaxKind::IDENT

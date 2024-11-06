@@ -130,6 +130,7 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_CALL
             | RSyntaxKind::R_UNNAMED_ARGUMENT
             | RSyntaxKind::R_PARENTHESIZED_EXPRESSION => self.handle_node_enter(kind),
+
             RSyntaxKind::R_PARAMETERS => self.handle_parameters_enter(node, iter),
             RSyntaxKind::R_DOTS_PARAMETER => self.handle_dots_parameter_enter(iter),
             RSyntaxKind::R_IDENTIFIER_PARAMETER => self.handle_identifier_parameter_enter(iter),
@@ -140,11 +141,19 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_DOTS_ARGUMENT => self.handle_dots_argument_enter(node, iter),
             RSyntaxKind::R_BRACED_EXPRESSIONS => self.handle_braced_expressions_enter(node, iter),
 
-            // Literals
+            // Literals / wrapped keywords
             RSyntaxKind::R_DOUBLE_VALUE
-            | RSyntaxKind::R_LOGICAL_VALUE
-            | RSyntaxKind::R_NULL_VALUE
-            | RSyntaxKind::R_IDENTIFIER => self.handle_value_enter(kind),
+            | RSyntaxKind::R_IDENTIFIER
+            | RSyntaxKind::R_RETURN_EXPRESSION
+            | RSyntaxKind::R_NEXT_EXPRESSION
+            | RSyntaxKind::R_BREAK_EXPRESSION
+            | RSyntaxKind::R_TRUE_EXPRESSION
+            | RSyntaxKind::R_FALSE_EXPRESSION
+            | RSyntaxKind::R_NULL_EXPRESSION
+            | RSyntaxKind::R_INF_EXPRESSION
+            | RSyntaxKind::R_NAN_EXPRESSION => self.handle_value_enter(kind),
+
+            RSyntaxKind::R_NA_EXPRESSION => self.handle_na_value_enter(iter),
             RSyntaxKind::R_INTEGER_VALUE => self.handle_integer_value_enter(iter),
             RSyntaxKind::R_COMPLEX_VALUE => self.handle_complex_value_enter(iter),
             RSyntaxKind::R_STRING_VALUE => self.handle_string_value_enter(iter),
@@ -174,7 +183,7 @@ impl<'src> RWalk<'src> {
             // Comments
             RSyntaxKind::COMMENT => self.handle_comment_enter(),
 
-            // Unreachable |=> unreachable!("{|=> unreachable!("{kind:?}"),
+            // Unreachable
             RSyntaxKind::R_DOTS
             | RSyntaxKind::R_ELSE_CLAUSE
             | RSyntaxKind::R_HOLE_ARGUMENT
@@ -190,11 +199,22 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_DOUBLE_LITERAL
             | RSyntaxKind::R_COMPLEX_LITERAL
             | RSyntaxKind::R_STRING_LITERAL
-            | RSyntaxKind::R_LOGICAL_LITERAL
-            | RSyntaxKind::R_NULL_LITERAL
             | RSyntaxKind::NEWLINE
             | RSyntaxKind::WHITESPACE
             | RSyntaxKind::IDENT
+            | RSyntaxKind::RETURN_KW
+            | RSyntaxKind::NEXT_KW
+            | RSyntaxKind::BREAK_KW
+            | RSyntaxKind::TRUE_KW
+            | RSyntaxKind::FALSE_KW
+            | RSyntaxKind::NULL_KW
+            | RSyntaxKind::INF_KW
+            | RSyntaxKind::NAN_KW
+            | RSyntaxKind::NA_LOGICAL_KW
+            | RSyntaxKind::NA_INTEGER_KW
+            | RSyntaxKind::NA_DOUBLE_KW
+            | RSyntaxKind::NA_COMPLEX_KW
+            | RSyntaxKind::NA_CHARACTER_KW
             | RSyntaxKind::R_BOGUS
             | RSyntaxKind::R_BOGUS_VALUE
             | RSyntaxKind::R_BOGUS_EXPRESSION
@@ -218,6 +238,7 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_UNNAMED_ARGUMENT
             | RSyntaxKind::R_PARENTHESIZED_EXPRESSION
             | RSyntaxKind::R_CALL => self.handle_node_leave(),
+
             RSyntaxKind::R_PARAMETERS => self.handle_parameters_leave(),
             RSyntaxKind::R_DOTS_PARAMETER => self.handle_dots_parameter_leave(node),
             RSyntaxKind::R_IDENTIFIER_PARAMETER => self.handle_identifier_parameter_leave(node),
@@ -228,15 +249,22 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_DOTS_ARGUMENT => self.handle_dots_argument_leave(),
             RSyntaxKind::R_BRACED_EXPRESSIONS => self.handle_braced_expressions_leave(),
 
-            // Literals
+            // Literals / wrapped keywords
             RSyntaxKind::R_DOUBLE_VALUE => {
                 self.handle_value_leave(node, RSyntaxKind::R_DOUBLE_LITERAL)
             }
-            RSyntaxKind::R_LOGICAL_VALUE => {
-                self.handle_value_leave(node, RSyntaxKind::R_LOGICAL_LITERAL)
-            }
-            RSyntaxKind::R_NULL_VALUE => self.handle_value_leave(node, RSyntaxKind::R_NULL_LITERAL),
             RSyntaxKind::R_IDENTIFIER => self.handle_value_leave(node, RSyntaxKind::IDENT),
+            RSyntaxKind::R_RETURN_EXPRESSION => {
+                self.handle_value_leave(node, RSyntaxKind::RETURN_KW)
+            }
+            RSyntaxKind::R_NEXT_EXPRESSION => self.handle_value_leave(node, RSyntaxKind::NEXT_KW),
+            RSyntaxKind::R_BREAK_EXPRESSION => self.handle_value_leave(node, RSyntaxKind::BREAK_KW),
+            RSyntaxKind::R_TRUE_EXPRESSION => self.handle_value_leave(node, RSyntaxKind::TRUE_KW),
+            RSyntaxKind::R_FALSE_EXPRESSION => self.handle_value_leave(node, RSyntaxKind::FALSE_KW),
+            RSyntaxKind::R_NULL_EXPRESSION => self.handle_value_leave(node, RSyntaxKind::NULL_KW),
+            RSyntaxKind::R_INF_EXPRESSION => self.handle_value_leave(node, RSyntaxKind::INF_KW),
+            RSyntaxKind::R_NAN_EXPRESSION => self.handle_value_leave(node, RSyntaxKind::NAN_KW),
+            RSyntaxKind::R_NA_EXPRESSION => self.handle_na_value_leave(node),
             RSyntaxKind::R_INTEGER_VALUE => self.handle_integer_value_leave(node),
             RSyntaxKind::R_COMPLEX_VALUE => self.handle_complex_value_leave(node),
             RSyntaxKind::R_STRING_VALUE => self.handle_string_value_leave(node),
@@ -282,11 +310,22 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_DOUBLE_LITERAL
             | RSyntaxKind::R_COMPLEX_LITERAL
             | RSyntaxKind::R_STRING_LITERAL
-            | RSyntaxKind::R_LOGICAL_LITERAL
-            | RSyntaxKind::R_NULL_LITERAL
             | RSyntaxKind::NEWLINE
             | RSyntaxKind::WHITESPACE
             | RSyntaxKind::IDENT
+            | RSyntaxKind::RETURN_KW
+            | RSyntaxKind::NEXT_KW
+            | RSyntaxKind::BREAK_KW
+            | RSyntaxKind::TRUE_KW
+            | RSyntaxKind::FALSE_KW
+            | RSyntaxKind::NULL_KW
+            | RSyntaxKind::INF_KW
+            | RSyntaxKind::NAN_KW
+            | RSyntaxKind::NA_LOGICAL_KW
+            | RSyntaxKind::NA_INTEGER_KW
+            | RSyntaxKind::NA_DOUBLE_KW
+            | RSyntaxKind::NA_COMPLEX_KW
+            | RSyntaxKind::NA_CHARACTER_KW
             | RSyntaxKind::R_BOGUS
             | RSyntaxKind::R_BOGUS_VALUE
             | RSyntaxKind::R_BOGUS_EXPRESSION
@@ -493,6 +532,33 @@ impl<'src> RWalk<'src> {
 
     fn handle_default_parameter_leave(&mut self) {
         self.handle_node_leave();
+    }
+
+    fn handle_na_value_enter(&mut self, iter: &mut Preorder) {
+        // Skip subtree, we don't want to enter the 1 required child that
+        // contains the anonymous token for the na variant. It's handled on
+        // the way out.
+        iter.skip_subtree();
+
+        self.handle_value_enter(RSyntaxKind::R_NA_EXPRESSION);
+    }
+
+    fn handle_na_value_leave(&mut self, node: tree_sitter::Node) {
+        // Safety: `na` nodes have exactly 1 required child, and the `kind`
+        // tells you what variant of missing it is. Can't have comments inside
+        // here.
+        let node = node.child(0).unwrap();
+
+        let kind = match node.kind() {
+            "NA" => RSyntaxKind::NA_LOGICAL_KW,
+            "NA_integer_" => RSyntaxKind::NA_INTEGER_KW,
+            "NA_real_" => RSyntaxKind::NA_DOUBLE_KW,
+            "NA_complex_" => RSyntaxKind::NA_COMPLEX_KW,
+            "NA_character_" => RSyntaxKind::NA_CHARACTER_KW,
+            kind => unreachable!("Unexpected kind '{kind}'"),
+        };
+
+        self.handle_value_leave(node, kind);
     }
 
     fn handle_integer_value_enter(&mut self, iter: &mut Preorder) {
