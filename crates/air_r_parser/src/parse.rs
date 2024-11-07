@@ -143,8 +143,6 @@ impl<'src> RWalk<'src> {
 
             // Literals / wrapped keywords
             RSyntaxKind::R_DOUBLE_VALUE
-            | RSyntaxKind::R_LOGICAL_VALUE
-            | RSyntaxKind::R_NULL_VALUE
             | RSyntaxKind::R_IDENTIFIER
             | RSyntaxKind::R_DOT_DOT_I
             | RSyntaxKind::R_RETURN_EXPRESSION

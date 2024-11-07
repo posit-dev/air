@@ -49,7 +49,7 @@ RRoot {
                         left: RDotDotI {
                             value_token: DOTDOTI@29..35 "..1" [Newline("\n"), Whitespace("  ")] [],
                         },
-                        operator_token: PLUS@35..37 "+" [Whitespace(" ")] [],
+                        operator: PLUS@35..37 "+" [Whitespace(" ")] [],
                         right: RDotDotI {
                             value_token: DOTDOTI@37..41 "..2" [Whitespace(" ")] [],
                         },

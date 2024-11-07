@@ -118,8 +118,6 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_INF_EXPRESSION
             | RSyntaxKind::R_NAN_EXPRESSION
             | RSyntaxKind::R_NA_EXPRESSION
-            | RSyntaxKind::R_LOGICAL_VALUE
-            | RSyntaxKind::R_NULL_VALUE
             | RSyntaxKind::TILDE
             | RSyntaxKind::ASSIGN
             | RSyntaxKind::SUPER_ASSIGN
