@@ -84,6 +84,8 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_IDENTIFIER
             | RSyntaxKind::R_UNARY_EXPRESSION
             | RSyntaxKind::R_BINARY_EXPRESSION
+            | RSyntaxKind::R_EXTRACT_EXPRESSION
+            | RSyntaxKind::R_NAMESPACE_EXPRESSION
             | RSyntaxKind::R_FUNCTION_DEFINITION
             | RSyntaxKind::R_PARAMETERS
             | RSyntaxKind::R_PARAMETER_LIST
@@ -165,6 +167,8 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             // Bogus expression
             RSyntaxKind::R_UNARY_EXPRESSION
             | RSyntaxKind::R_BINARY_EXPRESSION
+            | RSyntaxKind::R_EXTRACT_EXPRESSION
+            | RSyntaxKind::R_NAMESPACE_EXPRESSION
             | RSyntaxKind::R_BOGUS_EXPRESSION => RSyntaxKind::R_BOGUS_EXPRESSION,
 
             // Bogus parameter

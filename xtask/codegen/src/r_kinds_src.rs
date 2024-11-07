@@ -86,6 +86,8 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
         "R_DOT_DOT_I",
         "R_UNARY_EXPRESSION",
         "R_BINARY_EXPRESSION",
+        "R_EXTRACT_EXPRESSION",
+        "R_NAMESPACE_EXPRESSION",
         "R_FUNCTION_DEFINITION",
         "R_PARAMETERS",
         "R_PARAMETER_LIST",

@@ -68,6 +68,10 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RElseClause::new_unchecked(node) };
                     $body
                 }
+                $crate::RSyntaxKind::R_EXTRACT_EXPRESSION => {
+                    let $pattern = unsafe { $crate::RExtractExpression::new_unchecked(node) };
+                    $body
+                }
                 $crate::RSyntaxKind::R_FALSE_EXPRESSION => {
                     let $pattern = unsafe { $crate::RFalseExpression::new_unchecked(node) };
                     $body
@@ -110,6 +114,10 @@ macro_rules! map_syntax_node {
                 }
                 $crate::RSyntaxKind::R_NAMED_ARGUMENT => {
                     let $pattern = unsafe { $crate::RNamedArgument::new_unchecked(node) };
+                    $body
+                }
+                $crate::RSyntaxKind::R_NAMESPACE_EXPRESSION => {
+                    let $pattern = unsafe { $crate::RNamespaceExpression::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_NAN_EXPRESSION => {

@@ -140,6 +140,20 @@ pub fn r_else_clause(else_token: SyntaxToken, alternative: AnyRExpression) -> RE
         ],
     ))
 }
+pub fn r_extract_expression(
+    left: AnyRExpression,
+    operator_token: SyntaxToken,
+    right: RSymbolOrString,
+) -> RExtractExpression {
+    RExtractExpression::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_EXTRACT_EXPRESSION,
+        [
+            Some(SyntaxElement::Node(left.into_syntax())),
+            Some(SyntaxElement::Token(operator_token)),
+            Some(SyntaxElement::Node(right.into_syntax())),
+        ],
+    ))
+}
 pub fn r_false_expression(false_token: SyntaxToken) -> RFalseExpression {
     RFalseExpression::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_FALSE_EXPRESSION,
@@ -287,6 +301,20 @@ impl RNamedArgumentBuilder {
             ],
         ))
     }
+}
+pub fn r_namespace_expression(
+    left: RSymbolOrString,
+    operator_token: SyntaxToken,
+    right: RSymbolOrString,
+) -> RNamespaceExpression {
+    RNamespaceExpression::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_NAMESPACE_EXPRESSION,
+        [
+            Some(SyntaxElement::Node(left.into_syntax())),
+            Some(SyntaxElement::Token(operator_token)),
+            Some(SyntaxElement::Node(right.into_syntax())),
+        ],
+    ))
 }
 pub fn r_nan_expression(nan_token: SyntaxToken) -> RNanExpression {
     RNanExpression::unwrap_cast(SyntaxNode::new_detached(

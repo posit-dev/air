@@ -56,12 +56,8 @@ impl SyntaxFactory for RSyntaxFactory {
                             | T ! [/]
                             | T ! [^]
                             | T ! [**]
-                            | T ! [|>]
                             | T ! [:]
-                            | T ! [::]
-                            | T ! [:::]
-                            | T ! [$]
-                            | T ! [@]
+                            | T ! [|>]
                     ) {
                         slots.mark_present();
                         current_element = elements.next();
@@ -360,6 +356,39 @@ impl SyntaxFactory for RSyntaxFactory {
                     );
                 }
                 slots.into_node(R_ELSE_CLAUSE, children)
+            }
+            R_EXTRACT_EXPRESSION => {
+                let mut elements = (&children).into_iter();
+                let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
+                let mut current_element = elements.next();
+                if let Some(element) = &current_element {
+                    if AnyRExpression::can_cast(element.kind()) {
+                        slots.mark_present();
+                        current_element = elements.next();
+                    }
+                }
+                slots.next_slot();
+                if let Some(element) = &current_element {
+                    if matches!(element.kind(), T ! [$] | T ! [@]) {
+                        slots.mark_present();
+                        current_element = elements.next();
+                    }
+                }
+                slots.next_slot();
+                if let Some(element) = &current_element {
+                    if RSymbolOrString::can_cast(element.kind()) {
+                        slots.mark_present();
+                        current_element = elements.next();
+                    }
+                }
+                slots.next_slot();
+                if current_element.is_some() {
+                    return RawSyntaxNode::new(
+                        R_EXTRACT_EXPRESSION.to_bogus(),
+                        children.into_iter().map(Some),
+                    );
+                }
+                slots.into_node(R_EXTRACT_EXPRESSION, children)
             }
             R_FALSE_EXPRESSION => {
                 let mut elements = (&children).into_iter();
@@ -674,6 +703,39 @@ impl SyntaxFactory for RSyntaxFactory {
                     );
                 }
                 slots.into_node(R_NAMED_ARGUMENT, children)
+            }
+            R_NAMESPACE_EXPRESSION => {
+                let mut elements = (&children).into_iter();
+                let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
+                let mut current_element = elements.next();
+                if let Some(element) = &current_element {
+                    if RSymbolOrString::can_cast(element.kind()) {
+                        slots.mark_present();
+                        current_element = elements.next();
+                    }
+                }
+                slots.next_slot();
+                if let Some(element) = &current_element {
+                    if matches!(element.kind(), T ! [::] | T ! [:::]) {
+                        slots.mark_present();
+                        current_element = elements.next();
+                    }
+                }
+                slots.next_slot();
+                if let Some(element) = &current_element {
+                    if RSymbolOrString::can_cast(element.kind()) {
+                        slots.mark_present();
+                        current_element = elements.next();
+                    }
+                }
+                slots.next_slot();
+                if current_element.is_some() {
+                    return RawSyntaxNode::new(
+                        R_NAMESPACE_EXPRESSION.to_bogus(),
+                        children.into_iter().map(Some),
+                    );
+                }
+                slots.into_node(R_NAMESPACE_EXPRESSION, children)
             }
             R_NAN_EXPRESSION => {
                 let mut elements = (&children).into_iter();
