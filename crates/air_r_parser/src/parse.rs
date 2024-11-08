@@ -188,6 +188,7 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::EXPONENTIATE
             | RSyntaxKind::EXPONENTIATE2
             | RSyntaxKind::PIPE
+            | RSyntaxKind::SPECIAL
             | RSyntaxKind::COLON
             | RSyntaxKind::COLON2
             | RSyntaxKind::COLON3
@@ -328,6 +329,7 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::EXPONENTIATE
             | RSyntaxKind::EXPONENTIATE2
             | RSyntaxKind::PIPE
+            | RSyntaxKind::SPECIAL
             | RSyntaxKind::COLON
             | RSyntaxKind::COLON2
             | RSyntaxKind::COLON3

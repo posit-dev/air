@@ -86,7 +86,8 @@ RBinaryExpression =
 		'^' |
 		'**' |
 		':' |
-		'|>'
+		'|>' |
+		'special'
 	)
 	right: AnyRExpression
 

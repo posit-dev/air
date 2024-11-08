@@ -83,6 +83,7 @@ pub enum RSyntaxKind {
     COMMENT,
     BACKSLASH,
     DOTDOTI,
+    SPECIAL,
     R_ROOT,
     R_IDENTIFIER,
     R_DOTS,

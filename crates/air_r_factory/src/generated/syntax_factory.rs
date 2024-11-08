@@ -58,6 +58,7 @@ impl SyntaxFactory for RSyntaxFactory {
                             | T ! [**]
                             | T ! [:]
                             | T ! [|>]
+                            | SPECIAL
                     ) {
                         slots.mark_present();
                         current_element = elements.next();

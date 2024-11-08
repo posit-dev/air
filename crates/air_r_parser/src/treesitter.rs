@@ -417,6 +417,7 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "^" => RSyntaxKind::EXPONENTIATE,
         "**" => RSyntaxKind::EXPONENTIATE2,
         "|>" => RSyntaxKind::PIPE,
+        "special" => RSyntaxKind::SPECIAL,
         ":" => RSyntaxKind::COLON,
         "::" => RSyntaxKind::COLON2,
         ":::" => RSyntaxKind::COLON3,

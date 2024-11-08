@@ -78,6 +78,7 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
         "COMMENT",
         "BACKSLASH",
         "DOTDOTI",
+        "SPECIAL",
     ],
     nodes: &[
         "R_ROOT",
