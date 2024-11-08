@@ -26,3 +26,8 @@ fn[[a_really_long_argument_here,,another_really_really_long_argument_to_test_thi
 fn[[...]]
 fn[[..., a = 1]]
 fn[[a = 1, another_really_really_long_argument_to_test_this_feature, a_really_long_argument_here, ...]]
+
+# Comments
+fn[[
+  # dangling special case
+]]
