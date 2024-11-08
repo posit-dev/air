@@ -35,6 +35,24 @@ impl FormatNodeRule<RBinaryExpression> for FormatRBinaryExpression {
                 )
             }
 
+            // For assignment, keep LHS and RHS on the same line, separated by
+            // a single space
+            RSyntaxKind::ASSIGN
+            | RSyntaxKind::ASSIGN_RIGHT
+            | RSyntaxKind::SUPER_ASSIGN
+            | RSyntaxKind::SUPER_ASSIGN_RIGHT => {
+                write!(
+                    f,
+                    [group(&format_args![
+                        left.format(),
+                        space(),
+                        operator.format(),
+                        space(),
+                        right.format()
+                    ])]
+                )
+            }
+
             // Other operators have spaces around them and allow the RHS to break
             _ => {
                 write!(
