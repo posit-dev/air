@@ -56,19 +56,14 @@ fn[[a]]
 fn[[a = 1, ... = 2]]
 
 # TODO: Do we want this to work different from calls?
-fn[[
-	a = {
-		1 + 1
-	}
-]]
+fn[[a = {
+	1 + 1
+}]]
 
 # TODO: Do we want this to work different from calls?
-fn[[
-	"description",
-	{
-		1 + 1
-	}
-]]
+fn[["description", {
+	1 + 1
+}]]
 
 # TODO: Think about data.table usage, like:
 DT[[
