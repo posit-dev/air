@@ -46,7 +46,7 @@ argument_that_is_quite_long + argument_that_is_quite_long^argument_that_is_quite
 1 / 2
 1 |> 2
 
-# The following expressions should not have spaces (FIXME)
+# The following expressions should not have spaces
 1 ? 2
 1 ** 2
 1 ^ 2
@@ -75,10 +75,10 @@ argument_that_is_quite_long + argument_that_is_quite_long +
 	argument_that_is_quite_long +
 	argument_that_is_quite_long
 
-1 + 2 ^ 3 + 4
+1 + 2^3 + 4
 
 argument_that_is_quite_long +
-	argument_that_is_quite_long ^ argument_that_is_quite_long +
+	argument_that_is_quite_long^argument_that_is_quite_long +
 	argument_that_is_quite_long
 
 1 + # comment
@@ -113,9 +113,9 @@ argument_that_is_quite_long +
 1 / 2
 1 |> 2
 
-# The following expressions should not have spaces (FIXME)
-1 ? 2
-1 ** 2
-1 ^ 2
-1 : 2
+# The following expressions should not have spaces
+1?2
+1**2
+1^2
+1:2
 ```

@@ -39,7 +39,7 @@ argument_that_is_quite_long + argument_that_is_quite_long^argument_that_is_quite
 1 / 2
 1 |> 2
 
-# The following expressions should not have spaces (FIXME)
+# The following expressions should not have spaces
 1 ? 2
 1 ** 2
 1 ^ 2
