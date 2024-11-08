@@ -2,19 +2,11 @@ fn[[]]
 fn[[a]]
 fn[[a = 1, ... = 2]]
 
-# TODO: Do we want this to work different from calls?
+# Inherits call-like behavior with trailing braced expressions
 fn[[a = { 1 + 1 }]]
-
-# TODO: Do we want this to work different from calls?
 fn[["description", {
   1 + 1
 }]]
-
-# TODO: Think about data.table usage, like:
-DT[[, {
-  # write each group to a different file
-  fwrite(.SD, "name")
-}, by=x]]
 
 # Holes
 fn[[,]]
