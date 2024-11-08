@@ -1,7 +1,5 @@
-use air_formatter_test::check_reformat::CheckReformat;
 use air_r_formatter::context::RFormatOptions;
 use air_r_formatter::format_node;
-use air_r_formatter::RFormatLanguage;
 use air_r_parser::parse;
 use air_r_parser::RParserOptions;
 use air_r_syntax::RRoot;
@@ -18,9 +16,9 @@ mod language {
 #[test]
 fn quick_test() {
     let src = r#"
-test_that("description", {
-  1 + 1
-})
+        map(x, {
+            foo(a, b)
+        })
     "#;
 
     let parse = parse(src, RParserOptions::default());
@@ -39,17 +37,4 @@ test_that("description", {
     println!();
     println!("---- Formatted Code ----");
     println!("start\n{}\nend", result.as_code());
-
-    let root = &parse.syntax();
-    let language = language::RTestFormatLanguage::default();
-
-    // Does a second pass of formatting to ensure nothing changes (i.e. stable)
-    let check_reformat = CheckReformat::new(
-        root,
-        result.as_code(),
-        "quick_test",
-        &language,
-        RFormatLanguage::new(options),
-    );
-    check_reformat.check_reformat();
 }

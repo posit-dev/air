@@ -5,6 +5,12 @@ function(a_really_long_argument_name_to_break_on, and_here_is_another_one_please
 
 function(a_really_long_argument_name_to_break_on, and_this) a_really_long_argument_name_to_break_on
 
+function(a = {
+  1
+}, b) {
+  1
+}
+
 function() {
   # comment
 }
