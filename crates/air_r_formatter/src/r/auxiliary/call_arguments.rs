@@ -480,7 +480,8 @@ impl Format<RFormatContext> for FormatGroupedLastArgument<'_> {
 
         // For inline functions, re-format the node and pass the argument that it is the
         // last grouped argument. This changes the formatting of parameters to remove any
-        // soft line breaks.
+        // soft line breaks. When the inline function is the only argument, we want it
+        // to hug the `()` of the function call and breaking in the parameters is okay.
         match argument_expression {
             Some(RFunctionDefinition(function)) if !self.is_only => {
                 with_token_tracking_disabled(f, |f| {
