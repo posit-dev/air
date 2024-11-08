@@ -1,0 +1,48 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/pipelines.R
+---
+# Input
+
+```R
+# FIXME: Should respect vertical alignment (persist the newline of the first RHS)
+mtcars |>
+  mutate(foo = 1) %>%
+  filter(
+    foo == 1,
+    bar == 2,
+  ) |>
+  ggplot(
+    argument_that_is_quite_long = argument_that_is_quite_long,
+    argument_that_is_quite_long = argument_that_is_quite_long
+  )
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Tab
+Indent width: 2
+Line ending: LF
+Line width: 80
+-----
+
+```R
+# FIXME: Should respect vertical alignment (persist the newline of the first RHS)
+mtcars |> mutate(foo = 1) %>% filter(foo == 1, bar == 2, ) |>
+	ggplot(
+		argument_that_is_quite_long = argument_that_is_quite_long,
+		argument_that_is_quite_long = argument_that_is_quite_long
+	)
+```
+
+# Lines exceeding max width of 80 characters
+```
+    1: # FIXME: Should respect vertical alignment (persist the newline of the first RHS)
+```

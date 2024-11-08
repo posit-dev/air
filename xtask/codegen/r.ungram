@@ -53,12 +53,57 @@ RUnaryExpression =
   operator: ('+' | '-' | '~' | '!' | '?')
   argument: AnyRExpression
 
+// TODO: User-defined infix operators
 RBinaryExpression =
 	left: AnyRExpression
     operator: (
-		'+'
+		'?' |
+		'~' |
+		'<-' |
+		'<<-' |
+		':=' |
+		'->' |
+		'->>' |
+		'=' |
+
+		'|' |
+		'&' |
+		'||' |
+		'&&' |
+
+		'<' |
+		'<=' |
+		'>' |
+		'>=' |
+		'==' |
+		'!=' |
+
+		'~' |
+		'+' |
+		'-' |
+		'*' |
+		'/' |
+		'^' |
+		'**' |
+		':' |
+		'|>' |
+		'special'
 	)
 	right: AnyRExpression
+
+// Binary expression that is restricted on the LHS
+RExtractExpression =
+	left: AnyRExpression
+    operator: ('$' | '@')
+	right: RSymbolOrString
+
+// Binary expression that is restricted on both the LHS and RHS
+RNamespaceExpression =
+	left: RSymbolOrString
+    operator: ('::' | ':::')
+	right: RSymbolOrString
+
+RSymbolOrString = RIdentifier | RStringValue
 
 // ----------------------------------------------------------------
 // Function
@@ -224,6 +269,8 @@ AnyRExpression =
 	| RIdentifier
 	| RUnaryExpression
 	| RBinaryExpression
+	| RExtractExpression
+    | RNamespaceExpression
 	| RFunctionDefinition
 	| RIfStatement
 	| RForStatement

@@ -63,7 +63,7 @@ RRoot {
                     left: RDoubleValue {
                         value_token: R_DOUBLE_LITERAL@23..27 "2" [Newline("\n"), Whitespace("  ")] [],
                     },
-                    operator_token: PLUS@27..29 "+" [Whitespace(" ")] [],
+                    operator: PLUS@27..29 "+" [Whitespace(" ")] [],
                     right: RDoubleValue {
                         value_token: R_DOUBLE_LITERAL@29..31 "2" [Whitespace(" ")] [],
                     },
@@ -72,7 +72,7 @@ RRoot {
                     left: RDoubleValue {
                         value_token: R_DOUBLE_LITERAL@31..35 "3" [Newline("\n"), Whitespace("  ")] [],
                     },
-                    operator_token: PLUS@35..37 "+" [Whitespace(" ")] [],
+                    operator: PLUS@35..37 "+" [Whitespace(" ")] [],
                     right: RDoubleValue {
                         value_token: R_DOUBLE_LITERAL@37..43 "4" [Newline("\n"), Whitespace("    ")] [],
                     },

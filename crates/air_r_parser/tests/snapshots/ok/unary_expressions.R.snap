@@ -88,7 +88,7 @@ RRoot {
             left: RDoubleValue {
                 value_token: R_DOUBLE_LITERAL@61..64 "1" [Newline("\n"), Newline("\n")] [],
             },
-            operator_token: PLUS@64..66 "+" [Whitespace(" ")] [],
+            operator: PLUS@64..66 "+" [Whitespace(" ")] [],
             right: RUnaryExpression {
                 operator: PLUS@66..68 "+" [Whitespace(" ")] [],
                 argument: RUnaryExpression {

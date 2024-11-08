@@ -39,14 +39,14 @@ impl RBinaryExpression {
     pub fn as_fields(&self) -> RBinaryExpressionFields {
         RBinaryExpressionFields {
             left: self.left(),
-            operator_token: self.operator_token(),
+            operator: self.operator(),
             right: self.right(),
         }
     }
     pub fn left(&self) -> SyntaxResult<AnyRExpression> {
         support::required_node(&self.syntax, 0usize)
     }
-    pub fn operator_token(&self) -> SyntaxResult<SyntaxToken> {
+    pub fn operator(&self) -> SyntaxResult<SyntaxToken> {
         support::required_token(&self.syntax, 1usize)
     }
     pub fn right(&self) -> SyntaxResult<AnyRExpression> {
@@ -64,7 +64,7 @@ impl Serialize for RBinaryExpression {
 #[derive(Serialize)]
 pub struct RBinaryExpressionFields {
     pub left: SyntaxResult<AnyRExpression>,
-    pub operator_token: SyntaxResult<SyntaxToken>,
+    pub operator: SyntaxResult<SyntaxToken>,
     pub right: SyntaxResult<AnyRExpression>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
@@ -528,6 +528,51 @@ pub struct RElseClauseFields {
     pub alternative: SyntaxResult<AnyRExpression>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RExtractExpression {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RExtractExpression {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RExtractExpressionFields {
+        RExtractExpressionFields {
+            left: self.left(),
+            operator: self.operator(),
+            right: self.right(),
+        }
+    }
+    pub fn left(&self) -> SyntaxResult<AnyRExpression> {
+        support::required_node(&self.syntax, 0usize)
+    }
+    pub fn operator(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 1usize)
+    }
+    pub fn right(&self) -> SyntaxResult<RSymbolOrString> {
+        support::required_node(&self.syntax, 2usize)
+    }
+}
+impl Serialize for RExtractExpression {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RExtractExpressionFields {
+    pub left: SyntaxResult<AnyRExpression>,
+    pub operator: SyntaxResult<SyntaxToken>,
+    pub right: SyntaxResult<RSymbolOrString>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RFalseExpression {
     pub(crate) syntax: SyntaxNode,
 }
@@ -979,6 +1024,51 @@ pub struct RNamedArgumentFields {
     pub name: SyntaxResult<AnyRArgumentName>,
     pub eq_token: SyntaxResult<SyntaxToken>,
     pub value: Option<AnyRExpression>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RNamespaceExpression {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RNamespaceExpression {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RNamespaceExpressionFields {
+        RNamespaceExpressionFields {
+            left: self.left(),
+            operator: self.operator(),
+            right: self.right(),
+        }
+    }
+    pub fn left(&self) -> SyntaxResult<RSymbolOrString> {
+        support::required_node(&self.syntax, 0usize)
+    }
+    pub fn operator(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 1usize)
+    }
+    pub fn right(&self) -> SyntaxResult<RSymbolOrString> {
+        support::required_node(&self.syntax, 2usize)
+    }
+}
+impl Serialize for RNamespaceExpression {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RNamespaceExpressionFields {
+    pub left: SyntaxResult<RSymbolOrString>,
+    pub operator: SyntaxResult<SyntaxToken>,
+    pub right: SyntaxResult<RSymbolOrString>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RNanExpression {
@@ -1570,6 +1660,7 @@ pub enum AnyRExpression {
     RBreakExpression(RBreakExpression),
     RCall(RCall),
     RDotDotI(RDotDotI),
+    RExtractExpression(RExtractExpression),
     RFalseExpression(RFalseExpression),
     RForStatement(RForStatement),
     RFunctionDefinition(RFunctionDefinition),
@@ -1577,6 +1668,7 @@ pub enum AnyRExpression {
     RIfStatement(RIfStatement),
     RInfExpression(RInfExpression),
     RNaExpression(RNaExpression),
+    RNamespaceExpression(RNamespaceExpression),
     RNanExpression(RNanExpression),
     RNextExpression(RNextExpression),
     RNullExpression(RNullExpression),
@@ -1630,6 +1722,12 @@ impl AnyRExpression {
             _ => None,
         }
     }
+    pub fn as_r_extract_expression(&self) -> Option<&RExtractExpression> {
+        match &self {
+            AnyRExpression::RExtractExpression(item) => Some(item),
+            _ => None,
+        }
+    }
     pub fn as_r_false_expression(&self) -> Option<&RFalseExpression> {
         match &self {
             AnyRExpression::RFalseExpression(item) => Some(item),
@@ -1669,6 +1767,12 @@ impl AnyRExpression {
     pub fn as_r_na_expression(&self) -> Option<&RNaExpression> {
         match &self {
             AnyRExpression::RNaExpression(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_namespace_expression(&self) -> Option<&RNamespaceExpression> {
+        match &self {
+            AnyRExpression::RNamespaceExpression(item) => Some(item),
             _ => None,
         }
     }
@@ -1800,6 +1904,25 @@ impl AnyRValue {
         }
     }
 }
+#[derive(Clone, PartialEq, Eq, Hash, Serialize)]
+pub enum RSymbolOrString {
+    RIdentifier(RIdentifier),
+    RStringValue(RStringValue),
+}
+impl RSymbolOrString {
+    pub fn as_r_identifier(&self) -> Option<&RIdentifier> {
+        match &self {
+            RSymbolOrString::RIdentifier(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_string_value(&self) -> Option<&RStringValue> {
+        match &self {
+            RSymbolOrString::RStringValue(item) => Some(item),
+            _ => None,
+        }
+    }
+}
 impl AstNode for RBinaryExpression {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> =
@@ -1825,10 +1948,7 @@ impl std::fmt::Debug for RBinaryExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("RBinaryExpression")
             .field("left", &support::DebugSyntaxResult(self.left()))
-            .field(
-                "operator_token",
-                &support::DebugSyntaxResult(self.operator_token()),
-            )
+            .field("operator", &support::DebugSyntaxResult(self.operator()))
             .field("right", &support::DebugSyntaxResult(self.right()))
             .finish()
     }
@@ -2338,6 +2458,46 @@ impl From<RElseClause> for SyntaxElement {
         n.syntax.into()
     }
 }
+impl AstNode for RExtractExpression {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_EXTRACT_EXPRESSION as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_EXTRACT_EXPRESSION
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RExtractExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RExtractExpression")
+            .field("left", &support::DebugSyntaxResult(self.left()))
+            .field("operator", &support::DebugSyntaxResult(self.operator()))
+            .field("right", &support::DebugSyntaxResult(self.right()))
+            .finish()
+    }
+}
+impl From<RExtractExpression> for SyntaxNode {
+    fn from(n: RExtractExpression) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RExtractExpression> for SyntaxElement {
+    fn from(n: RExtractExpression) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
 impl AstNode for RFalseExpression {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> =
@@ -2790,6 +2950,46 @@ impl From<RNamedArgument> for SyntaxNode {
 }
 impl From<RNamedArgument> for SyntaxElement {
     fn from(n: RNamedArgument) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
+impl AstNode for RNamespaceExpression {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_NAMESPACE_EXPRESSION as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_NAMESPACE_EXPRESSION
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RNamespaceExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RNamespaceExpression")
+            .field("left", &support::DebugSyntaxResult(self.left()))
+            .field("operator", &support::DebugSyntaxResult(self.operator()))
+            .field("right", &support::DebugSyntaxResult(self.right()))
+            .finish()
+    }
+}
+impl From<RNamespaceExpression> for SyntaxNode {
+    fn from(n: RNamespaceExpression) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RNamespaceExpression> for SyntaxElement {
+    fn from(n: RNamespaceExpression) -> SyntaxElement {
         n.syntax.into()
     }
 }
@@ -3532,6 +3732,11 @@ impl From<RDotDotI> for AnyRExpression {
         AnyRExpression::RDotDotI(node)
     }
 }
+impl From<RExtractExpression> for AnyRExpression {
+    fn from(node: RExtractExpression) -> AnyRExpression {
+        AnyRExpression::RExtractExpression(node)
+    }
+}
 impl From<RFalseExpression> for AnyRExpression {
     fn from(node: RFalseExpression) -> AnyRExpression {
         AnyRExpression::RFalseExpression(node)
@@ -3565,6 +3770,11 @@ impl From<RInfExpression> for AnyRExpression {
 impl From<RNaExpression> for AnyRExpression {
     fn from(node: RNaExpression) -> AnyRExpression {
         AnyRExpression::RNaExpression(node)
+    }
+}
+impl From<RNamespaceExpression> for AnyRExpression {
+    fn from(node: RNamespaceExpression) -> AnyRExpression {
+        AnyRExpression::RNamespaceExpression(node)
     }
 }
 impl From<RNanExpression> for AnyRExpression {
@@ -3621,6 +3831,7 @@ impl AstNode for AnyRExpression {
         .union(RBreakExpression::KIND_SET)
         .union(RCall::KIND_SET)
         .union(RDotDotI::KIND_SET)
+        .union(RExtractExpression::KIND_SET)
         .union(RFalseExpression::KIND_SET)
         .union(RForStatement::KIND_SET)
         .union(RFunctionDefinition::KIND_SET)
@@ -3628,6 +3839,7 @@ impl AstNode for AnyRExpression {
         .union(RIfStatement::KIND_SET)
         .union(RInfExpression::KIND_SET)
         .union(RNaExpression::KIND_SET)
+        .union(RNamespaceExpression::KIND_SET)
         .union(RNanExpression::KIND_SET)
         .union(RNextExpression::KIND_SET)
         .union(RNullExpression::KIND_SET)
@@ -3645,6 +3857,7 @@ impl AstNode for AnyRExpression {
             | R_BREAK_EXPRESSION
             | R_CALL
             | R_DOT_DOT_I
+            | R_EXTRACT_EXPRESSION
             | R_FALSE_EXPRESSION
             | R_FOR_STATEMENT
             | R_FUNCTION_DEFINITION
@@ -3652,6 +3865,7 @@ impl AstNode for AnyRExpression {
             | R_IF_STATEMENT
             | R_INF_EXPRESSION
             | R_NA_EXPRESSION
+            | R_NAMESPACE_EXPRESSION
             | R_NAN_EXPRESSION
             | R_NEXT_EXPRESSION
             | R_NULL_EXPRESSION
@@ -3675,6 +3889,9 @@ impl AstNode for AnyRExpression {
             R_BREAK_EXPRESSION => AnyRExpression::RBreakExpression(RBreakExpression { syntax }),
             R_CALL => AnyRExpression::RCall(RCall { syntax }),
             R_DOT_DOT_I => AnyRExpression::RDotDotI(RDotDotI { syntax }),
+            R_EXTRACT_EXPRESSION => {
+                AnyRExpression::RExtractExpression(RExtractExpression { syntax })
+            }
             R_FALSE_EXPRESSION => AnyRExpression::RFalseExpression(RFalseExpression { syntax }),
             R_FOR_STATEMENT => AnyRExpression::RForStatement(RForStatement { syntax }),
             R_FUNCTION_DEFINITION => {
@@ -3684,6 +3901,9 @@ impl AstNode for AnyRExpression {
             R_IF_STATEMENT => AnyRExpression::RIfStatement(RIfStatement { syntax }),
             R_INF_EXPRESSION => AnyRExpression::RInfExpression(RInfExpression { syntax }),
             R_NA_EXPRESSION => AnyRExpression::RNaExpression(RNaExpression { syntax }),
+            R_NAMESPACE_EXPRESSION => {
+                AnyRExpression::RNamespaceExpression(RNamespaceExpression { syntax })
+            }
             R_NAN_EXPRESSION => AnyRExpression::RNanExpression(RNanExpression { syntax }),
             R_NEXT_EXPRESSION => AnyRExpression::RNextExpression(RNextExpression { syntax }),
             R_NULL_EXPRESSION => AnyRExpression::RNullExpression(RNullExpression { syntax }),
@@ -3712,6 +3932,7 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RBreakExpression(it) => &it.syntax,
             AnyRExpression::RCall(it) => &it.syntax,
             AnyRExpression::RDotDotI(it) => &it.syntax,
+            AnyRExpression::RExtractExpression(it) => &it.syntax,
             AnyRExpression::RFalseExpression(it) => &it.syntax,
             AnyRExpression::RForStatement(it) => &it.syntax,
             AnyRExpression::RFunctionDefinition(it) => &it.syntax,
@@ -3719,6 +3940,7 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RIfStatement(it) => &it.syntax,
             AnyRExpression::RInfExpression(it) => &it.syntax,
             AnyRExpression::RNaExpression(it) => &it.syntax,
+            AnyRExpression::RNamespaceExpression(it) => &it.syntax,
             AnyRExpression::RNanExpression(it) => &it.syntax,
             AnyRExpression::RNextExpression(it) => &it.syntax,
             AnyRExpression::RNullExpression(it) => &it.syntax,
@@ -3739,6 +3961,7 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RBreakExpression(it) => it.syntax,
             AnyRExpression::RCall(it) => it.syntax,
             AnyRExpression::RDotDotI(it) => it.syntax,
+            AnyRExpression::RExtractExpression(it) => it.syntax,
             AnyRExpression::RFalseExpression(it) => it.syntax,
             AnyRExpression::RForStatement(it) => it.syntax,
             AnyRExpression::RFunctionDefinition(it) => it.syntax,
@@ -3746,6 +3969,7 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RIfStatement(it) => it.syntax,
             AnyRExpression::RInfExpression(it) => it.syntax,
             AnyRExpression::RNaExpression(it) => it.syntax,
+            AnyRExpression::RNamespaceExpression(it) => it.syntax,
             AnyRExpression::RNanExpression(it) => it.syntax,
             AnyRExpression::RNextExpression(it) => it.syntax,
             AnyRExpression::RNullExpression(it) => it.syntax,
@@ -3769,6 +3993,7 @@ impl std::fmt::Debug for AnyRExpression {
             AnyRExpression::RBreakExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RCall(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RDotDotI(it) => std::fmt::Debug::fmt(it, f),
+            AnyRExpression::RExtractExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RFalseExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RForStatement(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RFunctionDefinition(it) => std::fmt::Debug::fmt(it, f),
@@ -3776,6 +4001,7 @@ impl std::fmt::Debug for AnyRExpression {
             AnyRExpression::RIfStatement(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RInfExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RNaExpression(it) => std::fmt::Debug::fmt(it, f),
+            AnyRExpression::RNamespaceExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RNanExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RNextExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RNullExpression(it) => std::fmt::Debug::fmt(it, f),
@@ -3798,6 +4024,7 @@ impl From<AnyRExpression> for SyntaxNode {
             AnyRExpression::RBreakExpression(it) => it.into(),
             AnyRExpression::RCall(it) => it.into(),
             AnyRExpression::RDotDotI(it) => it.into(),
+            AnyRExpression::RExtractExpression(it) => it.into(),
             AnyRExpression::RFalseExpression(it) => it.into(),
             AnyRExpression::RForStatement(it) => it.into(),
             AnyRExpression::RFunctionDefinition(it) => it.into(),
@@ -3805,6 +4032,7 @@ impl From<AnyRExpression> for SyntaxNode {
             AnyRExpression::RIfStatement(it) => it.into(),
             AnyRExpression::RInfExpression(it) => it.into(),
             AnyRExpression::RNaExpression(it) => it.into(),
+            AnyRExpression::RNamespaceExpression(it) => it.into(),
             AnyRExpression::RNanExpression(it) => it.into(),
             AnyRExpression::RNextExpression(it) => it.into(),
             AnyRExpression::RNullExpression(it) => it.into(),
@@ -4006,6 +4234,65 @@ impl From<AnyRValue> for SyntaxElement {
         node.into()
     }
 }
+impl From<RIdentifier> for RSymbolOrString {
+    fn from(node: RIdentifier) -> RSymbolOrString {
+        RSymbolOrString::RIdentifier(node)
+    }
+}
+impl From<RStringValue> for RSymbolOrString {
+    fn from(node: RStringValue) -> RSymbolOrString {
+        RSymbolOrString::RStringValue(node)
+    }
+}
+impl AstNode for RSymbolOrString {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> = RIdentifier::KIND_SET.union(RStringValue::KIND_SET);
+    fn can_cast(kind: SyntaxKind) -> bool {
+        matches!(kind, R_IDENTIFIER | R_STRING_VALUE)
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        let res = match syntax.kind() {
+            R_IDENTIFIER => RSymbolOrString::RIdentifier(RIdentifier { syntax }),
+            R_STRING_VALUE => RSymbolOrString::RStringValue(RStringValue { syntax }),
+            _ => return None,
+        };
+        Some(res)
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        match self {
+            RSymbolOrString::RIdentifier(it) => &it.syntax,
+            RSymbolOrString::RStringValue(it) => &it.syntax,
+        }
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        match self {
+            RSymbolOrString::RIdentifier(it) => it.syntax,
+            RSymbolOrString::RStringValue(it) => it.syntax,
+        }
+    }
+}
+impl std::fmt::Debug for RSymbolOrString {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            RSymbolOrString::RIdentifier(it) => std::fmt::Debug::fmt(it, f),
+            RSymbolOrString::RStringValue(it) => std::fmt::Debug::fmt(it, f),
+        }
+    }
+}
+impl From<RSymbolOrString> for SyntaxNode {
+    fn from(n: RSymbolOrString) -> SyntaxNode {
+        match n {
+            RSymbolOrString::RIdentifier(it) => it.into(),
+            RSymbolOrString::RStringValue(it) => it.into(),
+        }
+    }
+}
+impl From<RSymbolOrString> for SyntaxElement {
+    fn from(n: RSymbolOrString) -> SyntaxElement {
+        let node: SyntaxNode = n.into();
+        node.into()
+    }
+}
 impl std::fmt::Display for AnyRArgument {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
@@ -4027,6 +4314,11 @@ impl std::fmt::Display for AnyRParameter {
     }
 }
 impl std::fmt::Display for AnyRValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RSymbolOrString {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
@@ -4096,6 +4388,11 @@ impl std::fmt::Display for RElseClause {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
+impl std::fmt::Display for RExtractExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
 impl std::fmt::Display for RFalseExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
@@ -4147,6 +4444,11 @@ impl std::fmt::Display for RNaExpression {
     }
 }
 impl std::fmt::Display for RNamedArgument {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RNamespaceExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }

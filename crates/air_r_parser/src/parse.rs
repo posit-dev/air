@@ -131,6 +131,8 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_UNNAMED_ARGUMENT
             | RSyntaxKind::R_PARENTHESIZED_EXPRESSION => self.handle_node_enter(kind),
 
+            RSyntaxKind::R_EXTRACT_EXPRESSION => self.handle_extract_enter(kind),
+            RSyntaxKind::R_NAMESPACE_EXPRESSION => self.handle_namespace_enter(kind),
             RSyntaxKind::R_PARAMETERS => self.handle_parameters_enter(node, iter),
             RSyntaxKind::R_DOTS_PARAMETER => self.handle_dots_parameter_enter(iter),
             RSyntaxKind::R_IDENTIFIER_PARAMETER => self.handle_identifier_parameter_enter(iter),
@@ -162,12 +164,38 @@ impl<'src> RWalk<'src> {
             // Tokens are no-ops on `Enter`, handled on `Leave`
             RSyntaxKind::SEMICOLON
             | RSyntaxKind::COMMA
+            | RSyntaxKind::TILDE
+            | RSyntaxKind::ASSIGN
+            | RSyntaxKind::SUPER_ASSIGN
+            | RSyntaxKind::WALRUS
+            | RSyntaxKind::ASSIGN_RIGHT
+            | RSyntaxKind::SUPER_ASSIGN_RIGHT
+            | RSyntaxKind::EQUAL
+            | RSyntaxKind::OR
+            | RSyntaxKind::AND
+            | RSyntaxKind::OR2
+            | RSyntaxKind::AND2
+            | RSyntaxKind::LESS_THAN
+            | RSyntaxKind::LESS_THAN_OR_EQUAL_TO
+            | RSyntaxKind::GREATER_THAN
+            | RSyntaxKind::GREATER_THAN_OR_EQUAL_TO
+            | RSyntaxKind::EQUAL2
+            | RSyntaxKind::NOT_EQUAL
             | RSyntaxKind::PLUS
             | RSyntaxKind::MINUS
-            | RSyntaxKind::TILDE
+            | RSyntaxKind::MULTIPLY
+            | RSyntaxKind::DIVIDE
+            | RSyntaxKind::EXPONENTIATE
+            | RSyntaxKind::EXPONENTIATE2
+            | RSyntaxKind::PIPE
+            | RSyntaxKind::SPECIAL
+            | RSyntaxKind::COLON
+            | RSyntaxKind::COLON2
+            | RSyntaxKind::COLON3
+            | RSyntaxKind::DOLLAR
+            | RSyntaxKind::AT
             | RSyntaxKind::BANG
             | RSyntaxKind::WAT
-            | RSyntaxKind::EQUAL
             | RSyntaxKind::BACKSLASH
             | RSyntaxKind::FUNCTION_KW
             | RSyntaxKind::FOR_KW
@@ -241,6 +269,8 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_PARENTHESIZED_EXPRESSION
             | RSyntaxKind::R_CALL => self.handle_node_leave(),
 
+            RSyntaxKind::R_EXTRACT_EXPRESSION => self.handle_extract_leave(),
+            RSyntaxKind::R_NAMESPACE_EXPRESSION => self.handle_namespace_leave(),
             RSyntaxKind::R_PARAMETERS => self.handle_parameters_leave(),
             RSyntaxKind::R_DOTS_PARAMETER => self.handle_dots_parameter_leave(node),
             RSyntaxKind::R_IDENTIFIER_PARAMETER => self.handle_identifier_parameter_leave(node),
@@ -275,12 +305,38 @@ impl<'src> RWalk<'src> {
             // Tokens
             RSyntaxKind::SEMICOLON
             | RSyntaxKind::COMMA
+            | RSyntaxKind::TILDE
+            | RSyntaxKind::ASSIGN
+            | RSyntaxKind::SUPER_ASSIGN
+            | RSyntaxKind::WALRUS
+            | RSyntaxKind::ASSIGN_RIGHT
+            | RSyntaxKind::SUPER_ASSIGN_RIGHT
+            | RSyntaxKind::EQUAL
+            | RSyntaxKind::OR
+            | RSyntaxKind::AND
+            | RSyntaxKind::OR2
+            | RSyntaxKind::AND2
+            | RSyntaxKind::LESS_THAN
+            | RSyntaxKind::LESS_THAN_OR_EQUAL_TO
+            | RSyntaxKind::GREATER_THAN
+            | RSyntaxKind::GREATER_THAN_OR_EQUAL_TO
+            | RSyntaxKind::EQUAL2
+            | RSyntaxKind::NOT_EQUAL
             | RSyntaxKind::PLUS
             | RSyntaxKind::MINUS
-            | RSyntaxKind::TILDE
+            | RSyntaxKind::MULTIPLY
+            | RSyntaxKind::DIVIDE
+            | RSyntaxKind::EXPONENTIATE
+            | RSyntaxKind::EXPONENTIATE2
+            | RSyntaxKind::PIPE
+            | RSyntaxKind::SPECIAL
+            | RSyntaxKind::COLON
+            | RSyntaxKind::COLON2
+            | RSyntaxKind::COLON3
+            | RSyntaxKind::DOLLAR
+            | RSyntaxKind::AT
             | RSyntaxKind::BANG
             | RSyntaxKind::WAT
-            | RSyntaxKind::EQUAL
             | RSyntaxKind::BACKSLASH
             | RSyntaxKind::FUNCTION_KW
             | RSyntaxKind::FOR_KW
@@ -404,6 +460,24 @@ impl<'src> RWalk<'src> {
 
         self.last_end = this_end;
         self.between_two_tokens = true;
+    }
+
+    fn handle_extract_enter(&mut self, kind: RSyntaxKind) {
+        // iter.skip_subtree();
+        // self.walk(&mut child.preorder())
+        self.handle_node_enter(kind);
+    }
+
+    fn handle_extract_leave(&mut self) {
+        self.handle_node_leave();
+    }
+
+    fn handle_namespace_enter(&mut self, kind: RSyntaxKind) {
+        self.handle_node_enter(kind);
+    }
+
+    fn handle_namespace_leave(&mut self) {
+        self.handle_node_leave();
     }
 
     fn handle_comment_enter(&mut self) {
