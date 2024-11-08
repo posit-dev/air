@@ -403,7 +403,7 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         ":=" => RSyntaxKind::WALRUS,
         "->" => RSyntaxKind::ASSIGN_RIGHT,
         "->>" => RSyntaxKind::SUPER_ASSIGN_RIGHT,
-        "=" => equal_syntax_kind(x),
+        "=" => RSyntaxKind::EQUAL,
         "|" => RSyntaxKind::OR,
         "&" => RSyntaxKind::AND,
         "||" => RSyntaxKind::OR2,
@@ -441,14 +441,6 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "dot_dot_i" => RSyntaxKind::R_DOT_DOT_I,
         "comment" => RSyntaxKind::COMMENT,
         kind => unreachable!("Not implemented: '{kind}'."),
-    }
-}
-
-fn equal_syntax_kind(x: &Node) -> RSyntaxKind {
-    if x.is_named() {
-        unreachable!("Not implemented: named `=`.");
-    } else {
-        RSyntaxKind::EQUAL
     }
 }
 
