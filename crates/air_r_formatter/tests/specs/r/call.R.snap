@@ -156,6 +156,15 @@ map(x, function(a = { 1 }) {
   1
 })
 
+# Since there is only 1 argument, we want these to hug the function call even
+# though the `parameters` cause a break and would typically force full expansion
+fn(function(a = { 1 }) {
+  1
+})
+fn(function(a, a_really_really_long_parameter, and_another_one_here_too_wow_this_is_long) {
+  1
+})
+
 # ------------------------------------------------------------------------
 # Empty lines between arguments
 
@@ -400,6 +409,23 @@ map(
 		1
 	}
 )
+
+# Since there is only 1 argument, we want these to hug the function call even
+# though the `parameters` cause a break and would typically force full expansion
+fn(function(
+	a = {
+		1
+	}
+) {
+	1
+})
+fn(function(
+	a,
+	a_really_really_long_parameter,
+	and_another_one_here_too_wow_this_is_long
+) {
+	1
+})
 
 # ------------------------------------------------------------------------
 # Empty lines between arguments
