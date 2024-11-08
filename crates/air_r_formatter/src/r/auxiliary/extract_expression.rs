@@ -1,12 +1,8 @@
 use crate::prelude::*;
-use air_r_syntax::AnyRExpression;
 use air_r_syntax::RExtractExpression;
 use air_r_syntax::RExtractExpressionFields;
-use air_r_syntax::RSymbolOrString;
-use air_r_syntax::RSyntaxToken;
 use biome_formatter::format_args;
 use biome_formatter::write;
-use biome_rowan::SyntaxResult;
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct FormatRExtractExpression;
@@ -18,23 +14,13 @@ impl FormatNodeRule<RExtractExpression> for FormatRExtractExpression {
             right,
         } = node.as_fields();
 
-        write_sticky_binary_expression(left, operator, right, f)
+        write!(
+            f,
+            [group(&format_args![
+                left.format(),
+                operator.format(),
+                right.format()
+            ])]
+        )
     }
-}
-
-pub(crate) fn write_sticky_binary_expression(
-    left: SyntaxResult<AnyRExpression>,
-    operator: SyntaxResult<RSyntaxToken>,
-    right: SyntaxResult<RSymbolOrString>,
-    f: &mut RFormatter,
-) -> FormatResult<()> {
-    write!(
-        f,
-        [group(&format_args![
-            left.format(),
-            indent(&format_once(|f| {
-                write!(f, [operator.format(), right.format()])
-            }))
-        ])]
-    )
 }
