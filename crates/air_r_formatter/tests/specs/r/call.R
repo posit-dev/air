@@ -139,12 +139,16 @@ map(my_long_list_my_long_list_my_long_list_my_long_list, function(my_long_argume
 })
 
 # Parameter names are very long, so it fully expands
+# (Note that this uses best-fitting. The `parameters` themselves don't force a
+# break, but when a best-fit choice is made between this form with no
+# soft-indents allowed in the `parameters` and the fully expanded form, the
+# fully expanded form wins)
 map(x, function(a, a_really_really_long_parameter, and_another_one_here_too_wow_this_is_long) {
   1
 })
 
-# Parameter itself would cause the inline function to break,
-# which we detect early and fully expand on
+# The `{ 1 }` parameter would force a hard line break. We detect this and don't
+# use best-fitting. Instead we fall back to the most expanded form.
 map(x, function(a = { 1 }) {
   1
 })

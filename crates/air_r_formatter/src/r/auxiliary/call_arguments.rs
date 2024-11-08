@@ -244,7 +244,113 @@ impl Format<RFormatContext> for FormatCallArgument {
     }
 }
 
-/// Writes the function arguments, and groups the first or last argument depending on `group_layout`.
+/// Writes the function arguments
+///
+/// The "grouped" argument is either the first or last argument depending on the
+/// `group_layout`, but currently it is always the last one.
+///
+/// - If any arguments that aren't the grouped argument *force* a break, then we
+///   print in fully expanded mode.
+///
+/// - If the grouped argument is an inline function with `parameters` that would
+///   *force* a break, then we print in fully expanded mode. We only want to
+///   allow forced breaks in a braced expression body.
+///
+/// If neither of those trigger fully expanded mode, we best-fit between three
+/// possible forms:
+///
+/// ## Most expanded
+///
+/// The `(`, `)`, and all arguments are within a single `group()`, and that
+/// group is marked with `should_expand(true)`. The arguments are wrapped in
+/// `soft_block_indent()`, and each argument is separated by a
+/// `soft_line_break_or_space()`. Due to the forced expansion, these all
+/// become hard indents / line breaks, i.e. the "most expanded" form.
+///
+/// Example:
+///
+/// ```r
+/// map(
+///   xs,
+///   function(x) {
+///     x + 1
+///   }
+/// )
+/// ```
+///
+/// ## Most flat
+///
+/// Arguments are not grouped, each argument is separated by a
+/// `soft_line_break_or_space()`, no forced expansion is done.
+///
+/// Special formatting is done for a grouped argument that is an inline
+/// function. We remove any soft line breaks in the `parameters`, which
+/// practically means the only place it is allowed to break is in the function
+/// body (but the break is not forced).
+///
+/// Example:
+///
+/// ```r
+/// # NOTE: Not currently possible, as the `{}` always force a break right now,
+/// # but this would be an example if `{}` didn't force a break.
+/// map(xs, function(x) {})
+/// ```
+///
+/// This variant is removed from the set if we detect that the grouped argument
+/// contains a forced break in the body (if a forced break is found in the
+/// parameters, we bail entirely and use the most expanded form, as noted
+/// at the beginning of this documentation page).
+///
+/// Note that because `{}` currently unconditionally force a break, and because
+/// we only go down this path when we have a `{}` to begin with, that means that
+/// currently the most flat variant is always removed. There is an
+/// `unreachable!()` in the code to assert this. We can't simply remove the
+/// `most_flat` code path though, because it is also where we detect if a
+/// parameter forces a break, triggering one of our early exists. Additionally,
+/// in the future we may allow `{}` to not force a break, meaning this variant
+/// may come back into play.
+///
+/// ## Middle variant
+///
+/// Exactly the same as "most flat", except that the grouped argument is put
+/// in its own `group()` marked with `should_expand(true)`. The soft line breaks
+/// are removed from any grouped argument parameters, like with most flat.
+///
+/// Example:
+///
+/// ```r
+/// map(xs, function(x) {
+///   x + 1
+/// })
+/// ```
+///
+/// ```r
+/// # The soft line breaks are removed from the `parameters`, meaning that this...
+/// map(xs, function(x, a_long_secondary_argument = "with a default", and_another_one_here) {
+///   x + 1
+/// })
+///
+/// # ...is not allowed to be formatted as...
+/// map(xs, function(
+///   x,
+///   a_long_secondary_argument = "with a default",
+///   and_another_one_here
+/// ) {
+///   x + 1
+/// })
+///
+/// # ...and instead the most expanded form is chosen by best-fitting:
+/// map(
+///   xs,
+///   function(
+///     x,
+///     a_long_secondary_argument = "with a default",
+///     and_another_one_here
+///   ) {
+///     x + 1
+///   }
+/// )
+/// ```
 fn write_grouped_arguments(
     call_arguments: &RCallArguments,
     mut arguments: Vec<FormatCallArgument>,
@@ -347,7 +453,7 @@ fn write_grouped_arguments(
 
     // Write the most flat variant with the first or last argument grouped
     // (but not forcibly expanded)
-    let most_flat = {
+    let _most_flat = {
         let snapshot = f.state_snapshot();
         let mut buffer = VecBuffer::new(f.state_mut());
         buffer.write_element(FormatElement::Tag(Tag::StartEntry))?;
@@ -427,7 +533,8 @@ fn write_grouped_arguments(
         write!(f, [expand_parent()])?;
         vec![middle_variant, most_expanded.into_boxed_slice()]
     } else {
-        vec![most_flat, middle_variant, most_expanded.into_boxed_slice()]
+        unreachable!("`grouped_breaks` is currently always `true`.");
+        // vec![most_flat, middle_variant, most_expanded.into_boxed_slice()]
     };
 
     // SAFETY: Safe because variants is guaranteed to contain >=2 entries:
