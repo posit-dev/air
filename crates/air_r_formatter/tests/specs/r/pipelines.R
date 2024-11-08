@@ -22,3 +22,14 @@ name <- mtcars |>
     argument_that_is_quite_long = argument_that_is_quite_long,
     argument_that_is_quite_long = argument_that_is_quite_long
   )
+
+name = mtcars |>
+  mutate(foo = 1) %>%
+  filter(
+    foo == 1,
+    bar == 2,
+  ) |>
+  ggplot(
+    argument_that_is_quite_long = argument_that_is_quite_long,
+    argument_that_is_quite_long = argument_that_is_quite_long
+  )
