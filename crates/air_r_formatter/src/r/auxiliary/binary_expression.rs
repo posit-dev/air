@@ -29,9 +29,8 @@ impl FormatNodeRule<RBinaryExpression> for FormatRBinaryExpression {
                     f,
                     [group(&format_args![
                         left.format(),
-                        indent(&format_once(|f| {
-                            write!(f, [operator.format(), right.format()])
-                        }))
+                        operator.format(),
+                        right.format()
                     ])]
                 )
             }
