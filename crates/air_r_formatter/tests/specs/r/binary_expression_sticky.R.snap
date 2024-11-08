@@ -1,0 +1,109 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/binary_expression_sticky.R
+---
+# Input
+
+```R
+# Whitespace is trimmed
+a $ b
+a @ b
+a :: b
+a ::: b
+
+# The symbol is sticky to the operator, there is never a line break immediately after `$`
+argument_that_is_quite_quite_quite_quite_long$argument_that_is_quite_quite_quite_long
+argument_that_is_quite_quite_quite_quite_long@argument_that_is_quite_quite_quite_long
+argument_that_is_quite_quite_quite_quite_long::argument_that_is_quite_quite_quite_long
+argument_that_is_quite_quite_quite_quite_long:::argument_that_is_quite_quite_quite_long
+
+# If the RHS contains other complex expressions, they are allowed to break
+argument_that_is_quite_quite_quite_quite_long$argument_that_is_quite_quite_quite_long(argument_that_is_quite_quite_quite_long)
+argument_that_is_quite_quite_quite_quite_long@argument_that_is_quite_quite_quite_long(argument_that_is_quite_quite_quite_long)
+argument_that_is_quite_quite_quite_quite_long::argument_that_is_quite_quite_quite_long(argument_that_is_quite_quite_quite_long)
+argument_that_is_quite_quite_quite_quite_long:::argument_that_is_quite_quite_quite_long(argument_that_is_quite_quite_quite_long)
+
+# `$` and `@` are allowed complex expressions on their LHS
+argument_that_is_quite_quite_quite_quite_long(argument_that_is_quite_quite_quite_long)$argument_that_is_quite_quite_quite_long
+argument_that_is_quite_quite_quite_quite_long(argument_that_is_quite_quite_quite_long)@argument_that_is_quite_quite_quite_long
+
+# Chaining of method calls
+argument_that_is_quite_quite_quite_quite_long(argument_that_is_quite_quite_quite_long)$argument_that_is_quite_quite_quite_long(argument_that_is_quite_quite_quite_long)
+argument_that_is_quite_quite_quite_quite_long(argument_that_is_quite_quite_quite_long)@argument_that_is_quite_quite_quite_long(argument_that_is_quite_quite_quite_long)
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Tab
+Indent width: 2
+Line ending: LF
+Line width: 80
+-----
+
+```R
+# Whitespace is trimmed
+a$b
+a@b
+a::b
+a:::b
+
+# The symbol is sticky to the operator, there is never a line break immediately after `$`
+argument_that_is_quite_quite_quite_quite_long$argument_that_is_quite_quite_quite_long
+argument_that_is_quite_quite_quite_quite_long@argument_that_is_quite_quite_quite_long
+argument_that_is_quite_quite_quite_quite_long::argument_that_is_quite_quite_quite_long
+argument_that_is_quite_quite_quite_quite_long:::argument_that_is_quite_quite_quite_long
+
+# If the RHS contains other complex expressions, they are allowed to break
+argument_that_is_quite_quite_quite_quite_long$argument_that_is_quite_quite_quite_long(
+	argument_that_is_quite_quite_quite_long
+)
+argument_that_is_quite_quite_quite_quite_long@argument_that_is_quite_quite_quite_long(
+	argument_that_is_quite_quite_quite_long
+)
+argument_that_is_quite_quite_quite_quite_long::argument_that_is_quite_quite_quite_long(
+	argument_that_is_quite_quite_quite_long
+)
+argument_that_is_quite_quite_quite_quite_long:::argument_that_is_quite_quite_quite_long(
+	argument_that_is_quite_quite_quite_long
+)
+
+# `$` and `@` are allowed complex expressions on their LHS
+argument_that_is_quite_quite_quite_quite_long(
+	argument_that_is_quite_quite_quite_long
+)$argument_that_is_quite_quite_quite_long
+argument_that_is_quite_quite_quite_quite_long(
+	argument_that_is_quite_quite_quite_long
+)@argument_that_is_quite_quite_quite_long
+
+# Chaining of method calls
+argument_that_is_quite_quite_quite_quite_long(
+	argument_that_is_quite_quite_quite_long
+)$argument_that_is_quite_quite_quite_long(
+	argument_that_is_quite_quite_quite_long
+)
+argument_that_is_quite_quite_quite_quite_long(
+	argument_that_is_quite_quite_quite_long
+)@argument_that_is_quite_quite_quite_long(
+	argument_that_is_quite_quite_quite_long
+)
+```
+
+# Lines exceeding max width of 80 characters
+```
+    7: # The symbol is sticky to the operator, there is never a line break immediately after `$`
+    8: argument_that_is_quite_quite_quite_quite_long$argument_that_is_quite_quite_quite_long
+    9: argument_that_is_quite_quite_quite_quite_long@argument_that_is_quite_quite_quite_long
+   10: argument_that_is_quite_quite_quite_quite_long::argument_that_is_quite_quite_quite_long
+   11: argument_that_is_quite_quite_quite_quite_long:::argument_that_is_quite_quite_quite_long
+   14: argument_that_is_quite_quite_quite_quite_long$argument_that_is_quite_quite_quite_long(
+   17: argument_that_is_quite_quite_quite_quite_long@argument_that_is_quite_quite_quite_long(
+   20: argument_that_is_quite_quite_quite_quite_long::argument_that_is_quite_quite_quite_long(
+   23: argument_that_is_quite_quite_quite_quite_long:::argument_that_is_quite_quite_quite_long(
+```
