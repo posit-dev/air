@@ -37,7 +37,8 @@ impl FormatNodeRule<RBinaryExpression> for FormatRBinaryExpression {
 
             // For assignment, keep LHS and RHS on the same line, separated by
             // a single space
-            RSyntaxKind::ASSIGN
+            RSyntaxKind::EQUAL
+            | RSyntaxKind::ASSIGN
             | RSyntaxKind::ASSIGN_RIGHT
             | RSyntaxKind::SUPER_ASSIGN
             | RSyntaxKind::SUPER_ASSIGN_RIGHT => {
