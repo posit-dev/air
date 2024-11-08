@@ -101,17 +101,17 @@ argument_that_is_quite_quite_quite_quite_long:::argument_that_is_quite_quite_qui
 	argument_that_is_quite_quite_quite_long
 )
 argument_that_is_quite_quite_quite_quite_long?argument_that_is_quite_quite_quite_quite_long(
-		argument_that_is_quite_quite_quite_long
-	)
+	argument_that_is_quite_quite_quite_long
+)
 argument_that_is_quite_quite_quite_quite_long**argument_that_is_quite_quite_quite_quite_long(
-		argument_that_is_quite_quite_quite_long
-	)
+	argument_that_is_quite_quite_quite_long
+)
 argument_that_is_quite_quite_quite_quite_long^argument_that_is_quite_quite_quite_quite_long(
-		argument_that_is_quite_quite_quite_long
-	)
+	argument_that_is_quite_quite_quite_long
+)
 argument_that_is_quite_quite_quite_quite_long:argument_that_is_quite_quite_quite_quite_long(
-		argument_that_is_quite_quite_quite_long
-	)
+	argument_that_is_quite_quite_quite_long
+)
 
 # `$` and `@` and regular binary operators are allowed complex expressions on their LHS
 argument_that_is_quite_quite_quite_quite_long(
@@ -147,23 +147,23 @@ argument_that_is_quite_quite_quite_quite_long(
 argument_that_is_quite_quite_quite_quite_long(
 	argument_that_is_quite_quite_quite_long
 )?argument_that_is_quite_quite_quite_quite_long(
-		argument_that_is_quite_quite_quite_long
-	)
+	argument_that_is_quite_quite_quite_long
+)
 argument_that_is_quite_quite_quite_quite_long(
 	argument_that_is_quite_quite_quite_long
 )**argument_that_is_quite_quite_quite_quite_long(
-		argument_that_is_quite_quite_quite_long
-	)
+	argument_that_is_quite_quite_quite_long
+)
 argument_that_is_quite_quite_quite_quite_long(
 	argument_that_is_quite_quite_quite_long
 )^argument_that_is_quite_quite_quite_quite_long(
-		argument_that_is_quite_quite_quite_long
-	)
+	argument_that_is_quite_quite_quite_long
+)
 argument_that_is_quite_quite_quite_quite_long(
 	argument_that_is_quite_quite_quite_long
 ):argument_that_is_quite_quite_quite_quite_long(
-		argument_that_is_quite_quite_quite_long
-	)
+	argument_that_is_quite_quite_quite_long
+)
 ```
 
 # Lines exceeding max width of 80 characters
