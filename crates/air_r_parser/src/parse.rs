@@ -128,6 +128,8 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_WHILE_STATEMENT
             | RSyntaxKind::R_REPEAT_STATEMENT
             | RSyntaxKind::R_CALL
+            | RSyntaxKind::R_SUBSET
+            | RSyntaxKind::R_SUBSET2
             | RSyntaxKind::R_UNNAMED_ARGUMENT
             | RSyntaxKind::R_PARENTHESIZED_EXPRESSION => self.handle_node_enter(kind),
 
@@ -138,7 +140,15 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_IDENTIFIER_PARAMETER => self.handle_identifier_parameter_enter(iter),
             RSyntaxKind::R_DEFAULT_PARAMETER => self.handle_default_parameter_enter(node, iter),
             RSyntaxKind::R_IF_STATEMENT => self.handle_if_statement_enter(node, iter),
-            RSyntaxKind::R_CALL_ARGUMENTS => self.handle_call_arguments_enter(node, iter),
+            RSyntaxKind::R_CALL_ARGUMENTS => {
+                self.handle_call_like_arguments_enter(kind, node, iter)
+            }
+            RSyntaxKind::R_SUBSET_ARGUMENTS => {
+                self.handle_call_like_arguments_enter(kind, node, iter)
+            }
+            RSyntaxKind::R_SUBSET2_ARGUMENTS => {
+                self.handle_call_like_arguments_enter(kind, node, iter)
+            }
             RSyntaxKind::R_NAMED_ARGUMENT => self.handle_named_argument_enter(node, iter),
             RSyntaxKind::R_DOTS_ARGUMENT => self.handle_dots_argument_enter(node, iter),
             RSyntaxKind::R_BRACED_EXPRESSIONS => self.handle_braced_expressions_enter(node, iter),
@@ -206,6 +216,10 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::ELSE_KW
             | RSyntaxKind::L_PAREN
             | RSyntaxKind::R_PAREN
+            | RSyntaxKind::L_BRACK
+            | RSyntaxKind::R_BRACK
+            | RSyntaxKind::L_BRACK2
+            | RSyntaxKind::R_BRACK2
             | RSyntaxKind::L_CURLY
             | RSyntaxKind::R_CURLY => (),
 
@@ -221,8 +235,6 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_EXPRESSION_LIST
             | RSyntaxKind::EOF
             | RSyntaxKind::UNICODE_BOM
-            | RSyntaxKind::L_BRACK
-            | RSyntaxKind::R_BRACK
             | RSyntaxKind::DOTS
             | RSyntaxKind::R_INTEGER_LITERAL
             | RSyntaxKind::R_DOUBLE_LITERAL
@@ -267,7 +279,9 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_REPEAT_STATEMENT
             | RSyntaxKind::R_UNNAMED_ARGUMENT
             | RSyntaxKind::R_PARENTHESIZED_EXPRESSION
-            | RSyntaxKind::R_CALL => self.handle_node_leave(),
+            | RSyntaxKind::R_CALL
+            | RSyntaxKind::R_SUBSET
+            | RSyntaxKind::R_SUBSET2 => self.handle_node_leave(),
 
             RSyntaxKind::R_EXTRACT_EXPRESSION => self.handle_extract_leave(),
             RSyntaxKind::R_NAMESPACE_EXPRESSION => self.handle_namespace_leave(),
@@ -276,7 +290,9 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_IDENTIFIER_PARAMETER => self.handle_identifier_parameter_leave(node),
             RSyntaxKind::R_DEFAULT_PARAMETER => self.handle_default_parameter_leave(),
             RSyntaxKind::R_IF_STATEMENT => self.handle_if_statement_leave(),
-            RSyntaxKind::R_CALL_ARGUMENTS => self.handle_call_arguments_leave(),
+            RSyntaxKind::R_CALL_ARGUMENTS => self.handle_call_like_arguments_leave(),
+            RSyntaxKind::R_SUBSET_ARGUMENTS => self.handle_call_like_arguments_leave(),
+            RSyntaxKind::R_SUBSET2_ARGUMENTS => self.handle_call_like_arguments_leave(),
             RSyntaxKind::R_NAMED_ARGUMENT => self.handle_named_argument_leave(),
             RSyntaxKind::R_DOTS_ARGUMENT => self.handle_dots_argument_leave(),
             RSyntaxKind::R_BRACED_EXPRESSIONS => self.handle_braced_expressions_leave(),
@@ -347,6 +363,10 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::ELSE_KW
             | RSyntaxKind::L_PAREN
             | RSyntaxKind::R_PAREN
+            | RSyntaxKind::L_BRACK
+            | RSyntaxKind::R_BRACK
+            | RSyntaxKind::L_BRACK2
+            | RSyntaxKind::R_BRACK2
             | RSyntaxKind::L_CURLY
             | RSyntaxKind::R_CURLY => self.handle_token(node, kind),
 
@@ -362,8 +382,6 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_EXPRESSION_LIST
             | RSyntaxKind::EOF
             | RSyntaxKind::UNICODE_BOM
-            | RSyntaxKind::L_BRACK
-            | RSyntaxKind::R_BRACK
             | RSyntaxKind::DOTS
             | RSyntaxKind::DOTDOTI
             | RSyntaxKind::R_INTEGER_LITERAL
@@ -743,11 +761,23 @@ impl<'src> RWalk<'src> {
         self.handle_node_leave();
     }
 
-    fn handle_call_arguments_enter(&mut self, node: tree_sitter::Node, iter: &mut Preorder) {
+    fn handle_call_like_arguments_enter(
+        &mut self,
+        kind: RSyntaxKind,
+        node: tree_sitter::Node,
+        iter: &mut Preorder,
+    ) {
         // We handle all children directly
         iter.skip_subtree();
 
-        self.handle_node_enter(RSyntaxKind::R_CALL_ARGUMENTS);
+        let (open, close) = match kind {
+            RSyntaxKind::R_CALL_ARGUMENTS => (RSyntaxKind::L_PAREN, RSyntaxKind::R_PAREN),
+            RSyntaxKind::R_SUBSET_ARGUMENTS => (RSyntaxKind::L_BRACK, RSyntaxKind::R_BRACK),
+            RSyntaxKind::R_SUBSET2_ARGUMENTS => (RSyntaxKind::L_BRACK2, RSyntaxKind::R_BRACK2),
+            _ => unreachable!("Found unexpected kind '{kind:?}'."),
+        };
+
+        self.handle_node_enter(kind);
 
         let mut cursor = node.walk();
 
@@ -755,18 +785,18 @@ impl<'src> RWalk<'src> {
             let mut child_iter = child.preorder();
 
             match child.syntax_kind() {
-                RSyntaxKind::L_PAREN => {
+                kind if kind == open => {
                     self.walk(&mut child_iter);
                     self.handle_node_enter(RSyntaxKind::R_ARGUMENT_LIST);
                 }
-                RSyntaxKind::R_PAREN => {
-                    self.handle_hole_before_r_paren(child);
+                kind if kind == close => {
+                    self.handle_hole_before_close(child);
                     // Leave `R_ARGUMENT_LIST`
                     self.handle_node_leave();
                     self.walk(&mut child_iter);
                 }
                 RSyntaxKind::COMMA => {
-                    self.handle_hole_before_comma(child);
+                    self.handle_hole_before_comma(child, open);
                     self.walk(&mut child_iter);
                 }
                 RSyntaxKind::R_DOTS_ARGUMENT => self.walk(&mut child_iter),
@@ -778,11 +808,11 @@ impl<'src> RWalk<'src> {
         }
     }
 
-    fn handle_call_arguments_leave(&mut self) {
+    fn handle_call_like_arguments_leave(&mut self) {
         self.handle_node_leave();
     }
 
-    /// Is there a hole before this `)`?
+    /// Is there a hole before this `)`, `]`, or `]]`?
     ///
     /// Ignores comments
     ///
@@ -795,7 +825,7 @@ impl<'src> RWalk<'src> {
     ///   <here>
     /// )
     /// ```
-    fn handle_hole_before_r_paren(&mut self, mut node: tree_sitter::Node) {
+    fn handle_hole_before_close(&mut self, mut node: tree_sitter::Node) {
         while let Some(previous) = node.prev_sibling() {
             match previous.syntax_kind() {
                 RSyntaxKind::COMMENT => (),
@@ -825,11 +855,11 @@ impl<'src> RWalk<'src> {
     ///   <here>,
     /// )
     /// ```
-    fn handle_hole_before_comma(&mut self, mut node: tree_sitter::Node) {
+    fn handle_hole_before_comma(&mut self, mut node: tree_sitter::Node, open: RSyntaxKind) {
         while let Some(previous) = node.prev_sibling() {
             match previous.syntax_kind() {
                 RSyntaxKind::COMMENT => (),
-                RSyntaxKind::COMMA | RSyntaxKind::L_PAREN => {
+                kind if kind == RSyntaxKind::COMMA || kind == open => {
                     self.handle_node_enter(RSyntaxKind::R_HOLE_ARGUMENT);
                     self.handle_node_leave();
                     break;

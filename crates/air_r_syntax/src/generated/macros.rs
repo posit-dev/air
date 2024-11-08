@@ -156,6 +156,22 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RStringValue::new_unchecked(node) };
                     $body
                 }
+                $crate::RSyntaxKind::R_SUBSET => {
+                    let $pattern = unsafe { $crate::RSubset::new_unchecked(node) };
+                    $body
+                }
+                $crate::RSyntaxKind::R_SUBSET2 => {
+                    let $pattern = unsafe { $crate::RSubset2::new_unchecked(node) };
+                    $body
+                }
+                $crate::RSyntaxKind::R_SUBSET2_ARGUMENTS => {
+                    let $pattern = unsafe { $crate::RSubset2Arguments::new_unchecked(node) };
+                    $body
+                }
+                $crate::RSyntaxKind::R_SUBSET_ARGUMENTS => {
+                    let $pattern = unsafe { $crate::RSubsetArguments::new_unchecked(node) };
+                    $body
+                }
                 $crate::RSyntaxKind::R_TRUE_EXPRESSION => {
                     let $pattern = unsafe { $crate::RTrueExpression::new_unchecked(node) };
                     $body

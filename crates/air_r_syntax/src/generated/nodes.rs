@@ -1421,6 +1421,176 @@ pub struct RStringValueFields {
     pub value_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RSubset {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RSubset {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RSubsetFields {
+        RSubsetFields {
+            function: self.function(),
+            arguments: self.arguments(),
+        }
+    }
+    pub fn function(&self) -> SyntaxResult<AnyRExpression> {
+        support::required_node(&self.syntax, 0usize)
+    }
+    pub fn arguments(&self) -> SyntaxResult<RSubsetArguments> {
+        support::required_node(&self.syntax, 1usize)
+    }
+}
+impl Serialize for RSubset {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RSubsetFields {
+    pub function: SyntaxResult<AnyRExpression>,
+    pub arguments: SyntaxResult<RSubsetArguments>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RSubset2 {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RSubset2 {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RSubset2Fields {
+        RSubset2Fields {
+            function: self.function(),
+            arguments: self.arguments(),
+        }
+    }
+    pub fn function(&self) -> SyntaxResult<AnyRExpression> {
+        support::required_node(&self.syntax, 0usize)
+    }
+    pub fn arguments(&self) -> SyntaxResult<RSubset2Arguments> {
+        support::required_node(&self.syntax, 1usize)
+    }
+}
+impl Serialize for RSubset2 {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RSubset2Fields {
+    pub function: SyntaxResult<AnyRExpression>,
+    pub arguments: SyntaxResult<RSubset2Arguments>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RSubset2Arguments {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RSubset2Arguments {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RSubset2ArgumentsFields {
+        RSubset2ArgumentsFields {
+            l_brack2_token: self.l_brack2_token(),
+            items: self.items(),
+            r_brack2_token: self.r_brack2_token(),
+        }
+    }
+    pub fn l_brack2_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+    pub fn items(&self) -> RArgumentList {
+        support::list(&self.syntax, 1usize)
+    }
+    pub fn r_brack2_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 2usize)
+    }
+}
+impl Serialize for RSubset2Arguments {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RSubset2ArgumentsFields {
+    pub l_brack2_token: SyntaxResult<SyntaxToken>,
+    pub items: RArgumentList,
+    pub r_brack2_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RSubsetArguments {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RSubsetArguments {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RSubsetArgumentsFields {
+        RSubsetArgumentsFields {
+            l_brack_token: self.l_brack_token(),
+            items: self.items(),
+            r_brack_token: self.r_brack_token(),
+        }
+    }
+    pub fn l_brack_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+    pub fn items(&self) -> RArgumentList {
+        support::list(&self.syntax, 1usize)
+    }
+    pub fn r_brack_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 2usize)
+    }
+}
+impl Serialize for RSubsetArguments {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RSubsetArgumentsFields {
+    pub l_brack_token: SyntaxResult<SyntaxToken>,
+    pub items: RArgumentList,
+    pub r_brack_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RTrueExpression {
     pub(crate) syntax: SyntaxNode,
 }
@@ -1675,6 +1845,8 @@ pub enum AnyRExpression {
     RParenthesizedExpression(RParenthesizedExpression),
     RRepeatStatement(RRepeatStatement),
     RReturnExpression(RReturnExpression),
+    RSubset(RSubset),
+    RSubset2(RSubset2),
     RTrueExpression(RTrueExpression),
     RUnaryExpression(RUnaryExpression),
     RWhileStatement(RWhileStatement),
@@ -1809,6 +1981,18 @@ impl AnyRExpression {
     pub fn as_r_return_expression(&self) -> Option<&RReturnExpression> {
         match &self {
             AnyRExpression::RReturnExpression(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_subset(&self) -> Option<&RSubset> {
+        match &self {
+            AnyRExpression::RSubset(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_subset2(&self) -> Option<&RSubset2> {
+        match &self {
+            AnyRExpression::RSubset2(item) => Some(item),
             _ => None,
         }
     }
@@ -3365,6 +3549,176 @@ impl From<RStringValue> for SyntaxElement {
         n.syntax.into()
     }
 }
+impl AstNode for RSubset {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_SUBSET as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_SUBSET
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RSubset {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RSubset")
+            .field("function", &support::DebugSyntaxResult(self.function()))
+            .field("arguments", &support::DebugSyntaxResult(self.arguments()))
+            .finish()
+    }
+}
+impl From<RSubset> for SyntaxNode {
+    fn from(n: RSubset) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RSubset> for SyntaxElement {
+    fn from(n: RSubset) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
+impl AstNode for RSubset2 {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_SUBSET2 as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_SUBSET2
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RSubset2 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RSubset2")
+            .field("function", &support::DebugSyntaxResult(self.function()))
+            .field("arguments", &support::DebugSyntaxResult(self.arguments()))
+            .finish()
+    }
+}
+impl From<RSubset2> for SyntaxNode {
+    fn from(n: RSubset2) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RSubset2> for SyntaxElement {
+    fn from(n: RSubset2) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
+impl AstNode for RSubset2Arguments {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_SUBSET2_ARGUMENTS as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_SUBSET2_ARGUMENTS
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RSubset2Arguments {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RSubset2Arguments")
+            .field(
+                "l_brack2_token",
+                &support::DebugSyntaxResult(self.l_brack2_token()),
+            )
+            .field("items", &self.items())
+            .field(
+                "r_brack2_token",
+                &support::DebugSyntaxResult(self.r_brack2_token()),
+            )
+            .finish()
+    }
+}
+impl From<RSubset2Arguments> for SyntaxNode {
+    fn from(n: RSubset2Arguments) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RSubset2Arguments> for SyntaxElement {
+    fn from(n: RSubset2Arguments) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
+impl AstNode for RSubsetArguments {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_SUBSET_ARGUMENTS as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_SUBSET_ARGUMENTS
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RSubsetArguments {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RSubsetArguments")
+            .field(
+                "l_brack_token",
+                &support::DebugSyntaxResult(self.l_brack_token()),
+            )
+            .field("items", &self.items())
+            .field(
+                "r_brack_token",
+                &support::DebugSyntaxResult(self.r_brack_token()),
+            )
+            .finish()
+    }
+}
+impl From<RSubsetArguments> for SyntaxNode {
+    fn from(n: RSubsetArguments) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RSubsetArguments> for SyntaxElement {
+    fn from(n: RSubsetArguments) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
 impl AstNode for RTrueExpression {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> =
@@ -3807,6 +4161,16 @@ impl From<RReturnExpression> for AnyRExpression {
         AnyRExpression::RReturnExpression(node)
     }
 }
+impl From<RSubset> for AnyRExpression {
+    fn from(node: RSubset) -> AnyRExpression {
+        AnyRExpression::RSubset(node)
+    }
+}
+impl From<RSubset2> for AnyRExpression {
+    fn from(node: RSubset2) -> AnyRExpression {
+        AnyRExpression::RSubset2(node)
+    }
+}
 impl From<RTrueExpression> for AnyRExpression {
     fn from(node: RTrueExpression) -> AnyRExpression {
         AnyRExpression::RTrueExpression(node)
@@ -3846,6 +4210,8 @@ impl AstNode for AnyRExpression {
         .union(RParenthesizedExpression::KIND_SET)
         .union(RRepeatStatement::KIND_SET)
         .union(RReturnExpression::KIND_SET)
+        .union(RSubset::KIND_SET)
+        .union(RSubset2::KIND_SET)
         .union(RTrueExpression::KIND_SET)
         .union(RUnaryExpression::KIND_SET)
         .union(RWhileStatement::KIND_SET);
@@ -3872,6 +4238,8 @@ impl AstNode for AnyRExpression {
             | R_PARENTHESIZED_EXPRESSION
             | R_REPEAT_STATEMENT
             | R_RETURN_EXPRESSION
+            | R_SUBSET
+            | R_SUBSET2
             | R_TRUE_EXPRESSION
             | R_UNARY_EXPRESSION
             | R_WHILE_STATEMENT => true,
@@ -3912,6 +4280,8 @@ impl AstNode for AnyRExpression {
             }
             R_REPEAT_STATEMENT => AnyRExpression::RRepeatStatement(RRepeatStatement { syntax }),
             R_RETURN_EXPRESSION => AnyRExpression::RReturnExpression(RReturnExpression { syntax }),
+            R_SUBSET => AnyRExpression::RSubset(RSubset { syntax }),
+            R_SUBSET2 => AnyRExpression::RSubset2(RSubset2 { syntax }),
             R_TRUE_EXPRESSION => AnyRExpression::RTrueExpression(RTrueExpression { syntax }),
             R_UNARY_EXPRESSION => AnyRExpression::RUnaryExpression(RUnaryExpression { syntax }),
             R_WHILE_STATEMENT => AnyRExpression::RWhileStatement(RWhileStatement { syntax }),
@@ -3947,6 +4317,8 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RParenthesizedExpression(it) => &it.syntax,
             AnyRExpression::RRepeatStatement(it) => &it.syntax,
             AnyRExpression::RReturnExpression(it) => &it.syntax,
+            AnyRExpression::RSubset(it) => &it.syntax,
+            AnyRExpression::RSubset2(it) => &it.syntax,
             AnyRExpression::RTrueExpression(it) => &it.syntax,
             AnyRExpression::RUnaryExpression(it) => &it.syntax,
             AnyRExpression::RWhileStatement(it) => &it.syntax,
@@ -3976,6 +4348,8 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RParenthesizedExpression(it) => it.syntax,
             AnyRExpression::RRepeatStatement(it) => it.syntax,
             AnyRExpression::RReturnExpression(it) => it.syntax,
+            AnyRExpression::RSubset(it) => it.syntax,
+            AnyRExpression::RSubset2(it) => it.syntax,
             AnyRExpression::RTrueExpression(it) => it.syntax,
             AnyRExpression::RUnaryExpression(it) => it.syntax,
             AnyRExpression::RWhileStatement(it) => it.syntax,
@@ -4008,6 +4382,8 @@ impl std::fmt::Debug for AnyRExpression {
             AnyRExpression::RParenthesizedExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RRepeatStatement(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RReturnExpression(it) => std::fmt::Debug::fmt(it, f),
+            AnyRExpression::RSubset(it) => std::fmt::Debug::fmt(it, f),
+            AnyRExpression::RSubset2(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RTrueExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RUnaryExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RWhileStatement(it) => std::fmt::Debug::fmt(it, f),
@@ -4039,6 +4415,8 @@ impl From<AnyRExpression> for SyntaxNode {
             AnyRExpression::RParenthesizedExpression(it) => it.into(),
             AnyRExpression::RRepeatStatement(it) => it.into(),
             AnyRExpression::RReturnExpression(it) => it.into(),
+            AnyRExpression::RSubset(it) => it.into(),
+            AnyRExpression::RSubset2(it) => it.into(),
             AnyRExpression::RTrueExpression(it) => it.into(),
             AnyRExpression::RUnaryExpression(it) => it.into(),
             AnyRExpression::RWhileStatement(it) => it.into(),
@@ -4494,6 +4872,26 @@ impl std::fmt::Display for RRoot {
     }
 }
 impl std::fmt::Display for RStringValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RSubset {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RSubset2 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RSubset2Arguments {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RSubsetArguments {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }

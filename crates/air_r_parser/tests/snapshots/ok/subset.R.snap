@@ -1,0 +1,760 @@
+---
+source: crates/air_r_parser/tests/spec_test.rs
+expression: snapshot
+---
+## Input
+
+```R
+fn
+fn[a]
+fn[a, b]
+fn[...]
+fn[a, ..., b]
+
+fn[a = 1]
+fn[a = ]
+
+fn[a = 1, b = 2]
+fn[a = , b = 2]
+
+fn[... = 1]
+fn[... =]
+
+fn["arg" = 1]
+fn["arg" =]
+
+# Comma tests
+fn[,]
+fn[,,,]
+fn[,,a,,b,,]
+
+# Comment tests
+fn[
+  # comment
+]
+fn[,
+  # comment
+,]
+fn[
+  a, # comment1
+  b # comment2
+]
+fn[
+  a # comment1
+  = # comment2
+  1 # comment3
+]
+
+{expr}[a = 1]
+
+```
+
+
+## AST
+
+```
+RRoot {
+    bom_token: missing (optional),
+    expressions: RExpressionList [
+        RIdentifier {
+            name_token: IDENT@0..2 "fn" [] [],
+        },
+        RSubset {
+            function: RIdentifier {
+                name_token: IDENT@2..5 "fn" [Newline("\n")] [],
+            },
+            arguments: RSubsetArguments {
+                l_brack_token: L_BRACK@5..6 "[" [] [],
+                items: RArgumentList [
+                    RUnnamedArgument {
+                        value: RIdentifier {
+                            name_token: IDENT@6..7 "a" [] [],
+                        },
+                    },
+                ],
+                r_brack_token: R_BRACK@7..8 "]" [] [],
+            },
+        },
+        RSubset {
+            function: RIdentifier {
+                name_token: IDENT@8..11 "fn" [Newline("\n")] [],
+            },
+            arguments: RSubsetArguments {
+                l_brack_token: L_BRACK@11..12 "[" [] [],
+                items: RArgumentList [
+                    RUnnamedArgument {
+                        value: RIdentifier {
+                            name_token: IDENT@12..13 "a" [] [],
+                        },
+                    },
+                    COMMA@13..14 "," [] [],
+                    RUnnamedArgument {
+                        value: RIdentifier {
+                            name_token: IDENT@14..16 "b" [Whitespace(" ")] [],
+                        },
+                    },
+                ],
+                r_brack_token: R_BRACK@16..17 "]" [] [],
+            },
+        },
+        RSubset {
+            function: RIdentifier {
+                name_token: IDENT@17..20 "fn" [Newline("\n")] [],
+            },
+            arguments: RSubsetArguments {
+                l_brack_token: L_BRACK@20..21 "[" [] [],
+                items: RArgumentList [
+                    RDotsArgument {
+                        value_token: DOTS@21..24 "..." [] [],
+                    },
+                ],
+                r_brack_token: R_BRACK@24..25 "]" [] [],
+            },
+        },
+        RSubset {
+            function: RIdentifier {
+                name_token: IDENT@25..28 "fn" [Newline("\n")] [],
+            },
+            arguments: RSubsetArguments {
+                l_brack_token: L_BRACK@28..29 "[" [] [],
+                items: RArgumentList [
+                    RUnnamedArgument {
+                        value: RIdentifier {
+                            name_token: IDENT@29..30 "a" [] [],
+                        },
+                    },
+                    COMMA@30..31 "," [] [],
+                    RDotsArgument {
+                        value_token: DOTS@31..35 "..." [Whitespace(" ")] [],
+                    },
+                    COMMA@35..36 "," [] [],
+                    RUnnamedArgument {
+                        value: RIdentifier {
+                            name_token: IDENT@36..38 "b" [Whitespace(" ")] [],
+                        },
+                    },
+                ],
+                r_brack_token: R_BRACK@38..39 "]" [] [],
+            },
+        },
+        RSubset {
+            function: RIdentifier {
+                name_token: IDENT@39..43 "fn" [Newline("\n"), Newline("\n")] [],
+            },
+            arguments: RSubsetArguments {
+                l_brack_token: L_BRACK@43..44 "[" [] [],
+                items: RArgumentList [
+                    RNamedArgument {
+                        name: RIdentifier {
+                            name_token: IDENT@44..45 "a" [] [],
+                        },
+                        eq_token: EQUAL@45..47 "=" [Whitespace(" ")] [],
+                        value: RDoubleValue {
+                            value_token: R_DOUBLE_LITERAL@47..49 "1" [Whitespace(" ")] [],
+                        },
+                    },
+                ],
+                r_brack_token: R_BRACK@49..50 "]" [] [],
+            },
+        },
+        RSubset {
+            function: RIdentifier {
+                name_token: IDENT@50..53 "fn" [Newline("\n")] [],
+            },
+            arguments: RSubsetArguments {
+                l_brack_token: L_BRACK@53..54 "[" [] [],
+                items: RArgumentList [
+                    RNamedArgument {
+                        name: RIdentifier {
+                            name_token: IDENT@54..55 "a" [] [],
+                        },
+                        eq_token: EQUAL@55..57 "=" [Whitespace(" ")] [],
+                        value: missing (optional),
+                    },
+                ],
+                r_brack_token: R_BRACK@57..59 "]" [Whitespace(" ")] [],
+            },
+        },
+        RSubset {
+            function: RIdentifier {
+                name_token: IDENT@59..63 "fn" [Newline("\n"), Newline("\n")] [],
+            },
+            arguments: RSubsetArguments {
+                l_brack_token: L_BRACK@63..64 "[" [] [],
+                items: RArgumentList [
+                    RNamedArgument {
+                        name: RIdentifier {
+                            name_token: IDENT@64..65 "a" [] [],
+                        },
+                        eq_token: EQUAL@65..67 "=" [Whitespace(" ")] [],
+                        value: RDoubleValue {
+                            value_token: R_DOUBLE_LITERAL@67..69 "1" [Whitespace(" ")] [],
+                        },
+                    },
+                    COMMA@69..70 "," [] [],
+                    RNamedArgument {
+                        name: RIdentifier {
+                            name_token: IDENT@70..72 "b" [Whitespace(" ")] [],
+                        },
+                        eq_token: EQUAL@72..74 "=" [Whitespace(" ")] [],
+                        value: RDoubleValue {
+                            value_token: R_DOUBLE_LITERAL@74..76 "2" [Whitespace(" ")] [],
+                        },
+                    },
+                ],
+                r_brack_token: R_BRACK@76..77 "]" [] [],
+            },
+        },
+        RSubset {
+            function: RIdentifier {
+                name_token: IDENT@77..80 "fn" [Newline("\n")] [],
+            },
+            arguments: RSubsetArguments {
+                l_brack_token: L_BRACK@80..81 "[" [] [],
+                items: RArgumentList [
+                    RNamedArgument {
+                        name: RIdentifier {
+                            name_token: IDENT@81..82 "a" [] [],
+                        },
+                        eq_token: EQUAL@82..84 "=" [Whitespace(" ")] [],
+                        value: missing (optional),
+                    },
+                    COMMA@84..86 "," [Whitespace(" ")] [],
+                    RNamedArgument {
+                        name: RIdentifier {
+                            name_token: IDENT@86..88 "b" [Whitespace(" ")] [],
+                        },
+                        eq_token: EQUAL@88..90 "=" [Whitespace(" ")] [],
+                        value: RDoubleValue {
+                            value_token: R_DOUBLE_LITERAL@90..92 "2" [Whitespace(" ")] [],
+                        },
+                    },
+                ],
+                r_brack_token: R_BRACK@92..93 "]" [] [],
+            },
+        },
+        RSubset {
+            function: RIdentifier {
+                name_token: IDENT@93..97 "fn" [Newline("\n"), Newline("\n")] [],
+            },
+            arguments: RSubsetArguments {
+                l_brack_token: L_BRACK@97..98 "[" [] [],
+                items: RArgumentList [
+                    RNamedArgument {
+                        name: RDots {
+                            value_token: DOTS@98..101 "..." [] [],
+                        },
+                        eq_token: EQUAL@101..103 "=" [Whitespace(" ")] [],
+                        value: RDoubleValue {
+                            value_token: R_DOUBLE_LITERAL@103..105 "1" [Whitespace(" ")] [],
+                        },
+                    },
+                ],
+                r_brack_token: R_BRACK@105..106 "]" [] [],
+            },
+        },
+        RSubset {
+            function: RIdentifier {
+                name_token: IDENT@106..109 "fn" [Newline("\n")] [],
+            },
+            arguments: RSubsetArguments {
+                l_brack_token: L_BRACK@109..110 "[" [] [],
+                items: RArgumentList [
+                    RNamedArgument {
+                        name: RDots {
+                            value_token: DOTS@110..113 "..." [] [],
+                        },
+                        eq_token: EQUAL@113..115 "=" [Whitespace(" ")] [],
+                        value: missing (optional),
+                    },
+                ],
+                r_brack_token: R_BRACK@115..116 "]" [] [],
+            },
+        },
+        RSubset {
+            function: RIdentifier {
+                name_token: IDENT@116..120 "fn" [Newline("\n"), Newline("\n")] [],
+            },
+            arguments: RSubsetArguments {
+                l_brack_token: L_BRACK@120..121 "[" [] [],
+                items: RArgumentList [
+                    RNamedArgument {
+                        name: RStringValue {
+                            value_token: R_STRING_LITERAL@121..126 "\"arg\"" [] [],
+                        },
+                        eq_token: EQUAL@126..128 "=" [Whitespace(" ")] [],
+                        value: RDoubleValue {
+                            value_token: R_DOUBLE_LITERAL@128..130 "1" [Whitespace(" ")] [],
+                        },
+                    },
+                ],
+                r_brack_token: R_BRACK@130..131 "]" [] [],
+            },
+        },
+        RSubset {
+            function: RIdentifier {
+                name_token: IDENT@131..134 "fn" [Newline("\n")] [],
+            },
+            arguments: RSubsetArguments {
+                l_brack_token: L_BRACK@134..135 "[" [] [],
+                items: RArgumentList [
+                    RNamedArgument {
+                        name: RStringValue {
+                            value_token: R_STRING_LITERAL@135..140 "\"arg\"" [] [],
+                        },
+                        eq_token: EQUAL@140..142 "=" [Whitespace(" ")] [],
+                        value: missing (optional),
+                    },
+                ],
+                r_brack_token: R_BRACK@142..143 "]" [] [],
+            },
+        },
+        RSubset {
+            function: RIdentifier {
+                name_token: IDENT@143..161 "fn" [Newline("\n"), Newline("\n"), Comments("# Comma tests"), Newline("\n")] [],
+            },
+            arguments: RSubsetArguments {
+                l_brack_token: L_BRACK@161..162 "[" [] [],
+                items: RArgumentList [
+                    RHoleArgument,
+                    COMMA@162..163 "," [] [],
+                    RHoleArgument,
+                ],
+                r_brack_token: R_BRACK@163..164 "]" [] [],
+            },
+        },
+        RSubset {
+            function: RIdentifier {
+                name_token: IDENT@164..167 "fn" [Newline("\n")] [],
+            },
+            arguments: RSubsetArguments {
+                l_brack_token: L_BRACK@167..168 "[" [] [],
+                items: RArgumentList [
+                    RHoleArgument,
+                    COMMA@168..169 "," [] [],
+                    RHoleArgument,
+                    COMMA@169..170 "," [] [],
+                    RHoleArgument,
+                    COMMA@170..171 "," [] [],
+                    RHoleArgument,
+                ],
+                r_brack_token: R_BRACK@171..172 "]" [] [],
+            },
+        },
+        RSubset {
+            function: RIdentifier {
+                name_token: IDENT@172..175 "fn" [Newline("\n")] [],
+            },
+            arguments: RSubsetArguments {
+                l_brack_token: L_BRACK@175..176 "[" [] [],
+                items: RArgumentList [
+                    RHoleArgument,
+                    COMMA@176..177 "," [] [],
+                    RHoleArgument,
+                    COMMA@177..178 "," [] [],
+                    RUnnamedArgument {
+                        value: RIdentifier {
+                            name_token: IDENT@178..179 "a" [] [],
+                        },
+                    },
+                    COMMA@179..180 "," [] [],
+                    RHoleArgument,
+                    COMMA@180..181 "," [] [],
+                    RUnnamedArgument {
+                        value: RIdentifier {
+                            name_token: IDENT@181..182 "b" [] [],
+                        },
+                    },
+                    COMMA@182..183 "," [] [],
+                    RHoleArgument,
+                    COMMA@183..184 "," [] [],
+                    RHoleArgument,
+                ],
+                r_brack_token: R_BRACK@184..185 "]" [] [],
+            },
+        },
+        RSubset {
+            function: RIdentifier {
+                name_token: IDENT@185..205 "fn" [Newline("\n"), Newline("\n"), Comments("# Comment tests"), Newline("\n")] [],
+            },
+            arguments: RSubsetArguments {
+                l_brack_token: L_BRACK@205..206 "[" [] [],
+                items: RArgumentList [],
+                r_brack_token: R_BRACK@206..220 "]" [Newline("\n"), Whitespace("  "), Comments("# comment"), Newline("\n")] [],
+            },
+        },
+        RSubset {
+            function: RIdentifier {
+                name_token: IDENT@220..223 "fn" [Newline("\n")] [],
+            },
+            arguments: RSubsetArguments {
+                l_brack_token: L_BRACK@223..224 "[" [] [],
+                items: RArgumentList [
+                    RHoleArgument,
+                    COMMA@224..225 "," [] [],
+                    RHoleArgument,
+                    COMMA@225..239 "," [Newline("\n"), Whitespace("  "), Comments("# comment"), Newline("\n")] [],
+                    RHoleArgument,
+                ],
+                r_brack_token: R_BRACK@239..240 "]" [] [],
+            },
+        },
+        RSubset {
+            function: RIdentifier {
+                name_token: IDENT@240..243 "fn" [Newline("\n")] [],
+            },
+            arguments: RSubsetArguments {
+                l_brack_token: L_BRACK@243..244 "[" [] [],
+                items: RArgumentList [
+                    RUnnamedArgument {
+                        value: RIdentifier {
+                            name_token: IDENT@244..248 "a" [Newline("\n"), Whitespace("  ")] [],
+                        },
+                    },
+                    COMMA@248..260 "," [] [Whitespace(" "), Comments("# comment1")],
+                    RUnnamedArgument {
+                        value: RIdentifier {
+                            name_token: IDENT@260..275 "b" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")],
+                        },
+                    },
+                ],
+                r_brack_token: R_BRACK@275..277 "]" [Newline("\n")] [],
+            },
+        },
+        RSubset {
+            function: RIdentifier {
+                name_token: IDENT@277..280 "fn" [Newline("\n")] [],
+            },
+            arguments: RSubsetArguments {
+                l_brack_token: L_BRACK@280..281 "[" [] [],
+                items: RArgumentList [
+                    RNamedArgument {
+                        name: RIdentifier {
+                            name_token: IDENT@281..296 "a" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment1")],
+                        },
+                        eq_token: EQUAL@296..311 "=" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")],
+                        value: RDoubleValue {
+                            value_token: R_DOUBLE_LITERAL@311..326 "1" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment3")],
+                        },
+                    },
+                ],
+                r_brack_token: R_BRACK@326..328 "]" [Newline("\n")] [],
+            },
+        },
+        RSubset {
+            function: RBracedExpressions {
+                l_curly_token: L_CURLY@328..331 "{" [Newline("\n"), Newline("\n")] [],
+                expressions: RExpressionList [
+                    RIdentifier {
+                        name_token: IDENT@331..335 "expr" [] [],
+                    },
+                ],
+                r_curly_token: R_CURLY@335..336 "}" [] [],
+            },
+            arguments: RSubsetArguments {
+                l_brack_token: L_BRACK@336..337 "[" [] [],
+                items: RArgumentList [
+                    RNamedArgument {
+                        name: RIdentifier {
+                            name_token: IDENT@337..338 "a" [] [],
+                        },
+                        eq_token: EQUAL@338..340 "=" [Whitespace(" ")] [],
+                        value: RDoubleValue {
+                            value_token: R_DOUBLE_LITERAL@340..342 "1" [Whitespace(" ")] [],
+                        },
+                    },
+                ],
+                r_brack_token: R_BRACK@342..343 "]" [] [],
+            },
+        },
+    ],
+    eof_token: EOF@343..344 "" [Newline("\n")] [],
+}
+```
+
+## CST
+
+```
+0: R_ROOT@0..344
+  0: (empty)
+  1: R_EXPRESSION_LIST@0..343
+    0: R_IDENTIFIER@0..2
+      0: IDENT@0..2 "fn" [] []
+    1: R_SUBSET@2..8
+      0: R_IDENTIFIER@2..5
+        0: IDENT@2..5 "fn" [Newline("\n")] []
+      1: R_SUBSET_ARGUMENTS@5..8
+        0: L_BRACK@5..6 "[" [] []
+        1: R_ARGUMENT_LIST@6..7
+          0: R_UNNAMED_ARGUMENT@6..7
+            0: R_IDENTIFIER@6..7
+              0: IDENT@6..7 "a" [] []
+        2: R_BRACK@7..8 "]" [] []
+    2: R_SUBSET@8..17
+      0: R_IDENTIFIER@8..11
+        0: IDENT@8..11 "fn" [Newline("\n")] []
+      1: R_SUBSET_ARGUMENTS@11..17
+        0: L_BRACK@11..12 "[" [] []
+        1: R_ARGUMENT_LIST@12..16
+          0: R_UNNAMED_ARGUMENT@12..13
+            0: R_IDENTIFIER@12..13
+              0: IDENT@12..13 "a" [] []
+          1: COMMA@13..14 "," [] []
+          2: R_UNNAMED_ARGUMENT@14..16
+            0: R_IDENTIFIER@14..16
+              0: IDENT@14..16 "b" [Whitespace(" ")] []
+        2: R_BRACK@16..17 "]" [] []
+    3: R_SUBSET@17..25
+      0: R_IDENTIFIER@17..20
+        0: IDENT@17..20 "fn" [Newline("\n")] []
+      1: R_SUBSET_ARGUMENTS@20..25
+        0: L_BRACK@20..21 "[" [] []
+        1: R_ARGUMENT_LIST@21..24
+          0: R_DOTS_ARGUMENT@21..24
+            0: DOTS@21..24 "..." [] []
+        2: R_BRACK@24..25 "]" [] []
+    4: R_SUBSET@25..39
+      0: R_IDENTIFIER@25..28
+        0: IDENT@25..28 "fn" [Newline("\n")] []
+      1: R_SUBSET_ARGUMENTS@28..39
+        0: L_BRACK@28..29 "[" [] []
+        1: R_ARGUMENT_LIST@29..38
+          0: R_UNNAMED_ARGUMENT@29..30
+            0: R_IDENTIFIER@29..30
+              0: IDENT@29..30 "a" [] []
+          1: COMMA@30..31 "," [] []
+          2: R_DOTS_ARGUMENT@31..35
+            0: DOTS@31..35 "..." [Whitespace(" ")] []
+          3: COMMA@35..36 "," [] []
+          4: R_UNNAMED_ARGUMENT@36..38
+            0: R_IDENTIFIER@36..38
+              0: IDENT@36..38 "b" [Whitespace(" ")] []
+        2: R_BRACK@38..39 "]" [] []
+    5: R_SUBSET@39..50
+      0: R_IDENTIFIER@39..43
+        0: IDENT@39..43 "fn" [Newline("\n"), Newline("\n")] []
+      1: R_SUBSET_ARGUMENTS@43..50
+        0: L_BRACK@43..44 "[" [] []
+        1: R_ARGUMENT_LIST@44..49
+          0: R_NAMED_ARGUMENT@44..49
+            0: R_IDENTIFIER@44..45
+              0: IDENT@44..45 "a" [] []
+            1: EQUAL@45..47 "=" [Whitespace(" ")] []
+            2: R_DOUBLE_VALUE@47..49
+              0: R_DOUBLE_LITERAL@47..49 "1" [Whitespace(" ")] []
+        2: R_BRACK@49..50 "]" [] []
+    6: R_SUBSET@50..59
+      0: R_IDENTIFIER@50..53
+        0: IDENT@50..53 "fn" [Newline("\n")] []
+      1: R_SUBSET_ARGUMENTS@53..59
+        0: L_BRACK@53..54 "[" [] []
+        1: R_ARGUMENT_LIST@54..57
+          0: R_NAMED_ARGUMENT@54..57
+            0: R_IDENTIFIER@54..55
+              0: IDENT@54..55 "a" [] []
+            1: EQUAL@55..57 "=" [Whitespace(" ")] []
+            2: (empty)
+        2: R_BRACK@57..59 "]" [Whitespace(" ")] []
+    7: R_SUBSET@59..77
+      0: R_IDENTIFIER@59..63
+        0: IDENT@59..63 "fn" [Newline("\n"), Newline("\n")] []
+      1: R_SUBSET_ARGUMENTS@63..77
+        0: L_BRACK@63..64 "[" [] []
+        1: R_ARGUMENT_LIST@64..76
+          0: R_NAMED_ARGUMENT@64..69
+            0: R_IDENTIFIER@64..65
+              0: IDENT@64..65 "a" [] []
+            1: EQUAL@65..67 "=" [Whitespace(" ")] []
+            2: R_DOUBLE_VALUE@67..69
+              0: R_DOUBLE_LITERAL@67..69 "1" [Whitespace(" ")] []
+          1: COMMA@69..70 "," [] []
+          2: R_NAMED_ARGUMENT@70..76
+            0: R_IDENTIFIER@70..72
+              0: IDENT@70..72 "b" [Whitespace(" ")] []
+            1: EQUAL@72..74 "=" [Whitespace(" ")] []
+            2: R_DOUBLE_VALUE@74..76
+              0: R_DOUBLE_LITERAL@74..76 "2" [Whitespace(" ")] []
+        2: R_BRACK@76..77 "]" [] []
+    8: R_SUBSET@77..93
+      0: R_IDENTIFIER@77..80
+        0: IDENT@77..80 "fn" [Newline("\n")] []
+      1: R_SUBSET_ARGUMENTS@80..93
+        0: L_BRACK@80..81 "[" [] []
+        1: R_ARGUMENT_LIST@81..92
+          0: R_NAMED_ARGUMENT@81..84
+            0: R_IDENTIFIER@81..82
+              0: IDENT@81..82 "a" [] []
+            1: EQUAL@82..84 "=" [Whitespace(" ")] []
+            2: (empty)
+          1: COMMA@84..86 "," [Whitespace(" ")] []
+          2: R_NAMED_ARGUMENT@86..92
+            0: R_IDENTIFIER@86..88
+              0: IDENT@86..88 "b" [Whitespace(" ")] []
+            1: EQUAL@88..90 "=" [Whitespace(" ")] []
+            2: R_DOUBLE_VALUE@90..92
+              0: R_DOUBLE_LITERAL@90..92 "2" [Whitespace(" ")] []
+        2: R_BRACK@92..93 "]" [] []
+    9: R_SUBSET@93..106
+      0: R_IDENTIFIER@93..97
+        0: IDENT@93..97 "fn" [Newline("\n"), Newline("\n")] []
+      1: R_SUBSET_ARGUMENTS@97..106
+        0: L_BRACK@97..98 "[" [] []
+        1: R_ARGUMENT_LIST@98..105
+          0: R_NAMED_ARGUMENT@98..105
+            0: R_DOTS@98..101
+              0: DOTS@98..101 "..." [] []
+            1: EQUAL@101..103 "=" [Whitespace(" ")] []
+            2: R_DOUBLE_VALUE@103..105
+              0: R_DOUBLE_LITERAL@103..105 "1" [Whitespace(" ")] []
+        2: R_BRACK@105..106 "]" [] []
+    10: R_SUBSET@106..116
+      0: R_IDENTIFIER@106..109
+        0: IDENT@106..109 "fn" [Newline("\n")] []
+      1: R_SUBSET_ARGUMENTS@109..116
+        0: L_BRACK@109..110 "[" [] []
+        1: R_ARGUMENT_LIST@110..115
+          0: R_NAMED_ARGUMENT@110..115
+            0: R_DOTS@110..113
+              0: DOTS@110..113 "..." [] []
+            1: EQUAL@113..115 "=" [Whitespace(" ")] []
+            2: (empty)
+        2: R_BRACK@115..116 "]" [] []
+    11: R_SUBSET@116..131
+      0: R_IDENTIFIER@116..120
+        0: IDENT@116..120 "fn" [Newline("\n"), Newline("\n")] []
+      1: R_SUBSET_ARGUMENTS@120..131
+        0: L_BRACK@120..121 "[" [] []
+        1: R_ARGUMENT_LIST@121..130
+          0: R_NAMED_ARGUMENT@121..130
+            0: R_STRING_VALUE@121..126
+              0: R_STRING_LITERAL@121..126 "\"arg\"" [] []
+            1: EQUAL@126..128 "=" [Whitespace(" ")] []
+            2: R_DOUBLE_VALUE@128..130
+              0: R_DOUBLE_LITERAL@128..130 "1" [Whitespace(" ")] []
+        2: R_BRACK@130..131 "]" [] []
+    12: R_SUBSET@131..143
+      0: R_IDENTIFIER@131..134
+        0: IDENT@131..134 "fn" [Newline("\n")] []
+      1: R_SUBSET_ARGUMENTS@134..143
+        0: L_BRACK@134..135 "[" [] []
+        1: R_ARGUMENT_LIST@135..142
+          0: R_NAMED_ARGUMENT@135..142
+            0: R_STRING_VALUE@135..140
+              0: R_STRING_LITERAL@135..140 "\"arg\"" [] []
+            1: EQUAL@140..142 "=" [Whitespace(" ")] []
+            2: (empty)
+        2: R_BRACK@142..143 "]" [] []
+    13: R_SUBSET@143..164
+      0: R_IDENTIFIER@143..161
+        0: IDENT@143..161 "fn" [Newline("\n"), Newline("\n"), Comments("# Comma tests"), Newline("\n")] []
+      1: R_SUBSET_ARGUMENTS@161..164
+        0: L_BRACK@161..162 "[" [] []
+        1: R_ARGUMENT_LIST@162..163
+          0: R_HOLE_ARGUMENT@162..162
+          1: COMMA@162..163 "," [] []
+          2: R_HOLE_ARGUMENT@163..163
+        2: R_BRACK@163..164 "]" [] []
+    14: R_SUBSET@164..172
+      0: R_IDENTIFIER@164..167
+        0: IDENT@164..167 "fn" [Newline("\n")] []
+      1: R_SUBSET_ARGUMENTS@167..172
+        0: L_BRACK@167..168 "[" [] []
+        1: R_ARGUMENT_LIST@168..171
+          0: R_HOLE_ARGUMENT@168..168
+          1: COMMA@168..169 "," [] []
+          2: R_HOLE_ARGUMENT@169..169
+          3: COMMA@169..170 "," [] []
+          4: R_HOLE_ARGUMENT@170..170
+          5: COMMA@170..171 "," [] []
+          6: R_HOLE_ARGUMENT@171..171
+        2: R_BRACK@171..172 "]" [] []
+    15: R_SUBSET@172..185
+      0: R_IDENTIFIER@172..175
+        0: IDENT@172..175 "fn" [Newline("\n")] []
+      1: R_SUBSET_ARGUMENTS@175..185
+        0: L_BRACK@175..176 "[" [] []
+        1: R_ARGUMENT_LIST@176..184
+          0: R_HOLE_ARGUMENT@176..176
+          1: COMMA@176..177 "," [] []
+          2: R_HOLE_ARGUMENT@177..177
+          3: COMMA@177..178 "," [] []
+          4: R_UNNAMED_ARGUMENT@178..179
+            0: R_IDENTIFIER@178..179
+              0: IDENT@178..179 "a" [] []
+          5: COMMA@179..180 "," [] []
+          6: R_HOLE_ARGUMENT@180..180
+          7: COMMA@180..181 "," [] []
+          8: R_UNNAMED_ARGUMENT@181..182
+            0: R_IDENTIFIER@181..182
+              0: IDENT@181..182 "b" [] []
+          9: COMMA@182..183 "," [] []
+          10: R_HOLE_ARGUMENT@183..183
+          11: COMMA@183..184 "," [] []
+          12: R_HOLE_ARGUMENT@184..184
+        2: R_BRACK@184..185 "]" [] []
+    16: R_SUBSET@185..220
+      0: R_IDENTIFIER@185..205
+        0: IDENT@185..205 "fn" [Newline("\n"), Newline("\n"), Comments("# Comment tests"), Newline("\n")] []
+      1: R_SUBSET_ARGUMENTS@205..220
+        0: L_BRACK@205..206 "[" [] []
+        1: R_ARGUMENT_LIST@206..206
+        2: R_BRACK@206..220 "]" [Newline("\n"), Whitespace("  "), Comments("# comment"), Newline("\n")] []
+    17: R_SUBSET@220..240
+      0: R_IDENTIFIER@220..223
+        0: IDENT@220..223 "fn" [Newline("\n")] []
+      1: R_SUBSET_ARGUMENTS@223..240
+        0: L_BRACK@223..224 "[" [] []
+        1: R_ARGUMENT_LIST@224..239
+          0: R_HOLE_ARGUMENT@224..224
+          1: COMMA@224..225 "," [] []
+          2: R_HOLE_ARGUMENT@225..225
+          3: COMMA@225..239 "," [Newline("\n"), Whitespace("  "), Comments("# comment"), Newline("\n")] []
+          4: R_HOLE_ARGUMENT@239..239
+        2: R_BRACK@239..240 "]" [] []
+    18: R_SUBSET@240..277
+      0: R_IDENTIFIER@240..243
+        0: IDENT@240..243 "fn" [Newline("\n")] []
+      1: R_SUBSET_ARGUMENTS@243..277
+        0: L_BRACK@243..244 "[" [] []
+        1: R_ARGUMENT_LIST@244..275
+          0: R_UNNAMED_ARGUMENT@244..248
+            0: R_IDENTIFIER@244..248
+              0: IDENT@244..248 "a" [Newline("\n"), Whitespace("  ")] []
+          1: COMMA@248..260 "," [] [Whitespace(" "), Comments("# comment1")]
+          2: R_UNNAMED_ARGUMENT@260..275
+            0: R_IDENTIFIER@260..275
+              0: IDENT@260..275 "b" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")]
+        2: R_BRACK@275..277 "]" [Newline("\n")] []
+    19: R_SUBSET@277..328
+      0: R_IDENTIFIER@277..280
+        0: IDENT@277..280 "fn" [Newline("\n")] []
+      1: R_SUBSET_ARGUMENTS@280..328
+        0: L_BRACK@280..281 "[" [] []
+        1: R_ARGUMENT_LIST@281..326
+          0: R_NAMED_ARGUMENT@281..326
+            0: R_IDENTIFIER@281..296
+              0: IDENT@281..296 "a" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment1")]
+            1: EQUAL@296..311 "=" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")]
+            2: R_DOUBLE_VALUE@311..326
+              0: R_DOUBLE_LITERAL@311..326 "1" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment3")]
+        2: R_BRACK@326..328 "]" [Newline("\n")] []
+    20: R_SUBSET@328..343
+      0: R_BRACED_EXPRESSIONS@328..336
+        0: L_CURLY@328..331 "{" [Newline("\n"), Newline("\n")] []
+        1: R_EXPRESSION_LIST@331..335
+          0: R_IDENTIFIER@331..335
+            0: IDENT@331..335 "expr" [] []
+        2: R_CURLY@335..336 "}" [] []
+      1: R_SUBSET_ARGUMENTS@336..343
+        0: L_BRACK@336..337 "[" [] []
+        1: R_ARGUMENT_LIST@337..342
+          0: R_NAMED_ARGUMENT@337..342
+            0: R_IDENTIFIER@337..338
+              0: IDENT@337..338 "a" [] []
+            1: EQUAL@338..340 "=" [Whitespace(" ")] []
+            2: R_DOUBLE_VALUE@340..342
+              0: R_DOUBLE_LITERAL@340..342 "1" [Whitespace(" ")] []
+        2: R_BRACK@342..343 "]" [] []
+  2: EOF@343..344 "" [Newline("\n")] []
+
+```

@@ -11,6 +11,7 @@ use air_r_syntax::RCall;
 use air_r_syntax::RCallArguments;
 use air_r_syntax::RCallArgumentsFields;
 use air_r_syntax::RLanguage;
+use air_r_syntax::RSyntaxToken;
 use biome_formatter::separated::TrailingSeparator;
 use biome_formatter::{format_args, format_element, write, VecBuffer};
 use biome_rowan::{AstSeparatedElement, AstSeparatedList, SyntaxResult};
@@ -67,13 +68,46 @@ impl FormatNodeRule<RCallArguments> for FormatRCallArguments {
             return write!(f, [l_paren_token.format(), &items, r_paren_token.format()]);
         }
 
-        let last_index = items.len().saturating_sub(1);
+        FormatRCallLikeArguments::new(l_paren_token, items, r_paren_token).fmt(f)
+    }
+
+    fn fmt_dangling_comments(&self, _: &RCallArguments, _: &mut RFormatter) -> FormatResult<()> {
+        // Formatted inside of `fmt_fields`
+        // Only applicable for the empty arguments case
+        Ok(())
+    }
+}
+
+pub(crate) struct FormatRCallLikeArguments {
+    l_token: SyntaxResult<RSyntaxToken>,
+    items: RArgumentList,
+    r_token: SyntaxResult<RSyntaxToken>,
+}
+
+impl FormatRCallLikeArguments {
+    pub(crate) fn new(
+        l_token: SyntaxResult<RSyntaxToken>,
+        items: RArgumentList,
+        r_token: SyntaxResult<RSyntaxToken>,
+    ) -> Self {
+        Self {
+            l_token,
+            items,
+            r_token,
+        }
+    }
+}
+
+impl Format<RFormatContext> for FormatRCallLikeArguments {
+    fn fmt(&self, f: &mut Formatter<RFormatContext>) -> FormatResult<()> {
+        let last_index = self.items.len().saturating_sub(1);
         let mut has_empty_line = false;
 
         // Wrap `RArgumentList` elements in a `FormatCallArgument` type that
         // knows how to cache itself when we use `will_break()` to check if
         // the argument breaks
-        let arguments: Vec<_> = items
+        let arguments: Vec<_> = self
+            .items
             .elements()
             .enumerate()
             .map(|(index, element)| {
@@ -97,33 +131,27 @@ impl FormatNodeRule<RCallArguments> for FormatRCallArguments {
             return write!(
                 f,
                 [FormatAllArgsBrokenOut {
-                    l_paren: &l_paren_token.format(),
+                    l_token: &self.l_token.format(),
                     args: &arguments,
-                    r_paren: &r_paren_token.format(),
+                    r_token: &self.r_token.format(),
                     expand: true,
                 }]
             );
         }
 
-        if let Some(group_layout) = arguments_grouped_layout(&items, f.comments()) {
-            write_grouped_arguments(node, arguments, group_layout, f)
+        if let Some(group_layout) = arguments_grouped_layout(&self.items, f.comments()) {
+            write_grouped_arguments(&self.l_token, &self.r_token, arguments, group_layout, f)
         } else {
             write!(
                 f,
                 [FormatAllArgsBrokenOut {
-                    l_paren: &l_paren_token.format(),
+                    l_token: &self.l_token.format(),
                     args: &arguments,
-                    r_paren: &r_paren_token.format(),
+                    r_token: &self.r_token.format(),
                     expand: false,
                 }]
             )
         }
-    }
-
-    fn fmt_dangling_comments(&self, _: &RCallArguments, _: &mut RFormatter) -> FormatResult<()> {
-        // Formatted inside of `fmt_fields`
-        // Only applicable for the empty arguments case
-        Ok(())
     }
 }
 
@@ -352,14 +380,12 @@ impl Format<RFormatContext> for FormatCallArgument {
 /// )
 /// ```
 fn write_grouped_arguments(
-    call_arguments: &RCallArguments,
+    l_token: &SyntaxResult<RSyntaxToken>,
+    r_token: &SyntaxResult<RSyntaxToken>,
     mut arguments: Vec<FormatCallArgument>,
     group_layout: GroupedCallArgumentLayout,
     f: &mut RFormatter,
 ) -> FormatResult<()> {
-    let l_paren_token = call_arguments.l_paren_token();
-    let r_paren_token = call_arguments.r_paren_token();
-
     let grouped_breaks = {
         let (grouped_arg, other_args) = match group_layout {
             GroupedCallArgumentLayout::GroupedFirstArgument => {
@@ -381,9 +407,9 @@ fn write_grouped_arguments(
             return write!(
                 f,
                 [FormatAllArgsBrokenOut {
-                    l_paren: &l_paren_token.format(),
+                    l_token: &l_token.format(),
                     args: &arguments,
-                    r_paren: &r_paren_token.format(),
+                    r_token: &r_token.format(),
                     expand: true,
                 }]
             );
@@ -395,10 +421,10 @@ fn write_grouped_arguments(
     // We now cache the delimiters tokens. This is needed because `[biome_formatter::best_fitting]` will try to
     // print each version first
     // tokens on the left
-    let l_paren = l_paren_token.format().memoized();
+    let l_token = l_token.format().memoized();
 
     // tokens on the right
-    let r_paren = r_paren_token.format().memoized();
+    let r_token = r_token.format().memoized();
 
     // First write the most expanded variant because it needs `arguments`.
     let most_expanded = {
@@ -408,9 +434,9 @@ fn write_grouped_arguments(
         write!(
             buffer,
             [FormatAllArgsBrokenOut {
-                l_paren: &l_paren,
+                l_token: &l_token,
                 args: &arguments,
-                r_paren: &r_paren,
+                r_token: &r_token,
                 expand: true,
             }]
         )?;
@@ -461,13 +487,13 @@ fn write_grouped_arguments(
         let result = write!(
             buffer,
             [
-                l_paren,
+                l_token,
                 format_with(|f| {
                     f.join_with(soft_line_break_or_space())
                         .entries(grouped.iter())
                         .finish()
                 }),
-                r_paren
+                r_token
             ]
         );
 
@@ -501,7 +527,7 @@ fn write_grouped_arguments(
         write!(
             buffer,
             [
-                l_paren,
+                l_token,
                 format_with(|f| {
                     let mut joiner = f.join_with(soft_line_break_or_space());
 
@@ -519,7 +545,7 @@ fn write_grouped_arguments(
                         }
                     }
                 }),
-                r_paren
+                r_token
             ]
         )?;
 
@@ -661,9 +687,9 @@ impl Format<RFormatContext> for FormatGroupedArgument {
 }
 
 struct FormatAllArgsBrokenOut<'a> {
-    l_paren: &'a dyn Format<RFormatContext>,
+    l_token: &'a dyn Format<RFormatContext>,
     args: &'a [FormatCallArgument],
-    r_paren: &'a dyn Format<RFormatContext>,
+    r_token: &'a dyn Format<RFormatContext>,
     expand: bool,
 }
 
@@ -689,9 +715,9 @@ impl<'a> Format<RFormatContext> for FormatAllArgsBrokenOut<'a> {
         write!(
             f,
             [group(&format_args![
-                self.l_paren,
+                self.l_token,
                 soft_block_indent(&args),
-                self.r_paren,
+                self.r_token,
             ])
             .should_expand(self.expand)]
         )

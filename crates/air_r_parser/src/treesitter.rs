@@ -370,6 +370,8 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "braced_expression" => RSyntaxKind::R_BRACED_EXPRESSIONS,
         "parenthesized_expression" => RSyntaxKind::R_PARENTHESIZED_EXPRESSION,
         "call" => RSyntaxKind::R_CALL,
+        "subset" => RSyntaxKind::R_SUBSET,
+        "subset2" => RSyntaxKind::R_SUBSET2,
         "arguments" => arguments_syntax_kind(x),
         "argument" => argument_syntax_kind(x),
         "identifier" => RSyntaxKind::R_IDENTIFIER,
@@ -390,6 +392,8 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "}" => RSyntaxKind::R_CURLY,
         "[" => RSyntaxKind::L_BRACK,
         "]" => RSyntaxKind::R_BRACK,
+        "[[" => RSyntaxKind::L_BRACK2,
+        "]]" => RSyntaxKind::R_BRACK2,
         "(" => RSyntaxKind::L_PAREN,
         ")" => RSyntaxKind::R_PAREN,
         "?" => RSyntaxKind::WAT,
@@ -488,8 +492,8 @@ fn arguments_syntax_kind(x: &Node) -> RSyntaxKind {
 
     match open.kind() {
         "(" => RSyntaxKind::R_CALL_ARGUMENTS,
-        // "[" => RSyntaxKind::R_SUBSET_ARGUMENTS,
-        // "[[" => RSyntaxKind::R_SUBSET2_ARGUMENTS,
+        "[" => RSyntaxKind::R_SUBSET_ARGUMENTS,
+        "[[" => RSyntaxKind::R_SUBSET2_ARGUMENTS,
         _ => unreachable!("Unknown arguments `open` token: {}", open.kind()),
     }
 }
