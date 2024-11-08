@@ -36,7 +36,7 @@ impl FormatNodeRule<RBinaryExpression> for FormatRBinaryExpression {
                 )
             }
 
-            // Other operators have spaces aournd them and allow the RHS to break
+            // Other operators have spaces around them and allow the RHS to break
             _ => {
                 write!(
                     f,
