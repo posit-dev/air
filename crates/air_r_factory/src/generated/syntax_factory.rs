@@ -476,7 +476,7 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
                 if let Some(element) = &current_element {
-                    if matches!(element.kind(), T![function] | BACKSLASH) {
+                    if matches!(element.kind(), T![function] | T!["\\"]) {
                         slots.mark_present();
                         current_element = elements.next();
                     }

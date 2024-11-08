@@ -675,6 +675,7 @@ impl Field {
                     ("!=", _) => "inequality",
                     ("!==", _) => "strict_inequality",
                     ("/", _) => "slash",
+                    ("\\", _) => "backslash",
                     ("%", LanguageKind::Css) => "percent",
                     ("%", _) => "remainder",
                     ("**", _) => "exponent",

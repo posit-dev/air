@@ -109,7 +109,7 @@ RSymbolOrString = RIdentifier | RStringValue
 // Function
 
 RFunctionDefinition =
-	name: ('function' | 'backslash')
+	name: ('function' | '\\')
 	parameters: RParameters
 	body: AnyRExpression
 

@@ -11,11 +11,11 @@ pub fn generate_syntax_kinds(grammar: KindsSrc, language_kind: LanguageKind) -> 
         // These tokens, when parsed to proc_macro2::TokenStream, generates a stream of bytes
         // that can't be recognized by [quote].
         // Hence, they need to be thread differently
-        // NOTE(air): we also add `[[` and `]]` to this list.
+        // NOTE(air): we also add `[[`, `]]`, and `\\` to this list.
         if "{}[]()`".contains(token) {
             let c = token.chars().next().unwrap();
             quote! { #c }
-        } else if matches!(*token, "$=" | "$_" | "[[" | "]]") {
+        } else if matches!(*token, "$=" | "$_" | "[[" | "]]" | "\\") {
             let token = Literal::string(token);
             quote! { #token }
         } else {
