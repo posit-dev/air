@@ -45,3 +45,18 @@ argument_that_is_quite_long + argument_that_is_quite_long^argument_that_is_quite
 1 ** 2
 1 ^ 2
 1 : 2
+
+# The following assignments should start the LHS/RHS on the same
+# line as the operator
+fn = function(x) {
+  x
+}
+fn <- function(x) {
+  x
+}
+fn <<- function(x) {
+  x
+}
+
+identity(1) -> x
+identity(1) ->> x
