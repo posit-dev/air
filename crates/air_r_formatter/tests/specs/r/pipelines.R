@@ -95,3 +95,42 @@ and() |> this() }
 
 1:2 +
 3
+
+# ----------------------------------------------------------------------------------------
+# Comments in chains
+
+df |> foo() # Trailing of `df |> foo()` pipe chain
+
+# Leading of `df |> foo() |> bar() |> baz()` pipe chain
+df |>
+  foo() |>
+  bar() |>
+  baz()
+
+df |>
+  # Leading of `foo()` call
+  foo() |>
+  # Leading of `bar()` call
+  bar() |>
+  # Leading of `baz()` call
+  baz()
+
+df |> # Trailing of `df` identifier
+  foo() |>
+  bar() |>
+  baz()
+
+df |>
+  foo() |> # Trailing of `df |> foo()` pipe chain
+  bar() |>
+  baz()
+
+df |>
+  foo() |>
+  bar() |> # Trailing of `df |> foo() |> bar()` pipe chain
+  baz()
+
+df |>
+  foo() |>
+  bar() |>
+  baz() # Trailing of `df |> foo() |> bar() |> baz()` pipe chain

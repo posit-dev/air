@@ -88,6 +88,7 @@ fn fmt_binary_assignment(
 struct TailPiece {
     operator: SyntaxToken<RLanguage>,
     right: AnyRExpression,
+    enclosing: Option<RBinaryExpression>,
 }
 
 fn fmt_binary_chain(
@@ -96,11 +97,17 @@ fn fmt_binary_chain(
     right: AnyRExpression,
     f: &mut Formatter<RFormatContext>,
 ) -> FormatResult<()> {
-    let mut tail = vec![TailPiece { operator, right }];
+    // For the lead node in a binary chain, comments are handled in the standard way as
+    // `FormatRBinaryExpression` is formatted, so no `encosing` node is tracked.
+    let mut tail = vec![TailPiece {
+        operator,
+        right,
+        enclosing: None,
+    }];
 
     // As long as the LHS is another chainable binary expression, continue collecting
-    // `operators` and `rights` to make one big tail that gets formatted all at once
-    // within a single `indent()` and respecting the same group expansion request.
+    // `operator` and `right` to make one big tail that gets formatted all at once
+    // within a single `indent()`, respecting a singular group expansion request.
     while let Some(node) = as_chainable_binary_expression(&left) {
         // It's only possible to suppress the formatting of the whole binary expression formatting OR
         // the formatting of the right hand side value but not of a nested binary expression.
@@ -111,6 +118,7 @@ fn fmt_binary_chain(
         tail.push(TailPiece {
             operator: node.operator()?,
             right: node.right()?,
+            enclosing: Some(node.clone()),
         });
 
         left = node.left()?;
@@ -123,22 +131,46 @@ fn fmt_binary_chain(
         // Each `(operator, right)` pair is joined with a single space. Non-breaking!
         // The `operator` must be on the same line as the previous `right` for R to parse
         // it correctly.
-        let mut joiner = f.join_with(space());
+        for TailPiece {
+            operator,
+            right,
+            enclosing,
+        } in tail
+        {
+            if let Some(enclosing) = enclosing {
+                // Safety checks
+                let comments = f.comments();
+                let enclosing = enclosing.syntax();
 
-        for TailPiece { operator, right } in tail {
-            joiner.entry(&format_args![
-                operator.format(),
-                soft_line_break_or_space(),
-                right.format()
-            ]);
+                if comments.has_leading_comments(enclosing) {
+                    unreachable!("Non-root nodes in a binary chain can't have leading comments.");
+                }
+                if comments.has_dangling_comments(enclosing) {
+                    unreachable!("Non-root nodes in a binary chain can't have dangling comments.");
+                }
+            }
+
+            write!(
+                f,
+                [
+                    space(),
+                    operator.format(),
+                    soft_line_break_or_space(),
+                    right.format()
+                ]
+            )?;
+
+            if let Some(enclosing) = enclosing {
+                write!(f, [format_trailing_comments(enclosing.syntax())])?;
+            }
         }
 
-        joiner.finish()
+        Ok(())
     });
 
     write!(
         f,
-        [group(&format_args![left.format(), space(), indent(&chain)])
+        [group(&format_args![left.format(), indent(&chain)])
             .should_expand(needs_user_requested_expansion(&tail))]
     )
 }
