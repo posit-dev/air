@@ -29,9 +29,7 @@ impl FormatNodeRule<RBinaryExpression> for FormatRBinaryExpression {
             RSyntaxKind::WAT
             | RSyntaxKind::EXPONENTIATE
             | RSyntaxKind::EXPONENTIATE2
-            | RSyntaxKind::COLON => {
-                FormatRBinaryStickyExpression::new(left, operator, right).fmt(f)
-            }
+            | RSyntaxKind::COLON => fmt_binary_sticky(left, operator, right, f),
 
             // Assignment
             RSyntaxKind::EQUAL
@@ -39,13 +37,11 @@ impl FormatNodeRule<RBinaryExpression> for FormatRBinaryExpression {
             | RSyntaxKind::ASSIGN
             | RSyntaxKind::ASSIGN_RIGHT
             | RSyntaxKind::SUPER_ASSIGN
-            | RSyntaxKind::SUPER_ASSIGN_RIGHT => {
-                FormatRBinaryAssignmentExpression::new(left, operator, right).fmt(f)
-            }
+            | RSyntaxKind::SUPER_ASSIGN_RIGHT => fmt_binary_assignment(left, operator, right, f),
 
             // Chain
             kind if is_chainable_binary_operator_kind(kind) => {
-                FormatRBinaryChainExpression::new(left, operator, right).fmt(f)
+                fmt_binary_chain(left, operator, right, f)
             }
 
             kind => unreachable!("Unexpected binary operator kind {kind:?}"),
@@ -54,153 +50,97 @@ impl FormatNodeRule<RBinaryExpression> for FormatRBinaryExpression {
 }
 
 /// Sticky expressions whose LHS and RHS stick to the operator (no spaces or line breaks)
-struct FormatRBinaryStickyExpression {
+fn fmt_binary_sticky(
     left: AnyRExpression,
     operator: SyntaxToken<RLanguage>,
     right: AnyRExpression,
-}
-
-impl FormatRBinaryStickyExpression {
-    pub(crate) fn new(
-        left: AnyRExpression,
-        operator: SyntaxToken<RLanguage>,
-        right: AnyRExpression,
-    ) -> Self {
-        Self {
-            left,
-            operator,
-            right,
-        }
-    }
-}
-
-impl Format<RFormatContext> for FormatRBinaryStickyExpression {
-    fn fmt(&self, f: &mut Formatter<RFormatContext>) -> FormatResult<()> {
-        write!(
-            f,
-            [group(&format_args![
-                self.left.format(),
-                self.operator.format(),
-                self.right.format()
-            ])]
-        )
-    }
+    f: &mut Formatter<RFormatContext>,
+) -> FormatResult<()> {
+    write!(
+        f,
+        [group(&format_args![
+            left.format(),
+            operator.format(),
+            right.format()
+        ])]
+    )
 }
 
 /// Assignment expressions keep LHS and RHS on the same line, separated by a single space
-struct FormatRBinaryAssignmentExpression {
+fn fmt_binary_assignment(
     left: AnyRExpression,
+    operator: SyntaxToken<RLanguage>,
+    right: AnyRExpression,
+    f: &mut Formatter<RFormatContext>,
+) -> FormatResult<()> {
+    write!(
+        f,
+        [group(&format_args![
+            left.format(),
+            space(),
+            operator.format(),
+            space(),
+            right.format()
+        ])]
+    )
+}
+
+struct TailPiece {
     operator: SyntaxToken<RLanguage>,
     right: AnyRExpression,
 }
 
-impl FormatRBinaryAssignmentExpression {
-    pub(crate) fn new(
-        left: AnyRExpression,
-        operator: SyntaxToken<RLanguage>,
-        right: AnyRExpression,
-    ) -> Self {
-        Self {
-            left,
-            operator,
-            right,
-        }
-    }
-}
-
-impl Format<RFormatContext> for FormatRBinaryAssignmentExpression {
-    fn fmt(&self, f: &mut Formatter<RFormatContext>) -> FormatResult<()> {
-        write!(
-            f,
-            [group(&format_args![
-                self.left.format(),
-                space(),
-                self.operator.format(),
-                space(),
-                self.right.format()
-            ])]
-        )
-    }
-}
-
-struct FormatRBinaryChainExpression {
-    left: AnyRExpression,
+fn fmt_binary_chain(
+    mut left: AnyRExpression,
     operator: SyntaxToken<RLanguage>,
     right: AnyRExpression,
-}
+    f: &mut Formatter<RFormatContext>,
+) -> FormatResult<()> {
+    let mut tail = vec![TailPiece { operator, right }];
 
-impl FormatRBinaryChainExpression {
-    pub(crate) fn new(
-        left: AnyRExpression,
-        operator: SyntaxToken<RLanguage>,
-        right: AnyRExpression,
-    ) -> Self {
-        Self {
-            left,
-            operator,
-            right,
-        }
-    }
-}
+    // As long as the LHS is another chainable binary expression, continue collecting
+    // `operators` and `rights` to make one big tail that gets formatted all at once
+    // within a single `indent()` and respecting the same group expansion request.
+    while let Some(node) = as_chainable_binary_expression(&left) {
+        // It's only possible to suppress the formatting of the whole binary expression formatting OR
+        // the formatting of the right hand side value but not of a nested binary expression.
+        f.context()
+            .comments()
+            .mark_suppression_checked(node.syntax());
 
-impl Format<RFormatContext> for FormatRBinaryChainExpression {
-    fn fmt(&self, f: &mut Formatter<RFormatContext>) -> FormatResult<()> {
-        let mut operators = Vec::new();
-        let mut rights = Vec::new();
-
-        let mut left = self.left.clone();
-        let mut operator = self.operator.clone();
-        let mut right = self.right.clone();
-
-        loop {
-            rights.push(right);
-            operators.push(operator);
-
-            if let Some(node) = as_chainable_binary_expression(&left) {
-                // It's only possible to suppress the formatting of the whole binary expression formatting OR
-                // the formatting of the right hand side value but not of a nested binary expression.
-                f.context()
-                    .comments()
-                    .mark_suppression_checked(node.syntax());
-
-                operator = node.operator()?;
-                right = node.right()?;
-                left = node.left()?;
-            } else {
-                break;
-            }
-        }
-
-        let user_requested_expansion = rights
-            .iter()
-            .any(|node| node.syntax().has_leading_newline());
-
-        let chain = format_with(|f| {
-            let mut joiner = f.join_with(space());
-            let iter = operators.iter().rev().zip(rights.iter().rev());
-
-            for (operator, right) in iter {
-                joiner.entry(&format_with(|f| {
-                    write!(
-                        f,
-                        [
-                            &operator.format(),
-                            soft_line_break_or_space(),
-                            &right.format(),
-                        ]
-                    )
-                }));
-            }
-
-            joiner.finish()
+        tail.push(TailPiece {
+            operator: node.operator()?,
+            right: node.right()?,
         });
 
-        write!(
-            f,
-            [group(&format_args![left.format(), space(), indent(&chain)])
-                .should_expand(user_requested_expansion)]
-        )
+        left = node.left()?;
     }
+
+    let chain = format_with(|f| {
+        // Reverse the `tail` pieces to generate the correct ordering
+        let tail = tail.iter().rev();
+
+        // Each `(operator, right)` pair is joined with a single space. Non-breaking!
+        // The `operator` must be on the same line as the previous `right` for R to parse
+        // it correctly.
+        let mut joiner = f.join_with(space());
+
+        for TailPiece { operator, right } in tail {
+            joiner.entry(&format_args![
+                operator.format(),
+                soft_line_break_or_space(),
+                right.format()
+            ]);
+        }
+
+        joiner.finish()
+    });
+
+    write!(
+        f,
+        [group(&format_args![left.format(), space(), indent(&chain)])
+            .should_expand(needs_user_requested_expansion(&tail))]
+    )
 }
 
 fn as_chainable_binary_expression(node: &AnyRExpression) -> Option<&RBinaryExpression> {
@@ -249,4 +189,29 @@ fn is_chainable_binary_operator_kind(kind: RSyntaxKind) -> bool {
 
         _ => false
     }
+}
+
+/// Check if the user has inserted a leading newline before any of the `rights`.
+/// If so, we respect that and treat it as a request to break ALL of the binary operators
+/// in the chain. Note this is a case of irreversible formatting!
+///
+/// ```r
+/// # Fits on one line, but newline before `mutate()` forces ALL pipes to break
+/// df %>%
+///   mutate(x = 1) %>% filter(x == y)
+/// ```
+///
+/// ```r
+/// # Fits on one line, but newline before `filter()` forces ALL pipes to break
+/// df %>% mutate(x = 1) %>%
+///   filter(x == y)
+/// ```
+///
+/// Note that we don't need to check for leading newlines before the `operator`, because
+/// it isn't valid R syntax to do that.
+fn needs_user_requested_expansion(tail: &[TailPiece]) -> bool {
+    // TODO: This should be configurable by an option, since it is a case of
+    // irreversible formatting
+    tail.iter()
+        .any(|piece| piece.right.syntax().has_leading_newline())
 }
