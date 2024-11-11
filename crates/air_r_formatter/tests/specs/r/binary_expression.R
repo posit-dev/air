@@ -60,3 +60,27 @@ fn <<- function(x) {
 
 identity(1) -> x
 identity(1) ->> x
+
+# ----------------------------------------------------------------------------------------
+# Binary expression conditionals in if statements
+
+# It fits, nothing to do
+if (long_conditional1 && long_conditional2) {
+  1 + 1
+}
+
+# User requested break
+if (long_conditional1
+&& long_conditional2) {
+  1 + 1
+}
+
+# User requested break, parentheses prevent further splitting
+if (long_conditional1
+&& (long_conditional2 || long_conditional3)) {
+  1 + 1
+}
+
+if (long_conditional1 && long_conditional2 && long_conditional3 && long_conditional4 && long_conditional5) {
+  1 + 1
+}
