@@ -58,7 +58,8 @@ RBinaryExpression =
 	left: AnyRExpression
     operator: (
 		'?' |
-		'~' |
+		':' |
+
 		'<-' |
 		'<<-' |
 		':=' |
@@ -83,9 +84,10 @@ RBinaryExpression =
 		'-' |
 		'*' |
 		'/' |
+
 		'^' |
 		'**' |
-		':' |
+
 		'|>' |
 		'special'
 	)
