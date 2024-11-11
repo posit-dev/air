@@ -33,6 +33,7 @@ impl SyntaxFactory for RSyntaxFactory {
                         element.kind(),
                         T ! [?]
                             | T ! [:]
+                            | T ! [~]
                             | T ! [<-]
                             | T ! [<<-]
                             | T ! [:=]
@@ -49,7 +50,6 @@ impl SyntaxFactory for RSyntaxFactory {
                             | T ! [>=]
                             | T ! [==]
                             | T ! [!=]
-                            | T ! [~]
                             | T ! [+]
                             | T ! [-]
                             | T ! [*]

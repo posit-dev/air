@@ -59,6 +59,7 @@ RBinaryExpression =
     operator: (
 		'?' |
 		':' |
+		'~' |
 
 		'<-' |
 		'<<-' |
@@ -79,7 +80,6 @@ RBinaryExpression =
 		'==' |
 		'!=' |
 
-		'~' |
 		'+' |
 		'-' |
 		'*' |
