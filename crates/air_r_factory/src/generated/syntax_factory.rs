@@ -32,7 +32,6 @@ impl SyntaxFactory for RSyntaxFactory {
                     if matches!(
                         element.kind(),
                         T ! [?]
-                            | T ! [~]
                             | T ! [<-]
                             | T ! [<<-]
                             | T ! [:=]
