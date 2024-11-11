@@ -160,6 +160,19 @@ fn fmt_binary_chain(
                 ]
             )?;
 
+            // Because we take over formatting of nested binary expressions, we also must
+            // take over formatting of comments that are directly assigned to those binary
+            // expression nodes. Practically the only possible comments are trailing ones
+            // like below, and they are inserted after the `right` expression is written.
+            // Technically, we write `foo()[comment][space]|>` but because we only allow
+            // a space between `foo()` and `|>` with no soft line break, the comment is
+            // nicely bumped outside the `|>` as well.
+            //
+            // ```r
+            // df |>
+            //   foo() |> # Trailing on the `df |> foo()` binary expression
+            //   bar()
+            // ```
             if let Some(enclosing) = enclosing {
                 write!(f, [format_trailing_comments(enclosing.syntax())])?;
             }
