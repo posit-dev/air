@@ -62,6 +62,15 @@ identity(1) -> x
 identity(1) ->> x
 
 # -----------------------------------------------------------------------------
+# Help specific
+
+alias?"^try"
+alias??"^try"
+alias???"^try"
+# Contact the oracle :)
+alias????"^try"
+
+# -----------------------------------------------------------------------------
 # Precedence with formulas and other binary operators
 
 a ~ b
