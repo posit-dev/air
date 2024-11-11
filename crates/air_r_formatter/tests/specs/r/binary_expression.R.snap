@@ -69,6 +69,24 @@ identity(1) -> x
 identity(1) ->> x
 
 # -----------------------------------------------------------------------------
+# Precedence with formulas and other binary operators
+
+a ~ b
+
+# User requested line break
+a ~
+	b
+
+# `b + c` is kept together. Precedence groups this as `(a) ~ (b + c)`,
+# so the LHS of `~` doesn't contain another binary operator to chain to.
+a ~
+	b + c
+
+# The two formulas are chained, but `c + d` stays together
+a ~
+	b ~ c + d
+
+# -----------------------------------------------------------------------------
 # Binary expression conditionals in if statements
 
 # It fits, nothing to do
@@ -176,6 +194,25 @@ fn <<- function(x) {
 
 identity(1) -> x
 identity(1) ->> x
+
+# -----------------------------------------------------------------------------
+# Precedence with formulas and other binary operators
+
+a ~ b
+
+# User requested line break
+a ~
+	b
+
+# `b + c` is kept together. Precedence groups this as `(a) ~ (b + c)`,
+# so the LHS of `~` doesn't contain another binary operator to chain to.
+a ~
+	b + c
+
+# The two formulas are chained, but `c + d` stays together
+a ~
+	b ~
+	c + d
 
 # -----------------------------------------------------------------------------
 # Binary expression conditionals in if statements
