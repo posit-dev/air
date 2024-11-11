@@ -239,11 +239,17 @@ fn is_chainable_binary_operator_kind(kind: RSyntaxKind) -> bool {
 ///   filter(x == y)
 /// ```
 ///
-/// Note that we don't need to check for leading newlines before the `operator`, because
-/// it isn't valid R syntax to do that.
+/// ```r
+/// # Fits on one line, but newline before `%>%` forces ALL pipes to break.
+/// # Note this is only valid inside `(`, `[`, or `[[`. At top level and inside
+/// # `{` this is an R syntax error.
+/// (df %>% mutate(x = 1)
+///   %>% filter(x == y))
+/// ```
 fn needs_user_requested_expansion(tail: &[TailPiece]) -> bool {
     // TODO: This should be configurable by an option, since it is a case of
     // irreversible formatting
-    tail.iter()
-        .any(|piece| piece.right.syntax().has_leading_newline())
+    tail.iter().any(|piece| {
+        piece.operator.has_leading_newline() || piece.right.syntax().has_leading_newline()
+    })
 }

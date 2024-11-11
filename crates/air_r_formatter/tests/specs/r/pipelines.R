@@ -38,8 +38,6 @@ name = mtcars |>
 # Line break persistance
 
 # If any of the pipes break, all should break
-# (Note that it isn't legal R code to have a break before the pipe, so we don't test
-# those cases)
 
 df |> foo() |> bar() |> baz()
 
@@ -95,6 +93,17 @@ and() |> this() }
 
 1:2 +
 3
+
+# Inside parentheses, subset, or, subset2, you can also request a break by adding a
+# newline before the binary operator, which isn't valid R code at top level
+(df
+|> foo())
+
+x[df
+|> foo()]
+
+x[[df
+|> foo()]]
 
 # ----------------------------------------------------------------------------------------
 # Comments in chains
