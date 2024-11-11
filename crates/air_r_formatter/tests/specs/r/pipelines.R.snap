@@ -41,6 +41,14 @@ name = mtcars |>
     argument_that_is_quite_long = argument_that_is_quite_long
   )
 
+# TODO: Piping into a ggplot2 `+` chain works nicely because of how
+# precendence rules naturally work, but piping OUT of a ggplot2 `+`
+# chain creates this extra indent. Do we want to support this?
+ggplot() +
+	geom_line() +
+	geom_bar() %>%
+		identity()
+
 # -----------------------------------------------------------------------------
 # Line break persistance
 
@@ -212,6 +220,14 @@ name = mtcars |>
 		argument_that_is_quite_long = argument_that_is_quite_long,
 		argument_that_is_quite_long = argument_that_is_quite_long
 	)
+
+# TODO: Piping into a ggplot2 `+` chain works nicely because of how
+# precendence rules naturally work, but piping OUT of a ggplot2 `+`
+# chain creates this extra indent. Do we want to support this?
+ggplot() +
+	geom_line() +
+	geom_bar() %>%
+		identity()
 
 # -----------------------------------------------------------------------------
 # Line break persistance

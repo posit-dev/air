@@ -78,7 +78,7 @@ alias???"^try"
 alias????"^try"
 
 # -----------------------------------------------------------------------------
-# Precedence with formulas and other binary operators
+# Precedence
 
 a ~ b
 
@@ -94,6 +94,20 @@ a ~
 # The two formulas are chained, but `c + d` stays together
 a ~
 	b ~ c + d
+
+# `2 * 3` stay together as they are more tightly bound
+1 +
+	2 * 3
+
+# And you keep this extra indent here if you force break
+1 +
+	2 *
+    3
+
+# TODO: Ideally the multiplication stay together on the same line,
+# as biome's JS version does
+a_really_really_long_thing_here1 * a_really_really_long_thing_here2 + a_really_really_long_thing_here3
+a_really_really_long_thing_here1 + a_really_really_long_thing_here2 * a_really_really_long_thing_here3
 
 # -----------------------------------------------------------------------------
 # Binary expression conditionals in if statements
@@ -214,7 +228,7 @@ alias???"^try"
 alias????"^try"
 
 # -----------------------------------------------------------------------------
-# Precedence with formulas and other binary operators
+# Precedence
 
 a ~ b
 
@@ -231,6 +245,23 @@ a ~
 a ~
 	b ~
 	c + d
+
+# `2 * 3` stay together as they are more tightly bound
+1 +
+	2 * 3
+
+# And you keep this extra indent here if you force break
+1 +
+	2 *
+		3
+
+# TODO: Ideally the multiplication stay together on the same line,
+# as biome's JS version does
+a_really_really_long_thing_here1 *
+	a_really_really_long_thing_here2 +
+	a_really_really_long_thing_here3
+a_really_really_long_thing_here1 +
+	a_really_really_long_thing_here2 * a_really_really_long_thing_here3
 
 # -----------------------------------------------------------------------------
 # Binary expression conditionals in if statements
