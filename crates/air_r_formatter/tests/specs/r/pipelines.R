@@ -94,8 +94,9 @@ and() |> this() }
 1:2 +
 3
 
-# Inside parentheses, subset, or, subset2, you can also request a break by adding a
-# newline before the binary operator, which isn't valid R code at top level
+# Inside parentheses, subset, or, subset2, you can also request a break by
+# adding a newline before the binary operator, which isn't valid R code at
+# top level
 (df
 |> foo())
 
