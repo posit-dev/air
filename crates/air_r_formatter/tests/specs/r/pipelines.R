@@ -106,6 +106,24 @@ x[[df
 |> foo()]]
 
 # ----------------------------------------------------------------------------------------
+# Blank lines between `operator` and `right`
+
+# Retain at most 1 blank line between the `operator` and the `right`.
+# This is the same behavior as retaining blank lines in top level expressions,
+# and between sequential arguments in calls.
+# This is common with pipelines.
+df |>
+  a() |>
+
+  # Some important notes about this complex call
+  b() |>
+
+
+  # Some more important notes
+  c() |>
+  d()
+
+# ----------------------------------------------------------------------------------------
 # Comments in chains
 
 df |> foo() # Trailing of `df |> foo()` pipe chain

@@ -150,12 +150,31 @@ fn fmt_binary_chain(
                 }
             }
 
+            // Respect when the user requests empty lines between the `operator` and
+            // `right`. This is common in pipe chains and is usually accompanied by a
+            // comment providing details about the upcoming call.
+            //
+            // ```r
+            // df |>
+            //
+            //   # Some important notes about this call
+            //   foo() |>
+            //
+            //   # Some more important notes
+            //   bar()
+            // ```
+            let user_requested_empty_line = get_lines_before(right.syntax()) > 1;
+
             write!(
                 f,
                 [
                     space(),
                     operator.format(),
-                    soft_line_break_or_space(),
+                    if user_requested_empty_line {
+                        empty_line()
+                    } else {
+                        soft_line_break_or_space()
+                    },
                     right.format()
                 ]
             )?;
