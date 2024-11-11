@@ -91,6 +91,92 @@ struct TailPiece {
     enclosing: Option<RBinaryExpression>,
 }
 
+/// Format a binary expression chain
+///
+/// Binary expression chains (like pipe chains or ggplot2 `+` chains) work by turning:
+///
+/// ```r
+/// df |>
+///   foo() %>%
+///   bar()
+/// ```
+///
+/// Which generates a tree like:
+///
+/// ```text
+///        %>%
+///       /  \
+///      /    \
+///    |>      bar()
+///    /\
+///   /  \
+/// df    foo()
+/// ```
+///
+/// Into a flat sequence of:
+///
+/// ```text
+/// df
+/// (|>, foo())
+/// (%>%, bar())
+///
+/// # Or, put differently:
+/// left
+/// (operator, right) # Tail piece 1
+/// (operator, right) # Tail piece 2
+/// ```
+///
+/// which you can then iterate through and print in order. This allows you to `group()`
+/// and `indent()` all of the `operator` and `right` nodes into a single block,
+/// so if any pipes break, then they all break.
+///
+/// It accomplishes this by looking down the LHS of the tree, accumulating
+/// `operator` and `right` as it goes, stopping at the first non-chainable
+/// element (here, the `df`), which becomes the overarching `left`.
+///
+/// # Limitations
+///
+/// This takes advantage of natural precedence rules, which tend to work quite well as
+/// they let you pipe into ggplot2 chains. But you can't pipe out of ggplot2 chains
+/// without an extra indent:
+///
+/// ```r
+/// ggplot(df) +
+///   geom_line() +
+///   geom_bar() %>%
+///     # Unavoidable extra indent
+///     identity()
+/// ```
+///
+/// While that isn't that common, you also get seemingly strange indentation here:
+///
+/// ```r
+/// a_really_really_long_thing_here1 * a_really_really_long_thing_here2 + a_really_really_long_thing_here3
+/// a_really_really_long_thing_here1 + a_really_really_long_thing_here2 * a_really_really_long_thing_here3
+/// ```
+///
+/// as it results in:
+///
+/// ```r
+/// a_really_really_long_thing_here1 *
+///   a_really_really_long_thing_here2 +
+///   a_really_really_long_thing_here3
+///
+/// a_really_really_long_thing_here1 +
+///   a_really_really_long_thing_here2 * a_really_really_long_thing_here3
+/// ```
+///
+/// where Biome's JS implementation results in the more natural:
+///
+/// ```r
+/// a_really_really_long_thing_here1 * a_really_really_long_thing_here2 +
+///   a_really_really_long_thing_here3
+///
+/// a_really_really_long_thing_here1 +
+///   a_really_really_long_thing_here2 * a_really_really_long_thing_here3
+/// ```
+///
+/// which more tightly groups same-precendence operations.
 fn fmt_binary_chain(
     mut left: AnyRExpression,
     operator: SyntaxToken<RLanguage>,
