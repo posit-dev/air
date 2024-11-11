@@ -61,7 +61,7 @@ fn <<- function(x) {
 identity(1) -> x
 identity(1) ->> x
 
-# ----------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Binary expression conditionals in if statements
 
 # It fits, nothing to do
