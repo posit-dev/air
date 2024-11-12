@@ -1,15 +1,17 @@
+//
+// config.rs
+//
+// Copyright (C) 2024 Posit Software, PBC. All rights reserved.
+//
+//
+
 use serde::Deserialize;
 use serde::Serialize;
 use struct_field_names_as_array::FieldNamesAsArray;
 
-use crate::lsp;
-use crate::lsp::diagnostics::DiagnosticsConfig;
-
 /// Configuration of the LSP
 #[derive(Clone, Debug)]
-pub(crate) struct LspConfig {
-    pub(crate) diagnostics: DiagnosticsConfig,
-}
+pub(crate) struct LspConfig {}
 
 /// Configuration of a document.
 ///
@@ -62,9 +64,7 @@ pub(crate) enum VscIndentSize {
 
 impl Default for LspConfig {
     fn default() -> Self {
-        Self {
-            diagnostics: Default::default(),
-        }
+        Self {}
     }
 }
 
@@ -101,10 +101,10 @@ impl From<VscDocumentConfig> for DocumentConfig {
                 if var == "tabSize" {
                     x.tab_size
                 } else {
-                    lsp::log_warn!("Unknown indent alias {var}, using default");
+                    crate::log_warn!("Unknown indent alias {var}, using default");
                     2
                 }
-            },
+            }
         };
 
         Self {
@@ -122,14 +122,6 @@ impl VscDiagnosticsConfig {
         match key {
             "enable" => "positron.r.diagnostics.enable",
             _ => "unknown", // To be caught via downstream errors
-        }
-    }
-}
-
-impl From<VscDiagnosticsConfig> for DiagnosticsConfig {
-    fn from(value: VscDiagnosticsConfig) -> Self {
-        Self {
-            enable: value.enable,
         }
     }
 }

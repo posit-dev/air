@@ -5,51 +5,36 @@
 //
 //
 
-use std::path::Path;
-
 use anyhow::anyhow;
 use serde_json::Value;
 use struct_field_names_as_array::FieldNamesAsArray;
-use tower_lsp::lsp_types::CompletionOptions;
-use tower_lsp::lsp_types::CompletionOptionsCompletionItem;
 use tower_lsp::lsp_types::ConfigurationItem;
 use tower_lsp::lsp_types::DidChangeConfigurationParams;
 use tower_lsp::lsp_types::DidChangeTextDocumentParams;
 use tower_lsp::lsp_types::DidCloseTextDocumentParams;
 use tower_lsp::lsp_types::DidOpenTextDocumentParams;
-use tower_lsp::lsp_types::DocumentOnTypeFormattingOptions;
-use tower_lsp::lsp_types::ExecuteCommandOptions;
 use tower_lsp::lsp_types::FormattingOptions;
-use tower_lsp::lsp_types::HoverProviderCapability;
-use tower_lsp::lsp_types::ImplementationProviderCapability;
 use tower_lsp::lsp_types::InitializeParams;
 use tower_lsp::lsp_types::InitializeResult;
 use tower_lsp::lsp_types::OneOf;
-use tower_lsp::lsp_types::SelectionRangeProviderCapability;
 use tower_lsp::lsp_types::ServerCapabilities;
 use tower_lsp::lsp_types::ServerInfo;
-use tower_lsp::lsp_types::SignatureHelpOptions;
 use tower_lsp::lsp_types::TextDocumentSyncCapability;
 use tower_lsp::lsp_types::TextDocumentSyncKind;
-use tower_lsp::lsp_types::WorkDoneProgressOptions;
 use tower_lsp::lsp_types::WorkspaceFoldersServerCapabilities;
 use tower_lsp::lsp_types::WorkspaceServerCapabilities;
 use tracing::Instrument;
-use tree_sitter::Parser;
 use url::Url;
 
-use crate::lsp;
-use crate::lsp::config::indent_style_from_lsp;
-use crate::lsp::config::DocumentConfig;
-use crate::lsp::config::VscDiagnosticsConfig;
-use crate::lsp::config::VscDocumentConfig;
-use crate::lsp::diagnostics::DiagnosticsConfig;
-use crate::lsp::documents::Document;
-use crate::lsp::encoding::get_position_encoding_kind;
-use crate::lsp::indexer;
-use crate::lsp::main_loop::LspState;
-use crate::lsp::state::workspace_uris;
-use crate::lsp::state::WorldState;
+use crate::config::indent_style_from_lsp;
+use crate::config::DocumentConfig;
+use crate::config::VscDiagnosticsConfig;
+use crate::config::VscDocumentConfig;
+use crate::documents::Document;
+use crate::encoding::get_position_encoding_kind;
+use crate::main_loop::LspState;
+use crate::state::workspace_uris;
+use crate::state::WorldState;
 
 // Handlers that mutate the world state
 
@@ -98,15 +83,9 @@ pub(crate) fn initialize(
         }
     }
 
-    // Start first round of indexing
-    lsp::spawn_blocking(|| {
-        indexer::start(folders);
-        Ok(None)
-    });
-
     Ok(InitializeResult {
         server_info: Some(ServerInfo {
-            name: "Ark R Kernel".to_string(),
+            name: "Air Language Server".to_string(),
             version: Some(env!("CARGO_PKG_VERSION").to_string()),
         }),
         capabilities: ServerCapabilities {
@@ -114,45 +93,12 @@ pub(crate) fn initialize(
             text_document_sync: Some(TextDocumentSyncCapability::Kind(
                 TextDocumentSyncKind::INCREMENTAL,
             )),
-            selection_range_provider: Some(SelectionRangeProviderCapability::Simple(true)),
-            hover_provider: Some(HoverProviderCapability::from(true)),
-            completion_provider: Some(CompletionOptions {
-                resolve_provider: Some(true),
-                trigger_characters: Some(vec!["$".to_string(), "@".to_string(), ":".to_string()]),
-                work_done_progress_options: Default::default(),
-                all_commit_characters: None,
-                completion_item: Some(CompletionOptionsCompletionItem {
-                    label_details_support: Some(true),
-                }),
-                ..Default::default()
-            }),
-            signature_help_provider: Some(SignatureHelpOptions {
-                trigger_characters: Some(vec!["(".to_string(), ",".to_string(), "=".to_string()]),
-                retrigger_characters: None,
-                work_done_progress_options: WorkDoneProgressOptions {
-                    work_done_progress: None,
-                },
-            }),
-            definition_provider: Some(OneOf::Left(true)),
-            type_definition_provider: None,
-            implementation_provider: Some(ImplementationProviderCapability::Simple(true)),
-            references_provider: Some(OneOf::Left(true)),
-            document_symbol_provider: Some(OneOf::Left(true)),
-            workspace_symbol_provider: Some(OneOf::Left(true)),
-            execute_command_provider: Some(ExecuteCommandOptions {
-                commands: vec![],
-                work_done_progress_options: Default::default(),
-            }),
             workspace: Some(WorkspaceServerCapabilities {
                 workspace_folders: Some(WorkspaceFoldersServerCapabilities {
                     supported: Some(true),
                     change_notifications: Some(OneOf::Left(true)),
                 }),
                 file_operations: None,
-            }),
-            document_on_type_formatting_provider: Some(DocumentOnTypeFormattingOptions {
-                first_trigger_character: String::from("\n"),
-                more_trigger_character: None,
             }),
             ..ServerCapabilities::default()
         },
@@ -162,28 +108,20 @@ pub(crate) fn initialize(
 #[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn did_open(
     params: DidOpenTextDocumentParams,
-    lsp_state: &mut LspState,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
     let contents = params.text_document.text.as_str();
     let uri = params.text_document.uri;
     let version = params.text_document.version;
 
-    let mut parser = Parser::new();
-    parser
-        .set_language(&tree_sitter_r::LANGUAGE.into())
-        .unwrap();
+    // TODO!
 
-    let document = Document::new_with_parser(contents, &mut parser, Some(version));
+    let document = Document::new(contents, Some(version));
 
-    lsp_state.parsers.insert(uri.clone(), parser);
     state.documents.insert(uri.clone(), document.clone());
 
     // NOTE: Do we need to call `update_config()` here?
     // update_config(vec![uri]).await;
-
-    update_index(&uri, &document);
-    lsp::spawn_diagnostics_refresh(uri, document, state.clone());
 
     Ok(())
 }
@@ -191,21 +129,12 @@ pub(crate) fn did_open(
 #[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn did_change(
     params: DidChangeTextDocumentParams,
-    lsp_state: &mut LspState,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
     let uri = &params.text_document.uri;
-    let doc = state.get_document_mut(uri)?;
+    let _doc = state.get_document_mut(uri)?;
 
-    let mut parser = lsp_state
-        .parsers
-        .get_mut(uri)
-        .ok_or(anyhow!("No parser for {uri}"))?;
-
-    doc.on_did_change(&mut parser, &params);
-
-    update_index(uri, doc);
-    lsp::spawn_diagnostics_refresh(uri.clone(), doc.clone(), state.clone());
+    // TODO!
 
     Ok(())
 }
@@ -213,25 +142,19 @@ pub(crate) fn did_change(
 #[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn did_close(
     params: DidCloseTextDocumentParams,
-    lsp_state: &mut LspState,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
     let uri = params.text_document.uri;
 
     // Publish empty set of diagnostics to clear them
-    lsp::publish_diagnostics(uri.clone(), Vec::new(), None);
+    // lsp::publish_diagnostics(uri.clone(), Vec::new(), None);
 
     state
         .documents
         .remove(&uri)
         .ok_or(anyhow!("Failed to remove document for URI: {uri}"))?;
 
-    lsp_state
-        .parsers
-        .remove(&uri)
-        .ok_or(anyhow!("Failed to remove parser for URI: {uri}"))?;
-
-    lsp::log_info!("did_close(): closed document with URI: '{uri}'.");
+    crate::log_info!("did_close(): closed document with URI: '{uri}'.");
 
     Ok(())
 }
@@ -341,16 +264,16 @@ async fn update_config(
         map.insert(key.into(), item);
     });
 
-    // Deserialise the VS Code configuration
-    let config: VscDiagnosticsConfig = serde_json::from_value(serde_json::Value::Object(map))?;
-    let config: DiagnosticsConfig = config.into();
+    // TODO: Deserialise the VS Code configuration
+    // let config: VscDiagnosticsConfig = serde_json::from_value(serde_json::Value::Object(map))?;
+    // let config: DiagnosticsConfig = config.into();
 
-    let changed = state.config.diagnostics != config;
-    state.config.diagnostics = config;
+    // let changed = state.config.diagnostics != config;
+    // state.config.diagnostics = config;
 
-    if changed {
-        lsp::spawn_diagnostics_refresh_all(state.clone());
-    }
+    // if changed {
+    //     lsp::spawn_diagnostics_refresh_all(state.clone());
+    // }
 
     // --- Documents
     // For each document, deserialise the vector of JSON values into a typed config
@@ -374,34 +297,4 @@ async fn update_config(
     }
 
     Ok(())
-}
-
-#[tracing::instrument(level = "info", skip_all)]
-pub(crate) fn did_change_console_inputs(
-    inputs: ConsoleInputs,
-    state: &mut WorldState,
-) -> anyhow::Result<()> {
-    state.console_scopes = inputs.console_scopes;
-    state.installed_packages = inputs.installed_packages;
-
-    // We currently rely on global console scopes for diagnostics, in particular
-    // during package development in conjunction with `devtools::load_all()`.
-    // Ideally diagnostics would not rely on these though, and we wouldn't need
-    // to refresh from here.
-    lsp::spawn_diagnostics_refresh_all(state.clone());
-
-    Ok(())
-}
-
-// FIXME: The initial indexer is currently racing against our state notification
-// handlers. The indexer is synchronised through a mutex but we might end up in
-// a weird state. Eventually the index should be moved to WorldState and created
-// on demand with Salsa instrumenting and cancellation.
-fn update_index(uri: &url::Url, doc: &Document) {
-    if let Ok(path) = uri.to_file_path() {
-        let path = Path::new(&path);
-        if let Err(err) = indexer::update(&doc, &path) {
-            lsp::log_error!("{err:?}");
-        }
-    }
 }

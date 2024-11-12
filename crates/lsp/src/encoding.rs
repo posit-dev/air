@@ -5,9 +5,7 @@
 //
 //
 
-use ropey::Rope;
-use tower_lsp::lsp_types::Position;
-use tree_sitter::Point;
+use tower_lsp::lsp_types;
 
 /// `PositionEncodingKind` describes the encoding used for the `Position` `character`
 /// column offset field. The `Position` `line` field is encoding agnostic, but the
@@ -39,67 +37,8 @@ use tree_sitter::Point;
 ///
 /// So we need a way to convert the UTF-16 `Position`s to UTF-8 `tree_sitter::Point`s and
 /// back. This requires the document itself, and is what the helpers in this file implement.
-pub fn get_position_encoding_kind() -> tower_lsp::lsp_types::PositionEncodingKind {
-    tower_lsp::lsp_types::PositionEncodingKind::UTF16
-}
-
-pub fn convert_tree_sitter_range_to_lsp_range(
-    x: &Rope,
-    range: tree_sitter::Range,
-) -> tower_lsp::lsp_types::Range {
-    let start = convert_point_to_position(x, range.start_point);
-    let end = convert_point_to_position(x, range.end_point);
-    tower_lsp::lsp_types::Range::new(start, end)
-}
-
-pub fn convert_position_to_point(x: &Rope, position: Position) -> Point {
-    let line = position.line as usize;
-    let character = position.character as usize;
-
-    let character = with_line(x, line, character, convert_character_from_utf16_to_utf8);
-
-    Point::new(line, character)
-}
-
-pub fn convert_point_to_position(x: &Rope, point: Point) -> Position {
-    let line = point.row;
-    let character = point.column;
-
-    let character = with_line(x, line, character, convert_character_from_utf8_to_utf16);
-
-    let line = line as u32;
-    let character = character as u32;
-
-    Position::new(line, character)
-}
-
-fn with_line<F>(x: &Rope, line: usize, character: usize, f: F) -> usize
-where
-    F: FnOnce(&str, usize) -> usize,
-{
-    let Some(x) = x.get_line(line) else {
-        let n = x.len_lines();
-        let x = x.to_string();
-        let line = line + 1;
-        // Forcing a full capture so we can learn the situations in which this occurs
-        let trace = std::backtrace::Backtrace::force_capture();
-        log::error!(
-            "Requesting line {line} but only {n} lines exist.\n\nDocument:\n{x}\n\nBacktrace:\n{trace}"
-        );
-        return 0;
-    };
-
-    // If the line is fully contained in a single chunk (likely is), use free conversion to `&str`
-    if let Some(x) = x.as_str() {
-        return f(x, character);
-    }
-
-    // Otherwise, use ever so slightly more expensive String materialization of the
-    // line spread across chunks
-    let x = x.to_string();
-    let x = x.as_str();
-
-    f(x, character)
+pub fn get_position_encoding_kind() -> lsp_types::PositionEncodingKind {
+    lsp_types::PositionEncodingKind::UTF16
 }
 
 /// Converts a character offset into a particular line from UTF-16 to UTF-8
@@ -153,6 +92,6 @@ fn convert_character_from_utf8_to_utf16(x: &str, character: usize) -> usize {
                 "Tried to take UTF-8 character {character}, but only {n} characters exist. Line: '{x}'."
             );
             0
-        },
+        }
     }
 }

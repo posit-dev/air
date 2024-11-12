@@ -19,17 +19,14 @@ use tower_lsp::lsp_types::MessageType;
 use tower_lsp::Client;
 use url::Url;
 
-use crate::lsp;
-use crate::lsp::backend::LspMessage;
-use crate::lsp::backend::LspNotification;
-use crate::lsp::backend::LspRequest;
-use crate::lsp::backend::LspResponse;
-use crate::lsp::diagnostics;
-use crate::lsp::documents::Document;
-use crate::lsp::handlers;
-use crate::lsp::state::WorldState;
-use crate::lsp::state_handlers;
-use crate::lsp::state_handlers::ConsoleInputs;
+use crate::handlers;
+use crate::state::WorldState;
+use crate::state_handlers;
+use crate::state_handlers::ConsoleInputs;
+use crate::tower_lsp::LspMessage;
+use crate::tower_lsp::LspNotification;
+use crate::tower_lsp::LspRequest;
+use crate::tower_lsp::LspResponse;
 
 pub(crate) type TokioUnboundedSender<T> = tokio::sync::mpsc::UnboundedSender<T>;
 pub(crate) type TokioUnboundedReceiver<T> = tokio::sync::mpsc::UnboundedReceiver<T>;
@@ -112,6 +109,7 @@ pub(crate) struct LspState {
     /// List of capabilities for which we need to send a registration request
     /// when we get the `Initialized` notification.
     pub(crate) needs_registration: ClientCaps,
+    // Add handle to aux loop here?
 }
 
 #[derive(Debug, Default)]
@@ -186,7 +184,7 @@ impl GlobalState {
         loop {
             let event = self.next_event().await;
             if let Err(err) = self.handle_event(event).await {
-                lsp::log_error!("Failure while handling event:\n{err:?}")
+                crate::log_error!("Failure while handling event:\n{err:?}")
             }
         }
     }
@@ -215,7 +213,7 @@ impl GlobalState {
         match event {
             Event::Lsp(msg) => match msg {
                 LspMessage::Notification(notif) => {
-                    lsp::log_info!("{notif:#?}");
+                    crate::log_info!("{notif:#?}");
 
                     match notif {
                         LspNotification::Initialized(_params) => {
@@ -231,22 +229,22 @@ impl GlobalState {
                             // TODO: Re-index the changed files.
                         },
                         LspNotification::DidOpenTextDocument(params) => {
-                            state_handlers::did_open(params, &mut self.lsp_state, &mut self.world)?;
+                            state_handlers::did_open(params, &mut self.world)?;
                         },
                         LspNotification::DidChangeTextDocument(params) => {
-                            state_handlers::did_change(params, &mut self.lsp_state, &mut self.world)?;
+                            state_handlers::did_change(params, &mut self.world)?;
                         },
                         LspNotification::DidSaveTextDocument(_params) => {
                             // Currently ignored
                         },
                         LspNotification::DidCloseTextDocument(params) => {
-                            state_handlers::did_close(params, &mut self.lsp_state, &mut self.world)?;
+                            state_handlers::did_close(params, &mut self.world)?;
                         },
                     }
                 },
 
                 LspMessage::Request(request, tx) => {
-                    lsp::log_info!("{request:#?}");
+                    crate::log_info!("{request:#?}");
 
                     match request {
                         LspRequest::Initialize(params) => {
@@ -256,70 +254,20 @@ impl GlobalState {
                             // TODO
                             respond(tx, Ok(()), LspResponse::Shutdown)?;
                         },
-                        LspRequest::WorkspaceSymbol(params) => {
-                            respond(tx, handlers::handle_symbol(params), LspResponse::WorkspaceSymbol)?;
-                        },
-                        LspRequest::DocumentSymbol(params) => {
-                            respond(tx, handlers::handle_document_symbol(params, &self.world), LspResponse::DocumentSymbol)?;
-                        },
-                        LspRequest::ExecuteCommand(_params) => {
-                            respond(tx, handlers::handle_execute_command(&self.client).await, LspResponse::ExecuteCommand)?;
-                        },
-                        LspRequest::Completion(params) => {
-                            respond(tx, handlers::handle_completion(params, &self.world), LspResponse::Completion)?;
-                        },
-                        LspRequest::CompletionResolve(params) => {
-                            respond(tx, handlers::handle_completion_resolve(params), LspResponse::CompletionResolve)?;
-                        },
-                        LspRequest::Hover(params) => {
-                            respond(tx, handlers::handle_hover(params, &self.world), LspResponse::Hover)?;
-                        },
-                        LspRequest::SignatureHelp(params) => {
-                            respond(tx, handlers::handle_signature_help(params, &self.world), LspResponse::SignatureHelp)?;
-                        },
-                        LspRequest::GotoDefinition(params) => {
-                            respond(tx, handlers::handle_goto_definition(params, &self.world), LspResponse::GotoDefinition)?;
-                        },
-                        LspRequest::GotoImplementation(_params) => {
-                            // TODO
-                            respond(tx, Ok(None), LspResponse::GotoImplementation)?;
-                        },
-                        LspRequest::SelectionRange(params) => {
-                            respond(tx, handlers::handle_selection_range(params, &self.world), LspResponse::SelectionRange)?;
-                        },
-                        LspRequest::References(params) => {
-                            respond(tx, handlers::handle_references(params, &self.world), LspResponse::References)?;
-                        },
-                        LspRequest::StatementRange(params) => {
-                            respond(tx, handlers::handle_statement_range(params, &self.world), LspResponse::StatementRange)?;
-                        },
-                        LspRequest::HelpTopic(params) => {
-                            respond(tx, handlers::handle_help_topic(params, &self.world), LspResponse::HelpTopic)?;
-                        },
-                        LspRequest::OnTypeFormatting(params) => {
-                            state_handlers::did_change_formatting_options(&params.text_document_position.text_document.uri, &params.options, &mut self.world);
-                            respond(tx, handlers::handle_indent(params, &self.world), LspResponse::OnTypeFormatting)?;
-                        },
-                        LspRequest::VirtualDocument(params) => {
-                            respond(tx, handlers::handle_virtual_document(params), LspResponse::VirtualDocument)?;
-                        },
-                        LspRequest::InputBoundaries(params) => {
-                            respond(tx, handlers::handle_input_boundaries(params), LspResponse::InputBoundaries)?;
-                        },
                     };
                 },
             },
 
             Event::Kernel(notif) => match notif {
-                KernelNotification::DidChangeConsoleInputs(inputs) => {
-                    state_handlers::did_change_console_inputs(inputs, &mut self.world)?;
+                KernelNotification::DidChangeConsoleInputs(_inputs) => {
+                    // TODO
                 },
             },
         }
 
         // TODO Make this threshold configurable by the client
         if loop_tick.elapsed() > std::time::Duration::from_millis(50) {
-            lsp::log_info!("Handler took {}ms", loop_tick.elapsed().as_millis());
+            crate::log_info!("Handler took {}ms", loop_tick.elapsed().as_millis());
         }
 
         Ok(())
@@ -343,9 +291,7 @@ impl GlobalState {
         Handler: FnOnce() -> anyhow::Result<T>,
         Handler: Send + 'static,
     {
-        lsp::spawn_blocking(move || {
-            respond(response_tx, handler(), into_lsp_response).and(Ok(None))
-        })
+        spawn_blocking(move || respond(response_tx, handler(), into_lsp_response).and(Ok(None)))
     }
 }
 
@@ -439,7 +385,7 @@ impl AuxiliaryState {
                     self.client
                         .publish_diagnostics(uri, diagnostics, version)
                         .await
-                },
+                }
             }
         }
     }
@@ -524,33 +470,4 @@ where
     // Send the join handle to the auxiliary loop so it can log any errors
     // or panics
     send_auxiliary(AuxiliaryEvent::SpawnedTask(handle));
-}
-
-pub(crate) fn spawn_diagnostics_refresh(uri: Url, document: Document, state: WorldState) {
-    lsp::spawn_blocking(move || {
-        let _s = tracing::info_span!("diagnostics_refresh", uri = %uri).entered();
-
-        let version = document.version;
-        let diagnostics = diagnostics::generate_diagnostics(document, state);
-
-        Ok(Some(AuxiliaryEvent::PublishDiagnostics(
-            uri,
-            diagnostics,
-            version,
-        )))
-    })
-}
-
-pub(crate) fn spawn_diagnostics_refresh_all(state: WorldState) {
-    for (url, document) in state.documents.iter() {
-        spawn_diagnostics_refresh(url.clone(), document.clone(), state.clone())
-    }
-}
-
-pub(crate) fn publish_diagnostics(uri: Url, diagnostics: Vec<Diagnostic>, version: Option<i32>) {
-    send_auxiliary(AuxiliaryEvent::PublishDiagnostics(
-        uri,
-        diagnostics,
-        version,
-    ));
 }

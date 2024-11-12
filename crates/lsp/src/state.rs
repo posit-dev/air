@@ -4,8 +4,8 @@ use std::path::Path;
 use anyhow::anyhow;
 use url::Url;
 
-use crate::lsp::config::LspConfig;
-use crate::lsp::documents::Document;
+use crate::config::LspConfig;
+use crate::documents::Document;
 
 #[derive(Clone, Default, Debug)]
 /// The world state, i.e. all the inputs necessary for analysing or refactoring
