@@ -150,45 +150,43 @@ impl LanguageServer for Backend {
     }
 }
 
-impl Backend {
-    pub fn start_lsp(runtime: Arc<Runtime>, address: String, conn_init_tx: Sender<bool>) {
-        runtime.block_on(async {
-            log::trace!("Connecting to LSP at '{}'", &address);
-            let listener = TcpListener::bind(&address).await.unwrap();
+pub fn start_lsp(runtime: Arc<Runtime>, address: String, conn_init_tx: Sender<bool>) {
+    runtime.block_on(async {
+        log::trace!("Connecting to LSP at '{}'", &address);
+        let listener = TcpListener::bind(&address).await.unwrap();
 
-            // Notify frontend that we are ready to accept connections
-            if let Err(err) = conn_init_tx.send(true) {
-                log::warn!("Couldn't send LSP server init notification: {err:?}");
+        // Notify frontend that we are ready to accept connections
+        if let Err(err) = conn_init_tx.send(true) {
+            log::warn!("Couldn't send LSP server init notification: {err:?}");
+        }
+
+        let (stream, _) = listener.accept().await.unwrap();
+        log::trace!("Connected to LSP at '{}'", address);
+        let (read, write) = tokio::io::split(stream);
+
+        let init = |client: Client| {
+            let state = GlobalState::new(client);
+            let events_tx = state.events_tx();
+
+            // Start main loop and hold onto the handle that keeps it alive
+            let main_loop = state.start();
+
+            Backend {
+                events_tx,
+                _main_loop: main_loop,
             }
+        };
 
-            let (stream, _) = listener.accept().await.unwrap();
-            log::trace!("Connected to LSP at '{}'", address);
-            let (read, write) = tokio::io::split(stream);
+        let (service, socket) = LspService::build(init).finish();
 
-            let init = |client: Client| {
-                let state = GlobalState::new(client);
-                let events_tx = state.events_tx();
+        let server = Server::new(read, write, socket);
+        server.serve(service).await;
 
-                // Start main loop and hold onto the handle that keeps it alive
-                let main_loop = state.start();
-
-                Backend {
-                    events_tx,
-                    _main_loop: main_loop,
-                }
-            };
-
-            let (service, socket) = LspService::build(init).finish();
-
-            let server = Server::new(read, write, socket);
-            server.serve(service).await;
-
-            log::trace!(
-                "LSP thread exiting gracefully after connection closed ({:?}).",
-                address
-            );
-        })
-    }
+        log::trace!(
+            "LSP thread exiting gracefully after connection closed ({:?}).",
+            address
+        );
+    })
 }
 
 fn new_jsonrpc_error(message: String) -> jsonrpc::Error {
