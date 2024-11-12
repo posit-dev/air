@@ -210,10 +210,10 @@ fn fmt_binary_chain(
         left = node.left()?;
     }
 
-    let chain = format_with(|f| {
-        // Reverse the `tail` pieces to generate the correct ordering
-        let tail = tail.iter().rev();
+    // Reverse the collected `tail` pieces to generate the correct ordering
+    tail.reverse();
 
+    let chain = format_with(|f| {
         // Each `(operator, right)` pair is joined with a single space. Non-breaking!
         // The `operator` must be on the same line as the previous `right` for R to parse
         // it correctly.
@@ -221,7 +221,7 @@ fn fmt_binary_chain(
             operator,
             right,
             enclosing,
-        } in tail
+        } in tail.iter()
         {
             if let Some(enclosing) = enclosing {
                 // Safety checks
@@ -341,33 +341,58 @@ fn is_chainable_binary_operator_kind(kind: RSyntaxKind) -> bool {
     }
 }
 
-/// Check if the user has inserted a leading newline before any of the `rights`.
+/// Check if the user has inserted a leading newline before the very first `right`.
 /// If so, we respect that and treat it as a request to break ALL of the binary operators
 /// in the chain. Note this is a case of irreversible formatting!
 ///
 /// ```r
 /// # Fits on one line, but newline before `mutate()` forces ALL pipes to break
+///
+/// # Input
 /// df %>%
 ///   mutate(x = 1) %>% filter(x == y)
-/// ```
 ///
-/// ```r
-/// # Fits on one line, but newline before `filter()` forces ALL pipes to break
-/// df %>% mutate(x = 1) %>%
+/// # Output
+/// df %>%
+///   mutate(x = 1) %>%
 ///   filter(x == y)
 /// ```
 ///
+/// Note that removing this line break is a request to flatten if possible. By only having
+/// this special behavior on the very first pipe, we make it easy to request flattening.
+///
 /// ```r
-/// # Fits on one line, but newline before `%>%` forces ALL pipes to break.
-/// # Note this is only valid inside `(`, `[`, or `[[`. At top level and inside
+/// # Say we start here and want to flatten
+/// df %>%
+///   mutate(x = 1) %>%
+///   filter(x == y)
+///
+/// # Remove the first line break and run air
+/// df %>% mutate(x = 1) %>%
+///   filter(x == y)
+///
+/// # Output
+/// df %>% mutate(x = 1) %>% filter(x == y)
+/// ```
+///
+/// ```r
+/// # Fits on one line, newline before `%>%` does NOT force all pipes to break
+/// # because we are very strict about it coming between the first `%>%` and the
+/// # first `right`.
+/// #
+/// # Note this syntax is only valid inside `(`, `[`, or `[[`. At top level and inside
 /// # `{` this is an R syntax error.
-/// (df %>% mutate(x = 1)
-///   %>% filter(x == y))
+///
+/// # Input
+/// (df
+///   %>% mutate(x = 1) %>% filter(x == y))
+///
+/// # Output
+/// (df %>% mutate(x = 1) %>% filter(x == y))
 /// ```
 fn needs_user_requested_expansion(tail: &[TailPiece]) -> bool {
     // TODO: This should be configurable by an option, since it is a case of
     // irreversible formatting
-    tail.iter().any(|piece| {
-        piece.operator.has_leading_newline() || piece.right.syntax().has_leading_newline()
-    })
+    tail.first()
+        .map_or(false, |piece| piece.right.syntax().has_leading_newline())
 }

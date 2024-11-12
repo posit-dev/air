@@ -45,7 +45,7 @@ ggplot() +
 # -----------------------------------------------------------------------------
 # Line break persistance
 
-# If any of the pipes break, all should break
+# If the user requests a line break after the first pipe, then they all break
 
 df |> foo() |> bar() |> baz()
 
@@ -55,8 +55,16 @@ foo() |> bar() |> baz()
 df |> foo() |>
 bar() |> baz()
 
+# Flattened, line break is not after the first pipe!
 df |> foo() |> bar() |>
 baz()
+
+# Flattened, removing just this first magic line break is how users can
+# easily request flattened pipe chains if one is possible (as opposed
+# to having to flatten every pipe element to keep it flat)
+df |> foo() |>
+  bar() |>
+  baz()
 
 # Works with mixed binary operator types
 df |>
@@ -69,6 +77,7 @@ df |> ggplot() + geom_line() + geom_bar()
 df |>
 ggplot() + geom_line() + geom_bar()
 
+# Flattened, line break is not after the first binary operator!
 df |> ggplot() + geom_line() +
 geom_bar()
 
@@ -102,9 +111,10 @@ and() |> this() }
 1:2 +
 3
 
-# Inside parentheses, subset, or, subset2, you can also request a break by
-# adding a newline before the binary operator, which isn't valid R code at
-# top level
+# Inside parentheses, subset, or, subset2, you can put a newline before
+# the `|>`, which isn't valid R code at top level. This doesn't result
+# in a break because we strictly require the magic line break to come
+# AFTER the first binary operator in the chain.
 (df
 |> foo())
 
@@ -113,6 +123,16 @@ x[df
 
 x[[df
 |> foo()]]
+
+# This does retain the break, because it comes after the pipe
+(df |>
+foo())
+
+x[df |>
+foo()]
+
+x[[df |>
+foo()]]
 
 # -----------------------------------------------------------------------------
 # Blank lines between `operator` and `right`

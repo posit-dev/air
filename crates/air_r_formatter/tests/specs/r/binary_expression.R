@@ -111,14 +111,21 @@ if (long_conditional1 && long_conditional2) {
 }
 
 # User requested break
-if (long_conditional1
-&& long_conditional2) {
+if (long_conditional1 &&
+long_conditional2) {
   1 + 1
 }
 
 # User requested break, parentheses prevent further splitting
+if (long_conditional1 &&
+(long_conditional2 || long_conditional3)) {
+  1 + 1
+}
+
+# Not a user respected break because it comes before the `&&`,
+# and we require it to come after
 if (long_conditional1
-&& (long_conditional2 || long_conditional3)) {
+&& long_conditional2) {
   1 + 1
 }
 
