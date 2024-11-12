@@ -5,9 +5,9 @@ pub mod config;
 pub mod documents;
 pub mod encoding;
 pub mod handlers;
+pub mod handlers_state;
 pub mod main_loop;
 pub mod state;
-pub mod state_handlers;
 pub mod tower_lsp;
 
 // These send LSP messages in a non-async and non-blocking way.

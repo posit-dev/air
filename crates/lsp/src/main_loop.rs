@@ -20,9 +20,9 @@ use tower_lsp::Client;
 use url::Url;
 
 use crate::handlers;
+use crate::handlers_state;
+use crate::handlers_state::ConsoleInputs;
 use crate::state::WorldState;
-use crate::state_handlers;
-use crate::state_handlers::ConsoleInputs;
 use crate::tower_lsp::LspMessage;
 use crate::tower_lsp::LspNotification;
 use crate::tower_lsp::LspRequest;
@@ -223,22 +223,22 @@ impl GlobalState {
                             // TODO: Restart indexer with new folders.
                         },
                         LspNotification::DidChangeConfiguration(params) => {
-                            state_handlers::did_change_configuration(params, &self.client, &mut self.world).await?;
+                            handlers_state::did_change_configuration(params, &self.client, &mut self.world).await?;
                         },
                         LspNotification::DidChangeWatchedFiles(_params) => {
                             // TODO: Re-index the changed files.
                         },
                         LspNotification::DidOpenTextDocument(params) => {
-                            state_handlers::did_open(params, &mut self.world)?;
+                            handlers_state::did_open(params, &mut self.world)?;
                         },
                         LspNotification::DidChangeTextDocument(params) => {
-                            state_handlers::did_change(params, &mut self.world)?;
+                            handlers_state::did_change(params, &mut self.world)?;
                         },
                         LspNotification::DidSaveTextDocument(_params) => {
                             // Currently ignored
                         },
                         LspNotification::DidCloseTextDocument(params) => {
-                            state_handlers::did_close(params, &mut self.world)?;
+                            handlers_state::did_close(params, &mut self.world)?;
                         },
                     }
                 },
@@ -248,7 +248,7 @@ impl GlobalState {
 
                     match request {
                         LspRequest::Initialize(params) => {
-                            respond(tx, state_handlers::initialize(params, &mut self.lsp_state, &mut self.world), LspResponse::Initialize)?;
+                            respond(tx, handlers_state::initialize(params, &mut self.lsp_state, &mut self.world), LspResponse::Initialize)?;
                         },
                         LspRequest::Shutdown() => {
                             // TODO
