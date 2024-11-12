@@ -1,6 +1,8 @@
 // TODO: Remove this
 #![allow(dead_code)]
 
+pub use tower_lsp::start_lsp;
+
 pub mod config;
 pub mod documents;
 pub mod encoding;
