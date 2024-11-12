@@ -15,6 +15,7 @@ air_r_parser = { workspace = true }
 anyhow = { workspace = true }
 clap = { workspace = true }
 lsp = { workspace = true }
+tokio = "1.41.1"
 
 [dev-dependencies]
 tempfile = "3.9.0"

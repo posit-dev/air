@@ -12,6 +12,9 @@ pub mod main_loop;
 pub mod state;
 pub mod tower_lsp;
 
+#[cfg(test)]
+mod tests;
+
 // These send LSP messages in a non-async and non-blocking way.
 // The LOG level is not timestamped so we're not using it.
 macro_rules! log_info {

@@ -11,19 +11,26 @@ repository.workspace = true
 
 [dependencies]
 anyhow.workspace = true
-crossbeam = "0.8.4"
-futures = "0.3.31"
-itertools = "0.13.0"
-log = "0.4.22"
+crossbeam.workspace = true
+futures.workspace = true
+itertools.workspace = true
+log.workspace = true
 serde.workspace = true
-serde_json = "1.0.132"
-struct-field-names-as-array = "0.3.0"
-tokio = { version = "1.41.1", features = ["full"] }
-tower-lsp = "0.20.0"
+serde_json.workspace = true
+struct-field-names-as-array.workspace = true
+tokio = { workspace = true, features = ["full"] }
+tower-lsp.workspace = true
 tracing.workspace = true
-tree-sitter = "0.23.0"
-url = "2.5.3"
-uuid = { version = "1.11.0", features = ["v4"] }
+tree-sitter.workspace = true
+url.workspace = true
+uuid = { workspace = true, features = ["v4"] }
 
 [lints]
 workspace = true
+
+[dev-dependencies]
+bytes.workspace = true
+futures-util.workspace = true
+httparse.workspace = true
+memchr.workspace = true
+tokio-util.workspace = true
