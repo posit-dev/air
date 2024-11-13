@@ -28,6 +28,7 @@ lsp = { version = "0.1.0", path = "./crates/lsp" }
 # not publish
 air_formatter_test = { path = "./crates/air_formatter_test" }
 biome_ungrammar = { path = "./crates/biome_ungrammar" }
+lsp_test = { path = "./crates/lsp_test" }
 tests_macros = { path = "./crates/tests_macros" }
 
 # Crates needed in the workspace

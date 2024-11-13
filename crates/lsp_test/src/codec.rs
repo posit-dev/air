@@ -1,4 +1,9 @@
-//! TODO! source
+// --- graft
+// authors = ["Eyal Kalderon <ebkalderon@gmail.com>"]
+// origin = "https://github.com/ebkalderon/tower-lsp/blob/master/src/codec.r"
+// license = "MIT OR Apache-2.0"
+// ---
+
 //! Encoder and decoder for Language Server Protocol messages.
 
 use std::error::Error;

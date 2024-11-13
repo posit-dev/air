@@ -1,5 +1,8 @@
-// TODO!
-// From https://github.com/ebkalderon/tower-lsp/blob/master/src/jsonrpc/request.rs
+// --- graft
+// authors = ["Eyal Kalderon <ebkalderon@gmail.com>"]
+// origin = "https://github.com/ebkalderon/tower-lsp/blob/master/src/jsonrpc/request.rs"
+// license = "MIT OR Apache-2.0"
+// ---
 
 use std::borrow::Cow;
 use std::fmt::{self, Display, Formatter};

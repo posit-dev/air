@@ -189,99 +189,13 @@ fn new_jsonrpc_error(message: String) -> jsonrpc::Error {
 
 #[cfg(test)]
 mod tests {
-    use futures::{executor::block_on, StreamExt};
-    use tokio::io::{ReadHalf, SimplexStream, WriteHalf};
-    use tower_lsp::lsp_types;
-
     use super::*;
-    use crate::tests::codec::LanguageServerCodec;
-    use crate::tests::request::Request;
-
-    use futures_util::sink::SinkExt;
-    use tokio_util::codec::{FramedRead, FramedWrite};
-
-    struct TestClient {
-        pub rx: FramedRead<ReadHalf<SimplexStream>, LanguageServerCodec<jsonrpc::Response>>,
-        pub tx: FramedWrite<WriteHalf<SimplexStream>, LanguageServerCodec<Request>>,
-
-        server_handle: Option<tokio::task::JoinHandle<()>>,
-        id_counter: i64,
-    }
-
-    impl TestClient {
-        pub fn new() -> Self {
-            let (client_rx, mut client_tx) = tokio::io::simplex(1024);
-            let (mut server_rx, server_tx) = tokio::io::simplex(1024);
-
-            let server_handle =
-                tokio::spawn(async move { start_lsp(&mut server_rx, &mut client_tx).await });
-
-            let rx = FramedRead::new(client_rx, LanguageServerCodec::default());
-            let tx = FramedWrite::new(server_tx, LanguageServerCodec::default());
-
-            Self {
-                rx,
-                tx,
-                server_handle: Some(server_handle),
-                id_counter: 0,
-            }
-        }
-
-        // `jsonrpc::Id` requires i64 IDs
-        fn id(&mut self) -> i64 {
-            let id = self.id_counter;
-            self.id_counter = id + 1;
-            id
-        }
-
-        pub async fn recv_response(&mut self) -> jsonrpc::Response {
-            // Unwrap: Option (None if stream closed), then Result (Err if codec fails).
-            self.rx.next().await.unwrap().unwrap()
-        }
-
-        pub async fn request<R>(&mut self, params: R::Params) -> i64
-        where
-            R: lsp_types::request::Request,
-        {
-            let id = self.id();
-            let req = Request::from_request::<R>(jsonrpc::Id::Number(id), params);
-
-            // Unwrap: For this test client it's fine to panic if we can't send
-            self.tx.send(req).await.unwrap();
-
-            id
-        }
-
-        async fn initialize(&mut self) -> i64 {
-            let params = lsp_types::InitializeParams::default();
-            self.request::<lsp_types::request::Initialize>(params).await
-        }
-
-        async fn shutdown(&mut self) -> i64 {
-            self.request::<lsp_types::request::Shutdown>(()).await
-        }
-    }
-
-    impl Drop for TestClient {
-        fn drop(&mut self) {
-            // TODO: Check that no messages are pending
-
-            // Unwrap: We drop only once, so handle must be Some
-            let _handle = std::mem::take(&mut self.server_handle).unwrap();
-
-            block_on(async {
-                self.shutdown().await;
-
-                // TODO: Implement Shutdown
-                // Unwrap: Panics if task can't shut down as expected
-                // handle.await.unwrap();
-            })
-        }
-    }
+    use lsp_test::lsp_client::TestClient;
 
     #[tokio::test]
     async fn test_init() {
-        let mut client = TestClient::new();
+        let mut client =
+            TestClient::new(|server_rx, client_tx| async { start_lsp(server_rx, client_tx).await });
 
         client.initialize().await;
 

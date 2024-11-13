@@ -1222,6 +1222,7 @@ dependencies = [
  "httparse",
  "itertools",
  "log",
+ "lsp_test",
  "memchr",
  "serde",
  "serde_json",
@@ -1246,6 +1247,23 @@ dependencies = [
  "serde_json",
  "serde_repr",
  "url",
+]
+
+[[package]]
+name = "lsp_test"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "futures",
+ "futures-util",
+ "httparse",
+ "memchr",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-util",
+ "tower-lsp",
+ "tracing",
 ]
 
 [[package]]

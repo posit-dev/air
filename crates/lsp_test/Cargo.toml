@@ -1,5 +1,5 @@
 [package]
-name = "lsp"
+name = "lsp_test"
 version = "0.1.0"
 authors.workspace = true
 categories.workspace = true
@@ -10,28 +10,17 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-anyhow.workspace = true
-crossbeam.workspace = true
+bytes.workspace = true
 futures.workspace = true
-itertools.workspace = true
-log.workspace = true
+futures-util.workspace = true
+httparse.workspace = true
+memchr.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-struct-field-names-as-array.workspace = true
 tokio = { workspace = true, features = ["full"] }
+tokio-util.workspace = true
 tower-lsp.workspace = true
 tracing.workspace = true
-tree-sitter.workspace = true
-url.workspace = true
-uuid = { workspace = true, features = ["v4"] }
 
 [lints]
 workspace = true
-
-[dev-dependencies]
-bytes.workspace = true
-futures-util.workspace = true
-httparse.workspace = true
-lsp_test.workspace = true
-memchr.workspace = true
-tokio-util.workspace = true
