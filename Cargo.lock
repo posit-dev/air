@@ -1227,6 +1227,7 @@ dependencies = [
  "serde",
  "serde_json",
  "struct-field-names-as-array",
+ "tests_macros",
  "tokio",
  "tokio-util",
  "tower-lsp",
@@ -1945,8 +1946,7 @@ checksum = "121c2a6cda46980bb0fcd1647ffaf6cd3fc79a013de288782836f6df9c48780e"
 [[package]]
 name = "tower-lsp"
 version = "0.20.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4ba052b54a6627628d9b3c34c176e7eda8359b7da9acd497b9f20998d118508"
+source = "git+https://github.com/lionel-/tower-lsp?branch=bugfix/patches#49ef549eaa9f74b71e212cf513283af4ad748a81"
 dependencies = [
  "async-trait",
  "auto_impl",
@@ -1968,8 +1968,7 @@ dependencies = [
 [[package]]
 name = "tower-lsp-macros"
 version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "84fd902d4e0b9a4b27f2f440108dc034e1758628a9b702f8ec61ad66355422fa"
+source = "git+https://github.com/lionel-/tower-lsp?branch=bugfix/patches#49ef549eaa9f74b71e212cf513283af4ad748a81"
 dependencies = [
  "proc-macro2",
  "quote",

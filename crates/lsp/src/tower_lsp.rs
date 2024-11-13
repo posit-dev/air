@@ -161,8 +161,6 @@ where
 }
 
 fn new_lsp() -> (LspService<Backend>, ClientSocket) {
-    log::trace!("Starting LSP");
-
     let init = |client: Client| {
         let state = GlobalState::new(client);
         let events_tx = state.events_tx();
@@ -192,7 +190,7 @@ mod tests {
     use super::*;
     use lsp_test::lsp_client::TestClient;
 
-    #[tokio::test]
+    #[tests_macros::lsp_test]
     async fn test_init() {
         let mut client =
             TestClient::new(|server_rx, client_tx| async { start_lsp(server_rx, client_tx).await });
@@ -201,5 +199,7 @@ mod tests {
 
         let value = client.recv_response().await;
         println!("{value:?}");
+
+        client
     }
 }

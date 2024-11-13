@@ -34,4 +34,5 @@ futures-util.workspace = true
 httparse.workspace = true
 lsp_test.workspace = true
 memchr.workspace = true
+tests_macros.workspace = true
 tokio-util.workspace = true

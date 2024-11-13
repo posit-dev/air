@@ -5,7 +5,7 @@
 //
 //
 
-use futures::{executor::block_on, StreamExt};
+use futures::StreamExt;
 use futures_util::sink::SinkExt;
 use std::future::Future;
 use tokio::io::{AsyncRead, AsyncWrite};
@@ -58,6 +58,16 @@ impl TestClient {
         self.rx.next().await.unwrap().unwrap()
     }
 
+    pub async fn notify<N>(&mut self, params: N::Params)
+    where
+        N: lsp_types::notification::Notification,
+    {
+        let not = Request::from_notification::<N>(params);
+
+        // Unwrap: For this test client it's fine to panic if we can't send
+        self.tx.send(not).await.unwrap();
+    }
+
     pub async fn request<R>(&mut self, params: R::Params) -> i64
     where
         R: lsp_types::request::Request,
@@ -76,24 +86,27 @@ impl TestClient {
         self.request::<lsp_types::request::Initialize>(params).await
     }
 
-    pub async fn shutdown(&mut self) -> i64 {
-        self.request::<lsp_types::request::Shutdown>(()).await
+    pub async fn shutdown(&mut self) {
+        // TODO: Check that no messages are incoming
+
+        // Don't use `Request::from_request()`. It has a bug with undefined
+        // params (when `R::Params = ()`) which causes tower-lsp to not
+        // recognise the Shutdown request.
+        let req = Request::build("shutdown").id(self.id()).finish();
+
+        // Unwrap: For this test client it's fine to panic if we can't send
+        self.tx.send(req).await.unwrap();
+        self.recv_response().await;
     }
-}
 
-impl Drop for TestClient {
-    fn drop(&mut self) {
-        // TODO: Check that no messages are pending
+    pub async fn exit(&mut self) {
+        // Unwrap: Can only exit once
+        let handle = std::mem::take(&mut self.server_handle).unwrap();
 
-        // Unwrap: We drop only once, so handle must be Some
-        let _handle = std::mem::take(&mut self.server_handle).unwrap();
+        self.notify::<lsp_types::notification::Exit>(()).await;
 
-        block_on(async {
-            self.shutdown().await;
-
-            // TODO: Implement Shutdown
-            // Unwrap: Panics if task can't shut down as expected
-            // handle.await.unwrap();
-        })
+        // Now wait for the server task to complete.
+        // Unwrap: Panics if task can't shut down as expected
+        handle.await.unwrap();
     }
 }

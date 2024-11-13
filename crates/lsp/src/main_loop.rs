@@ -117,6 +117,11 @@ pub(crate) struct ClientCaps {
     pub(crate) did_change_configuration: bool,
 }
 
+enum LoopControl {
+    Shutdown,
+    None,
+}
+
 /// State for the auxiliary loop
 ///
 /// The auxiliary loop handles latency-sensitive events such as log messages. A
@@ -165,11 +170,6 @@ impl GlobalState {
     pub(crate) fn start(self) -> tokio::task::JoinSet<()> {
         let mut set = tokio::task::JoinSet::<()>::new();
 
-        // Spawn latency-sensitive auxiliary loop. Must be first to initialise
-        // global transmission channel.
-        let aux = AuxiliaryState::new(self.client.clone());
-        set.spawn(async move { aux.start().await });
-
         // Spawn main loop
         set.spawn(async move { self.main_loop().await });
 
@@ -181,12 +181,25 @@ impl GlobalState {
     /// This takes ownership of all global state and handles one by one LSP
     /// requests, notifications, and other internal events.
     async fn main_loop(mut self) {
+        // Spawn latency-sensitive auxiliary loop. Must be first to initialise
+        // global transmission channel.
+        let aux = AuxiliaryState::new(self.client.clone());
+        let mut set = tokio::task::JoinSet::<()>::new();
+        set.spawn(async move { aux.start().await });
+
         loop {
             let event = self.next_event().await;
-            if let Err(err) = self.handle_event(event).await {
-                crate::log_error!("Failure while handling event:\n{err:?}")
+            match self.handle_event(event).await {
+                Err(err) => crate::log_error!("Failure while handling event:\n{err:?}"),
+                Ok(LoopControl::Shutdown) => break,
+                _ => {}
             }
         }
+
+        log::trace!("Main loop closed. Shutting down auxiliary loop.");
+        set.shutdown().await;
+
+        log::trace!("Main loop exited.");
     }
 
     async fn next_event(&mut self) -> Event {
@@ -207,8 +220,9 @@ impl GlobalState {
     ///   of the main loop should be as fast as possible to increase throughput)
     ///   they are spawned on blocking threads and provided a snapshot (clone) of
     ///   the state.
-    async fn handle_event(&mut self, event: Event) -> anyhow::Result<()> {
+    async fn handle_event(&mut self, event: Event) -> anyhow::Result<LoopControl> {
         let loop_tick = std::time::Instant::now();
+        let mut out = LoopControl::None;
 
         match event {
             Event::Lsp(msg) => match msg {
@@ -251,7 +265,7 @@ impl GlobalState {
                             respond(tx, handlers_state::initialize(params, &mut self.lsp_state, &mut self.world), LspResponse::Initialize)?;
                         },
                         LspRequest::Shutdown() => {
-                            // TODO
+                            out = LoopControl::Shutdown;
                             respond(tx, Ok(()), LspResponse::Shutdown)?;
                         },
                     };
@@ -270,7 +284,7 @@ impl GlobalState {
             crate::log_info!("Handler took {}ms", loop_tick.elapsed().as_millis());
         }
 
-        Ok(())
+        Ok(out)
     }
 
     #[allow(dead_code)] // Currently unused
