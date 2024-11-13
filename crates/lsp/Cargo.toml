@@ -29,6 +29,7 @@ uuid = { workspace = true, features = ["v4"] }
 workspace = true
 
 [dev-dependencies]
+assert_matches.workspace = true
 bytes.workspace = true
 futures-util.workspace = true
 httparse.workspace = true
