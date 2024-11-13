@@ -13,6 +13,12 @@ use crate::config::DocumentConfig;
 
 #[derive(Clone)]
 pub struct Document {
+    pub contents: String,
+
+    // FIXME: We'd ideally store the `GreenNode` but this type has
+    // been made private in https://github.com/rome/tools/pull/1736.
+    // Since `SyntaxNode` is not `Send`, we can't store them in the
+    // world state.
     pub syntax: (),
 
     // The version of the document we last synchronized with.
@@ -32,9 +38,9 @@ impl std::fmt::Debug for Document {
 }
 
 impl Document {
-    pub fn new(_contents: &str, version: Option<i32>) -> Self {
-        // TODO! Parse `contents`
+    pub fn new(contents: String, version: Option<i32>) -> Self {
         Self {
+            contents,
             syntax: (),
             version,
             config: Default::default(),
@@ -86,7 +92,7 @@ mod tests {
 
     #[test]
     fn test_document_starts_at_0_0_with_leading_whitespace() {
-        let _document = Document::new("\n\n# hi there", None);
+        let _document = Document::new("\n\n# hi there".into(), None);
         // TODO!
         // let root = document.ast.root_node();
         // assert_eq!(root.start_position(), Point::new(0, 0));

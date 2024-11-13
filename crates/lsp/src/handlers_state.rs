@@ -110,18 +110,12 @@ pub(crate) fn did_open(
     params: DidOpenTextDocumentParams,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
-    let contents = params.text_document.text.as_str();
+    let contents = params.text_document.text;
     let uri = params.text_document.uri;
     let version = params.text_document.version;
 
-    // TODO!
-
     let document = Document::new(contents, Some(version));
-
-    state.documents.insert(uri.clone(), document.clone());
-
-    // NOTE: Do we need to call `update_config()` here?
-    // update_config(vec![uri]).await;
+    state.documents.insert(uri, document);
 
     Ok(())
 }

@@ -10,6 +10,7 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+air_r_syntax.workspace = true
 anyhow.workspace = true
 crossbeam.workspace = true
 futures.workspace = true

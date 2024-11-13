@@ -80,7 +80,7 @@ where
 {
     let mut fallback = || {
         let contents = std::fs::read_to_string(path)?;
-        let document = Document::new(contents.as_str(), None);
+        let document = Document::new(contents, None);
         return callback(&document);
     };
 
