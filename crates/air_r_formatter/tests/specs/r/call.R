@@ -18,6 +18,54 @@ fn(..., a = 1)
 fn(a = 1, another_really_really_long_argument_to_test_this_feature, a_really_long_argument_here, ...)
 
 # ------------------------------------------------------------------------
+# User requested line break
+
+# A line break before the first argument forces expansion
+
+# So this data dictionary stays expanded even though it fits on one line
+dictionary <- list(
+  a = 1,
+  b = 2
+)
+
+# This flattens to one line
+dictionary <- list(a = 1,
+  b = 2
+)
+
+# This flattens to one line
+dictionary <- list(a = 1, b = 2
+)
+
+# Expanding the inner list forces expansion of the outer list
+list(a = 1, b = list(
+  foo = "a", bar = "b"))
+
+# Expansion of `bar()` forces expansion of the whole pipeline
+# (But note `foo(a = 1)` is not expanded)
+df |> foo(a = 1) |> bar(
+  b = 2, c = 3)
+
+# Expansion of `foo()` forces expansion of the whole pipeline
+# (But note `bar(b = 2, c = 3)` is not expanded)
+df |> foo(
+  a = 1) |> bar(b = 2, c = 3)
+
+# Test-like call overrides user requested line break
+# (test-like check comes first and seems more relevant)
+test_that(
+  "description", {
+
+})
+
+# TODO: Holes currently don't force expansion. There is no token attached to
+# `RHoleArgument`, so we can't compute the "number of lines before the first token".
+fn(
+  ,
+  x = 1
+)
+
+# ------------------------------------------------------------------------
 # Trailing braced expression
 
 with(data, {
@@ -30,6 +78,7 @@ with(data,
   }
 )
 
+# User requested line break before `data` is respected
 with(
   data,
   {
@@ -37,9 +86,10 @@ with(
   }
 )
 
+# User requested line break before `data` is respected
 with(
   data,
-  # Prevents flattening
+  # A comment
   {
     col
   }
@@ -51,15 +101,13 @@ with(data, # Prevents flattening
 	}
 )
 
-with(
-  data,
+with(data,
   expr = {
     col
   }
 )
 
-with(
-  data,
+with(data,
   foo = "bar",
   {
     col
@@ -67,8 +115,7 @@ with(
 )
 
 # Not trailing, stays expanded
-with(
-  data,
+with(data,
   {
     col
   },
