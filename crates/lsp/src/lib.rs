@@ -9,6 +9,7 @@ pub mod encoding;
 pub mod handlers;
 pub mod handlers_state;
 pub mod main_loop;
+pub mod rust_analyzer;
 pub mod state;
 pub mod tower_lsp;
 

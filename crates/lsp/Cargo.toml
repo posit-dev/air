@@ -15,14 +15,18 @@ anyhow.workspace = true
 crossbeam.workspace = true
 futures.workspace = true
 itertools.workspace = true
+line-index = "0.1.2"
 log.workspace = true
+memchr.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 struct-field-names-as-array.workspace = true
+text-size = "1.1.1"
 tokio = { workspace = true, features = ["full"] }
 tower-lsp.workspace = true
 tracing.workspace = true
 tree-sitter.workspace = true
+triomphe = "0.1.14"
 url.workspace = true
 uuid = { workspace = true, features = ["v4"] }
 

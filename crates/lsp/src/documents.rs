@@ -5,11 +5,11 @@
 //
 //
 
-use anyhow::*;
-use tower_lsp::lsp_types::DidChangeTextDocumentParams;
-use tower_lsp::lsp_types::TextDocumentContentChangeEvent;
+use tower_lsp::lsp_types;
 
 use crate::config::DocumentConfig;
+use crate::rust_analyzer::line_index::PositionEncoding;
+use crate::rust_analyzer::utils::apply_document_changes;
 
 #[derive(Clone)]
 pub struct Document {
@@ -47,7 +47,7 @@ impl Document {
         }
     }
 
-    pub fn on_did_change(&mut self, params: &DidChangeTextDocumentParams) {
+    pub fn on_did_change(&mut self, params: lsp_types::DidChangeTextDocumentParams) {
         let new_version = params.text_document.version;
 
         // Check for out-of-order change notifications
@@ -63,26 +63,14 @@ impl Document {
             }
         }
 
-        for event in &params.content_changes {
-            if let Err(err) = self.update(event) {
-                panic!("Failed to update document: {err:?}");
-            }
-        }
+        let contents = apply_document_changes(
+            PositionEncoding::Utf8, // TODO!
+            &self.contents,
+            params.content_changes,
+        );
 
-        // Set new version
+        self.contents = contents;
         self.version = Some(new_version);
-    }
-
-    fn update(&mut self, change: &TextDocumentContentChangeEvent) -> Result<()> {
-        // Extract edit range. Nothing to do if there wasn't an edit.
-        let _range = match change.range {
-            Some(r) => r,
-            None => return Ok(()),
-        };
-
-        // TODO!
-
-        Ok(())
     }
 }
 

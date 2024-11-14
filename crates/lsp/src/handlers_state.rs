@@ -126,9 +126,8 @@ pub(crate) fn did_change(
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
     let uri = &params.text_document.uri;
-    let _doc = state.get_document_mut(uri)?;
-
-    // TODO!
+    let doc = state.get_document_mut(uri)?;
+    doc.on_did_change(params);
 
     Ok(())
 }
