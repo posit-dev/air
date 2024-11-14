@@ -100,7 +100,7 @@ a_really_really_long_thing_here1 + a_really_really_long_thing_here2 + a_really_r
 # User requested line break not respected for non-chainable items
 # (This is debatable, but I see no need to enable it right now)
 a ~
-	b
+  b
 
 a >
   b
@@ -158,12 +158,12 @@ a_really_really_long_thing_here1 : a_really_really_long_thing_here2 * a_really_r
 # User requested line break is kept
 # `*` doesn't chain to `+` as it is a different precedence group
 1 +
-	2 * 3
+  2 * 3
 
 # You keep this double indent here if you force break everything,
 # because `+` and `*` don't chain together
 1 +
-	2 *
+  2 *
     3
 
 # The `*` in the middle splits the `+` chain
@@ -375,6 +375,6 @@ df %>%
 # definitely not what the user wants, so the extra indent is a good thing
 # as it proves that you've entered a different "group".
 ggplot() +
-	geom_line() +
-	geom_bar() %>%
-		identity()
+  geom_line() +
+  geom_bar() %>%
+    identity()
