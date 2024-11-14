@@ -39,3 +39,86 @@ function() # becomes leading on `1 + 1`
   1 + 1
 
 \(x, y) 1
+
+# ------------------------------------------------------------------------
+# User requested line break
+
+# A line break before the first parameter forces expansion
+
+# So this function definition stays expanded even though it fits on one line
+fn <- function(
+  a,
+  b
+) {
+  body
+}
+
+# This flattens to one line
+fn <- function(a,
+  b
+) {
+  body
+}
+
+# This flattens to one line
+fn <- function(a, b
+) {
+  body
+}
+
+# Expansion doesn't propagate to the `c(1, 2, 3)`
+fn <- function(
+  a,
+  b = c(1, 2, 3)
+) {
+  body
+}
+
+# Dots - this expands
+fn <- function(
+  ..., a, b
+) {
+  body
+}
+
+# Dots - this flattens
+fn <- function(...,
+  a, b
+) {
+  body
+}
+
+# User requested expansion of the `c()` call forces expansion of
+# the entire function definition
+fn <- function(a, b = c(
+  1, 2, 3)) {
+  body
+}
+
+# ------------------------------------------------------------------------
+# User requested line break and trailing anonymous functions in calls
+
+# Ensure these features play nicely together
+
+# This user line break expands the function definition, causing the whole
+# `map()` to expand
+map(xs, function(
+  x, option = "a") {
+  x
+})
+
+# This flattens the function definition, but the `map()` stays expanded
+map(
+  xs,
+  function(x,
+    option = "a"
+  ) {
+    x
+  }
+)
+
+# This flattens to one line
+map(xs, function(x,
+  option = "a") {
+  x
+})

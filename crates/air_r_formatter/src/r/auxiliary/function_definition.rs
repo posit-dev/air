@@ -86,7 +86,7 @@ impl FormatFunction {
             f,
             [
                 name.format(),
-                group(&format_parameters),
+                &format_parameters,
                 group(&FormatStatementBody::new(&body))
             ]
         )
