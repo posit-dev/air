@@ -71,36 +71,107 @@ alias???"^try"
 alias????"^try"
 
 # -----------------------------------------------------------------------------
-# Precedence
+# Non-chaining
 
-a ~ b
+# Soft line breaks kick in for long expressions
+a_really_really_really_really_really_really_long_thing_here ~ a_really_really_really_really_really_really_long_thing_here2
+a_really_really_really_really_really_really_long_thing_here > a_really_really_really_really_really_really_long_thing_here2
+a_really_really_really_really_really_really_long_thing_here >= a_really_really_really_really_really_really_long_thing_here2
+a_really_really_really_really_really_really_long_thing_here < a_really_really_really_really_really_really_long_thing_here2
+a_really_really_really_really_really_really_long_thing_here <= a_really_really_really_really_really_really_long_thing_here2
+a_really_really_really_really_really_really_long_thing_here == a_really_really_really_really_really_really_long_thing_here2
+a_really_really_really_really_really_really_long_thing_here != a_really_really_really_really_really_really_long_thing_here2
 
-# User requested line break
+# Chaining does not occur
+a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2 ~ a_really_really_long_thing_here3
+
+# Chaining occurs by chance due to how precedence naturally groups these
+# along with having extremely long names
+a_really_really_long_thing_here1 ~ a_really_really_really_really_really_really_long_thing_here2 ~ a_really_really_long_thing_here3
+
+# Forced groups
+(a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2) ~ a_really_really_long_thing_here3
+a_really_really_long_thing_here1 ~ (a_really_really_long_thing_here2 ~ a_really_really_long_thing_here3)
+
+# Mixing with a chaining operator
+a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2 + a_really_really_long_thing_here3 + a_really_really_long_thing_here4
+a_really_really_long_thing_here1 + a_really_really_long_thing_here2 + a_really_really_long_thing_here3 ~ a_really_really_long_thing_here4
+
+# User requested line break not respected for non-chainable items
+# (This is debatable, but I see no need to enable it right now)
 a ~
 	b
 
-# `b + c` is kept together. Precedence groups this as `(a) ~ (b + c)`,
-# so the LHS of `~` doesn't contain another binary operator to chain to.
-a ~
-	b + c
+a >
+  b
 
-# The two formulas are chained, but `c + d` stays together
-a ~
-	b ~ c + d
+a ==
+  b
 
-# `2 * 3` stay together as they are more tightly bound
+# -----------------------------------------------------------------------------
+# Chaining
+
+# Chaining same operator
+a_really_really_long_thing_here1 + a_really_really_long_thing_here2 + a_really_really_long_thing_here3
+a_really_really_long_thing_here1 - a_really_really_long_thing_here2 - a_really_really_long_thing_here3
+a_really_really_long_thing_here1 * a_really_really_long_thing_here2 * a_really_really_long_thing_here3
+a_really_really_long_thing_here1 / a_really_really_long_thing_here2 / a_really_really_long_thing_here3
+a_really_really_long_thing_here1 & a_really_really_long_thing_here2 & a_really_really_long_thing_here3
+a_really_really_long_thing_here1 | a_really_really_long_thing_here2 | a_really_really_long_thing_here3
+a_really_really_long_thing_here1 && a_really_really_long_thing_here2 && a_really_really_long_thing_here3
+a_really_really_long_thing_here1 || a_really_really_long_thing_here2 || a_really_really_long_thing_here3
+a_really_really_long_thing_here1 |> a_really_really_long_thing_here2 |> a_really_really_long_thing_here3
+a_really_really_long_thing_here1 %>% a_really_really_long_thing_here2 %>% a_really_really_long_thing_here3
+
+# Chaining mixed operator, same precedence group
+a_really_really_long_thing_here1 + a_really_really_long_thing_here2 - a_really_really_long_thing_here3
+a_really_really_long_thing_here1 - a_really_really_long_thing_here2 + a_really_really_long_thing_here3
+a_really_really_long_thing_here1 * a_really_really_long_thing_here2 / a_really_really_long_thing_here3
+a_really_really_long_thing_here1 / a_really_really_long_thing_here2 * a_really_really_long_thing_here3
+a_really_really_long_thing_here1 |> a_really_really_long_thing_here2 %>% a_really_really_long_thing_here3
+a_really_really_long_thing_here1 %>% a_really_really_long_thing_here2 |> a_really_really_long_thing_here3
+
+# TODO: Do we really want these chained? It seems like no good can come of that even though they have same precedence
+a_really_really_long_thing_here1 & a_really_really_long_thing_here2 && a_really_really_long_thing_here3
+a_really_really_long_thing_here1 | a_really_really_long_thing_here2 || a_really_really_long_thing_here3
+
+# Different precedence groups
+a_really_really_long_thing_here1 * a_really_really_long_thing_here2 + a_really_really_long_thing_here3
+a_really_really_long_thing_here1 + a_really_really_long_thing_here2 * a_really_really_long_thing_here3
+a_really_really_long_thing_here1 & a_really_really_long_thing_here2 | a_really_really_long_thing_here3
+a_really_really_long_thing_here1 | a_really_really_long_thing_here2 & a_really_really_long_thing_here3
+a_really_really_long_thing_here1 && a_really_really_long_thing_here2 || a_really_really_long_thing_here3
+a_really_really_long_thing_here1 || a_really_really_long_thing_here2 && a_really_really_long_thing_here3
+a_really_really_long_thing_here1 %>% a_really_really_long_thing_here2 * a_really_really_long_thing_here3
+a_really_really_long_thing_here1 * a_really_really_long_thing_here2 %>% a_really_really_long_thing_here3
+
+# With sticky operators
+a_really_really_long_thing_here1 + a_really_really_long_thing_here2 ** a_really_really_long_thing_here3
+a_really_really_long_thing_here1 ** a_really_really_long_thing_here2 + a_really_really_long_thing_here3
+a_really_really_long_thing_here1 * a_really_really_long_thing_here2 ** a_really_really_long_thing_here3
+a_really_really_long_thing_here1 ** a_really_really_long_thing_here2 * a_really_really_long_thing_here3
+a_really_really_long_thing_here1 + a_really_really_long_thing_here2 : a_really_really_long_thing_here3
+a_really_really_long_thing_here1 : a_really_really_long_thing_here2 + a_really_really_long_thing_here3
+a_really_really_long_thing_here1 * a_really_really_long_thing_here2 : a_really_really_long_thing_here3
+a_really_really_long_thing_here1 : a_really_really_long_thing_here2 * a_really_really_long_thing_here3
+
+# User requested line break is kept
+# `*` doesn't chain to `+` as it is a different precedence group
 1 +
 	2 * 3
 
-# And you keep this extra indent here if you force break
+# You keep this double indent here if you force break everything,
+# because `+` and `*` don't chain together
 1 +
 	2 *
     3
 
-# TODO: Ideally the multiplication stay together on the same line,
-# as biome's JS version does
-a_really_really_long_thing_here1 * a_really_really_long_thing_here2 + a_really_really_long_thing_here3
-a_really_really_long_thing_here1 + a_really_really_long_thing_here2 * a_really_really_long_thing_here3
+# The `*` in the middle splits the `+` chain
+a_really_really_long_thing_here1 + a_really_really_long_thing_here2 * a_really_really_long_thing_here3 + a_really_really_long_thing_here1
+
+# The user line break after the `*` is respected
+a_really_really_long_thing_here1 + a_really_really_long_thing_here2 *
+  a_really_really_long_thing_here3 + a_really_really_long_thing_here1
 
 # -----------------------------------------------------------------------------
 # Binary expression conditionals in if statements
@@ -132,3 +203,178 @@ if (long_conditional1
 if (long_conditional1 && long_conditional2 && long_conditional3 && long_conditional4 && long_conditional5) {
   1 + 1
 }
+
+# -----------------------------------------------------------------------------
+# Line break persistance
+
+# If the user requests a line break after the first pipe, then they all break
+
+df |> foo() |> bar() |> baz()
+
+df |>
+foo() |> bar() |> baz()
+
+df |> foo() |>
+bar() |> baz()
+
+# Flattened, line break is not after the first pipe!
+df |> foo() |> bar() |>
+baz()
+
+# Flattened, removing just this first magic line break is how users can
+# easily request flattened pipe chains if one is possible (as opposed
+# to having to flatten every pipe element to keep it flat)
+df |> foo() |>
+  bar() |>
+  baz()
+
+# Works with mixed binary operator types
+df |>
+foo() %>% bar() |> baz()
+
+# One line
+df |> ggplot() + geom_line() + geom_bar()
+
+# Expansion requested
+df |>
+ggplot() + geom_line() + geom_bar()
+
+# Flattened, line break is not after the first binary operator!
+df |> ggplot() + geom_line() +
+geom_bar()
+
+# Non-binary operators break the expansion propagation
+(df |> foo()) |>
+bar() |>
+baz() |>
+{ . |> and() |> this() }
+
+(df |> foo()) |>
+bar() |>
+baz() |>
+{ . |>
+and() |> this() }
+
+(1 + 2 * 3) +
+  (4 + 5 * 6) + (7 + 8)
+
+# Sticky binary operators break the expansion propagation
+# (`2:3` stays together, `6^7` stays together)
+1 +
+  2:3 +
+  4 +
+  5 +
+  6^7 + 8 +
+  9
+
+# Precedence is taken into account correctly
+1:2 + 3
+
+1:2 +
+3
+
+# Inside parentheses, subset, or, subset2, you can put a newline before
+# the `|>`, which isn't valid R code at top level. This doesn't result
+# in a break because we strictly require the magic line break to come
+# AFTER the first binary operator in the chain.
+(df
+|> foo())
+
+x[df
+|> foo()]
+
+x[[df
+|> foo()]]
+
+# This does retain the break, because it comes after the pipe
+(df |>
+foo())
+
+x[df |>
+foo()]
+
+x[[df |>
+foo()]]
+
+# -----------------------------------------------------------------------------
+# Blank lines between `operator` and `right`
+
+# Retain at most 1 blank line between the `operator` and the `right`.
+# This is the same behavior as retaining blank lines in top level expressions,
+# and between sequential arguments in calls.
+# This is common with pipelines.
+df |>
+  a() |>
+
+  # Some important notes about this complex call
+  b() |>
+
+
+  # Some more important notes
+  c() |>
+  d()
+
+# -----------------------------------------------------------------------------
+# Comments in chains
+
+df |> foo() # Trailing of `df |> foo()` pipe chain
+
+# Leading of `df |> foo() |> bar() |> baz()` pipe chain
+df |>
+  foo() |>
+  bar() |>
+  baz()
+
+df |>
+  # Leading of `foo()` call
+  foo() |>
+  # Leading of `bar()` call
+  bar() |>
+  # Leading of `baz()` call
+  baz()
+
+df |> # Trailing of `df` identifier
+  foo() |>
+  bar() |>
+  baz()
+
+df |>
+  foo() |> # Trailing of `df |> foo()` pipe chain
+  bar() |>
+  baz()
+
+df |>
+  foo() |>
+  bar() |> # Trailing of `df |> foo() |> bar()` pipe chain
+  baz()
+
+df |>
+  foo() |>
+  bar() |>
+  baz() # Trailing of `df |> foo() |> bar() |> baz()` pipe chain
+
+# -----------------------------------------------------------------------------
+# Mixing pipes and pluses
+
+# i.e. piping into a ggplot2 chain, which gets special treatment
+
+# We don't add an extra level of indent after the first `+`,
+# it is specially treated as being within the same group as the `|>`
+df |>
+  ggplot() +
+  geom_line() +
+  geom_bar()
+
+df %>%
+  ggplot() +
+  geom_line() +
+  geom_bar()
+
+# Piping OUT of a `+` chain should add an extra indent.
+# This is illogical behavior, it results in `identity(geom_bar())`, which is
+# definitely not what the user wants, so the extra indent is a good thing
+# as it proves that you've entered a different "group".
+ggplot() +
+	geom_line() +
+	geom_bar() %>%
+		identity()

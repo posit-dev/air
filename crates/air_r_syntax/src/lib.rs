@@ -352,6 +352,66 @@ impl TryFrom<RSyntaxKind> for TriviaPieceKind {
     }
 }
 
+/// See [tree-sitter-r](https://github.com/r-lib/tree-sitter-r/blob/main/grammar.js)
+#[derive(Debug, Eq, Ord, PartialOrd, PartialEq, Copy, Clone, Hash)]
+pub enum OperatorPrecedence {
+    Help = 0,
+    LeftAssignment = 1,
+    EqualsAssignment = 2,
+    RightAssignment = 3,
+    Tilde = 4,
+    LogicalOr = 5,
+    LogicalAnd = 6,
+    UnaryNot = 7,
+    Relational = 8,
+    Additive = 9,
+    Multiplicative = 10,
+    Pipe = 11,
+    Colon = 12,
+    UnaryPlusMinus = 13,
+    Exponential = 14,
+    Extract = 15,
+    Namespace = 16,
+}
+
+impl OperatorPrecedence {
+    /// Returns the precedence for a binary operator token or [None] if the token isn't a binary operator
+    ///
+    /// We don't treat namespace operators `::` and `:::` or extraction operators
+    /// `$` and `@` as binary.
+    pub fn try_from_binary_operator(kind: RSyntaxKind) -> Option<OperatorPrecedence> {
+        Some(match kind {
+            T![?] => OperatorPrecedence::Help,
+            T![<-] => OperatorPrecedence::LeftAssignment,
+            T![<<-] => OperatorPrecedence::LeftAssignment,
+            T![:=] => OperatorPrecedence::LeftAssignment,
+            T![=] => OperatorPrecedence::EqualsAssignment,
+            T![->] => OperatorPrecedence::RightAssignment,
+            T![->>] => OperatorPrecedence::RightAssignment,
+            T![~] => OperatorPrecedence::Tilde,
+            T![|] => OperatorPrecedence::LogicalOr,
+            T![||] => OperatorPrecedence::LogicalOr,
+            T![&] => OperatorPrecedence::LogicalAnd,
+            T![&&] => OperatorPrecedence::LogicalAnd,
+            T![==] => OperatorPrecedence::Relational,
+            T![>] => OperatorPrecedence::Relational,
+            T![>=] => OperatorPrecedence::Relational,
+            T![<] => OperatorPrecedence::Relational,
+            T![<=] => OperatorPrecedence::Relational,
+            T![+] => OperatorPrecedence::Additive,
+            T![-] => OperatorPrecedence::Additive,
+            T![*] => OperatorPrecedence::Multiplicative,
+            T![/] => OperatorPrecedence::Multiplicative,
+            T![|>] => OperatorPrecedence::Pipe,
+            RSyntaxKind::SPECIAL => OperatorPrecedence::Pipe,
+            T![:] => OperatorPrecedence::Colon,
+            T![^] => OperatorPrecedence::Exponential,
+            T![**] => OperatorPrecedence::Exponential,
+            _ => return None,
+        })
+    }
+}
+
 /// Text of `token`, excluding all trivia and removing quotes if `token` is a string literal.
 pub fn inner_string_text(token: &RSyntaxToken) -> TokenText {
     let mut text = token.token_text_trimmed();
