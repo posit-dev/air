@@ -11,6 +11,7 @@ use std::pin::Pin;
 
 use anyhow::anyhow;
 use futures::StreamExt;
+use line_index::WideEncoding;
 use tokio::sync::mpsc::unbounded_channel as tokio_unbounded_channel;
 use tokio::task::JoinHandle;
 use tower_lsp::lsp_types;
@@ -22,6 +23,7 @@ use url::Url;
 use crate::handlers;
 use crate::handlers_state;
 use crate::handlers_state::ConsoleInputs;
+use crate::rust_analyzer::line_index::PositionEncoding;
 use crate::state::WorldState;
 use crate::tower_lsp::LspMessage;
 use crate::tower_lsp::LspNotification;
@@ -101,8 +103,12 @@ pub(crate) struct GlobalState {
 
 /// Unlike `WorldState`, `ParserState` cannot be cloned and is only accessed by
 /// exclusive handlers.
-#[derive(Default)]
 pub(crate) struct LspState {
+    /// The negociated encoding for document positions. Note that documents are
+    /// always stored as UTF-8 in Rust Strings. This encoding is only used to
+    /// translate UTF-16 positions sent by the client to UTF-8 ones.
+    pub(crate) position_encoding: PositionEncoding,
+
     /// The set of tree-sitter document parsers managed by the `GlobalState`.
     pub(crate) parsers: HashMap<Url, tree_sitter::Parser>,
 
@@ -110,6 +116,17 @@ pub(crate) struct LspState {
     /// when we get the `Initialized` notification.
     pub(crate) needs_registration: ClientCaps,
     // Add handle to aux loop here?
+}
+
+impl Default for LspState {
+    fn default() -> Self {
+        Self {
+            // Default encoding specified in the LSP protocol
+            position_encoding: PositionEncoding::Wide(WideEncoding::Utf16),
+            parsers: Default::default(),
+            needs_registration: Default::default(),
+        }
+    }
 }
 
 #[derive(Debug, Default)]
@@ -246,7 +263,7 @@ impl GlobalState {
                             handlers_state::did_open(params, &mut self.world)?;
                         },
                         LspNotification::DidChangeTextDocument(params) => {
-                            handlers_state::did_change(params, &mut self.world)?;
+                            handlers_state::did_change(params, &self.lsp_state, &mut self.world)?;
                         },
                         LspNotification::DidSaveTextDocument(_params) => {
                             // Currently ignored

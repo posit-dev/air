@@ -47,7 +47,11 @@ impl Document {
         }
     }
 
-    pub fn on_did_change(&mut self, params: lsp_types::DidChangeTextDocumentParams) {
+    pub fn on_did_change(
+        &mut self,
+        params: lsp_types::DidChangeTextDocumentParams,
+        encoding: PositionEncoding,
+    ) {
         let new_version = params.text_document.version;
 
         // Check for out-of-order change notifications
@@ -63,11 +67,7 @@ impl Document {
             }
         }
 
-        let contents = apply_document_changes(
-            PositionEncoding::Utf8, // TODO!
-            &self.contents,
-            params.content_changes,
-        );
+        let contents = apply_document_changes(encoding, &self.contents, params.content_changes);
 
         self.contents = contents;
         self.version = Some(new_version);
@@ -84,5 +84,63 @@ mod tests {
         // TODO!
         // let root = document.ast.root_node();
         // assert_eq!(root.start_position(), Point::new(0, 0));
+    }
+
+    #[test]
+    fn test_document_position_encoding() {
+        // Replace `b` after `𐐀` which is at position 5 in UTF-8
+        let utf8_range = lsp_types::Range {
+            start: lsp_types::Position {
+                line: 0,
+                character: 5,
+            },
+            end: lsp_types::Position {
+                line: 0,
+                character: 6,
+            },
+        };
+
+        // `b` is at position 3 in UTF-16
+        let utf16_range = lsp_types::Range {
+            start: lsp_types::Position {
+                line: 0,
+                character: 3,
+            },
+            end: lsp_types::Position {
+                line: 0,
+                character: 4,
+            },
+        };
+
+        let mut utf8_replace_params = lsp_types::DidChangeTextDocumentParams {
+            text_document: lsp_types::VersionedTextDocumentIdentifier {
+                uri: url::Url::parse("file:///foo").unwrap(),
+                version: 10,
+            },
+            content_changes: vec![],
+        };
+        let mut utf16_replace_params = utf8_replace_params.clone();
+
+        utf8_replace_params.content_changes = vec![lsp_types::TextDocumentContentChangeEvent {
+            range: Some(utf8_range),
+            range_length: None,
+            text: String::from("bar"),
+        }];
+        utf16_replace_params.content_changes = vec![lsp_types::TextDocumentContentChangeEvent {
+            range: Some(utf16_range),
+            range_length: None,
+            text: String::from("bar"),
+        }];
+
+        let mut document = Document::new("a𐐀b".into(), None);
+        document.on_did_change(utf8_replace_params, PositionEncoding::Utf8);
+        assert_eq!(document.contents, "a𐐀bar");
+
+        let mut document = Document::new("a𐐀b".into(), None);
+        document.on_did_change(
+            utf16_replace_params,
+            PositionEncoding::Wide(line_index::WideEncoding::Utf16),
+        );
+        assert_eq!(document.contents, "a𐐀bar");
     }
 }
