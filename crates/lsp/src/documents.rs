@@ -5,11 +5,10 @@
 //
 //
 
-use line_index::LineIndex;
 use tower_lsp::lsp_types;
 
 use crate::config::DocumentConfig;
-use crate::rust_analyzer::line_index::{LineEndings, PositionEncoding};
+use crate::rust_analyzer::line_index::{LineEndings, LineIndex, PositionEncoding};
 use crate::rust_analyzer::utils::apply_document_changes;
 
 #[derive(Clone)]
@@ -18,13 +17,12 @@ pub struct Document {
     /// Unix line endings.
     pub contents: String,
 
-    /// Map of new lines in `contents`
+    /// Map of new lines in `contents`. Also contains line endings type in the
+    /// original document (we only store Unix lines) and the position encoding
+    /// type of the session. This provides all that is needed to send data back
+    /// to the client with positions in the correct coordinate space and
+    /// correctly formatted text.
     pub line_index: LineIndex,
-
-    /// We only store Unix newlines in `contents`. The original line ending type
-    /// is recorded here so we can restore them when communicating changes back
-    /// to the client.
-    pub line_endings: LineEndings,
 
     /// We store the syntax tree in the document for now.
     /// We will think about laziness and incrementality in the future.
@@ -47,27 +45,37 @@ impl std::fmt::Debug for Document {
 }
 
 impl Document {
-    pub fn new(contents: String, version: Option<i32>) -> Self {
-        let (contents, line_endings) = LineEndings::normalize(contents);
-        let line_index = LineIndex::new(&contents);
+    pub fn new(
+        contents: String,
+        version: Option<i32>,
+        position_encoding: PositionEncoding,
+    ) -> Self {
+        // Normalize to Unix line endings
+        let (contents, endings) = LineEndings::normalize(contents);
 
+        // Create line index to keep track of newline offsets
+        let line_index = LineIndex {
+            index: triomphe::Arc::new(line_index::LineIndex::new(&contents)),
+            endings,
+            encoding: position_encoding,
+        };
         let parse = air_r_parser::parse(&contents, Default::default());
 
         Self {
             contents,
             line_index,
-            line_endings,
             parse,
             version,
             config: Default::default(),
         }
     }
 
-    pub fn on_did_change(
-        &mut self,
-        mut params: lsp_types::DidChangeTextDocumentParams,
-        encoding: PositionEncoding,
-    ) {
+    /// For unit tests
+    pub fn doodle(contents: &str) -> Self {
+        Self::new(contents.into(), None, PositionEncoding::Utf8)
+    }
+
+    pub fn on_did_change(&mut self, mut params: lsp_types::DidChangeTextDocumentParams) {
         let new_version = params.text_document.version;
 
         // Check for out-of-order change notifications
@@ -92,7 +100,11 @@ impl Document {
             event.text = LineEndings::normalize(text).0;
         }
 
-        let contents = apply_document_changes(encoding, &self.contents, params.content_changes);
+        let contents = apply_document_changes(
+            self.line_index.encoding,
+            &self.contents,
+            params.content_changes,
+        );
 
         // No incrementality for now
         let parse = air_r_parser::parse(&contents, Default::default());

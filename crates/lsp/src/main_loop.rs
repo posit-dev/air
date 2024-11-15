@@ -260,10 +260,10 @@ impl GlobalState {
                             // TODO: Re-index the changed files.
                         },
                         LspNotification::DidOpenTextDocument(params) => {
-                            handlers_state::did_open(params, &mut self.world)?;
+                            handlers_state::did_open(params, &self.lsp_state, &mut self.world)?;
                         },
                         LspNotification::DidChangeTextDocument(params) => {
-                            handlers_state::did_change(params, &self.lsp_state, &mut self.world)?;
+                            handlers_state::did_change(params, &mut self.world)?;
                         },
                         LspNotification::DidSaveTextDocument(_params) => {
                             // Currently ignored

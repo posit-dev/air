@@ -126,13 +126,14 @@ pub(crate) fn initialize(
 #[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn did_open(
     params: DidOpenTextDocumentParams,
+    lsp_state: &LspState,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
     let contents = params.text_document.text;
     let uri = params.text_document.uri;
     let version = params.text_document.version;
 
-    let document = Document::new(contents, Some(version));
+    let document = Document::new(contents, Some(version), lsp_state.position_encoding);
     state.documents.insert(uri, document);
 
     Ok(())
@@ -141,12 +142,11 @@ pub(crate) fn did_open(
 #[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn did_change(
     params: DidChangeTextDocumentParams,
-    lsp_state: &LspState,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
     let uri = &params.text_document.uri;
     let doc = state.get_document_mut(uri)?;
-    doc.on_did_change(params, lsp_state.position_encoding);
+    doc.on_did_change(params);
 
     Ok(())
 }

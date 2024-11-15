@@ -15,16 +15,17 @@ use line_index::WideEncoding;
 use memchr::memmem;
 use triomphe::Arc;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum PositionEncoding {
     Utf8,
     Wide(WideEncoding),
 }
 
-pub(crate) struct LineIndex {
-    pub(crate) index: Arc<line_index::LineIndex>,
-    pub(crate) endings: LineEndings,
-    pub(crate) encoding: PositionEncoding,
+#[derive(Debug, Clone)]
+pub struct LineIndex {
+    pub index: Arc<line_index::LineIndex>,
+    pub endings: LineEndings,
+    pub encoding: PositionEncoding,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
