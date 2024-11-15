@@ -10,8 +10,10 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+air_r_parser.workspace = true
 air_r_syntax.workspace = true
 anyhow.workspace = true
+biome_parser.workspace = true
 crossbeam.workspace = true
 futures.workspace = true
 itertools.workspace = true

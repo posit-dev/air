@@ -18,12 +18,6 @@ pub struct Document {
     /// Unix line endings.
     pub contents: String,
 
-    // FIXME: We'd ideally store the `GreenNode` but this type has
-    // been made private in https://github.com/rome/tools/pull/1736.
-    // Since `SyntaxNode` is not `Send`, we can't store them in the
-    // world state.
-    pub syntax: (),
-
     /// Map of new lines in `contents`
     pub line_index: LineIndex,
 
@@ -31,6 +25,11 @@ pub struct Document {
     /// is recorded here so we can restore them when communicating changes back
     /// to the client.
     pub line_endings: LineEndings,
+
+    /// We store the syntax tree in the document for now.
+    /// We will think about laziness and incrementality in the future.
+    pub parse: biome_parser::AnyParse,
+
     /// The version of the document we last synchronized with.
     /// None if the document hasn't been synchronized yet.
     pub version: Option<i32>,
@@ -42,7 +41,7 @@ pub struct Document {
 impl std::fmt::Debug for Document {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Document")
-            .field("syntax", &self.syntax)
+            .field("syntax", &self.parse)
             .finish()
     }
 }
@@ -52,11 +51,13 @@ impl Document {
         let (contents, line_endings) = LineEndings::normalize(contents);
         let line_index = LineIndex::new(&contents);
 
+        let parse = air_r_parser::parse(&contents, Default::default());
+
         Self {
             contents,
-            syntax: (),
             line_index,
             line_endings,
+            parse,
             version,
             config: Default::default(),
         }
@@ -93,6 +94,10 @@ impl Document {
 
         let contents = apply_document_changes(encoding, &self.contents, params.content_changes);
 
+        // No incrementality for now
+        let parse = air_r_parser::parse(&contents, Default::default());
+
+        self.parse = parse;
         self.contents = contents;
         self.version = Some(new_version);
     }
