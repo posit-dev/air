@@ -59,6 +59,8 @@ impl Document {
             endings,
             encoding: position_encoding,
         };
+
+        // Parse document immediately for now
         let parse = air_r_parser::parse(&contents, Default::default());
 
         Self {
@@ -117,17 +119,49 @@ impl Document {
 
 #[cfg(test)]
 mod tests {
-    use crate::rust_analyzer::line_index::LineIndex;
+    use air_r_syntax::RSyntaxNode;
+    use text_size::{TextRange, TextSize};
+
+    use crate::{rust_analyzer::text_edit::TextEdit, to_proto::doc_edit_vec};
 
     use super::*;
 
+    fn dummy_versioned_doc() -> lsp_types::VersionedTextDocumentIdentifier {
+        lsp_types::VersionedTextDocumentIdentifier {
+            uri: url::Url::parse("file:///foo").unwrap(),
+            version: 1,
+        }
+    }
 
     #[test]
     fn test_document_starts_at_0_0_with_leading_whitespace() {
-        let _document = Document::new("\n\n# hi there".into(), None);
+        let _document = Document::doodle("\n\n# hi there");
         // TODO!
         // let root = document.ast.root_node();
         // assert_eq!(root.start_position(), Point::new(0, 0));
+    }
+
+    #[test]
+    fn test_document_syntax() {
+        let mut doc = Document::doodle("foo(bar)");
+
+        let original_syntax: RSyntaxNode = doc.parse.syntax();
+        insta::assert_debug_snapshot!(original_syntax);
+
+        let edit = TextEdit::replace(
+            TextRange::new(TextSize::new(4), TextSize::new(7)),
+            String::from("1 + 2"),
+        );
+        let edits = doc_edit_vec(&doc.line_index, edit);
+
+        let params = lsp_types::DidChangeTextDocumentParams {
+            text_document: dummy_versioned_doc(),
+            content_changes: edits,
+        };
+        doc.on_did_change(params);
+
+        let updated_syntax: RSyntaxNode = doc.parse.syntax();
+        insta::assert_debug_snapshot!(updated_syntax);
     }
 
     #[test]
@@ -157,10 +191,7 @@ mod tests {
         };
 
         let mut utf8_replace_params = lsp_types::DidChangeTextDocumentParams {
-            text_document: lsp_types::VersionedTextDocumentIdentifier {
-                uri: url::Url::parse("file:///foo").unwrap(),
-                version: 10,
-            },
+            text_document: dummy_versioned_doc(),
             content_changes: vec![],
         };
         let mut utf16_replace_params = utf8_replace_params.clone();
@@ -176,15 +207,16 @@ mod tests {
             text: String::from("bar"),
         }];
 
-        let mut document = Document::new("a𐐀b".into(), None);
-        document.on_did_change(utf8_replace_params, PositionEncoding::Utf8);
+        let mut document = Document::new("a𐐀b".into(), None, PositionEncoding::Utf8);
+        document.on_did_change(utf8_replace_params);
         assert_eq!(document.contents, "a𐐀bar");
 
-        let mut document = Document::new("a𐐀b".into(), None);
-        document.on_did_change(
-            utf16_replace_params,
+        let mut document = Document::new(
+            "a𐐀b".into(),
+            None,
             PositionEncoding::Wide(line_index::WideEncoding::Utf16),
         );
+        document.on_did_change(utf16_replace_params);
         assert_eq!(document.contents, "a𐐀bar");
     }
 }

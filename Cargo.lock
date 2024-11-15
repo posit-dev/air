@@ -1240,6 +1240,7 @@ dependencies = [
  "futures",
  "futures-util",
  "httparse",
+ "insta",
  "itertools",
  "line-index",
  "log",

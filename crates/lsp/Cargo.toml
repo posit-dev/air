@@ -40,6 +40,7 @@ assert_matches.workspace = true
 bytes.workspace = true
 futures-util.workspace = true
 httparse.workspace = true
+insta.workspace = true
 lsp_test.workspace = true
 memchr.workspace = true
 tests_macros.workspace = true
