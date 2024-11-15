@@ -13,8 +13,8 @@ use tokio::io::{ReadHalf, SimplexStream, WriteHalf};
 use tokio_util::codec::{FramedRead, FramedWrite};
 use tower_lsp::{jsonrpc, lsp_types};
 
-use crate::codec::LanguageServerCodec;
-use crate::request::Request;
+use crate::tower_lsp::codec::LanguageServerCodec;
+use crate::tower_lsp::request::Request;
 
 pub struct TestClient {
     pub rx: FramedRead<ReadHalf<SimplexStream>, LanguageServerCodec<jsonrpc::Response>>,
