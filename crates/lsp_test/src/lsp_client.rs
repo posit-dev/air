@@ -22,6 +22,8 @@ pub struct TestClient {
 
     server_handle: Option<tokio::task::JoinHandle<()>>,
     id_counter: i64,
+
+    init_params: Option<lsp_types::InitializeParams>,
 }
 
 impl TestClient {
@@ -43,6 +45,7 @@ impl TestClient {
             tx,
             server_handle: Some(server_handle),
             id_counter: 0,
+            init_params: None,
         }
     }
 
@@ -82,8 +85,13 @@ impl TestClient {
     }
 
     pub async fn initialize(&mut self) -> i64 {
-        let params = lsp_types::InitializeParams::default();
+        let params: Option<lsp_types::InitializeParams> = std::mem::take(&mut self.init_params);
+        let params = params.unwrap_or(Default::default());
         self.request::<lsp_types::request::Initialize>(params).await
+    }
+
+    pub fn with_initialize_params(&mut self, init_params: lsp_types::InitializeParams) {
+        self.init_params = Some(init_params);
     }
 
     pub async fn shutdown(&mut self) {

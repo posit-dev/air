@@ -186,16 +186,31 @@ fn new_jsonrpc_error(message: String) -> jsonrpc::Error {
 }
 
 #[cfg(test)]
+pub(crate) async fn start_test_client() -> lsp_test::lsp_client::TestClient {
+    lsp_test::lsp_client::TestClient::new(|server_rx, client_tx| async {
+        start_lsp(server_rx, client_tx).await
+    })
+}
+
+#[cfg(test)]
+pub(crate) async fn init_test_client() -> lsp_test::lsp_client::TestClient {
+    let mut client = start_test_client().await;
+
+    client.initialize().await;
+    client.recv_response().await;
+
+    client
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use assert_matches::assert_matches;
-    use lsp_test::lsp_client::TestClient;
     use tower_lsp::lsp_types;
 
     #[tests_macros::lsp_test]
     async fn test_init() {
-        let mut client =
-            TestClient::new(|server_rx, client_tx| async { start_lsp(server_rx, client_tx).await });
+        let mut client = start_test_client().await;
 
         client.initialize().await;
 
