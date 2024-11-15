@@ -11,6 +11,7 @@ pub mod handlers_state;
 pub mod main_loop;
 pub mod rust_analyzer;
 pub mod state;
+pub mod to_proto;
 pub mod tower_lsp;
 
 // These send LSP messages in a non-async and non-blocking way.
