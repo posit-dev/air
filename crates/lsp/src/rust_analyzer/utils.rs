@@ -35,9 +35,6 @@ pub(crate) fn apply_document_changes(
         return text;
     }
 
-    // TODO: Add LineIndex support:
-    // https://github.com/rust-lang/rust-analyzer/tree/master/lib/line-index
-
     let mut line_index = LineIndex {
         // the index will be overwritten in the bottom loop's first iteration
         index: Arc::new(line_index::LineIndex::new(&text)),

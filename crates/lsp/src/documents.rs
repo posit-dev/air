@@ -5,14 +5,17 @@
 //
 //
 
+use line_index::LineIndex;
 use tower_lsp::lsp_types;
 
 use crate::config::DocumentConfig;
-use crate::rust_analyzer::line_index::PositionEncoding;
+use crate::rust_analyzer::line_index::{LineEndings, PositionEncoding};
 use crate::rust_analyzer::utils::apply_document_changes;
 
 #[derive(Clone)]
 pub struct Document {
+    /// The normalized current contents of the document. UTF-8 Rust string with
+    /// Unix line endings.
     pub contents: String,
 
     // FIXME: We'd ideally store the `GreenNode` but this type has
@@ -21,11 +24,18 @@ pub struct Document {
     // world state.
     pub syntax: (),
 
-    // The version of the document we last synchronized with.
-    // None if the document hasn't been synchronized yet.
+    /// Map of new lines in `contents`
+    pub line_index: LineIndex,
+
+    /// We only store Unix newlines in `contents`. The original line ending type
+    /// is recorded here so we can restore them when communicating changes back
+    /// to the client.
+    pub line_endings: LineEndings,
+    /// The version of the document we last synchronized with.
+    /// None if the document hasn't been synchronized yet.
     pub version: Option<i32>,
 
-    // Configuration of the document, such as indentation settings.
+    /// Configuration of the document, such as indentation settings.
     pub config: DocumentConfig,
 }
 
@@ -39,9 +49,14 @@ impl std::fmt::Debug for Document {
 
 impl Document {
     pub fn new(contents: String, version: Option<i32>) -> Self {
+        let (contents, line_endings) = LineEndings::normalize(contents);
+        let line_index = LineIndex::new(&contents);
+
         Self {
             contents,
             syntax: (),
+            line_index,
+            line_endings,
             version,
             config: Default::default(),
         }
@@ -49,7 +64,7 @@ impl Document {
 
     pub fn on_did_change(
         &mut self,
-        params: lsp_types::DidChangeTextDocumentParams,
+        mut params: lsp_types::DidChangeTextDocumentParams,
         encoding: PositionEncoding,
     ) {
         let new_version = params.text_document.version;
@@ -67,6 +82,15 @@ impl Document {
             }
         }
 
+        // Normalize line endings. Changing the line length of inserted or
+        // replaced text can't invalidate the text change events, even those
+        // applied subsequently, since those changes are specified with [line,
+        // col] coordinates.
+        for event in &mut params.content_changes {
+            let text = std::mem::take(&mut event.text);
+            event.text = LineEndings::normalize(text).0;
+        }
+
         let contents = apply_document_changes(encoding, &self.contents, params.content_changes);
 
         self.contents = contents;
@@ -76,7 +100,10 @@ impl Document {
 
 #[cfg(test)]
 mod tests {
+    use crate::rust_analyzer::line_index::LineIndex;
+
     use super::*;
+
 
     #[test]
     fn test_document_starts_at_0_0_with_leading_whitespace() {
