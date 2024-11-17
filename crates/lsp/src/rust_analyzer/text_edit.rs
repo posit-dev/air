@@ -79,6 +79,19 @@ impl TextEdit {
         builder.finish()
     }
 
+    // --- Start Posit
+    pub fn replace_all(text: &str, replace_with: String) -> TextEdit {
+        let mut builder = TextEdit::builder();
+
+        // Unwrap: All manipulated text can be indexed with u32
+        let size = text.len().try_into().unwrap();
+        let range = TextRange::new(TextSize::new(0), TextSize::new(size));
+
+        builder.replace(range, replace_with);
+        builder.finish()
+    }
+    // --- End Posit
+
     pub fn len(&self) -> usize {
         self.indels.len()
     }

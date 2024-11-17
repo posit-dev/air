@@ -21,6 +21,7 @@ use tower_lsp::Client;
 use url::Url;
 
 use crate::handlers;
+use crate::handlers_format;
 use crate::handlers_state;
 use crate::handlers_state::ConsoleInputs;
 use crate::rust_analyzer::line_index::PositionEncoding;
@@ -284,6 +285,9 @@ impl GlobalState {
                         LspRequest::Shutdown() => {
                             out = LoopControl::Shutdown;
                             respond(tx, Ok(()), LspResponse::Shutdown)?;
+                        },
+                        LspRequest::DocumentFormatting(params) => {
+                            respond(tx, handlers_format::document_formatting(params, &self.world), LspResponse::DocumentFormatting)?;
                         },
                     };
                 },

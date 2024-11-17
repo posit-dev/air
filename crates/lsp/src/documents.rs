@@ -122,7 +122,8 @@ mod tests {
     use air_r_syntax::RSyntaxNode;
     use text_size::{TextRange, TextSize};
 
-    use crate::{rust_analyzer::text_edit::TextEdit, to_proto::doc_edit_vec};
+    use crate::rust_analyzer::text_edit::TextEdit;
+    use crate::to_proto;
 
     use super::*;
 
@@ -152,7 +153,7 @@ mod tests {
             TextRange::new(TextSize::new(4), TextSize::new(7)),
             String::from("1 + 2"),
         );
-        let edits = doc_edit_vec(&doc.line_index, edit);
+        let edits = to_proto::doc_edit_vec(&doc.line_index, edit);
 
         let params = lsp_types::DidChangeTextDocumentParams {
             text_document: dummy_versioned_doc(),

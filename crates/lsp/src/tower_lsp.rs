@@ -56,12 +56,14 @@ pub(crate) enum LspNotification {
 #[derive(Debug)]
 pub(crate) enum LspRequest {
     Initialize(InitializeParams),
+    DocumentFormatting(DocumentFormattingParams),
     Shutdown(),
 }
 
 #[derive(Debug)]
 pub(crate) enum LspResponse {
     Initialize(InitializeResult),
+    DocumentFormatting(Option<Vec<TextEdit>>),
     Shutdown(()),
 }
 
@@ -143,6 +145,13 @@ impl LanguageServer for Backend {
 
     async fn did_close(&self, params: DidCloseTextDocumentParams) {
         self.notify(LspNotification::DidCloseTextDocument(params));
+    }
+
+    async fn formatting(&self, params: DocumentFormattingParams) -> Result<Option<Vec<TextEdit>>> {
+        cast_response!(
+            self.request(LspRequest::DocumentFormatting(params)).await,
+            LspResponse::DocumentFormatting
+        )
     }
 }
 

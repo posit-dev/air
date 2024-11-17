@@ -118,6 +118,7 @@ pub(crate) fn initialize(
                 }),
                 file_operations: None,
             }),
+            document_formatting_provider: Some(OneOf::Left(true)),
             ..ServerCapabilities::default()
         },
     })
