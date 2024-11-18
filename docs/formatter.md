@@ -453,7 +453,7 @@ object <- list(
 This list now exceeds the line width, and is automatically split over multiple lines. Looks great! But what if we decide that `team` doesn't belong after all?
 
 ```r
-# Input
+# Input (removed `team`)
 object <- list(
   important = 5,
   variable = "text",
@@ -468,9 +468,9 @@ object <- list(
 )
 ```
 
-We are now "stuck" with the expanded form even though it fits on one line, due to the explicit line break after the `list(`, which looks to Air like the user requested a line break (removing that line break recovers the folded form, but it requires an explicit action from the user). This is known as _irreversible_ formatting, and is something that Air generally tends to avoid where possible.
+We are now "stuck" with the expanded form even though it fits on one line, due to the explicit line break after the `list(`, which looks to Air like the user requested a line break (removing that line break recovers the folded form, but it requires an explicit action from the user). This is known as _irreversible_ formatting, something that is generally not a desirable trait of formatters seeking "one true way" to format a file.
 
-That might not seem like a huge deal, but if these changes all happened within the span of 1 commit, then you'll end up with an extraneous git diff:
+One downside of irreversible formatting is that if the addition and subtraction of `team` all happened within the span of 1 commit, then you could end up with an extraneous git diff even though nothing actually changed in the code:
 
 ```diff
 -object <- list(important = 5, variable = "text", name = "andrew")
@@ -481,11 +481,21 @@ That might not seem like a huge deal, but if these changes all happened within t
 +)
 ```
 
-This is unfortunate. Air thinks that both forms are valid, so it changes neither, but these kinds of nonsense git diffs are exactly what Air is supposed to help you avoid.
+On the flip side, retaining the expanded form is equally likely to improve the readability of your git diffs. If you started the commit in the expanded form with `team`, and then removed it, then your diff would be:
 
-It also leaves the door open to [bikeshedding](https://en.wikipedia.org/wiki/Law_of_triviality), i.e. arguing over trivial issues, where your PR reviewer might have a _preference_ that you fold the list, but you have a _preference_ for the expanded form. Ideally, Air helps you avoid these conflicts entirely by enforcing one form or the other, but since both are valid to Air, it can't help.
+```diff
+object <- list(
+  important = 5,
+  variable = "text",
+-  name = "andrew",
+-  team = "panthers"
++  name = "andrew"
+)
+```
 
-Note that while the above example demonstrates this issue with function calls, it also holds true for function definitions, pipe chains, and assignment as well - i.e. any place where existing formatting is respected.
+which is a little easier to understand than if the list call was folded onto one line.
+
+Note that while the above example demonstrates irreversibility with function calls, it also holds true for function definitions, pipe chains, and assignment as well - i.e. any place where existing formatting is respected.
 
 While respecting existing line breaks for these very specific cases is _generally_ desired to improve readability, we also recognize that some teams might want Air to be a fully reversible formatter - removing the possibility of erroneous diffs and bikeshedding entirely. We agree, as we think this is a great feature of a formatter, so this is one of the few places where we've provided an option. Supplying `--ignore-line-breaks` forces Air to completely ignore formatting related to existing line breaks.
 
@@ -543,11 +553,11 @@ In general, we embrace tabs for their customizability and unambiguous meaning. T
 
 Some additional discussions of this topic:
 
-- https://adamtuttle.codes/blog/2021/tabs-vs-spaces-its-an-accessibility-issue
+- [https://adamtuttle.codes/blog/2021/tabs-vs-spaces-its-an-accessibility-issue](https://adamtuttle.codes/blog/2021/tabs-vs-spaces-its-an-accessibility-issue)
 
-- https://www.reddit.com/r/javascript/comments/c8drjo/nobody_talks_about_the_real_reason_to_use_tabs
+- [https://www.reddit.com/r/javascript/comments/c8drjo/nobody_talks_about_the_real_reason_to_use_tabs](https://www.reddit.com/r/javascript/comments/c8drjo/nobody_talks_about_the_real_reason_to_use_tabs)
 
-- https://www.reddit.com/r/programming/comments/voirfg/default_to_tabs_instead_of_spaces_for_an/
+- [https://www.reddit.com/r/programming/comments/voirfg/default_to_tabs_instead_of_spaces_for_an/](https://www.reddit.com/r/programming/comments/voirfg/default_to_tabs_instead_of_spaces_for_an/)
 
 ## Mixing tabs and spaces
 
