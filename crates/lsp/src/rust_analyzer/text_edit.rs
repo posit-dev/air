@@ -10,9 +10,9 @@
 //! so `TextEdit` is the ultimate representation of the work done by
 //! rust-analyzer.
 
+use biome_text_size::{TextRange, TextSize};
 use itertools::Itertools;
 use std::cmp::max;
-use text_size::{TextRange, TextSize};
 
 /// `InsertDelete` -- a single "atomic" change to text
 ///
@@ -83,9 +83,7 @@ impl TextEdit {
     pub fn replace_all(text: &str, replace_with: String) -> TextEdit {
         let mut builder = TextEdit::builder();
 
-        // Unwrap: All manipulated text can be indexed with u32
-        let size = text.len().try_into().unwrap();
-        let range = TextRange::new(TextSize::new(0), TextSize::new(size));
+        let range = TextRange::new(TextSize::from(0), TextSize::of(text));
 
         builder.replace(range, replace_with);
         builder.finish()

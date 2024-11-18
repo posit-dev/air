@@ -16,24 +16,24 @@ use crate::rust_analyzer::{line_index::LineIndex, text_edit::TextEdit, to_proto}
 pub(crate) fn doc_edit_vec(
     line_index: &LineIndex,
     text_edit: TextEdit,
-) -> Vec<lsp_types::TextDocumentContentChangeEvent> {
-    let edits = to_proto::text_edit_vec(line_index, text_edit);
+) -> anyhow::Result<Vec<lsp_types::TextDocumentContentChangeEvent>> {
+    let edits = to_proto::text_edit_vec(line_index, text_edit)?;
 
-    edits
+    Ok(edits
         .into_iter()
         .map(|edit| lsp_types::TextDocumentContentChangeEvent {
             range: Some(edit.range),
             range_length: None,
             text: edit.new_text,
         })
-        .collect()
+        .collect())
 }
 
 pub(crate) fn replace_all_edit(
     line_index: &LineIndex,
     text: &str,
     replace_with: String,
-) -> Vec<lsp_types::TextEdit> {
+) -> anyhow::Result<Vec<lsp_types::TextEdit>> {
     let edit = TextEdit::replace_all(text, replace_with);
     to_proto::text_edit_vec(line_index, edit)
 }

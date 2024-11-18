@@ -11,21 +11,15 @@
 //! This module does line ending conversion and detection (so that we can
 //! convert back to `\r\n` on the way out).
 
-use line_index::WideEncoding;
+use biome_lsp_converters::line_index;
 use memchr::memmem;
 use triomphe::Arc;
-
-#[derive(Clone, Copy, Debug)]
-pub enum PositionEncoding {
-    Utf8,
-    Wide(WideEncoding),
-}
 
 #[derive(Debug, Clone)]
 pub struct LineIndex {
     pub index: Arc<line_index::LineIndex>,
     pub endings: LineEndings,
-    pub encoding: PositionEncoding,
+    pub encoding: biome_lsp_converters::PositionEncoding,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]

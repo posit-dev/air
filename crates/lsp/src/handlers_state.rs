@@ -6,6 +6,7 @@
 //
 
 use anyhow::anyhow;
+use biome_lsp_converters::PositionEncoding;
 use serde_json::Value;
 use struct_field_names_as_array::FieldNamesAsArray;
 use tower_lsp::lsp_types;
@@ -33,7 +34,6 @@ use crate::config::VscDiagnosticsConfig;
 use crate::config::VscDocumentConfig;
 use crate::documents::Document;
 use crate::main_loop::LspState;
-use crate::rust_analyzer::line_index::PositionEncoding;
 use crate::state::workspace_uris;
 use crate::state::WorldState;
 

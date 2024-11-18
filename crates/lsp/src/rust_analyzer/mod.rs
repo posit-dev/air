@@ -1,4 +1,3 @@
-pub mod from_proto;
 pub mod line_index;
 pub mod text_edit;
 pub mod to_proto;

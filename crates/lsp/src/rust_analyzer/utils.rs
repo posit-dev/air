@@ -6,16 +6,14 @@
 
 use std::ops::Range;
 
+use biome_lsp_converters::line_index;
 use tower_lsp::lsp_types;
 use triomphe::Arc;
 
-use super::{
-    from_proto,
-    line_index::{LineEndings, LineIndex, PositionEncoding},
-};
+use super::line_index::{LineEndings, LineIndex};
 
 pub(crate) fn apply_document_changes(
-    encoding: PositionEncoding,
+    encoding: biome_lsp_converters::PositionEncoding,
     file_contents: &str,
     mut content_changes: Vec<lsp_types::TextDocumentContentChangeEvent>,
 ) -> String {
@@ -56,7 +54,11 @@ pub(crate) fn apply_document_changes(
                 *Arc::make_mut(&mut line_index.index) = line_index::LineIndex::new(&text);
             }
             index_valid = range.start.line;
-            if let Ok(range) = from_proto::text_range(&line_index, range) {
+            if let Ok(range) = biome_lsp_converters::from_proto::text_range(
+                &line_index.index,
+                range,
+                line_index.encoding,
+            ) {
                 text.replace_range(Range::<usize>::from(range), &change.text);
             }
         }

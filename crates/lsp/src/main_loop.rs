@@ -10,8 +10,9 @@ use std::future;
 use std::pin::Pin;
 
 use anyhow::anyhow;
+use biome_lsp_converters::PositionEncoding;
+use biome_lsp_converters::WideEncoding;
 use futures::StreamExt;
-use line_index::WideEncoding;
 use tokio::sync::mpsc::unbounded_channel as tokio_unbounded_channel;
 use tokio::task::JoinHandle;
 use tower_lsp::lsp_types;
@@ -24,7 +25,6 @@ use crate::handlers;
 use crate::handlers_format;
 use crate::handlers_state;
 use crate::handlers_state::ConsoleInputs;
-use crate::rust_analyzer::line_index::PositionEncoding;
 use crate::state::WorldState;
 use crate::tower_lsp::LspMessage;
 use crate::tower_lsp::LspNotification;

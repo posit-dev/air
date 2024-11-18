@@ -5,10 +5,11 @@
 //
 //
 
+use biome_lsp_converters::{line_index, PositionEncoding};
 use tower_lsp::lsp_types;
 
 use crate::config::DocumentConfig;
-use crate::rust_analyzer::line_index::{LineEndings, LineIndex, PositionEncoding};
+use crate::rust_analyzer::line_index::{LineEndings, LineIndex};
 use crate::rust_analyzer::utils::apply_document_changes;
 
 #[derive(Clone)]
@@ -120,7 +121,7 @@ impl Document {
 #[cfg(test)]
 mod tests {
     use air_r_syntax::RSyntaxNode;
-    use text_size::{TextRange, TextSize};
+    use biome_text_size::{TextRange, TextSize};
 
     use crate::rust_analyzer::text_edit::TextEdit;
     use crate::to_proto;
@@ -150,10 +151,10 @@ mod tests {
         insta::assert_debug_snapshot!(original_syntax);
 
         let edit = TextEdit::replace(
-            TextRange::new(TextSize::new(4), TextSize::new(7)),
+            TextRange::new(TextSize::from(4 as u32), TextSize::from(7)),
             String::from("1 + 2"),
         );
-        let edits = to_proto::doc_edit_vec(&doc.line_index, edit);
+        let edits = to_proto::doc_edit_vec(&doc.line_index, edit).unwrap();
 
         let params = lsp_types::DidChangeTextDocumentParams {
             text_document: dummy_versioned_doc(),
@@ -215,7 +216,7 @@ mod tests {
         let mut document = Document::new(
             "a𐐀b".into(),
             None,
-            PositionEncoding::Wide(line_index::WideEncoding::Utf16),
+            PositionEncoding::Wide(biome_lsp_converters::WideEncoding::Utf16),
         );
         document.on_did_change(utf16_replace_params);
         assert_eq!(document.contents, "a𐐀bar");
