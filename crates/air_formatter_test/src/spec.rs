@@ -108,7 +108,13 @@ where
         parsed: &AnyParse,
         format_language: L::FormatLanguage,
     ) -> (String, Printed) {
-        let has_errors = parsed.has_errors();
+        if parsed.has_errors() {
+            panic!(
+                "{:?} has parse errors, refusing to format.",
+                self.test_file.input_file,
+            );
+        }
+
         let syntax = parsed.syntax();
 
         let range = self.test_file.range();
@@ -153,16 +159,14 @@ where
             _ => {
                 let output_code = formatted.as_code();
 
-                if !has_errors {
-                    let check_reformat = CheckReformat::new(
-                        &syntax,
-                        output_code,
-                        self.test_file.file_name(),
-                        &self.language,
-                        format_language,
-                    );
-                    check_reformat.check_reformat();
-                }
+                let check_reformat = CheckReformat::new(
+                    &syntax,
+                    output_code,
+                    self.test_file.file_name(),
+                    &self.language,
+                    format_language,
+                );
+                check_reformat.check_reformat();
 
                 output_code.to_string()
             }

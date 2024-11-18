@@ -27,6 +27,10 @@ fn quick_test() {
         .with_indent_style(IndentStyle::Space)
         .with_line_width(LineWidth::try_from(80).unwrap());
 
+    if parse.has_errors() {
+        panic!("Can't format when there are parse errors.");
+    }
+
     let formatted = format_node(options.clone(), &parse.syntax()).unwrap();
     let result = formatted.print().unwrap();
 
