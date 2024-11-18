@@ -185,8 +185,8 @@ fn fmt_curly_curly(node: &RCurlyCurly, f: &mut RFormatter) -> FormatResult<()> {
     // mark the node as suppression checked
     comments.mark_suppression_checked(node_inner);
 
-    // It's impossible to have dangling comments on `inner`. That's only possible
-    // when `inner` is an empty braced expression, and we would have bailed earlier
+    // It's impossible to have dangling comments on `node_inner`. That's only possible
+    // when `node_inner` is an empty braced expression, and we would have bailed earlier
     // if that was the case, because it doesn't "look" like curly-curly then.
     if comments.has_dangling_comments(node_inner) {
         panic!("Inner `{{` of curly-curly can't have dangling comments.");
