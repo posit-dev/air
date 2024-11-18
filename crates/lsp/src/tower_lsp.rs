@@ -57,6 +57,7 @@ pub(crate) enum LspNotification {
 pub(crate) enum LspRequest {
     Initialize(InitializeParams),
     DocumentFormatting(DocumentFormattingParams),
+    DocumentRangeFormatting(DocumentRangeFormattingParams),
     Shutdown(),
     AirViewFile(ViewFileParams),
 }
@@ -65,6 +66,7 @@ pub(crate) enum LspRequest {
 pub(crate) enum LspResponse {
     Initialize(InitializeResult),
     DocumentFormatting(Option<Vec<TextEdit>>),
+    DocumentRangeFormatting(Option<Vec<TextEdit>>),
     Shutdown(()),
     AirViewFile(String),
 }
@@ -169,6 +171,17 @@ impl LanguageServer for Backend {
             LspResponse::DocumentFormatting
         )
     }
+
+    async fn range_formatting(
+        &self,
+        params: DocumentRangeFormattingParams,
+    ) -> Result<Option<Vec<TextEdit>>> {
+        cast_response!(
+            self.request(LspRequest::DocumentRangeFormatting(params))
+                .await,
+            LspResponse::DocumentRangeFormatting
+        )
+    }
 }
 
 pub async fn start_lsp<I, O>(read: I, write: O)
@@ -244,6 +257,9 @@ mod tests {
         let value = client.recv_response().await;
         let value: lsp_types::InitializeResult =
             serde_json::from_value(value.result().unwrap().clone()).unwrap();
+
+        // TODO! Make insta test
+        println!("{value:#?}");
 
         assert_matches!(
             value,
