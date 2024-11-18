@@ -46,13 +46,6 @@ pub(crate) async fn handle_initialized(
         regs.append(&mut config_diagnostics_regs);
     }
 
-    // TODO! Abstract this in a method
-    regs.push(lsp_types::Registration {
-        id: String::from("air_formatting"),
-        method: String::from("textDocument/formatting"),
-        register_options: None,
-    });
-
     client
         .register_capability(regs)
         .instrument(span.exit())
