@@ -497,11 +497,11 @@ We believe that tabs are a better choice because:
 
 - They allow per-person customization rather than per-project customization
 
-- As a consequence of the above, they are _much_ better for accessibility
+- As a consequence of the above, they are much better for accessibility
 
 Because of this, Air defaults to using tabs rather than spaces. See below for a detailed explanation of why.
 
-## Tabs let you specify tab-width per person
+## Per-person customization
 
 IDEs provide user level options that allow you to customize how "wide" a single tab is (i.e. how many virtual spaces it is shown with). For example, a tab-width of 2 looks like:
 
@@ -523,53 +523,101 @@ list(
 )
 ```
 
-Note that this is a _user-level_ preference. Under the hood, that whitespace is just represented by a single `\t` on disk. If you prefer a tab-width of 2 spaces, then it _does not affect you at all_ if your collaborator prefers a tab-width of 4. The actual contents of the file you two are looking at are exactly the same.
+Note that this is a _user-level_ preference. Under the hood, that whitespace is just represented by a single `\t` on disk. If you prefer a tab-width of 2 spaces, then your collaborator is still free to choose a tab-width of 4 spaces. The actual contents of the file you two are looking at are exactly the same.
 
-If spaces are used instead, then you've just forcibly opted everyone into a _project-level_ preference of, say, 2 spaces for a single indent. This removes a degree of customization, which is particularly important for accessibility (see below).
+Spaces do not allow that level of user customizability. They require all collaborators to use the same _project-level_ preference of, say, 2 spaces for a single indent. This removes a degree of customization, which is particularly important for accessibility (see below).
 
 In VS Code and Positron, tab-width corresponds to the setting `editor.tabSize`, with a default of `4`. Also note that there is a `editor.detectIndentation` setting which can automatically detect if a file uses tabs or spaces for indentation.
 
 ## Tabs for accessibility
 
-For programmars with visual impairment, being able to specify a custom tab-width can be critical to their productivity! In [this](https://www.reddit.com/r/javascript/comments/c8drjo/nobody_talks_about_the_real_reason_to_use_tabs/) discussion, one visually impaired programmar uses a tab-width of 1 because he needs to use an extremely large font size, while another uses a tab-width of 8 in combination with his extremely wide monitor. If we force an indent style of 2 spaces on these individuals, then they often have to convert to tabs, make a change, and then convert back to spaces. This isn't a productive way for anyone to work!
+Because a single tab unconditionally represents one level of indentation, they are a great asset for programmars with both partial and full visual impairment:
 
-For fully blind programmars that use refreshable braille displays, this problem gets even worse! Quoting from [this post](https://adamtuttle.codes/blog/2021/tabs-vs-spaces-its-an-accessibility-issue/):
+- Tabs make it easier for screen readers and braille displays to correctly identify indentation level, and do so very compactly, which can be important for braille displays with a limited number of braille cells.
 
-> The main reason I would like to see this change is for refreshable braille displays that are used by blind programmers a lot. Each space wastes one braille cell and takes away valuable braille realestate. So if the default indentation of a project is 4 spaces per level, a 3rd level indentation wastes 12 braaille cells before code starts. On a 40 cell display, which is the most commonly used with notebooks, this is more than a quarter of the available cells wasted with no information. If each indentation level was represented by only one tab character, there would be three cells occupied by a tab character each, and on the 4th cell, the code would start. That's less than 10 percent occupied on the same length display, but all cells contain valuable information that is easily discoverable and immediately comprehensible.
+- Tab-width can be set extra wide, which is beneficial when paired with a wide monitor.
 
-Remember, using tabs with a tab-width of 2 means that switching to tabs over 2-space indent style _costs you nothing_, but can greatly improve the lives of other programmars. It's really a no brainer.
+- Tab-width can be set extra narrow, which is beneficial when paired with an extra large font size.
 
-## But it makes my code look awful!
+In general, we embrace tabs for their customizability and unambiguous meaning. This helps programmars read code comfortably using tools and settings that are appropriate for them.
 
-Not if you use an intelligent formatter! The _only_ time that using tabs rather than spaces for indents could bite you is if you _mix_ both tabs (for indents) and spaces (for alignment) sequentially on the same line. Consider the hanging indent function definition style:
+Some additional discussions of this topic:
+
+- https://adamtuttle.codes/blog/2021/tabs-vs-spaces-its-an-accessibility-issue
+
+- https://www.reddit.com/r/javascript/comments/c8drjo/nobody_talks_about_the_real_reason_to_use_tabs
+
+- https://www.reddit.com/r/programming/comments/voirfg/default_to_tabs_instead_of_spaces_for_an/
+
+## Mixing tabs and spaces
+
+The motivation of providing an accessible friendly formatter has informed some choices regarding how Air formats code. In particular, Air does not support the "hanging" style of indents because it requires a mix of tabs (for indents) and spaces (for extra alignment) by design. Consider the following:
 
 ```r
 fn <- function(x,
                y,
                option = NULL,
                extra = c("a", "b")) {
+    out <- list(x,
+                y)
 }
 ```
 
-To implement hanging indent style, you align all arguments after the opening `(`. In this case, `fn <- function(` takes up 15 characters, so there are 15 whitespace characters before `y`, `option`, and `extra`.
+To implement hanging indent style, you align all arguments after the opening `(`. In this case, `fn <- function(` takes up 15 characters, so there are 15 spaces before `y`, `option`, and `extra`.
 
-To implement this with tabs, the _formatter_ would need to know about the tab-width that the user's IDE is using. Say a tab-width of 4 was being used by the user writing this code, then the formatter would attempt to insert 3 tabs  followed by 3 spaces to retain the visual appearance of the above code, and that would be saved to disk (`3 tabs * 4 tab-width + 3 spaces = 15 spaces`).
+To implement this with tabs, the formatter would first need to know about the tab-width that the user's IDE is using. Say a tab-width of 4 was being used by the author of this code, then the formatter would attempt to insert 3 tabs  followed by 3 spaces to retain the visual appearance of the above code, and that would be saved to disk (`3 tabs * 4 tab-width + 3 spaces = 15 spaces`).
 
-Now say your collaborator opens this file in their IDE, where they have tab-width set to 2, this results in:
+Now say a collaborator opens this file in their IDE, where they have tab-width set to 2. That results in this visual representation of the code:
 
 ```r
 fn <- function(x,
          y,
          option = NULL,
          extra = c("a", "b")) {
+  out <- list(x,
+        y)
 }
 ```
 
-In your collaborator's case, their IDE shows them `3 tabs * 2 tab-width + 3 spaces = 9 spaces`, which doesn't align with the opening line of the function anymore.
+In the collaborator's case, their IDE visually represents the 3 tabs and 3 spaces as 9 total spaces (`3 tabs * 2 tab-width + 3 spaces = 9 spaces`), which doesn't align with the opening line of the `function(` anymore. Notice this has also affected the function call to `list()`, due to the same principle.
 
-The key insight here is that the _only_ time this can possibly be an issue is when tabs are used for a base level of indentation followed by an extra series of spaces used for alignment. Luckily, a good formatter can avoid this entirely by never printing code that results in this mixed case.
+The key insight here is that the only time this can be an issue is when tabs are used for a base level of indentation followed by an extra series of spaces used for alignment. A formatter can help avoid this entirely by never printing code that results in this mixed style.
 
-Because hanging indent function definition style is a case where tabs and spaces would be forced to mix, Air does not support it.
+## Line width and tab width
+
+There is one slightly confusing element to tab-width related to line-width that's worth mentioning. Consider the following:
+
+```r
+fn <- function() {                               # 50 character line width
+  my_cool_function(with_one_arg_here, and_there) #
+}                                                #
+```
+
+In this example, assume a 50 character line width is being used, which has been marked with the comment. Specifically, the settings are:
+
+```
+# Air settings (project level)
+LineWidth = 50
+IndentStyle = Tab
+IndentWidth = 2
+
+# IDE settings (user level)
+tab-width = 2
+```
+
+One nice feature of Air is that when code exceeds the line width, it is automatically expanded over multiple lines. But when tabs are used as leading indentation, how many characters does a tab represent? To determine that, Air looks to the `IndentWidth`, which is otherwise only useful when `IndentStyle` is `Space`. The indent width of 2 plus the 46 characters in the call to `my_cool_function()` puts us at 48 characters - i.e. less than the line length, so it stays folded. Note that the `tab-width` setting of the IDE is also 2. This means that if you had added a vertical "ruler" in your IDE at 50 characters (here, represented by the `#` characters), then everything would look normal.
+
+But imagine if your collaborator sets their `tab-width` to 8. In that case, it would visually look like the line takes up 54 (8 + 46) characters, but to Air it still only takes up 48 characters:
+
+```r
+fn <- function() {                               # 50 character line width
+        my_cool_function(with_one_arg_here, and_there)
+}                                                #
+```
+
+If they also had a vertical ruler set at 50 characters, then this might look strange to them because they expected a line break after 50. If the project wide Air `IndentWidth` was changed to 8, then everything would look normal for the collaborator, but for the user with tab-width of 2 lines would start breaking earlier than expected.
+
+This usage of `IndentWidth` when using an `IndentStyle` of `Tab` is the one place in Air where tab-width (typically a user-level setting) leaks over into project-level setting space. That said, the worst thing that can happen is that lines look a little shorter or longer than you may have expected.
 
 # Function definition styles
 
@@ -594,4 +642,4 @@ fn <- function(
 
 When you exceed the line width, Air will automatically switch from folded to expanded. You can also manually request the expanded form by inserting a line break after the opening `(` in `function(`. See [line breaks with function definitions](#function-definitions) for more examples of this.
 
-See the section on [tabs vs spaces](#but-it-makes-my-code-look-awful) for why Air does not allow hanging indent function definitions.
+See the section on [tabs vs spaces](#mixing-tabs-and-spaces) for why Air does not allow hanging indent function definitions.
