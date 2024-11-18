@@ -149,12 +149,6 @@ fn({
 
 fn(a = { 1 + 1 })
 
-fn({
-  {
-    1 + 1
-  }
-})
-
 # The first argument here breaks, causing everything to fully expand
 fn({ 1 + 1 }, {
 	1 + 1
@@ -403,6 +397,13 @@ fn(
   x,
   one = # Trailing, stays beside `one`
 )
+
+# ------------------------------------------------------------------------
+# Special - trailing curly-curly
+
+# A curly-curly is not treated as groupable, even though it fits the
+# criteria of "trailing braced expression"
+fn(x, {{ var }})
 
 # ------------------------------------------------------------------------
 # Empty lines between arguments
