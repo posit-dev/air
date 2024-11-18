@@ -286,6 +286,9 @@ impl GlobalState {
                         LspRequest::DocumentFormatting(params) => {
                             respond(tx, handlers_format::document_formatting(params, &self.world), LspResponse::DocumentFormatting)?;
                         },
+                        LspRequest::DocumentRangeFormatting(params) => {
+                            respond(tx, handlers_format::document_range_formatting(params, &self.world), LspResponse::DocumentRangeFormatting)?;
+                        },
                         LspRequest::AirViewFile(params) => {
                             respond(tx, handlers_ext::view_file(params, &self.world), LspResponse::AirViewFile)?;
                         },

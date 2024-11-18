@@ -60,6 +60,7 @@ pub(crate) enum LspRequest {
     Initialize(InitializeParams),
     DocumentFormatting(DocumentFormattingParams),
     Shutdown,
+    DocumentRangeFormatting(DocumentRangeFormattingParams),
     AirViewFile(ViewFileParams),
 }
 
@@ -68,6 +69,7 @@ pub(crate) enum LspRequest {
 pub(crate) enum LspResponse {
     Initialize(InitializeResult),
     DocumentFormatting(Option<Vec<TextEdit>>),
+    DocumentRangeFormatting(Option<Vec<TextEdit>>),
     Shutdown(()),
     AirViewFile(String),
 }
@@ -170,6 +172,17 @@ impl LanguageServer for Backend {
         cast_response!(
             self.request(LspRequest::DocumentFormatting(params)).await,
             LspResponse::DocumentFormatting
+        )
+    }
+
+    async fn range_formatting(
+        &self,
+        params: DocumentRangeFormattingParams,
+    ) -> Result<Option<Vec<TextEdit>>> {
+        cast_response!(
+            self.request(LspRequest::DocumentRangeFormatting(params))
+                .await,
+            LspResponse::DocumentRangeFormatting
         )
     }
 }
