@@ -661,6 +661,14 @@ impl Format<RFormatContext> for FormatGroupedLastArgument<'_> {
         let element = self.argument.element();
         let node = element.node()?;
 
+        let argument_name = match node {
+            AnyRArgument::RNamedArgument(node) => Some((node.name(), node.eq_token())),
+            AnyRArgument::RUnnamedArgument(_)
+            | AnyRArgument::RBogusArgument(_)
+            | AnyRArgument::RDotsArgument(_)
+            | AnyRArgument::RHoleArgument(_) => None,
+        };
+
         let argument_expression = match node {
             AnyRArgument::RNamedArgument(node) => node.value(),
             AnyRArgument::RUnnamedArgument(node) => node.value().ok(),
@@ -676,6 +684,10 @@ impl Format<RFormatContext> for FormatGroupedLastArgument<'_> {
         match argument_expression {
             Some(RFunctionDefinition(function)) if !self.is_only => {
                 with_token_tracking_disabled(f, |f| {
+                    if let Some((name, eq_token)) = argument_name {
+                        write!(f, [name.format(), space(), eq_token.format(), space()])?;
+                    }
+
                     write!(
                         f,
                         [function.format().with_options(FormatFunctionOptions {
