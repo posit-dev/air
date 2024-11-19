@@ -1,5 +1,7 @@
+use air_formatter_test::check_reformat::CheckReformat;
 use air_r_formatter::context::RFormatOptions;
 use air_r_formatter::format_node;
+use air_r_formatter::RFormatLanguage;
 use air_r_parser::parse;
 use air_r_parser::RParserOptions;
 use air_r_syntax::RRoot;
@@ -41,4 +43,17 @@ fn quick_test() {
     println!();
     println!("---- Formatted Code ----");
     println!("start\n{}\nend", result.as_code());
+
+    let root = &parse.syntax();
+    let language = language::RTestFormatLanguage::default();
+
+    // Does a second pass of formatting to ensure nothing changes (i.e. stable)
+    let check_reformat = CheckReformat::new(
+        root,
+        result.as_code(),
+        "quick_test",
+        &language,
+        RFormatLanguage::new(options),
+    );
+    check_reformat.check_reformat();
 }
