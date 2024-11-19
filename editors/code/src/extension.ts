@@ -65,8 +65,8 @@ export async function stopAirLsp() {
 
 	try {
 		await client.stop();
-		client = undefined;
 	} finally {
+		client = undefined;
 		stopInProgress = false;
 	}
 }
@@ -79,7 +79,7 @@ export async function restartAirLsp() {
 
 	try {
 		if (client) {
-			await client.stop();
+			await stopAirLsp();
 		}
 		await startAirLsp();
 	} finally {
