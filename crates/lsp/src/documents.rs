@@ -114,6 +114,7 @@ impl Document {
 
         self.parse = parse;
         self.contents = contents;
+        self.line_index.index = triomphe::Arc::new(line_index::LineIndex::new(&self.contents));
         self.version = Some(new_version);
     }
 }
