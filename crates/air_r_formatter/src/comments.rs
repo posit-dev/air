@@ -2,6 +2,7 @@ use crate::prelude::*;
 use air_r_syntax::AnyRExpression;
 use air_r_syntax::RIfStatement;
 use air_r_syntax::RLanguage;
+use air_r_syntax::RNamedArgument;
 use air_r_syntax::RParenthesizedExpression;
 use air_r_syntax::RSyntaxKind;
 use air_r_syntax::RWhileStatement;
@@ -61,13 +62,15 @@ impl CommentStyle for RCommentStyle {
                 .or_else(handle_while_comment)
                 .or_else(handle_repeat_comment)
                 .or_else(handle_if_statement_comment)
-                .or_else(handle_parenthesized_expression_comment),
+                .or_else(handle_parenthesized_expression_comment)
+                .or_else(handle_named_argument_comment),
             CommentTextPosition::OwnLine => handle_for_comment(comment)
                 .or_else(handle_function_comment)
                 .or_else(handle_while_comment)
                 .or_else(handle_repeat_comment)
                 .or_else(handle_if_statement_comment)
-                .or_else(handle_parenthesized_expression_comment),
+                .or_else(handle_parenthesized_expression_comment)
+                .or_else(handle_named_argument_comment),
             CommentTextPosition::SameLine => {
                 // Not applicable for R, we don't have `/* */` comments
                 CommentPlacement::Default(comment)
@@ -270,6 +273,56 @@ fn handle_parenthesized_expression_comment(
     }
 
     // Likely not possible
+    CommentPlacement::Default(comment)
+}
+
+fn handle_named_argument_comment(
+    comment: DecoratedComment<RLanguage>,
+) -> CommentPlacement<RLanguage> {
+    let Some(enclosing) = RNamedArgument::cast_ref(comment.enclosing_node()) else {
+        return CommentPlacement::Default(comment);
+    };
+
+    let Ok(name) = enclosing.name() else {
+        // Should always have a `name`
+        return CommentPlacement::Default(comment);
+    };
+
+    if let Some(preceding) = comment.preceding_node() {
+        // Make comments directly after the `name` leading comments of the `name`
+        //
+        // Needed for idempotence.
+        //
+        // ```r
+        // fn(
+        //  xs,
+        //  a # end-of-line
+        //    = expr
+        // )
+        // ```
+        //
+        // ```r
+        // fn(
+        //  xs,
+        //  a = # end-of-line
+        //    expr
+        // )
+        // ```
+        //
+        //
+        // ```r
+        // fn(
+        //  xs,
+        //  a =
+        //    # own-line
+        //    expr
+        // )
+        // ```
+        if name.syntax() == preceding {
+            return CommentPlacement::leading(preceding.clone(), comment);
+        }
+    }
+
     CommentPlacement::Default(comment)
 }
 

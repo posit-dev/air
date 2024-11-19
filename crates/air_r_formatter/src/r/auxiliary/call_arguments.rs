@@ -829,9 +829,26 @@ fn should_group_last_argument(list: &RArgumentList, comments: &RComments) -> Syn
     };
     let last = last?;
 
-    if comments.has_leading_comments(last.syntax()) || comments.has_trailing_comments(last.syntax())
-    {
+    // If the entire argument node has comments attached, not groupable
+    if comments.has_comments(last.syntax()) {
         return Ok(false);
+    }
+
+    // If this is a named argument node and the `name` or `value` nodes have comments,
+    // not groupable. This avoids idempotence issues. Plus, the comments by definition
+    // make it non groupable.
+    if let AnyRArgument::RNamedArgument(ref last) = last {
+        let name = last.name()?;
+        if comments.has_comments(name.syntax()) {
+            return Ok(false);
+        }
+
+        let value = last.value();
+        if let Some(value) = value {
+            if comments.has_comments(value.syntax()) {
+                return Ok(false);
+            }
+        }
     }
 
     let argument_expression = |arg| match arg {
