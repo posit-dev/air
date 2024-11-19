@@ -117,6 +117,11 @@ impl Document {
         self.line_index.index = triomphe::Arc::new(line_index::LineIndex::new(&self.contents));
         self.version = Some(new_version);
     }
+
+    /// Convenient accessor that returns an annotated `SyntaxNode` type
+    pub fn syntax(&self) -> air_r_syntax::RSyntaxNode {
+        self.parse.syntax()
+    }
 }
 
 #[cfg(test)]
@@ -137,11 +142,13 @@ mod tests {
     }
 
     #[test]
-    fn test_document_starts_at_0_0_with_leading_whitespace() {
-        let _document = Document::doodle("\n\n# hi there");
-        // TODO!
-        // let root = document.ast.root_node();
-        // assert_eq!(root.start_position(), Point::new(0, 0));
+    fn test_document_starts_at_0_with_leading_whitespace() {
+        let document = Document::doodle("\n\n# hi there");
+        let root = document.syntax();
+        assert_eq!(
+            root.text_range(),
+            TextRange::new(TextSize::from(0), TextSize::from(12))
+        );
     }
 
     #[test]
