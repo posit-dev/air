@@ -79,6 +79,8 @@ struct Backend {
 
 impl Backend {
     async fn request(&self, request: LspRequest) -> anyhow::Result<LspResponse> {
+        crate::log_info!("Incoming: {request:#?}");
+
         let (response_tx, mut response_rx) =
             tokio_unbounded_channel::<anyhow::Result<LspResponse>>();
 
@@ -88,10 +90,15 @@ impl Backend {
             .unwrap();
 
         // Wait for response from main loop
-        response_rx.recv().await.unwrap()
+        let out = response_rx.recv().await.unwrap()?;
+
+        crate::log_info!("Outgoing {out:#?}");
+        Ok(out)
     }
 
     fn notify(&self, notif: LspNotification) {
+        crate::log_info!("Incoming: {notif:#?}");
+
         // Relay notification to main loop
         self.events_tx
             .send(Event::Lsp(LspMessage::Notification(notif)))

@@ -245,8 +245,6 @@ impl GlobalState {
         match event {
             Event::Lsp(msg) => match msg {
                 LspMessage::Notification(notif) => {
-                    crate::log_info!("{notif:#?}");
-
                     match notif {
                         LspNotification::Initialized(_params) => {
                             handlers::handle_initialized(&self.client, &self.lsp_state).await?;
@@ -276,8 +274,6 @@ impl GlobalState {
                 },
 
                 LspMessage::Request(request, tx) => {
-                    crate::log_info!("{request:#?}");
-
                     match request {
                         LspRequest::Initialize(params) => {
                             respond(tx, handlers_state::initialize(params, &mut self.lsp_state, &mut self.world), LspResponse::Initialize)?;
