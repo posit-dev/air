@@ -9,6 +9,10 @@ import {
 // The LSP is stored in this global singleton
 let client: LanguageClient | undefined;
 
+// We use the same output channel for all LSP instances (e.g. a new instance
+// after a restart) to avoid having multiple channels in the Output viewpane.
+let channel: vscode.OutputChannel;
+
 // Simple flags to manage the state of the LSP
 let restartInProgress = false;
 let stopInProgress = false;
@@ -19,6 +23,10 @@ export function activate(context: vscode.ExtensionContext) {
 			await restartAirLsp();
 		}),
 	);
+
+	channel = vscode.window.createOutputChannel("Air Language Server");
+	context.subscriptions.push(channel);
+
 	startAirLsp();
 }
 
@@ -42,6 +50,7 @@ export async function startAirLsp() {
 			// Notify the server about file changes to R files contained in the workspace
 			fileEvents: vscode.workspace.createFileSystemWatcher("**/*.[Rr]"),
 		},
+		outputChannel: channel,
 	};
 
 	client = new LanguageClient(
