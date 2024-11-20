@@ -1,14 +1,11 @@
 import * as vscode from "vscode";
 import { Lsp } from "./lsp";
+import { registerCommands } from "./commands";
 
-let lsp: Lsp;
+export let lsp: Lsp;
 
 export function activate(context: vscode.ExtensionContext) {
-	context.subscriptions.push(
-		vscode.commands.registerCommand("air.restart", async () => {
-			await lsp.restart();
-		}),
-	);
+	registerCommands(context);
 
 	lsp = new Lsp(context);
 	lsp.start();
