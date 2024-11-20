@@ -292,19 +292,18 @@ impl<T> WalkEvent<T> {
 }
 
 // TODO: Assign iterator to rowan
-// TODO: Switch to `TreeCursor` instead of `Node` because we're currently doing
-// `Node::parent()` which requires a full traversal
 pub struct Preorder<'tree> {
-    start: Node<'tree>,
+    cursor: TreeCursor<'tree>,
     next: Option<WalkEvent<Node<'tree>>>,
     skip_subtree: bool,
 }
 
 impl<'tree> Preorder<'tree> {
-    fn new(start: Node) -> Preorder {
-        let next = Some(WalkEvent::Enter(start));
+    fn new(node: Node) -> Preorder {
+        let cursor = node.walk();
+        let next = Some(WalkEvent::Enter(node));
         Preorder {
-            start,
+            cursor,
             next,
             skip_subtree: false,
         }
@@ -316,10 +315,16 @@ impl<'tree> Preorder<'tree> {
 
     #[cold]
     fn do_skip(&mut self) {
-        self.next = self.next.take().map(|next| match next {
-            WalkEvent::Enter(first_child) => WalkEvent::Leave(first_child.parent().unwrap()),
-            WalkEvent::Leave(parent) => WalkEvent::Leave(parent),
-        })
+        let next = self.next.take();
+        self.next = next.as_ref().and_then(|next| {
+            Some(match next {
+                WalkEvent::Enter(_first_child) => match self.cursor.goto_parent() {
+                    true => WalkEvent::Leave(self.cursor.node()),
+                    false => return None,
+                },
+                WalkEvent::Leave(parent) => WalkEvent::Leave(*parent),
+            })
+        });
     }
 }
 
@@ -334,19 +339,17 @@ impl<'tree> Iterator for Preorder<'tree> {
         let next = self.next.take();
         self.next = next.as_ref().and_then(|next| {
             Some(match next {
-                WalkEvent::Enter(node) => match node.child(0) {
-                    Some(child) => WalkEvent::Enter(child),
-                    None => WalkEvent::Leave(*node),
+                WalkEvent::Enter(node) => match self.cursor.goto_first_child() {
+                    true => WalkEvent::Enter(self.cursor.node()),
+                    false => WalkEvent::Leave(*node),
                 },
-                WalkEvent::Leave(node) => {
-                    if node == &self.start {
-                        return None;
-                    }
-                    match node.next_sibling() {
-                        Some(sibling) => WalkEvent::Enter(sibling),
-                        None => WalkEvent::Leave(node.parent()?),
-                    }
-                }
+                WalkEvent::Leave(node) => match self.cursor.goto_next_sibling() {
+                    true => WalkEvent::Enter(self.cursor.node()),
+                    false => match self.cursor.goto_parent() {
+                        true => WalkEvent::Leave(self.cursor.node()),
+                        false => return None,
+                    },
+                },
             })
         });
         next
