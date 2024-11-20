@@ -18,6 +18,12 @@ export function registerCommands(context: vscode.ExtensionContext) {
 	);
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
+			"air.viewSyntaxTreeTs",
+			viewSyntaxTreeTs(ctx),
+		),
+	);
+	context.subscriptions.push(
+		vscode.commands.registerCommand(
 			"air.viewFormatTree",
 			viewFormatTree(ctx),
 		),
@@ -32,6 +38,20 @@ function viewSyntaxTree(ctx: Ctx): Cmd {
 		ctx,
 		ext.viewFile,
 		"SyntaxTree",
+		uri,
+		scheme,
+		true,
+	);
+}
+
+function viewSyntaxTreeTs(ctx: Ctx): Cmd {
+	const uri = "air-syntax-tree-ts://syntax/treesitter";
+	const scheme = "air-syntax-tree-ts";
+
+	return viewFileUsingTextDocumentContentProvider(
+		ctx,
+		ext.viewFile,
+		"SyntaxTreeTs",
 		uri,
 		scheme,
 		true,

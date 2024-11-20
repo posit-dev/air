@@ -52,6 +52,11 @@
 				"command": "air.viewSyntaxTree"
 			},
 			{
+				"title": "View Syntax Tree (TS)",
+				"category": "Air",
+				"command": "air.viewSyntaxTreeTs"
+			},
+			{
 				"title": "View Format Tree",
 				"category": "Air",
 				"command": "air.viewFormatTree"
