@@ -780,6 +780,7 @@ impl<'src> RWalk<'src> {
         self.handle_node_enter(kind);
 
         let mut cursor = node.walk();
+        let mut last_kind = RSyntaxKind::R_BOGUS;
 
         for child in node.children(&mut cursor) {
             let mut child_iter = child.preorder();
@@ -788,21 +789,36 @@ impl<'src> RWalk<'src> {
                 kind if kind == open => {
                     self.walk(&mut child_iter);
                     self.handle_node_enter(RSyntaxKind::R_ARGUMENT_LIST);
+                    last_kind = open;
                 }
                 kind if kind == close => {
-                    self.handle_hole_before_close(child);
+                    self.handle_hole_before_close(last_kind);
                     // Leave `R_ARGUMENT_LIST`
                     self.handle_node_leave();
                     self.walk(&mut child_iter);
+                    last_kind = close;
                 }
                 RSyntaxKind::COMMA => {
-                    self.handle_hole_before_comma(child, open);
+                    self.handle_hole_before_comma(last_kind, open);
                     self.walk(&mut child_iter);
+                    last_kind = RSyntaxKind::COMMA;
                 }
-                RSyntaxKind::R_DOTS_ARGUMENT => self.walk(&mut child_iter),
-                RSyntaxKind::R_NAMED_ARGUMENT => self.walk(&mut child_iter),
-                RSyntaxKind::R_UNNAMED_ARGUMENT => self.walk(&mut child_iter),
-                RSyntaxKind::COMMENT => self.walk(&mut child_iter),
+                RSyntaxKind::R_DOTS_ARGUMENT => {
+                    self.walk(&mut child_iter);
+                    last_kind = RSyntaxKind::R_DOTS_ARGUMENT;
+                }
+                RSyntaxKind::R_NAMED_ARGUMENT => {
+                    self.walk(&mut child_iter);
+                    last_kind = RSyntaxKind::R_NAMED_ARGUMENT;
+                }
+                RSyntaxKind::R_UNNAMED_ARGUMENT => {
+                    self.walk(&mut child_iter);
+                    last_kind = RSyntaxKind::R_UNNAMED_ARGUMENT;
+                }
+                RSyntaxKind::COMMENT => {
+                    self.walk(&mut child_iter);
+                    // Not setting `last_kind` here!
+                }
                 kind => unreachable!("Found {kind:?} in arguments"),
             }
         }
@@ -814,8 +830,6 @@ impl<'src> RWalk<'src> {
 
     /// Is there a hole before this `)`, `]`, or `]]`?
     ///
-    /// Ignores comments
-    ///
     /// ```r
     /// fn(,<here>)
     ///
@@ -825,24 +839,14 @@ impl<'src> RWalk<'src> {
     ///   <here>
     /// )
     /// ```
-    fn handle_hole_before_close(&mut self, mut node: tree_sitter::Node) {
-        while let Some(previous) = node.prev_sibling() {
-            match previous.syntax_kind() {
-                RSyntaxKind::COMMENT => (),
-                RSyntaxKind::COMMA => {
-                    self.handle_node_enter(RSyntaxKind::R_HOLE_ARGUMENT);
-                    self.handle_node_leave();
-                    break;
-                }
-                _ => break,
-            }
-            node = previous;
+    fn handle_hole_before_close(&mut self, last_kind: RSyntaxKind) {
+        if last_kind == RSyntaxKind::COMMA {
+            self.handle_node_enter(RSyntaxKind::R_HOLE_ARGUMENT);
+            self.handle_node_leave();
         }
     }
 
     /// Is there a hole before this `,`?
-    ///
-    /// Ignores comments
     ///
     /// ```r
     /// fn(<here>,)
@@ -855,18 +859,10 @@ impl<'src> RWalk<'src> {
     ///   <here>,
     /// )
     /// ```
-    fn handle_hole_before_comma(&mut self, mut node: tree_sitter::Node, open: RSyntaxKind) {
-        while let Some(previous) = node.prev_sibling() {
-            match previous.syntax_kind() {
-                RSyntaxKind::COMMENT => (),
-                kind if kind == RSyntaxKind::COMMA || kind == open => {
-                    self.handle_node_enter(RSyntaxKind::R_HOLE_ARGUMENT);
-                    self.handle_node_leave();
-                    break;
-                }
-                _ => break,
-            }
-            node = previous;
+    fn handle_hole_before_comma(&mut self, last_kind: RSyntaxKind, open: RSyntaxKind) {
+        if last_kind == RSyntaxKind::COMMA || last_kind == open {
+            self.handle_node_enter(RSyntaxKind::R_HOLE_ARGUMENT);
+            self.handle_node_leave();
         }
     }
 
