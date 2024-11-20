@@ -1,15 +1,26 @@
 import * as vscode from "vscode";
 import * as lc from "vscode-languageclient/node";
-import { isREditor, REditor } from "./r-files";
+import { Lsp } from "./lsp";
 
 // Parts of this file are adapted from
 // https://github.com/rust-lang/rust-analyzer/blob/master/editors/code/src/ctx.ts
 
 export class Ctx {
+	public client: lc.LanguageClient | null;
+
 	constructor(
 		readonly extension: vscode.ExtensionContext,
-		public client: lc.LanguageClient,
-	) {}
+		public lsp: Lsp,
+	) {
+		this.client = lsp.client;
+	}
+
+	public getClient(): lc.LanguageClient {
+		if (!this.client) {
+			throw new Error("LSP must be started");
+		}
+		return this.client;
+	}
 }
 
 export type Cmd = (...args: any[]) => unknown;

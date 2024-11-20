@@ -12,7 +12,7 @@ enum State {
 }
 
 export class Lsp {
-	private client: lc.LanguageClient | null = null;
+	public client: lc.LanguageClient | null = null;
 
 	// We use the same output channel for all LSP instances (e.g. a new instance
 	// after a restart) to avoid having multiple channels in the Output viewpane.

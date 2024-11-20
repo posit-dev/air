@@ -57,7 +57,8 @@ export function viewFileUsingTextDocumentContentProvider(
 				return "";
 			}
 
-			const client = ctx.client;
+			const client = ctx.getClient();
+
 			const params = {
 				textDocument:
 					client.code2ProtocolConverter.asTextDocumentIdentifier(
