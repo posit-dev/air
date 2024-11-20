@@ -9,10 +9,12 @@ import * as lc from "vscode-languageclient/node";
 import { Ctx, Cmd } from "../context";
 import { activeREditor, isRDocument, isREditor } from "../r-files";
 import { sleep } from "../utils";
+import { ViewFileKind } from "../lsp-ext";
 
 export function viewFileUsingTextDocumentContentProvider(
 	ctx: Ctx,
 	requestType: lc.RequestType<lc.TextDocumentPositionParams, string, void>,
+	kind: ViewFileKind,
 	uri: string,
 	scheme: string,
 	shouldUpdate: boolean,
@@ -67,6 +69,7 @@ export function viewFileUsingTextDocumentContentProvider(
 				position: client.code2ProtocolConverter.asPosition(
 					rEditor.selection.active,
 				),
+				kind: kind,
 			};
 			return client.sendRequest(requestType, params, ct);
 		}

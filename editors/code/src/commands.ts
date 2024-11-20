@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { ctx } from "./extension";
 import { Cmd, Ctx } from "./context";
-import { viewFileUsingTextDocumentContentProvider } from "./rust-analyzer/virtualViewer";
+import { viewFileUsingTextDocumentContentProvider } from "./rust-analyzer/viewFileProvider";
 import * as ext from "./lsp-ext";
 
 export function registerCommands(context: vscode.ExtensionContext) {
@@ -16,15 +16,36 @@ export function registerCommands(context: vscode.ExtensionContext) {
 			viewSyntaxTree(ctx),
 		),
 	);
+	context.subscriptions.push(
+		vscode.commands.registerCommand(
+			"air.viewFormatTree",
+			viewFormatTree(ctx),
+		),
+	);
 }
 
 function viewSyntaxTree(ctx: Ctx): Cmd {
-	const uri = "air-syntax-tree://syntaxtree/tree.rast";
+	const uri = "air-syntax-tree://syntax/tree.rast";
 	const scheme = "air-syntax-tree";
 
 	return viewFileUsingTextDocumentContentProvider(
 		ctx,
 		ext.viewFile,
+		"SyntaxTree",
+		uri,
+		scheme,
+		true,
+	);
+}
+
+function viewFormatTree(ctx: Ctx): Cmd {
+	const uri = "air-format-tree://format/biome.ir";
+	const scheme = "air-format-tree";
+
+	return viewFileUsingTextDocumentContentProvider(
+		ctx,
+		ext.viewFile,
+		"FormatTree",
 		uri,
 		scheme,
 		true,

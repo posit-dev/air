@@ -10,12 +10,13 @@
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio::sync::mpsc::unbounded_channel as tokio_unbounded_channel;
 use tower_lsp::jsonrpc::Result;
-use tower_lsp::lsp_types::{self, *};
+use tower_lsp::lsp_types::*;
 use tower_lsp::Client;
 use tower_lsp::LanguageServer;
 use tower_lsp::LspService;
 use tower_lsp::{jsonrpc, ClientSocket};
 
+use crate::handlers_air::ViewFileParams;
 use crate::main_loop::Event;
 use crate::main_loop::GlobalState;
 use crate::main_loop::TokioUnboundedSender;
@@ -57,7 +58,7 @@ pub(crate) enum LspRequest {
     Initialize(InitializeParams),
     DocumentFormatting(DocumentFormattingParams),
     Shutdown(),
-    AirViewFile(lsp_types::TextDocumentPositionParams),
+    AirViewFile(ViewFileParams),
 }
 
 #[derive(Debug)]
@@ -106,10 +107,7 @@ impl Backend {
             .unwrap();
     }
 
-    async fn air_view_file(
-        &self,
-        params: lsp_types::TextDocumentPositionParams,
-    ) -> tower_lsp::jsonrpc::Result<String> {
+    async fn air_view_file(&self, params: ViewFileParams) -> tower_lsp::jsonrpc::Result<String> {
         cast_response!(
             self.request(LspRequest::AirViewFile(params)).await,
             LspResponse::AirViewFile

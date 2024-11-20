@@ -50,6 +50,11 @@
 				"title": "View Syntax Tree",
 				"category": "Air",
 				"command": "air.viewSyntaxTree"
+			},
+			{
+				"title": "View Format Tree",
+				"category": "Air",
+				"command": "air.viewFormatTree"
 			}
 		]
 	},
