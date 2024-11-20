@@ -1,12 +1,8 @@
 import * as vscode from "vscode";
-import {
-	LanguageClient,
-	LanguageClientOptions,
-	ServerOptions,
-} from "vscode-languageclient/node";
+import * as lc from "vscode-languageclient/node";
 
 export class Lsp {
-	private client: LanguageClient | null = null;
+	private client: lc.LanguageClient | null = null;
 
 	// We use the same output channel for all LSP instances (e.g. a new instance
 	// after a restart) to avoid having multiple channels in the Output viewpane.
@@ -26,12 +22,12 @@ export class Lsp {
 			throw new Error("Air is already running");
 		}
 
-		let options: ServerOptions = {
+		let options: lc.ServerOptions = {
 			command: "air",
 			args: ["lsp"],
 		};
 
-		let clientOptions: LanguageClientOptions = {
+		let clientOptions: lc.LanguageClientOptions = {
 			documentSelector: [{ scheme: "file", language: "r" }],
 			synchronize: {
 				// Notify the server about file changes to R files contained in the workspace
@@ -41,7 +37,7 @@ export class Lsp {
 			outputChannel: this.channel,
 		};
 
-		this.client = new LanguageClient(
+		this.client = new lc.LanguageClient(
 			"airLanguageServer",
 			"Air Language Server",
 			options,
