@@ -22,6 +22,7 @@ use tower_lsp::Client;
 use url::Url;
 
 use crate::handlers;
+use crate::handlers_air;
 use crate::handlers_format;
 use crate::handlers_state;
 use crate::handlers_state::ConsoleInputs;
@@ -284,6 +285,9 @@ impl GlobalState {
                         },
                         LspRequest::DocumentFormatting(params) => {
                             respond(tx, handlers_format::document_formatting(params, &self.world), LspResponse::DocumentFormatting)?;
+                        },
+                        LspRequest::AirViewFile(params) => {
+                            respond(tx, handlers_air::view_file(params, &self.world), LspResponse::AirViewFile)?;
                         },
                     };
                 },

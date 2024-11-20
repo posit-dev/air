@@ -45,6 +45,11 @@
 				"title": "Restart Server",
 				"category": "Air",
 				"command": "air.restart"
+			},
+			{
+				"title": "View Syntax Tree",
+				"category": "Air",
+				"command": "air.viewSyntaxTree"
 			}
 		]
 	},
