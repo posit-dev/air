@@ -1,6 +1,5 @@
 use crate::prelude::*;
 use air_r_syntax::AnyRExpression;
-use air_r_syntax::OperatorPrecedence;
 use air_r_syntax::RBinaryExpression;
 use air_r_syntax::RBinaryExpressionFields;
 use air_r_syntax::RLanguage;
@@ -9,6 +8,7 @@ use biome_formatter::format_args;
 use biome_formatter::write;
 use biome_formatter::CstFormatContext;
 use biome_rowan::AstNode;
+use biome_rowan::SyntaxResult;
 use biome_rowan::SyntaxToken;
 
 #[derive(Debug, Clone, Default)]
@@ -125,6 +125,8 @@ struct TailPiece {
 
 /// Format a binary expression chain
 ///
+/// # Chain inversion
+///
 /// Binary expression chains (like pipe chains or ggplot2 `+` chains) work by turning:
 ///
 /// ```r
@@ -165,14 +167,173 @@ struct TailPiece {
 /// It accomplishes this by looking down the LHS of the tree, accumulating
 /// `operator` and `right` as it goes, stopping at the first non-chainable
 /// element (here, the `df`), which becomes the overarching `left`.
+///
+/// # Deciding when to "break" the chain
+///
+/// We use the guiding principle that we want the reading order of
+/// a chain to match its execution order. That means that we never want
+/// to generate a chain with indentation like this:
+///
+/// ```r
+/// # Bad output
+/// a +
+///   b -
+///   c *
+///   d
+/// ```
+///
+/// The above indentation implies a top to bottom reading order of
+/// "a plus b, then minus c, then times d", but that isn't what happens. It's
+/// really more like "a plus b, then minus (c times d)".
+///
+/// A better indentation for this is:
+///
+/// ```r
+/// # Good output
+/// a +
+///   b -
+///   c *
+///     d
+///
+/// # Also allowed, since it fits on one line
+/// # (depends on user requested line breaks and object lengths)
+/// a +
+///   b -
+///   c * d
+/// ```
+///
+/// This better conveys that `c * d` is grouped together, either by being on
+/// the same line when possible, or by indenting to show that the binary chain
+/// has broken.
+///
+/// Implementing this is complex to think about but simple in practice. Because
+/// we only look down the left-hand side of the parse tree, this naturally
+/// enforces that any left` candidate binary operator that we see has an
+/// operator precedence that is `>=` its parent binary operator, making it
+/// a good candidate for chaining because it binds tighter to its operators
+/// than the parent does. When that candidate is written to the front of
+/// the chain, reading order still matches execution order. With this example:
+///
+/// ```r
+/// a + b - c * d
+/// ```
+///
+/// ```text
+///        -
+///       /  \
+///      /    \
+///    +        *
+///   / \      / \
+///  a   b    c   d
+/// ```
+///
+/// Note that `-` and `+` have the same precedence level, so `+` is a good
+/// candidate for chaining. `*` is placed on the RHS of the tree during parsing
+/// due to precedence rules, and is not considered for chaining, so it ends up
+/// in its own separate group, causing the extra indent from above.
+///
+/// This works nicely with `%>%` chains too. Since a chain of `%>%` are all at
+/// the same precedence level, you get a series of pipes on the `left` that you
+/// can collect and chain.
+///
+/// ```r
+/// a %>% b() %>% c()
+/// ```
+///
+/// ```text
+///        %>%
+///       /  \
+///      /    \
+///    %>%     c()
+///   / \
+///  a   b()
+/// ```
+///
+/// Mixing `|>` and `%>%` works fine because those are at the same precedence
+/// level.
+///
+/// # Piping into ggplot2
+///
+/// Chaining in this way extends naturally to `%>%` and `+` with ggplot2 calls.
+/// Consider this very common ggplot2 call:
+///
+/// ```r
+/// df %>%
+///   ggplot() +
+///   geom_bar()
+/// ```
+///
+/// ```text
+///        +
+///       /  \
+///      /    \
+///    %>%     geom_line()
+///   / \
+///  df  ggplot()
+/// ```
+///
+/// The precedences of `%>%` and `+` don't match here, but note that the `+` is
+/// the parent operator and the `%>%` is the child operator. The child `%>%` has
+/// a higher precedence than the parent `+` does, which means that we can
+/// continue chaining (i.e. reading order will match execution order if we keep
+/// chaining because `df %>% ggplot()` executes before the `+ geom_bar()`).
+///
+/// If you try and pipe OUT of a ggplot2 chain, then you get an indent at the
+/// end of the chain.
+///
+/// ```r
+/// df %>%
+///   ggplot() +
+///   geom_bar() %>%
+///     identity()
+/// ```
+///
+/// ```text
+///               +
+///             /   \
+///           /       \
+///         /           \
+///      %>%               %>%
+///    /   \           /        \
+///   /     \         /          \
+/// df  ggplot()  geom_bar() identity()
+/// ```
+///
+/// The final `%>%` ends up on the RHS of `+` in the parse tree,
+/// so it isn't considered chainable. The result follows our guiding principle
+/// that reading order should follow execution order. The
+/// `geom_bar() %>% identity()` is executed first, and the extra indent helps you
+/// see that.
+///
+/// As a final example, consider this user requested line break, which we
+/// actually want to ignore:
+///
+/// ```r
+/// # Input
+/// df |> ggplot() +
+///   geom_bar() + geom_line()
+///
+/// # Expected output (ignore line break, flatten)
+/// df |> ggplot() + geom_bar() + geom_line()
+///
+/// # Not
+/// df |> ggplot() +
+///   geom_bar() +
+///   geom_line()
+/// ```
+///
+/// The entire binary chain is chainable here, because every operator ends up
+/// on the LHS in the parse tree, so it forms 1 group. We perform the user
+/// requested line break check on the `|>`, see that there isn't a line break,
+/// and flatten the whole chain. If `|>` and the `+`s were split into different
+/// groups, then we'd have 2 places where the user could request a line break
+/// and we'd end up with the bad result.
 fn fmt_binary_chain(
     mut left: AnyRExpression,
     operator: SyntaxToken<RLanguage>,
     right: AnyRExpression,
     f: &mut Formatter<RFormatContext>,
 ) -> FormatResult<()> {
-    let mut parent_operator = operator.kind();
-
     // For the lead node in a binary chain, comments are handled by the standard
     // formatting of `FormatRBinaryExpression`, so no `encosing` node is tracked.
     let mut tail = vec![TailPiece {
@@ -184,21 +345,16 @@ fn fmt_binary_chain(
     // As long as the LHS is another chainable binary expression, continue collecting
     // `operator` and `right` to make one big tail that gets formatted all at once
     // within a single `indent()`, respecting a singular group expansion request.
-    while let Some(node) = as_chainable_binary_expression(&left, parent_operator) {
+    while let Some(node) = as_chainable_binary_expression(&left)? {
         // It's only possible to suppress the formatting of the whole binary expression formatting OR
         // the formatting of the right hand side value but not of a nested binary expression.
         if f.context().comments().is_suppressed(node.syntax()) {
             tracing::warn!("Can't use a suppression comment partway through a binary chain.");
         }
 
-        let operator = node.operator()?;
-        let right = node.right()?;
-
-        parent_operator = operator.kind();
-
         tail.push(TailPiece {
-            operator,
-            right,
+            operator: node.operator()?,
+            right: node.right()?,
             enclosing: Some(node.clone()),
         });
 
@@ -290,21 +446,18 @@ fn fmt_binary_chain(
 
 fn as_chainable_binary_expression(
     node: &AnyRExpression,
-    parent_operator: RSyntaxKind,
-) -> Option<&RBinaryExpression> {
-    let node = node.as_r_binary_expression()?;
-
-    let Ok(operator) = node.operator() else {
-        // Ignore errors at this point, someone else will propagate them
-        return None;
+) -> SyntaxResult<Option<&RBinaryExpression>> {
+    let Some(node) = node.as_r_binary_expression() else {
+        return Ok(None);
     };
 
-    // Check if the new `operator` is chainable with its `parent_operator`
-    if !can_chain(operator.kind(), parent_operator) {
-        return None;
+    let operator = node.operator()?;
+
+    if !is_chainable_binary_operator(operator.kind()) {
+        return Ok(None);
     }
 
-    Some(node)
+    Ok(Some(node))
 }
 
 fn is_chainable_binary_operator(kind: RSyntaxKind) -> bool {
@@ -328,123 +481,6 @@ fn is_chainable_binary_operator(kind: RSyntaxKind) -> bool {
 
         _ => false
     }
-}
-
-/// Check if two binary operators can be chained together
-///
-/// We use the guiding principle that we want the reading order of
-/// a chain to match the execution order.
-///
-/// We can chain binary operators if:
-/// - They are a `kind` represented by `is_chainable_binary_operator()`
-/// - The child operator has a precedence equal to or greater than the parent
-///   operator.
-///
-/// # Piping into ggplot2
-///
-/// Consider this very common ggplot2 call:
-///
-/// ```r
-/// df |>
-///   ggplot() +
-///   geom_bar()
-/// ```
-///
-/// The precedences of `|>` and `+` don't match, but note that the `+` is the
-/// parent operator and the `|>` is the child operator. `|>` has a higher
-/// precedence than `+` does, which means that we can continue chaining (i.e.
-/// reading order will match execution order if we keep chaining because
-/// `df |> ggplot()` runs before the `+ geom_bar()`).
-///
-/// If you try and pipe OUT of a ggplot2 chain, then you get an indent at the
-/// end of the chain. The final `|>` ends up on the RHS of `+` in the parse tree,
-/// so it isn't considered chainable. The result follows our guiding principle
-/// that reading order should follow execution order. The
-/// `geom_bar() |> identity()` is executed first, and extra indent helps you see that.
-///
-/// ```r
-/// df |>
-///   ggplot() +
-///   geom_bar() |>
-///     identity()
-/// ```
-///
-/// # On `>=` vs `=` for precedence comparison
-///
-/// Using `>=` rather than `=` is important. With user requested line breaks
-/// like the example below, we do NOT want to respect this line break, as it
-/// is not after the first operator of the chain.
-///
-/// ```r
-/// # Input
-/// df |> ggplot() +
-///   geom_bar() + geom_line()
-///
-/// # Expected output (ignore line break, flatten)
-/// df |> ggplot() + geom_bar() + geom_line()
-///
-/// # Not
-/// df |> ggplot() +
-///   geom_bar() +
-///   geom_line()
-/// ```
-///
-/// If we had used `=`, that would create two groups (based on where precedence
-/// switches) like:
-///
-/// ```text
-/// left: df
-/// right: |> ggplot()
-/// ```
-///
-/// ```text
-/// left: df |> ggplot()
-/// right: + geom_bar() + geom_line()
-/// ```
-///
-/// This means there are 2 spots where the user can request a line break
-/// and have it respected, which is confusing and unexpected.
-///
-/// Similarly, with long chains automatic line breaks can generate confusing
-/// breaks when `=` is used due to having multiple groups generated:
-///
-/// ```r
-/// # Input
-/// df |> ggplot() + geom_bar() + geom_line() + geom_foo() + geom_bar() + geom_baz()
-///
-/// # Expected output (every operator breaks)
-/// df |>
-///   ggplot() +
-///   geom_bar() +
-///   geom_line() +
-///   geom_foo() +
-///   geom_bar() +
-///   geom_baz()
-///
-/// # Not
-/// df |> ggplot() +
-///   geom_bar() +
-///   geom_line() +
-///   geom_foo() +
-///   geom_bar() +
-///   geom_baz()
-/// ```
-fn can_chain(operator: RSyntaxKind, parent_operator: RSyntaxKind) -> bool {
-    // We know `parent_operator` is chainable, but is the new one?
-    //
-    // Note that this ensures we don't have to deal with right-associative
-    // operators here because the chainable operators are left-associative.
-    if !is_chainable_binary_operator(operator) {
-        return false;
-    }
-
-    // Safety: `is_chainable_binary_operator()` ensures that `operator` is a
-    // binary operator. The algorithm ensures that `parent_operator` is a binary operator.
-    let operator_precedence = OperatorPrecedence::try_from_binary_operator(operator).unwrap();
-    let parent_operator_precedence =
-        OperatorPrecedence::try_from_binary_operator(parent_operator).unwrap();
-
-    operator_precedence >= parent_operator_precedence
 }
 
 /// Check if the user has inserted a leading newline before the very first `right`.
