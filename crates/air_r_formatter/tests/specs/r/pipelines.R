@@ -1,4 +1,3 @@
-# FIXME: Should respect vertical alignment (persist the newline of the first RHS)
 mtcars |>
   mutate(foo = 1) %>%
   filter(
