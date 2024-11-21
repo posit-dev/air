@@ -216,6 +216,201 @@ fn(function(a, a_really_really_long_parameter, and_another_one_here_too_wow_this
   1
 })
 
+# Named argument keeps name (#42)
+map(xs, .f = function(x) {
+  x + 1
+})
+
+# ------------------------------------------------------------------------
+# Comments: Trailing braced expression
+
+# Comments anywhere on a trailing braced expression should refuse to group
+# and  force expanded output. This avoids some idempotence issues, and
+# grouping can't possibly be useful here anyways, as the comment will be
+# in the way.
+# This includes:
+# - Comments attached to the `AnyRArgument` node itself
+# - Comments on the `name` node of a `AnyRArgument::NamedRArgument` node
+# - Comments on the `value` node of a `AnyRArgument::NamedRArgument` node
+
+with(
+  xs, # end-of-line
+  expr = {
+    x + 1
+  }
+)
+
+with(
+  xs,
+  # own-line
+  expr = {
+    x + 1
+  }
+)
+
+with(
+  xs,
+  expr # end-of-line
+  = {
+    x + 1
+  }
+)
+
+with(
+  xs,
+  expr
+  # own-line
+  = {
+    x + 1
+  }
+)
+
+with(
+  xs,
+  expr = # end-of-line
+  {
+    x + 1
+  }
+)
+
+with(
+  xs,
+  expr =
+  # own-line
+  {
+    x + 1
+  }
+)
+
+with(
+  xs,
+  expr =
+  {
+    x + 1
+  } # end-of-line
+)
+
+with(
+  xs,
+  expr =
+  {
+    x + 1
+  }
+  # own-line
+)
+
+# ------------------------------------------------------------------------
+# Comments: Trailing inline function
+
+# Comments anywhere on a trailing inline function should refuse to group and
+# force expanded output. This avoids some idempotence issues, and grouping
+# can't possibly be useful here anyways, as the comment will be in the way.
+# This includes:
+# - Comments attached to the `AnyRArgument` node itself
+# - Comments on the `name` node of a `AnyRArgument::NamedRArgument` node
+# - Comments on the `value` node of a `AnyRArgument::NamedRArgument` node
+
+fn(
+  xs, # end-of-line
+  f = function(x) {
+    x + 1
+  }
+)
+
+fn(
+  xs,
+  # own-line
+  f = function(x) {
+    x + 1
+  }
+)
+
+fn(
+  xs,
+  f # end-of-line
+  = function(x) {
+    x + 1
+  }
+)
+
+fn(
+  xs,
+  f
+  # own-line
+  = function(x) {
+    x + 1
+  }
+)
+
+fn(
+  xs,
+  f = # end-of-line
+  function(x) {
+    x + 1
+  }
+)
+
+fn(
+  xs,
+  f =
+  # own-line
+  function(x) {
+    x + 1
+  }
+)
+
+fn(
+  xs,
+  f =
+  function(x) {
+    x + 1
+  } # end-of-line
+)
+
+fn(
+  xs,
+  f =
+  function(x) {
+    x + 1
+  }
+  # own-line
+)
+
+# ------------------------------------------------------------------------
+# Comments: Named arguments without a RHS
+
+switch(
+  name,
+  one = , # Trailing, stays beside `one`
+  two = , # Trailing, stays beside `two`
+  three = 1,
+  stop("oh no")
+)
+
+# This is enclosed by the `RNamedArgument` node, so it moves on top
+fn(
+  x,
+  one # Moves above `one`
+  = ,
+  two = 2
+)
+
+# This is not enclosed by the `RNamedArgument` node because it only contains
+# `one =` and stops at the end of the `=`. So it is considered trailing.
+fn(
+  x,
+  one = # Trailing, stays beside `one`
+  ,
+  two = 2
+)
+
+# This is not enclosed by the `RNamedArgument` node because it only contains
+# `one =` and stops at the end of the `=`. So it is considered trailing.
+fn(
+  x,
+  one = # Trailing, stays beside `one`
+)
+
 # ------------------------------------------------------------------------
 # Empty lines between arguments
 
@@ -538,6 +733,192 @@ fn(function(
 ) {
 	1
 })
+
+# Named argument keeps name (#42)
+map(xs, .f = function(x) {
+	x + 1
+})
+
+# ------------------------------------------------------------------------
+# Comments: Trailing braced expression
+
+# Comments anywhere on a trailing braced expression should refuse to group
+# and  force expanded output. This avoids some idempotence issues, and
+# grouping can't possibly be useful here anyways, as the comment will be
+# in the way.
+# This includes:
+# - Comments attached to the `AnyRArgument` node itself
+# - Comments on the `name` node of a `AnyRArgument::NamedRArgument` node
+# - Comments on the `value` node of a `AnyRArgument::NamedRArgument` node
+
+with(
+	xs, # end-of-line
+	expr = {
+		x + 1
+	}
+)
+
+with(
+	xs,
+	# own-line
+	expr = {
+		x + 1
+	}
+)
+
+with(
+	xs,
+	# end-of-line
+	expr = {
+		x + 1
+	}
+)
+
+with(
+	xs,
+	# own-line
+	expr = {
+		x + 1
+	}
+)
+
+with(
+	xs,
+	# end-of-line
+	expr = {
+		x + 1
+	}
+)
+
+with(
+	xs,
+	# own-line
+	expr = {
+		x + 1
+	}
+)
+
+with(
+	xs,
+	expr = {
+		x + 1
+	} # end-of-line
+)
+
+with(
+	xs,
+	expr = {
+		x + 1
+	}
+	# own-line
+)
+
+# ------------------------------------------------------------------------
+# Comments: Trailing inline function
+
+# Comments anywhere on a trailing inline function should refuse to group and
+# force expanded output. This avoids some idempotence issues, and grouping
+# can't possibly be useful here anyways, as the comment will be in the way.
+# This includes:
+# - Comments attached to the `AnyRArgument` node itself
+# - Comments on the `name` node of a `AnyRArgument::NamedRArgument` node
+# - Comments on the `value` node of a `AnyRArgument::NamedRArgument` node
+
+fn(
+	xs, # end-of-line
+	f = function(x) {
+		x + 1
+	}
+)
+
+fn(
+	xs,
+	# own-line
+	f = function(x) {
+		x + 1
+	}
+)
+
+fn(
+	xs,
+	# end-of-line
+	f = function(x) {
+		x + 1
+	}
+)
+
+fn(
+	xs,
+	# own-line
+	f = function(x) {
+		x + 1
+	}
+)
+
+fn(
+	xs,
+	# end-of-line
+	f = function(x) {
+		x + 1
+	}
+)
+
+fn(
+	xs,
+	# own-line
+	f = function(x) {
+		x + 1
+	}
+)
+
+fn(
+	xs,
+	f = function(x) {
+		x + 1
+	} # end-of-line
+)
+
+fn(
+	xs,
+	f = function(x) {
+		x + 1
+	}
+	# own-line
+)
+
+# ------------------------------------------------------------------------
+# Comments: Named arguments without a RHS
+
+switch(
+	name,
+	one = , # Trailing, stays beside `one`
+	two = , # Trailing, stays beside `two`
+	three = 1,
+	stop("oh no")
+)
+
+# This is enclosed by the `RNamedArgument` node, so it moves on top
+fn(
+	x,
+	# Moves above `one`
+	one = ,
+	two = 2
+)
+
+# This is not enclosed by the `RNamedArgument` node because it only contains
+# `one =` and stops at the end of the `=`. So it is considered trailing.
+fn(
+	x,
+	one = , # Trailing, stays beside `one`
+	two = 2
+)
+
+# This is not enclosed by the `RNamedArgument` node because it only contains
+# `one =` and stops at the end of the `=`. So it is considered trailing.
+fn(
+	x,
+	one = # Trailing, stays beside `one`
+)
 
 # ------------------------------------------------------------------------
 # Empty lines between arguments

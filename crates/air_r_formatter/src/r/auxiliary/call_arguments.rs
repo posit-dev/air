@@ -661,6 +661,14 @@ impl Format<RFormatContext> for FormatGroupedLastArgument<'_> {
         let element = self.argument.element();
         let node = element.node()?;
 
+        let argument_name = match node {
+            AnyRArgument::RNamedArgument(node) => Some((node.name(), node.eq_token())),
+            AnyRArgument::RUnnamedArgument(_)
+            | AnyRArgument::RBogusArgument(_)
+            | AnyRArgument::RDotsArgument(_)
+            | AnyRArgument::RHoleArgument(_) => None,
+        };
+
         let argument_expression = match node {
             AnyRArgument::RNamedArgument(node) => node.value(),
             AnyRArgument::RUnnamedArgument(node) => node.value().ok(),
@@ -676,6 +684,10 @@ impl Format<RFormatContext> for FormatGroupedLastArgument<'_> {
         match argument_expression {
             Some(RFunctionDefinition(function)) if !self.is_only => {
                 with_token_tracking_disabled(f, |f| {
+                    if let Some((name, eq_token)) = argument_name {
+                        write!(f, [name.format(), space(), eq_token.format(), space()])?;
+                    }
+
                     write!(
                         f,
                         [function.format().with_options(FormatFunctionOptions {
@@ -817,9 +829,26 @@ fn should_group_last_argument(list: &RArgumentList, comments: &RComments) -> Syn
     };
     let last = last?;
 
-    if comments.has_leading_comments(last.syntax()) || comments.has_trailing_comments(last.syntax())
-    {
+    // If the entire argument node has comments attached, not groupable
+    if comments.has_comments(last.syntax()) {
         return Ok(false);
+    }
+
+    // If this is a named argument node and the `name` or `value` nodes have comments,
+    // not groupable. This avoids idempotence issues. Plus, the comments by definition
+    // make it non groupable.
+    if let AnyRArgument::RNamedArgument(ref last) = last {
+        let name = last.name()?;
+        if comments.has_comments(name.syntax()) {
+            return Ok(false);
+        }
+
+        let value = last.value();
+        if let Some(value) = value {
+            if comments.has_comments(value.syntax()) {
+                return Ok(false);
+            }
+        }
     }
 
     let argument_expression = |arg| match arg {
