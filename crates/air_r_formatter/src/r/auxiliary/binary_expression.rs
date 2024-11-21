@@ -187,9 +187,9 @@ fn fmt_binary_chain(
     while let Some(node) = as_chainable_binary_expression(&left, parent_operator) {
         // It's only possible to suppress the formatting of the whole binary expression formatting OR
         // the formatting of the right hand side value but not of a nested binary expression.
-        f.context()
-            .comments()
-            .mark_suppression_checked(node.syntax());
+        if f.context().comments().is_suppressed(node.syntax()) {
+            tracing::warn!("Can't use a suppression comment partway through a binary chain.");
+        }
 
         let operator = node.operator()?;
         let right = node.right()?;

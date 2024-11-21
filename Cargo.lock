@@ -71,6 +71,7 @@ dependencies = [
  "biome_parser",
  "biome_rowan",
  "tests_macros",
+ "tracing",
 ]
 
 [[package]]
