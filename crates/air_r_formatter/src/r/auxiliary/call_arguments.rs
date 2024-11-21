@@ -139,6 +139,20 @@ impl Format<RFormatContext> for FormatRCallLikeArguments {
             );
         }
 
+        // Special case where a line break exists between the `l_token` and the
+        // first argument. Treat this as a user request to expand.
+        if needs_user_requested_expansion(&arguments) {
+            return write!(
+                f,
+                [FormatAllArgsBrokenOut {
+                    l_token: &self.l_token.format(),
+                    args: &arguments,
+                    r_token: &self.r_token.format(),
+                    expand: true,
+                }]
+            );
+        }
+
         if let Some(group_layout) = arguments_grouped_layout(&self.items, f.comments()) {
             write_grouped_arguments(&self.l_token, &self.r_token, arguments, group_layout, f)
         } else {
@@ -153,6 +167,50 @@ impl Format<RFormatContext> for FormatRCallLikeArguments {
             )
         }
     }
+}
+
+/// Check if the user has inserted a leading newline before the very first `argument`.
+/// If so, we respect that and treat it as a request to break ALL of the arguments.
+/// Note this is a case of irreversible formatting!
+///
+/// ```r
+/// # Fits on one line, but newline before `bob` forces ALL arguments to break, so it
+/// # stays as is
+///
+/// # Input
+/// dictionary <- list(
+///   bob = "burger",
+///   dina = "dairy",
+///   john = "juice"
+/// )
+///
+/// # Output
+/// dictionary <- list(
+///   bob = "burger",
+///   dina = "dairy",
+///   john = "juice"
+/// )
+/// ```
+///
+/// Note that removing this line break is a request to flatten if possible. By only having
+/// this special behavior on the very first argument, we make it easy to request flattening.
+///
+/// ```r
+/// # Remove the first line break and run air
+/// dictionary <- list(bob = "burger",
+///   dina = "dairy",
+///   john = "juice"
+/// )
+///
+/// # Output
+/// dictionary <- list(bob = "burger", dina = "dairy", john = "juice")
+/// ```
+fn needs_user_requested_expansion(arguments: &[FormatCallArgument]) -> bool {
+    // TODO: This should be configurable by an option, since it is a case of
+    // irreversible formatting
+    arguments
+        .first()
+        .map_or(false, |argument| argument.leading_lines() > 0)
 }
 
 /// Helper for formatting a call argument
