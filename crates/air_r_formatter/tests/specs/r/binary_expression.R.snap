@@ -142,15 +142,56 @@ a_really_really_long_thing_here1 %>% a_really_really_long_thing_here2 |> a_reall
 a_really_really_long_thing_here1 & a_really_really_long_thing_here2 && a_really_really_long_thing_here3
 a_really_really_long_thing_here1 | a_really_really_long_thing_here2 || a_really_really_long_thing_here3
 
-# Different precedence groups
+# Continuous chaining as long as precedence is high -> low from left -> right
+# (e.g. `*` > `+` in terms of precedence, so keep chaining)
 a_really_really_long_thing_here1 * a_really_really_long_thing_here2 + a_really_really_long_thing_here3
-a_really_really_long_thing_here1 + a_really_really_long_thing_here2 * a_really_really_long_thing_here3
 a_really_really_long_thing_here1 & a_really_really_long_thing_here2 | a_really_really_long_thing_here3
-a_really_really_long_thing_here1 | a_really_really_long_thing_here2 & a_really_really_long_thing_here3
 a_really_really_long_thing_here1 && a_really_really_long_thing_here2 || a_really_really_long_thing_here3
-a_really_really_long_thing_here1 || a_really_really_long_thing_here2 && a_really_really_long_thing_here3
+a_really_really_long_thing_here1 %>% a_really_really_long_thing_here2 + a_really_really_long_thing_here3
 a_really_really_long_thing_here1 %>% a_really_really_long_thing_here2 * a_really_really_long_thing_here3
+
+# Chaining breaks when precedence goes from low -> high at any point from
+# left -> right (e.g. `+` < `*` in terms of precedence, so we break)
+a_really_really_long_thing_here1 + a_really_really_long_thing_here2 * a_really_really_long_thing_here3
+a_really_really_long_thing_here1 | a_really_really_long_thing_here2 & a_really_really_long_thing_here3
+a_really_really_long_thing_here1 || a_really_really_long_thing_here2 && a_really_really_long_thing_here3
+a_really_really_long_thing_here1 + a_really_really_long_thing_here2 %>% a_really_really_long_thing_here3
 a_really_really_long_thing_here1 * a_really_really_long_thing_here2 %>% a_really_really_long_thing_here3
+
+# Chaining breaks when precedence goes from low -> high at any point from
+# left -> right (e.g. `+` < `*` in terms of precedence, so we break)
+# AND we get a second indent if the sub group also breaks
+a_really_really_long_thing_here1 + a_really_really_long_thing_here2 * a_really_really_really_really_really_really_really_really_long_thing_here3
+a_really_really_long_thing_here1 | a_really_really_long_thing_here2 & a_really_really_really_really_really_really_really_really_long_thing_here3
+a_really_really_long_thing_here1 || a_really_really_long_thing_here2 && a_really_really_really_really_really_really_really_really_long_thing_here3
+a_really_really_long_thing_here1 + a_really_really_long_thing_here2 %>% a_really_really_really_really_really_really_really_really_long_thing_here3
+a_really_really_long_thing_here1 * a_really_really_long_thing_here2 %>% a_really_really_really_really_really_really_really_really_long_thing_here3
+
+# Chaining fully expands when there is a user requested line break
+# in the higher precedence subgroup
+a + b *
+  c
+a | b &
+  c
+a || b &&
+  c
+a + b %>%
+  c
+a * b %>%
+  c
+
+# Chaining doesn't fully expand when there is a user requested line break
+# in the lower precedence subgroup
+a +
+  b * c
+a |
+  b & c
+a ||
+  b && c
+a +
+  b %>% c
+a *
+  b %>% c
 
 # With sticky operators
 a_really_really_long_thing_here1 + a_really_really_long_thing_here2 ** a_really_really_long_thing_here3
@@ -162,23 +203,15 @@ a_really_really_long_thing_here1 : a_really_really_long_thing_here2 + a_really_r
 a_really_really_long_thing_here1 * a_really_really_long_thing_here2 : a_really_really_long_thing_here3
 a_really_really_long_thing_here1 : a_really_really_long_thing_here2 * a_really_really_long_thing_here3
 
-# User requested line break is kept
-# `*` doesn't chain to `+` as it is a different precedence group
-1 +
-  2 * 3
-
-# You keep this double indent here if you force break everything,
-# because `+` and `*` don't chain together
-1 +
-  2 *
-    3
-
 # The `*` in the middle splits the `+` chain
 a_really_really_long_thing_here1 + a_really_really_long_thing_here2 * a_really_really_long_thing_here3 + a_really_really_long_thing_here1
 
 # The user line break after the `*` is respected
+# Note how we use indents to show how the LHS/RHS of `*`
+# are grouped even with the user line break, and then dedent
+# before printing `a_really_really_long_thing_here4`
 a_really_really_long_thing_here1 + a_really_really_long_thing_here2 *
-  a_really_really_long_thing_here3 + a_really_really_long_thing_here1
+  a_really_really_long_thing_here3 + a_really_really_long_thing_here4
 
 # -----------------------------------------------------------------------------
 # Binary expression conditionals in if statements
@@ -246,7 +279,13 @@ df |> ggplot() + geom_line() + geom_bar()
 df |>
 ggplot() + geom_line() + geom_bar()
 
-# Flattened, line break is not after the first binary operator!
+# Flattened, this is one big chain due to monotonically decreasing
+# precedence, so user requested expansion only applies to 1st operator
+df |> ggplot() +
+  geom_line() + geom_bar()
+
+# Flattened, this is one big chain due to monotonically decreasing
+# precedence, so user requested expansion only applies to 1st operator
 df |> ggplot() + geom_line() +
 geom_bar()
 
@@ -596,23 +635,86 @@ a_really_really_long_thing_here1 |
 	a_really_really_long_thing_here2 ||
 	a_really_really_long_thing_here3
 
-# Different precedence groups
-a_really_really_long_thing_here1 * a_really_really_long_thing_here2 +
+# Continuous chaining as long as precedence is high -> low from left -> right
+# (e.g. `*` > `+` in terms of precedence, so keep chaining)
+a_really_really_long_thing_here1 *
+	a_really_really_long_thing_here2 +
 	a_really_really_long_thing_here3
+a_really_really_long_thing_here1 &
+	a_really_really_long_thing_here2 |
+	a_really_really_long_thing_here3
+a_really_really_long_thing_here1 &&
+	a_really_really_long_thing_here2 ||
+	a_really_really_long_thing_here3
+a_really_really_long_thing_here1 %>%
+	a_really_really_long_thing_here2 +
+	a_really_really_long_thing_here3
+a_really_really_long_thing_here1 %>%
+	a_really_really_long_thing_here2 *
+	a_really_really_long_thing_here3
+
+# Chaining breaks when precedence goes from low -> high at any point from
+# left -> right (e.g. `+` < `*` in terms of precedence, so we break)
 a_really_really_long_thing_here1 +
 	a_really_really_long_thing_here2 * a_really_really_long_thing_here3
-a_really_really_long_thing_here1 & a_really_really_long_thing_here2 |
-	a_really_really_long_thing_here3
 a_really_really_long_thing_here1 |
 	a_really_really_long_thing_here2 & a_really_really_long_thing_here3
-a_really_really_long_thing_here1 && a_really_really_long_thing_here2 ||
-	a_really_really_long_thing_here3
 a_really_really_long_thing_here1 ||
 	a_really_really_long_thing_here2 && a_really_really_long_thing_here3
-a_really_really_long_thing_here1 %>% a_really_really_long_thing_here2 *
-	a_really_really_long_thing_here3
+a_really_really_long_thing_here1 +
+	a_really_really_long_thing_here2 %>% a_really_really_long_thing_here3
 a_really_really_long_thing_here1 *
 	a_really_really_long_thing_here2 %>% a_really_really_long_thing_here3
+
+# Chaining breaks when precedence goes from low -> high at any point from
+# left -> right (e.g. `+` < `*` in terms of precedence, so we break)
+# AND we get a second indent if the sub group also breaks
+a_really_really_long_thing_here1 +
+	a_really_really_long_thing_here2 *
+		a_really_really_really_really_really_really_really_really_long_thing_here3
+a_really_really_long_thing_here1 |
+	a_really_really_long_thing_here2 &
+		a_really_really_really_really_really_really_really_really_long_thing_here3
+a_really_really_long_thing_here1 ||
+	a_really_really_long_thing_here2 &&
+		a_really_really_really_really_really_really_really_really_long_thing_here3
+a_really_really_long_thing_here1 +
+	a_really_really_long_thing_here2 %>%
+		a_really_really_really_really_really_really_really_really_long_thing_here3
+a_really_really_long_thing_here1 *
+	a_really_really_long_thing_here2 %>%
+		a_really_really_really_really_really_really_really_really_long_thing_here3
+
+# Chaining fully expands when there is a user requested line break
+# in the higher precedence subgroup
+a +
+	b *
+		c
+a |
+	b &
+		c
+a ||
+	b &&
+		c
+a +
+	b %>%
+		c
+a *
+	b %>%
+		c
+
+# Chaining doesn't fully expand when there is a user requested line break
+# in the lower precedence subgroup
+a +
+	b * c
+a |
+	b & c
+a ||
+	b && c
+a +
+	b %>% c
+a *
+	b %>% c
 
 # With sticky operators
 a_really_really_long_thing_here1 +
@@ -632,27 +734,19 @@ a_really_really_long_thing_here1 *
 a_really_really_long_thing_here1:a_really_really_long_thing_here2 *
 	a_really_really_long_thing_here3
 
-# User requested line break is kept
-# `*` doesn't chain to `+` as it is a different precedence group
-1 +
-	2 * 3
-
-# You keep this double indent here if you force break everything,
-# because `+` and `*` don't chain together
-1 +
-	2 *
-		3
-
 # The `*` in the middle splits the `+` chain
 a_really_really_long_thing_here1 +
 	a_really_really_long_thing_here2 * a_really_really_long_thing_here3 +
 	a_really_really_long_thing_here1
 
 # The user line break after the `*` is respected
+# Note how we use indents to show how the LHS/RHS of `*`
+# are grouped even with the user line break, and then dedent
+# before printing `a_really_really_long_thing_here4`
 a_really_really_long_thing_here1 +
 	a_really_really_long_thing_here2 *
 		a_really_really_long_thing_here3 +
-	a_really_really_long_thing_here1
+	a_really_really_long_thing_here4
 
 # -----------------------------------------------------------------------------
 # Binary expression conditionals in if statements
@@ -731,7 +825,12 @@ df |>
 	geom_line() +
 	geom_bar()
 
-# Flattened, line break is not after the first binary operator!
+# Flattened, this is one big chain due to monotonically decreasing
+# precedence, so user requested expansion only applies to 1st operator
+df |> ggplot() + geom_line() + geom_bar()
+
+# Flattened, this is one big chain due to monotonically decreasing
+# precedence, so user requested expansion only applies to 1st operator
 df |> ggplot() + geom_line() + geom_bar()
 
 # Non-binary operators break the expansion propagation
