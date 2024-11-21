@@ -384,7 +384,7 @@ fn can_chain(operator: RSyntaxKind, parent_operator: RSyntaxKind) -> bool {
         }
 
         // Special case of piping into a ggplot2 call
-        (OperatorPrecedence::Pipe, OperatorPrecedence::Additive) => {
+        (OperatorPrecedence::Special, OperatorPrecedence::Additive) => {
             parent_operator == RSyntaxKind::PLUS
         }
 
