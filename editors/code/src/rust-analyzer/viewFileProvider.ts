@@ -89,6 +89,7 @@ export function viewFileUsingTextDocumentContentProvider(
 		void (await vscode.window.showTextDocument(document, {
 			viewColumn: vscode.ViewColumn.Two,
 			preserveFocus: true,
+			preview: false,
 		}));
 	};
 }

@@ -60,6 +60,11 @@
 				"title": "View Format Tree",
 				"category": "Air",
 				"command": "air.viewFormatTree"
+			},
+			{
+				"title": "View File Representations",
+				"category": "Air",
+				"command": "air.viewFileRepresentations"
 			}
 		]
 	},

@@ -5,9 +5,10 @@ import * as ext from "./lsp-ext";
 
 export function registerCommands(ctx: Ctx) {
 	ctx.extension.subscriptions.push(
-		vscode.commands.registerCommand("air.restart", async () => {
-			await ctx.lsp.restart();
-		}),
+		vscode.commands.registerCommand(
+			"air.restart",
+			async () => await ctx.lsp.restart(),
+		),
 	);
 	ctx.extension.subscriptions.push(
 		vscode.commands.registerCommand(
@@ -25,6 +26,16 @@ export function registerCommands(ctx: Ctx) {
 		vscode.commands.registerCommand(
 			"air.viewFormatTree",
 			viewFormatTree(ctx),
+		),
+	);
+	ctx.extension.subscriptions.push(
+		vscode.commands.registerCommand(
+			"air.viewFileRepresentations",
+			async () => {
+				await vscode.commands.executeCommand("air.viewSyntaxTree");
+				await vscode.commands.executeCommand("air.viewSyntaxTreeTs");
+				await vscode.commands.executeCommand("air.viewFormatTree");
+			},
 		),
 	);
 }
