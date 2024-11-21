@@ -1,28 +1,27 @@
 import * as vscode from "vscode";
-import { ctx } from "./extension";
 import { Cmd, Ctx } from "./context";
 import { viewFileUsingTextDocumentContentProvider } from "./rust-analyzer/viewFileProvider";
 import * as ext from "./lsp-ext";
 
-export function registerCommands(context: vscode.ExtensionContext) {
-	context.subscriptions.push(
+export function registerCommands(ctx: Ctx) {
+	ctx.extension.subscriptions.push(
 		vscode.commands.registerCommand("air.restart", async () => {
 			await ctx.lsp.restart();
 		}),
 	);
-	context.subscriptions.push(
+	ctx.extension.subscriptions.push(
 		vscode.commands.registerCommand(
 			"air.viewSyntaxTree",
 			viewSyntaxTree(ctx),
 		),
 	);
-	context.subscriptions.push(
+	ctx.extension.subscriptions.push(
 		vscode.commands.registerCommand(
 			"air.viewSyntaxTreeTs",
 			viewSyntaxTreeTs(ctx),
 		),
 	);
-	context.subscriptions.push(
+	ctx.extension.subscriptions.push(
 		vscode.commands.registerCommand(
 			"air.viewFormatTree",
 			viewFormatTree(ctx),
