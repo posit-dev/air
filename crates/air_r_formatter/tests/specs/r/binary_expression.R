@@ -97,6 +97,41 @@ a_really_really_long_thing_here1 ~ (a_really_really_long_thing_here2 ~ a_really_
 a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2 + a_really_really_long_thing_here3 + a_really_really_long_thing_here4
 a_really_really_long_thing_here1 + a_really_really_long_thing_here2 + a_really_really_long_thing_here3 ~ a_really_really_long_thing_here4
 
+# Chaining operator with high precedence forces non-chaining operator to expand
+# (to convey a reading order that actually matches execution order)
+df |>
+  fn() ~ x
+df |>
+  fn() > x
+df |>
+  fn() >= x
+df |>
+  fn() < x
+df |>
+  fn() <= x
+df |>
+  fn() == x
+df |>
+  fn() != x
+# Note that `~` is lower precedence than `&`, so it belongs in this section!
+df &
+  fn() ~ x
+
+# Chaining operator with low precedence does not force non-chaining operator to
+# expand (because non-chaining operator does happen first!)
+df &
+  fn() > x
+df &
+  fn() >= x
+df &
+  fn() < x
+df &
+  fn() <= x
+df &
+  fn() == x
+df &
+  fn() != x
+
 # User requested line break not respected for non-chainable items
 # (This is debatable, but I see no need to enable it right now)
 a ~
