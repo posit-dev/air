@@ -1830,6 +1830,7 @@ pub enum AnyRExpression {
     RBreakExpression(RBreakExpression),
     RCall(RCall),
     RDotDotI(RDotDotI),
+    RDots(RDots),
     RExtractExpression(RExtractExpression),
     RFalseExpression(RFalseExpression),
     RForStatement(RForStatement),
@@ -1891,6 +1892,12 @@ impl AnyRExpression {
     pub fn as_r_dot_dot_i(&self) -> Option<&RDotDotI> {
         match &self {
             AnyRExpression::RDotDotI(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_dots(&self) -> Option<&RDots> {
+        match &self {
+            AnyRExpression::RDots(item) => Some(item),
             _ => None,
         }
     }
@@ -4086,6 +4093,11 @@ impl From<RDotDotI> for AnyRExpression {
         AnyRExpression::RDotDotI(node)
     }
 }
+impl From<RDots> for AnyRExpression {
+    fn from(node: RDots) -> AnyRExpression {
+        AnyRExpression::RDots(node)
+    }
+}
 impl From<RExtractExpression> for AnyRExpression {
     fn from(node: RExtractExpression) -> AnyRExpression {
         AnyRExpression::RExtractExpression(node)
@@ -4195,6 +4207,7 @@ impl AstNode for AnyRExpression {
         .union(RBreakExpression::KIND_SET)
         .union(RCall::KIND_SET)
         .union(RDotDotI::KIND_SET)
+        .union(RDots::KIND_SET)
         .union(RExtractExpression::KIND_SET)
         .union(RFalseExpression::KIND_SET)
         .union(RForStatement::KIND_SET)
@@ -4223,6 +4236,7 @@ impl AstNode for AnyRExpression {
             | R_BREAK_EXPRESSION
             | R_CALL
             | R_DOT_DOT_I
+            | R_DOTS
             | R_EXTRACT_EXPRESSION
             | R_FALSE_EXPRESSION
             | R_FOR_STATEMENT
@@ -4257,6 +4271,7 @@ impl AstNode for AnyRExpression {
             R_BREAK_EXPRESSION => AnyRExpression::RBreakExpression(RBreakExpression { syntax }),
             R_CALL => AnyRExpression::RCall(RCall { syntax }),
             R_DOT_DOT_I => AnyRExpression::RDotDotI(RDotDotI { syntax }),
+            R_DOTS => AnyRExpression::RDots(RDots { syntax }),
             R_EXTRACT_EXPRESSION => {
                 AnyRExpression::RExtractExpression(RExtractExpression { syntax })
             }
@@ -4302,6 +4317,7 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RBreakExpression(it) => &it.syntax,
             AnyRExpression::RCall(it) => &it.syntax,
             AnyRExpression::RDotDotI(it) => &it.syntax,
+            AnyRExpression::RDots(it) => &it.syntax,
             AnyRExpression::RExtractExpression(it) => &it.syntax,
             AnyRExpression::RFalseExpression(it) => &it.syntax,
             AnyRExpression::RForStatement(it) => &it.syntax,
@@ -4333,6 +4349,7 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RBreakExpression(it) => it.syntax,
             AnyRExpression::RCall(it) => it.syntax,
             AnyRExpression::RDotDotI(it) => it.syntax,
+            AnyRExpression::RDots(it) => it.syntax,
             AnyRExpression::RExtractExpression(it) => it.syntax,
             AnyRExpression::RFalseExpression(it) => it.syntax,
             AnyRExpression::RForStatement(it) => it.syntax,
@@ -4367,6 +4384,7 @@ impl std::fmt::Debug for AnyRExpression {
             AnyRExpression::RBreakExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RCall(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RDotDotI(it) => std::fmt::Debug::fmt(it, f),
+            AnyRExpression::RDots(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RExtractExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RFalseExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RForStatement(it) => std::fmt::Debug::fmt(it, f),
@@ -4400,6 +4418,7 @@ impl From<AnyRExpression> for SyntaxNode {
             AnyRExpression::RBreakExpression(it) => it.into(),
             AnyRExpression::RCall(it) => it.into(),
             AnyRExpression::RDotDotI(it) => it.into(),
+            AnyRExpression::RDots(it) => it.into(),
             AnyRExpression::RExtractExpression(it) => it.into(),
             AnyRExpression::RFalseExpression(it) => it.into(),
             AnyRExpression::RForStatement(it) => it.into(),

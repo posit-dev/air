@@ -306,6 +306,7 @@ AnyRExpression =
 	| RInfExpression
 	| RNanExpression
 	| RNaExpression
+    | RDots
 	| RDotDotI
 	| RBogusExpression
 

@@ -161,6 +161,7 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_PARENTHESIZED_EXPRESSION
             | RSyntaxKind::R_EXTRACT_EXPRESSION
             | RSyntaxKind::R_NAMESPACE_EXPRESSION
+            | RSyntaxKind::R_NAMED_ARGUMENT
             | RSyntaxKind::R_NA_EXPRESSION => self.handle_node_enter(kind),
 
             RSyntaxKind::R_PARAMETERS => self.handle_parameters_enter(node, iter),
@@ -177,7 +178,6 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_SUBSET2_ARGUMENTS => {
                 self.handle_call_like_arguments_enter(kind, node, iter)
             }
-            RSyntaxKind::R_NAMED_ARGUMENT => self.handle_named_argument_enter(node, iter),
             RSyntaxKind::R_DOTS_ARGUMENT => self.handle_dots_argument_enter(node, iter),
             RSyntaxKind::R_BRACED_EXPRESSIONS => self.handle_braced_expressions_enter(node, iter),
 
@@ -185,6 +185,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_DOUBLE_VALUE
             | RSyntaxKind::R_IDENTIFIER
             | RSyntaxKind::R_DOT_DOT_I
+            | RSyntaxKind::R_DOTS
             | RSyntaxKind::R_RETURN_EXPRESSION
             | RSyntaxKind::R_NEXT_EXPRESSION
             | RSyntaxKind::R_BREAK_EXPRESSION
@@ -259,8 +260,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::COMMENT => self.handle_comment_enter(),
 
             // Unreachable
-            RSyntaxKind::R_DOTS
-            | RSyntaxKind::R_ELSE_CLAUSE
+            RSyntaxKind::R_ELSE_CLAUSE
             | RSyntaxKind::R_HOLE_ARGUMENT
             | RSyntaxKind::R_PARAMETER_LIST
             | RSyntaxKind::R_ARGUMENT_LIST
@@ -308,6 +308,7 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_PARENTHESIZED_EXPRESSION
             | RSyntaxKind::R_EXTRACT_EXPRESSION
             | RSyntaxKind::R_NAMESPACE_EXPRESSION
+            | RSyntaxKind::R_NAMED_ARGUMENT
             | RSyntaxKind::R_NA_EXPRESSION
             | RSyntaxKind::R_CALL
             | RSyntaxKind::R_SUBSET
@@ -321,7 +322,6 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_CALL_ARGUMENTS => self.handle_call_like_arguments_leave(kind),
             RSyntaxKind::R_SUBSET_ARGUMENTS => self.handle_call_like_arguments_leave(kind),
             RSyntaxKind::R_SUBSET2_ARGUMENTS => self.handle_call_like_arguments_leave(kind),
-            RSyntaxKind::R_NAMED_ARGUMENT => self.handle_named_argument_leave(),
             RSyntaxKind::R_DOTS_ARGUMENT => self.handle_dots_argument_leave(),
             RSyntaxKind::R_BRACED_EXPRESSIONS => self.handle_braced_expressions_leave(),
 
@@ -330,6 +330,7 @@ impl<'src> RWalk<'src> {
                 self.handle_value_leave(node, kind, RSyntaxKind::R_DOUBLE_LITERAL)
             }
             RSyntaxKind::R_IDENTIFIER => self.handle_value_leave(node, kind, RSyntaxKind::IDENT),
+            RSyntaxKind::R_DOTS => self.handle_value_leave(node, kind, RSyntaxKind::DOTS),
             RSyntaxKind::R_DOT_DOT_I => self.handle_value_leave(node, kind, RSyntaxKind::DOTDOTI),
             RSyntaxKind::R_RETURN_EXPRESSION => {
                 self.handle_value_leave(node, kind, RSyntaxKind::RETURN_KW)
@@ -420,8 +421,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::COMMENT => self.handle_comment_leave(node),
 
             // Unreachable directly
-            RSyntaxKind::R_DOTS
-            | RSyntaxKind::R_ELSE_CLAUSE
+            RSyntaxKind::R_ELSE_CLAUSE
             | RSyntaxKind::R_HOLE_ARGUMENT
             | RSyntaxKind::R_PARAMETER_LIST
             | RSyntaxKind::R_ARGUMENT_LIST
@@ -894,38 +894,6 @@ impl<'src> RWalk<'src> {
 
     fn handle_dots_argument_leave(&mut self) {
         self.handle_node_leave(RSyntaxKind::R_DOTS_ARGUMENT);
-    }
-
-    fn handle_named_argument_enter(&mut self, node: tree_sitter::Node, iter: &mut Preorder) {
-        self.handle_node_enter(RSyntaxKind::R_NAMED_ARGUMENT);
-
-        while let Some(event) = *iter.peek() {
-            match event {
-                WalkEvent::Enter(next) => match next.syntax_kind() {
-                    RSyntaxKind::DOTS => {
-                        // Promote to `R_DOTS` node, and then skip
-                        self.handle_node_enter(RSyntaxKind::R_DOTS);
-                        self.handle_token(next, RSyntaxKind::DOTS);
-                        self.handle_node_leave(RSyntaxKind::R_DOTS);
-                        assert_eq!(iter.next(), Some(WalkEvent::Enter(next)));
-                        iter.skip_subtree();
-                        assert_eq!(iter.next(), Some(WalkEvent::Leave(next)));
-                    }
-                    // Everything else is handled in the main loop
-                    _ => self.walk_next(iter),
-                },
-                WalkEvent::Leave(next) => {
-                    if node != next {
-                        panic!("Expected next `Leave` event to be for `node`.");
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    fn handle_named_argument_leave(&mut self) {
-        self.handle_node_leave(RSyntaxKind::R_NAMED_ARGUMENT);
     }
 }
 

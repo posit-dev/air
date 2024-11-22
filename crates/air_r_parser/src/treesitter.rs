@@ -435,7 +435,7 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "while" => RSyntaxKind::WHILE_KW,
         "repeat" => RSyntaxKind::REPEAT_KW,
         "comma" => RSyntaxKind::COMMA,
-        "dots" => RSyntaxKind::DOTS,
+        "dots" => RSyntaxKind::R_DOTS,
         "dot_dot_i" => RSyntaxKind::R_DOT_DOT_I,
         "comment" => RSyntaxKind::COMMENT,
         kind => unreachable!("Not implemented: '{kind}'."),
@@ -496,7 +496,7 @@ fn argument_syntax_kind(x: &Node) -> RSyntaxKind {
         return RSyntaxKind::R_NAMED_ARGUMENT;
     }
 
-    // Required field on `argument` for `R_DOTS` ad `R_UNNAMED_ARGUMENT` cases
+    // Required field on `argument` for `R_DOTS_ARGUMENT` and `R_UNNAMED_ARGUMENT` cases
     let value = x.child_by_field_name("value").unwrap();
 
     match value.kind() {

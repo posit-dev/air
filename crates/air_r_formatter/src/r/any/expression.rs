@@ -15,6 +15,7 @@ impl FormatRule<AnyRExpression> for FormatAnyRExpression {
             AnyRExpression::RBreakExpression(node) => node.format().fmt(f),
             AnyRExpression::RCall(node) => node.format().fmt(f),
             AnyRExpression::RDotDotI(node) => node.format().fmt(f),
+            AnyRExpression::RDots(node) => node.format().fmt(f),
             AnyRExpression::RExtractExpression(node) => node.format().fmt(f),
             AnyRExpression::RFalseExpression(node) => node.format().fmt(f),
             AnyRExpression::RForStatement(node) => node.format().fmt(f),
