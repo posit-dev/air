@@ -117,6 +117,33 @@ impl<'src> RWalk<'src> {
         }
     }
 
+    /// Walk only the upcoming node, including its subtree
+    ///
+    /// If the `next()` event is an `Enter`, `walk_next()` walks the
+    /// `node` returned in the `Enter` event until hitting the `Leave` event
+    /// of that `node`.
+    fn walk_next(&mut self, iter: &mut Preorder) {
+        let end = match iter.peek() {
+            Some(end) => match end {
+                WalkEvent::Enter(end) => *end,
+                WalkEvent::Leave(_) => return,
+            },
+            None => return,
+        };
+
+        while let Some(event) = iter.next() {
+            match event {
+                WalkEvent::Enter(node) => self.handle_enter(node, node.syntax_kind(), iter),
+                WalkEvent::Leave(node) => {
+                    self.handle_leave(node, node.syntax_kind());
+                    if node == end {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     fn handle_enter(&mut self, node: tree_sitter::Node, kind: RSyntaxKind, iter: &mut Preorder) {
         match kind {
             RSyntaxKind::R_ROOT => self.handle_root_enter(),
@@ -131,7 +158,8 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_SUBSET
             | RSyntaxKind::R_SUBSET2
             | RSyntaxKind::R_UNNAMED_ARGUMENT
-            | RSyntaxKind::R_PARENTHESIZED_EXPRESSION => self.handle_node_enter(kind),
+            | RSyntaxKind::R_PARENTHESIZED_EXPRESSION
+            | RSyntaxKind::R_NA_EXPRESSION => self.handle_node_enter(kind),
 
             RSyntaxKind::R_EXTRACT_EXPRESSION => self.handle_extract_enter(kind),
             RSyntaxKind::R_NAMESPACE_EXPRESSION => self.handle_namespace_enter(kind),
@@ -166,7 +194,6 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_INF_EXPRESSION
             | RSyntaxKind::R_NAN_EXPRESSION => self.handle_value_enter(kind),
 
-            RSyntaxKind::R_NA_EXPRESSION => self.handle_na_value_enter(iter),
             RSyntaxKind::R_INTEGER_VALUE => self.handle_integer_value_enter(iter),
             RSyntaxKind::R_COMPLEX_VALUE => self.handle_complex_value_enter(iter),
             RSyntaxKind::R_STRING_VALUE => self.handle_string_value_enter(iter),
@@ -214,6 +241,11 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::REPEAT_KW
             | RSyntaxKind::IF_KW
             | RSyntaxKind::ELSE_KW
+            | RSyntaxKind::NA_LOGICAL_KW
+            | RSyntaxKind::NA_INTEGER_KW
+            | RSyntaxKind::NA_DOUBLE_KW
+            | RSyntaxKind::NA_COMPLEX_KW
+            | RSyntaxKind::NA_CHARACTER_KW
             | RSyntaxKind::L_PAREN
             | RSyntaxKind::R_PAREN
             | RSyntaxKind::L_BRACK
@@ -252,11 +284,6 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::NULL_KW
             | RSyntaxKind::INF_KW
             | RSyntaxKind::NAN_KW
-            | RSyntaxKind::NA_LOGICAL_KW
-            | RSyntaxKind::NA_INTEGER_KW
-            | RSyntaxKind::NA_DOUBLE_KW
-            | RSyntaxKind::NA_COMPLEX_KW
-            | RSyntaxKind::NA_CHARACTER_KW
             | RSyntaxKind::R_BOGUS
             | RSyntaxKind::R_BOGUS_VALUE
             | RSyntaxKind::R_BOGUS_EXPRESSION
@@ -279,6 +306,7 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_REPEAT_STATEMENT
             | RSyntaxKind::R_UNNAMED_ARGUMENT
             | RSyntaxKind::R_PARENTHESIZED_EXPRESSION
+            | RSyntaxKind::R_NA_EXPRESSION
             | RSyntaxKind::R_CALL
             | RSyntaxKind::R_SUBSET
             | RSyntaxKind::R_SUBSET2 => self.handle_node_leave(),
@@ -313,7 +341,6 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_NULL_EXPRESSION => self.handle_value_leave(node, RSyntaxKind::NULL_KW),
             RSyntaxKind::R_INF_EXPRESSION => self.handle_value_leave(node, RSyntaxKind::INF_KW),
             RSyntaxKind::R_NAN_EXPRESSION => self.handle_value_leave(node, RSyntaxKind::NAN_KW),
-            RSyntaxKind::R_NA_EXPRESSION => self.handle_na_value_leave(node),
             RSyntaxKind::R_INTEGER_VALUE => self.handle_integer_value_leave(node),
             RSyntaxKind::R_COMPLEX_VALUE => self.handle_complex_value_leave(node),
             RSyntaxKind::R_STRING_VALUE => self.handle_string_value_leave(node),
@@ -361,6 +388,11 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::REPEAT_KW
             | RSyntaxKind::IF_KW
             | RSyntaxKind::ELSE_KW
+            | RSyntaxKind::NA_LOGICAL_KW
+            | RSyntaxKind::NA_INTEGER_KW
+            | RSyntaxKind::NA_DOUBLE_KW
+            | RSyntaxKind::NA_COMPLEX_KW
+            | RSyntaxKind::NA_CHARACTER_KW
             | RSyntaxKind::L_PAREN
             | RSyntaxKind::R_PAREN
             | RSyntaxKind::L_BRACK
@@ -399,11 +431,6 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::NULL_KW
             | RSyntaxKind::INF_KW
             | RSyntaxKind::NAN_KW
-            | RSyntaxKind::NA_LOGICAL_KW
-            | RSyntaxKind::NA_INTEGER_KW
-            | RSyntaxKind::NA_DOUBLE_KW
-            | RSyntaxKind::NA_COMPLEX_KW
-            | RSyntaxKind::NA_CHARACTER_KW
             | RSyntaxKind::R_BOGUS
             | RSyntaxKind::R_BOGUS_VALUE
             | RSyntaxKind::R_BOGUS_EXPRESSION
@@ -481,8 +508,6 @@ impl<'src> RWalk<'src> {
     }
 
     fn handle_extract_enter(&mut self, kind: RSyntaxKind) {
-        // iter.skip_subtree();
-        // self.walk(&mut child.preorder())
         self.handle_node_enter(kind);
     }
 
@@ -540,33 +565,34 @@ impl<'src> RWalk<'src> {
     }
 
     fn handle_parameters_enter(&mut self, node: tree_sitter::Node, iter: &mut Preorder) {
-        // We handle all children directly
-        iter.skip_subtree();
-
         self.handle_node_enter(RSyntaxKind::R_PARAMETERS);
-
-        let mut cursor = node.walk();
 
         // Regardless of whether or not we see an `R_PARAMETER`, we have to
         // open and close the required `R_PARAMETER_LIST`
-        for child in node.children(&mut cursor) {
-            let mut child_iter = child.preorder();
-
-            match child.syntax_kind() {
-                RSyntaxKind::L_PAREN => {
-                    self.walk(&mut child_iter);
-                    self.handle_node_enter(RSyntaxKind::R_PARAMETER_LIST);
+        while let Some(event) = iter.peek() {
+            match event {
+                WalkEvent::Enter(next) => match next.syntax_kind() {
+                    RSyntaxKind::L_PAREN => {
+                        self.walk_next(iter);
+                        self.handle_node_enter(RSyntaxKind::R_PARAMETER_LIST);
+                    }
+                    RSyntaxKind::R_PAREN => {
+                        self.handle_node_leave(); // R_PARAMETER_LIST
+                        self.walk_next(iter);
+                    }
+                    RSyntaxKind::R_DOTS_PARAMETER
+                    | RSyntaxKind::R_IDENTIFIER_PARAMETER
+                    | RSyntaxKind::R_DEFAULT_PARAMETER
+                    | RSyntaxKind::COMMA
+                    | RSyntaxKind::COMMENT => self.walk_next(iter),
+                    kind => unreachable!("{kind:?}"),
+                },
+                WalkEvent::Leave(next) => {
+                    if node != *next {
+                        panic!("Expected next `Leave` event to be for `node`.");
+                    }
+                    break;
                 }
-                RSyntaxKind::R_PAREN => {
-                    self.handle_node_leave();
-                    self.walk(&mut child_iter);
-                }
-                RSyntaxKind::R_DOTS_PARAMETER => self.walk(&mut child_iter),
-                RSyntaxKind::R_IDENTIFIER_PARAMETER => self.walk(&mut child_iter),
-                RSyntaxKind::R_DEFAULT_PARAMETER => self.walk(&mut child_iter),
-                RSyntaxKind::COMMA => self.walk(&mut child_iter),
-                RSyntaxKind::COMMENT => self.walk(&mut child_iter),
-                kind => unreachable!("{kind:?}"),
             }
         }
     }
@@ -604,23 +630,29 @@ impl<'src> RWalk<'src> {
     }
 
     fn handle_default_parameter_enter(&mut self, node: tree_sitter::Node, iter: &mut Preorder) {
-        // Skip subtree, we will handle it
-        iter.skip_subtree();
-
         self.handle_node_enter(RSyntaxKind::R_DEFAULT_PARAMETER);
 
-        let mut cursor = node.walk();
-
-        for child in node.children(&mut cursor) {
-            match child.syntax_kind() {
-                RSyntaxKind::R_IDENTIFIER => {
-                    // Push a simple `IDENT` instead
-                    self.handle_token(child, RSyntaxKind::IDENT);
-                }
-                _ => {
-                    // `=`, and RHS of default parameter (i.e. any R expression)
-                    // are handled in the main loop
-                    self.walk(&mut child.preorder())
+        while let Some(event) = *iter.peek() {
+            match event {
+                WalkEvent::Enter(next) => match next.syntax_kind() {
+                    RSyntaxKind::R_IDENTIFIER => {
+                        // Push a simple `IDENT` instead, and skip this
+                        self.handle_token(next, RSyntaxKind::IDENT);
+                        assert_eq!(iter.next(), Some(WalkEvent::Enter(next)));
+                        iter.skip_subtree();
+                        assert_eq!(iter.next(), Some(WalkEvent::Leave(next)));
+                    }
+                    _ => {
+                        // `=`, and RHS of default parameter (i.e. any R expression)
+                        // are handled in the main loop
+                        self.walk_next(iter);
+                    }
+                },
+                WalkEvent::Leave(next) => {
+                    if node != next {
+                        panic!("Expected next `Leave` event to be for `node`.");
+                    }
+                    break;
                 }
             }
         }
@@ -628,33 +660,6 @@ impl<'src> RWalk<'src> {
 
     fn handle_default_parameter_leave(&mut self) {
         self.handle_node_leave();
-    }
-
-    fn handle_na_value_enter(&mut self, iter: &mut Preorder) {
-        // Skip subtree, we don't want to enter the 1 required child that
-        // contains the anonymous token for the na variant. It's handled on
-        // the way out.
-        iter.skip_subtree();
-
-        self.handle_value_enter(RSyntaxKind::R_NA_EXPRESSION);
-    }
-
-    fn handle_na_value_leave(&mut self, node: tree_sitter::Node) {
-        // Safety: `na` nodes have exactly 1 required child, and the `kind`
-        // tells you what variant of missing it is. Can't have comments inside
-        // here.
-        let node = node.child(0).unwrap();
-
-        let kind = match node.kind() {
-            "NA" => RSyntaxKind::NA_LOGICAL_KW,
-            "NA_integer_" => RSyntaxKind::NA_INTEGER_KW,
-            "NA_real_" => RSyntaxKind::NA_DOUBLE_KW,
-            "NA_complex_" => RSyntaxKind::NA_COMPLEX_KW,
-            "NA_character_" => RSyntaxKind::NA_CHARACTER_KW,
-            kind => unreachable!("Unexpected kind '{kind}'"),
-        };
-
-        self.handle_value_leave(node, kind);
     }
 
     fn handle_integer_value_enter(&mut self, iter: &mut Preorder) {
@@ -691,33 +696,35 @@ impl<'src> RWalk<'src> {
     }
 
     fn handle_if_statement_enter(&mut self, node: tree_sitter::Node, iter: &mut Preorder) {
-        // We handle all children directly
-        iter.skip_subtree();
-
         self.handle_node_enter(RSyntaxKind::R_IF_STATEMENT);
-
-        let mut used_else = false;
-        let mut cursor = node.walk();
 
         // Seeing an `else` causes us to open an `R_ELSE_CLAUSE` node which
         // we push the `else` keyword under, along with the `alternative`,
         // and any comments that appear there. We then close the `R_ELSE_CLAUSE`
         // on the way out.
-        for child in node.children(&mut cursor) {
-            let mut child_iter = child.preorder();
+        let mut used_else = false;
 
-            match child.syntax_kind() {
-                RSyntaxKind::IF_KW => self.walk(&mut child_iter),
-                RSyntaxKind::L_PAREN => self.walk(&mut child_iter),
-                RSyntaxKind::R_PAREN => self.walk(&mut child_iter),
-                RSyntaxKind::ELSE_KW => {
-                    used_else = true;
-                    self.handle_node_enter(RSyntaxKind::R_ELSE_CLAUSE);
-                    self.walk(&mut child_iter);
+        while let Some(event) = iter.peek() {
+            match event {
+                WalkEvent::Enter(next) => match next.syntax_kind() {
+                    RSyntaxKind::IF_KW => self.walk_next(iter),
+                    RSyntaxKind::L_PAREN => self.walk_next(iter),
+                    RSyntaxKind::R_PAREN => self.walk_next(iter),
+                    RSyntaxKind::ELSE_KW => {
+                        used_else = true;
+                        self.handle_node_enter(RSyntaxKind::R_ELSE_CLAUSE);
+                        self.walk_next(iter);
+                    }
+                    RSyntaxKind::COMMENT => self.walk_next(iter),
+                    // i.e. the `condition`, `consequence`, and `alternative`
+                    _ => self.walk_next(iter),
+                },
+                WalkEvent::Leave(next) => {
+                    if node != *next {
+                        panic!("Expected next `Leave` event to be for `node`.");
+                    }
+                    break;
                 }
-                RSyntaxKind::COMMENT => self.walk(&mut child_iter),
-                // i.e. the `condition`, `consequence`, and `alternative`
-                _ => self.walk(&mut child_iter),
             }
         }
 
@@ -732,27 +739,28 @@ impl<'src> RWalk<'src> {
     }
 
     fn handle_braced_expressions_enter(&mut self, node: tree_sitter::Node, iter: &mut Preorder) {
-        // We handle all children directly
-        iter.skip_subtree();
-
         self.handle_node_enter(RSyntaxKind::R_BRACED_EXPRESSIONS);
 
-        let mut cursor = node.walk();
-
-        for child in node.children(&mut cursor) {
-            let mut child_iter = child.preorder();
-
-            match child.syntax_kind() {
-                RSyntaxKind::L_CURLY => {
-                    self.walk(&mut child_iter);
-                    self.handle_node_enter(RSyntaxKind::R_EXPRESSION_LIST);
+        while let Some(event) = iter.peek() {
+            match event {
+                WalkEvent::Enter(next) => match next.syntax_kind() {
+                    RSyntaxKind::L_CURLY => {
+                        self.walk_next(iter);
+                        self.handle_node_enter(RSyntaxKind::R_EXPRESSION_LIST);
+                    }
+                    RSyntaxKind::R_CURLY => {
+                        self.handle_node_leave();
+                        self.walk_next(iter);
+                    }
+                    RSyntaxKind::COMMENT => self.walk_next(iter),
+                    _ => self.walk_next(iter),
+                },
+                WalkEvent::Leave(next) => {
+                    if node != *next {
+                        panic!("Expected next `Leave` event to be for `node`.");
+                    }
+                    break;
                 }
-                RSyntaxKind::R_CURLY => {
-                    self.handle_node_leave();
-                    self.walk(&mut child_iter);
-                }
-                RSyntaxKind::COMMENT => self.walk(&mut child_iter),
-                _ => self.walk(&mut child_iter),
             }
         }
     }
@@ -767,9 +775,6 @@ impl<'src> RWalk<'src> {
         node: tree_sitter::Node,
         iter: &mut Preorder,
     ) {
-        // We handle all children directly
-        iter.skip_subtree();
-
         let (open, close) = match kind {
             RSyntaxKind::R_CALL_ARGUMENTS => (RSyntaxKind::L_PAREN, RSyntaxKind::R_PAREN),
             RSyntaxKind::R_SUBSET_ARGUMENTS => (RSyntaxKind::L_BRACK, RSyntaxKind::R_BRACK),
@@ -779,31 +784,52 @@ impl<'src> RWalk<'src> {
 
         self.handle_node_enter(kind);
 
-        let mut cursor = node.walk();
+        let mut last_kind = RSyntaxKind::R_BOGUS;
 
-        for child in node.children(&mut cursor) {
-            let mut child_iter = child.preorder();
-
-            match child.syntax_kind() {
-                kind if kind == open => {
-                    self.walk(&mut child_iter);
-                    self.handle_node_enter(RSyntaxKind::R_ARGUMENT_LIST);
+        while let Some(event) = iter.peek() {
+            match event {
+                WalkEvent::Enter(next) => match next.syntax_kind() {
+                    kind if kind == open => {
+                        self.walk_next(iter);
+                        self.handle_node_enter(RSyntaxKind::R_ARGUMENT_LIST);
+                        last_kind = open;
+                    }
+                    kind if kind == close => {
+                        self.handle_hole_before_close(last_kind);
+                        // Leave `R_ARGUMENT_LIST`
+                        self.handle_node_leave();
+                        self.walk_next(iter);
+                        last_kind = close;
+                    }
+                    RSyntaxKind::COMMA => {
+                        self.handle_hole_before_comma(last_kind, open);
+                        self.walk_next(iter);
+                        last_kind = RSyntaxKind::COMMA;
+                    }
+                    RSyntaxKind::R_DOTS_ARGUMENT => {
+                        self.walk_next(iter);
+                        last_kind = RSyntaxKind::R_DOTS_ARGUMENT;
+                    }
+                    RSyntaxKind::R_NAMED_ARGUMENT => {
+                        self.walk_next(iter);
+                        last_kind = RSyntaxKind::R_NAMED_ARGUMENT;
+                    }
+                    RSyntaxKind::R_UNNAMED_ARGUMENT => {
+                        self.walk_next(iter);
+                        last_kind = RSyntaxKind::R_UNNAMED_ARGUMENT;
+                    }
+                    RSyntaxKind::COMMENT => {
+                        self.walk_next(iter);
+                        // Not setting `last_kind` here!
+                    }
+                    kind => unreachable!("Found {kind:?} in arguments"),
+                },
+                WalkEvent::Leave(next) => {
+                    if node != *next {
+                        panic!("Expected next `Leave` event to be for `node`.");
+                    }
+                    break;
                 }
-                kind if kind == close => {
-                    self.handle_hole_before_close(child);
-                    // Leave `R_ARGUMENT_LIST`
-                    self.handle_node_leave();
-                    self.walk(&mut child_iter);
-                }
-                RSyntaxKind::COMMA => {
-                    self.handle_hole_before_comma(child, open);
-                    self.walk(&mut child_iter);
-                }
-                RSyntaxKind::R_DOTS_ARGUMENT => self.walk(&mut child_iter),
-                RSyntaxKind::R_NAMED_ARGUMENT => self.walk(&mut child_iter),
-                RSyntaxKind::R_UNNAMED_ARGUMENT => self.walk(&mut child_iter),
-                RSyntaxKind::COMMENT => self.walk(&mut child_iter),
-                kind => unreachable!("Found {kind:?} in arguments"),
             }
         }
     }
@@ -814,8 +840,6 @@ impl<'src> RWalk<'src> {
 
     /// Is there a hole before this `)`, `]`, or `]]`?
     ///
-    /// Ignores comments
-    ///
     /// ```r
     /// fn(,<here>)
     ///
@@ -825,24 +849,14 @@ impl<'src> RWalk<'src> {
     ///   <here>
     /// )
     /// ```
-    fn handle_hole_before_close(&mut self, mut node: tree_sitter::Node) {
-        while let Some(previous) = node.prev_sibling() {
-            match previous.syntax_kind() {
-                RSyntaxKind::COMMENT => (),
-                RSyntaxKind::COMMA => {
-                    self.handle_node_enter(RSyntaxKind::R_HOLE_ARGUMENT);
-                    self.handle_node_leave();
-                    break;
-                }
-                _ => break,
-            }
-            node = previous;
+    fn handle_hole_before_close(&mut self, last_kind: RSyntaxKind) {
+        if last_kind == RSyntaxKind::COMMA {
+            self.handle_node_enter(RSyntaxKind::R_HOLE_ARGUMENT);
+            self.handle_node_leave();
         }
     }
 
     /// Is there a hole before this `,`?
-    ///
-    /// Ignores comments
     ///
     /// ```r
     /// fn(<here>,)
@@ -855,18 +869,10 @@ impl<'src> RWalk<'src> {
     ///   <here>,
     /// )
     /// ```
-    fn handle_hole_before_comma(&mut self, mut node: tree_sitter::Node, open: RSyntaxKind) {
-        while let Some(previous) = node.prev_sibling() {
-            match previous.syntax_kind() {
-                RSyntaxKind::COMMENT => (),
-                kind if kind == RSyntaxKind::COMMA || kind == open => {
-                    self.handle_node_enter(RSyntaxKind::R_HOLE_ARGUMENT);
-                    self.handle_node_leave();
-                    break;
-                }
-                _ => break,
-            }
-            node = previous;
+    fn handle_hole_before_comma(&mut self, last_kind: RSyntaxKind, open: RSyntaxKind) {
+        if last_kind == RSyntaxKind::COMMA || last_kind == open {
+            self.handle_node_enter(RSyntaxKind::R_HOLE_ARGUMENT);
+            self.handle_node_leave();
         }
     }
 
@@ -881,23 +887,29 @@ impl<'src> RWalk<'src> {
     }
 
     fn handle_named_argument_enter(&mut self, node: tree_sitter::Node, iter: &mut Preorder) {
-        iter.skip_subtree();
-
         self.handle_node_enter(RSyntaxKind::R_NAMED_ARGUMENT);
 
-        let mut cursor = node.walk();
-
-        for child in node.children(&mut cursor) {
-            let mut child_iter = child.preorder();
-
-            match child.syntax_kind() {
-                RSyntaxKind::DOTS => {
-                    // Promote to `R_DOTS` node
-                    self.handle_node_enter(RSyntaxKind::R_DOTS);
-                    self.handle_token(child, RSyntaxKind::DOTS);
-                    self.handle_node_leave();
+        while let Some(event) = *iter.peek() {
+            match event {
+                WalkEvent::Enter(next) => match next.syntax_kind() {
+                    RSyntaxKind::DOTS => {
+                        // Promote to `R_DOTS` node, and then skip
+                        self.handle_node_enter(RSyntaxKind::R_DOTS);
+                        self.handle_token(next, RSyntaxKind::DOTS);
+                        self.handle_node_leave();
+                        assert_eq!(iter.next(), Some(WalkEvent::Enter(next)));
+                        iter.skip_subtree();
+                        assert_eq!(iter.next(), Some(WalkEvent::Leave(next)));
+                    }
+                    // Everything else is handled in the main loop
+                    _ => self.walk_next(iter),
+                },
+                WalkEvent::Leave(next) => {
+                    if node != next {
+                        panic!("Expected next `Leave` event to be for `node`.");
+                    }
+                    break;
                 }
-                _ => self.walk(&mut child_iter),
             }
         }
     }
