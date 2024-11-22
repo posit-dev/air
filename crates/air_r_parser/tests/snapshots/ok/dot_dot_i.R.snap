@@ -13,6 +13,9 @@ function(...) {
   ..1 + ..2
 }
 
+# Parses as a function
+..1()
+
 ```
 
 
@@ -58,17 +61,27 @@ RRoot {
                 r_curly_token: R_CURLY@41..43 "}" [Newline("\n")] [],
             },
         },
+        RCall {
+            function: RDotDotI {
+                value_token: DOTDOTI@43..71 "..1" [Newline("\n"), Newline("\n"), Comments("# Parses as a function"), Newline("\n")] [],
+            },
+            arguments: RCallArguments {
+                l_paren_token: L_PAREN@71..72 "(" [] [],
+                items: RArgumentList [],
+                r_paren_token: R_PAREN@72..73 ")" [] [],
+            },
+        },
     ],
-    eof_token: EOF@43..44 "" [Newline("\n")] [],
+    eof_token: EOF@73..74 "" [Newline("\n")] [],
 }
 ```
 
 ## CST
 
 ```
-0: R_ROOT@0..44
+0: R_ROOT@0..74
   0: (empty)
-  1: R_EXPRESSION_LIST@0..43
+  1: R_EXPRESSION_LIST@0..73
     0: R_DOT_DOT_I@0..3
       0: DOTDOTI@0..3 "..1" [] []
     1: R_DOT_DOT_I@3..7
@@ -93,6 +106,13 @@ RRoot {
             2: R_DOT_DOT_I@37..41
               0: DOTDOTI@37..41 "..2" [Whitespace(" ")] []
         2: R_CURLY@41..43 "}" [Newline("\n")] []
-  2: EOF@43..44 "" [Newline("\n")] []
+    4: R_CALL@43..73
+      0: R_DOT_DOT_I@43..71
+        0: DOTDOTI@43..71 "..1" [Newline("\n"), Newline("\n"), Comments("# Parses as a function"), Newline("\n")] []
+      1: R_CALL_ARGUMENTS@71..73
+        0: L_PAREN@71..72 "(" [] []
+        1: R_ARGUMENT_LIST@72..72
+        2: R_PAREN@72..73 ")" [] []
+  2: EOF@73..74 "" [Newline("\n")] []
 
 ```
