@@ -2,6 +2,7 @@
 
 use crate::comments::RComments;
 use crate::prelude::*;
+use crate::r::auxiliary::braced_expressions::as_curly_curly;
 use crate::r::auxiliary::function_definition::FormatFunctionOptions;
 use crate::separated::FormatAstSeparatedListExtension;
 use air_r_syntax::AnyRArgument;
@@ -395,6 +396,13 @@ impl Format<RFormatContext> for FormatCallArgument {
 /// parameter forces a break, triggering one of our early exists. Additionally,
 /// in the future we may allow `{}` to not force a break, meaning this variant
 /// may come back into play.
+///
+/// ```r
+/// # NOTE: We explicitly disallow curly-curly as a groupable argument,
+/// # so this case is never considered grouped, and is therefore not an
+/// # example of "most flat".
+/// group_by(df, {{ by }})
+/// ```
 ///
 /// ## Middle variant
 ///
@@ -892,15 +900,22 @@ fn argument_is_groupable(argument: &AnyRExpression) -> SyntaxResult<bool> {
         // })
         // ```
         //
+        // Curly-curly expressions are NOT groupable, we want this to fall through
+        // to using the "normal" `FormatAllArgsBrokenOut` variant.
+        //
+        // ```r
+        // group_by(df, {{ vars }})
+        // ```
+        //
         // NOTE: If we ever allow empty `{}` to NOT forcibly expand, then empty
         // braced expressions won't benefit from grouping unless there is a
-        // comment in there, i.e. we'd change the match arm to this (used by
+        // comment in there, i.e. we'd change the match arm to include this (used by
         // biome in the JS implementation):
         //
         // ```rust
         // !node.expressions().is_empty() || comments.has_comments(node.syntax())
         // ```
-        RBracedExpressions(_) => true,
+        RBracedExpressions(node) => as_curly_curly(node).is_none(),
 
         // ```r
         // map(a, function(x) {
