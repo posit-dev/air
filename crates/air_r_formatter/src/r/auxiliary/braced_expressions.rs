@@ -127,7 +127,7 @@ pub(crate) fn as_curly_curly(node: &RBracedExpressions) -> Option<RCurlyCurly> {
         return None;
     }
 
-    // Safety: Length check ensures there is exactly 1 child
+    // Unwrap: Length check ensures there is exactly 1 child
     let node_inner = outer_expressions.first().unwrap();
 
     let node_inner = match node_inner {
