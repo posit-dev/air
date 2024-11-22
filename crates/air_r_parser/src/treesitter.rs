@@ -295,26 +295,20 @@ impl<T> WalkEvent<T> {
 pub struct Preorder<'tree> {
     cursor: TreeCursor<'tree>,
     next: Option<WalkEvent<Node<'tree>>>,
-    skip_subtree: bool,
 }
 
 impl<'tree> Preorder<'tree> {
     fn new(node: Node) -> Preorder {
         let cursor = node.walk();
         let next = Some(WalkEvent::Enter(node));
-        Preorder {
-            cursor,
-            next,
-            skip_subtree: false,
-        }
+        Preorder { cursor, next }
+    }
+
+    pub fn peek(&self) -> &Option<WalkEvent<Node<'tree>>> {
+        &self.next
     }
 
     pub fn skip_subtree(&mut self) {
-        self.skip_subtree = true;
-    }
-
-    #[cold]
-    fn do_skip(&mut self) {
         let next = self.next.take();
         self.next = next.as_ref().and_then(|next| {
             Some(match next {
@@ -332,10 +326,6 @@ impl<'tree> Iterator for Preorder<'tree> {
     type Item = WalkEvent<Node<'tree>>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.skip_subtree {
-            self.do_skip();
-            self.skip_subtree = false;
-        }
         let next = self.next.take();
         self.next = next.as_ref().and_then(|next| {
             Some(match next {
