@@ -44,7 +44,7 @@ proc-macro2 = "1.0.86"
 serde = { version = "1.0.210", features = ["derive"] }
 tracing = { version = "0.1.40", default-features = false, features = ["std"] }
 tree-sitter = "0.23.0"
-tree-sitter-r = { git = "https://github.com/r-lib/tree-sitter-r", rev = "2097fa502efa21349d26af0ffee55d773015e481" }
+tree-sitter-r = { git = "https://github.com/r-lib/tree-sitter-r", rev = "c094bd57652f8a08edc31d79a31222268fe798ee" }
 
 [workspace.lints.clippy]
 # pedantic
