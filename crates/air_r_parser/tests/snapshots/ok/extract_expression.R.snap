@@ -23,6 +23,15 @@ a@b@c
 a$b()
 a@b()
 
+a$...
+a@...
+
+a$..1
+a@..1
+
+a$..10
+a@..10
+
 ```
 
 
@@ -180,17 +189,71 @@ RRoot {
                 r_paren_token: R_PAREN@71..72 ")" [] [],
             },
         },
+        RExtractExpression {
+            left: RIdentifier {
+                name_token: IDENT@72..75 "a" [Newline("\n"), Newline("\n")] [],
+            },
+            operator: DOLLAR@75..76 "$" [] [],
+            right: RDots {
+                value_token: DOTS@76..79 "..." [] [],
+            },
+        },
+        RExtractExpression {
+            left: RIdentifier {
+                name_token: IDENT@79..81 "a" [Newline("\n")] [],
+            },
+            operator: AT@81..82 "@" [] [],
+            right: RDots {
+                value_token: DOTS@82..85 "..." [] [],
+            },
+        },
+        RExtractExpression {
+            left: RIdentifier {
+                name_token: IDENT@85..88 "a" [Newline("\n"), Newline("\n")] [],
+            },
+            operator: DOLLAR@88..89 "$" [] [],
+            right: RDotDotI {
+                value_token: DOTDOTI@89..92 "..1" [] [],
+            },
+        },
+        RExtractExpression {
+            left: RIdentifier {
+                name_token: IDENT@92..94 "a" [Newline("\n")] [],
+            },
+            operator: AT@94..95 "@" [] [],
+            right: RDotDotI {
+                value_token: DOTDOTI@95..98 "..1" [] [],
+            },
+        },
+        RExtractExpression {
+            left: RIdentifier {
+                name_token: IDENT@98..101 "a" [Newline("\n"), Newline("\n")] [],
+            },
+            operator: DOLLAR@101..102 "$" [] [],
+            right: RDotDotI {
+                value_token: DOTDOTI@102..106 "..10" [] [],
+            },
+        },
+        RExtractExpression {
+            left: RIdentifier {
+                name_token: IDENT@106..108 "a" [Newline("\n")] [],
+            },
+            operator: AT@108..109 "@" [] [],
+            right: RDotDotI {
+                value_token: DOTDOTI@109..113 "..10" [] [],
+            },
+        },
     ],
-    eof_token: EOF@72..73 "" [Newline("\n")] [],
+    eof_token: EOF@113..114 "" [Newline("\n")] [],
 }
 ```
 
 ## CST
 
 ```
-0: R_ROOT@0..73
+0: R_ROOT@0..114
   0: (empty)
-  1: R_EXPRESSION_LIST@0..72
+  1: R_EXPRESSION_LIST@0..113
     0: R_EXTRACT_EXPRESSION@0..3
       0: R_IDENTIFIER@0..1
         0: IDENT@0..1 "a" [] []
@@ -291,6 +354,42 @@ RRoot {
         0: L_PAREN@70..71 "(" [] []
         1: R_ARGUMENT_LIST@71..71
         2: R_PAREN@71..72 ")" [] []
-  2: EOF@72..73 "" [Newline("\n")] []
+    12: R_EXTRACT_EXPRESSION@72..79
+      0: R_IDENTIFIER@72..75
+        0: IDENT@72..75 "a" [Newline("\n"), Newline("\n")] []
+      1: DOLLAR@75..76 "$" [] []
+      2: R_DOTS@76..79
+        0: DOTS@76..79 "..." [] []
+    13: R_EXTRACT_EXPRESSION@79..85
+      0: R_IDENTIFIER@79..81
+        0: IDENT@79..81 "a" [Newline("\n")] []
+      1: AT@81..82 "@" [] []
+      2: R_DOTS@82..85
+        0: DOTS@82..85 "..." [] []
+    14: R_EXTRACT_EXPRESSION@85..92
+      0: R_IDENTIFIER@85..88
+        0: IDENT@85..88 "a" [Newline("\n"), Newline("\n")] []
+      1: DOLLAR@88..89 "$" [] []
+      2: R_DOT_DOT_I@89..92
+        0: DOTDOTI@89..92 "..1" [] []
+    15: R_EXTRACT_EXPRESSION@92..98
+      0: R_IDENTIFIER@92..94
+        0: IDENT@92..94 "a" [Newline("\n")] []
+      1: AT@94..95 "@" [] []
+      2: R_DOT_DOT_I@95..98
+        0: DOTDOTI@95..98 "..1" [] []
+    16: R_EXTRACT_EXPRESSION@98..106
+      0: R_IDENTIFIER@98..101
+        0: IDENT@98..101 "a" [Newline("\n"), Newline("\n")] []
+      1: DOLLAR@101..102 "$" [] []
+      2: R_DOT_DOT_I@102..106
+        0: DOTDOTI@102..106 "..10" [] []
+    17: R_EXTRACT_EXPRESSION@106..113
+      0: R_IDENTIFIER@106..108
+        0: IDENT@106..108 "a" [Newline("\n")] []
+      1: AT@108..109 "@" [] []
+      2: R_DOT_DOT_I@109..113
+        0: DOTDOTI@109..113 "..10" [] []
+  2: EOF@113..114 "" [Newline("\n")] []
 
 ```

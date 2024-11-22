@@ -1734,6 +1734,27 @@ impl IntoFormat<RFormatContext> for air_r_syntax::AnyRParameterName {
         )
     }
 }
+impl AsFormat<RFormatContext> for air_r_syntax::AnyRSelector {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::AnyRSelector,
+        crate::r::any::selector::FormatAnyRSelector,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(self, crate::r::any::selector::FormatAnyRSelector::default())
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::AnyRSelector {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::AnyRSelector,
+        crate::r::any::selector::FormatAnyRSelector,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(self, crate::r::any::selector::FormatAnyRSelector::default())
+    }
+}
 impl AsFormat<RFormatContext> for air_r_syntax::AnyRValue {
     type Format<'a> =
         FormatRefWithRule<'a, air_r_syntax::AnyRValue, crate::r::any::value::FormatAnyRValue>;
@@ -1748,32 +1769,5 @@ impl IntoFormat<RFormatContext> for air_r_syntax::AnyRValue {
     fn into_format(self) -> Self::Format {
         #![allow(clippy::default_constructed_unit_structs)]
         FormatOwnedWithRule::new(self, crate::r::any::value::FormatAnyRValue::default())
-    }
-}
-impl AsFormat<RFormatContext> for air_r_syntax::RSymbolOrString {
-    type Format<'a> = FormatRefWithRule<
-        'a,
-        air_r_syntax::RSymbolOrString,
-        crate::r::any::symbol_or_string::FormatRSymbolOrString,
-    >;
-    fn format(&self) -> Self::Format<'_> {
-        #![allow(clippy::default_constructed_unit_structs)]
-        FormatRefWithRule::new(
-            self,
-            crate::r::any::symbol_or_string::FormatRSymbolOrString::default(),
-        )
-    }
-}
-impl IntoFormat<RFormatContext> for air_r_syntax::RSymbolOrString {
-    type Format = FormatOwnedWithRule<
-        air_r_syntax::RSymbolOrString,
-        crate::r::any::symbol_or_string::FormatRSymbolOrString,
-    >;
-    fn into_format(self) -> Self::Format {
-        #![allow(clippy::default_constructed_unit_structs)]
-        FormatOwnedWithRule::new(
-            self,
-            crate::r::any::symbol_or_string::FormatRSymbolOrString::default(),
-        )
     }
 }

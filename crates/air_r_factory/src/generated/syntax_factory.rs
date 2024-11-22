@@ -305,7 +305,7 @@ impl SyntaxFactory for RSyntaxFactory {
                 }
                 slots.next_slot();
                 if let Some(element) = &current_element {
-                    if RSymbolOrString::can_cast(element.kind()) {
+                    if AnyRSelector::can_cast(element.kind()) {
                         slots.mark_present();
                         current_element = elements.next();
                     }
@@ -619,7 +619,7 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
                 if let Some(element) = &current_element {
-                    if RSymbolOrString::can_cast(element.kind()) {
+                    if AnyRSelector::can_cast(element.kind()) {
                         slots.mark_present();
                         current_element = elements.next();
                     }
@@ -633,7 +633,7 @@ impl SyntaxFactory for RSyntaxFactory {
                 }
                 slots.next_slot();
                 if let Some(element) = &current_element {
-                    if RSymbolOrString::can_cast(element.kind()) {
+                    if AnyRSelector::can_cast(element.kind()) {
                         slots.mark_present();
                         current_element = elements.next();
                     }

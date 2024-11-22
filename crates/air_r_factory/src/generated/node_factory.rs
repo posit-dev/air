@@ -99,7 +99,7 @@ pub fn r_else_clause(else_token: SyntaxToken, alternative: AnyRExpression) -> RE
 pub fn r_extract_expression(
     left: AnyRExpression,
     operator_token: SyntaxToken,
-    right: RSymbolOrString,
+    right: AnyRSelector,
 ) -> RExtractExpression {
     RExtractExpression::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_EXTRACT_EXPRESSION,
@@ -253,9 +253,9 @@ impl RNamedArgumentBuilder {
     }
 }
 pub fn r_namespace_expression(
-    left: RSymbolOrString,
+    left: AnyRSelector,
     operator_token: SyntaxToken,
-    right: RSymbolOrString,
+    right: AnyRSelector,
 ) -> RNamespaceExpression {
     RNamespaceExpression::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_NAMESPACE_EXPRESSION,

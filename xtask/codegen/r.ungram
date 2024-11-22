@@ -52,7 +52,6 @@ RUnaryExpression =
   operator: ('+' | '-' | '~' | '!' | '?')
   argument: AnyRExpression
 
-// TODO: User-defined infix operators
 RBinaryExpression =
 	left: AnyRExpression
     operator: (
@@ -92,19 +91,23 @@ RBinaryExpression =
 	)
 	right: AnyRExpression
 
-// Binary expression that is restricted on the LHS
+// Binary expression that is restricted on the RHS
 RExtractExpression =
 	left: AnyRExpression
     operator: ('$' | '@')
-	right: RSymbolOrString
+	right: AnyRSelector
 
 // Binary expression that is restricted on both the LHS and RHS
 RNamespaceExpression =
-	left: RSymbolOrString
+	left: AnyRSelector
     operator: ('::' | ':::')
-	right: RSymbolOrString
+	right: AnyRSelector
 
-RSymbolOrString = RIdentifier | RStringValue
+AnyRSelector =
+	RIdentifier
+	| RStringValue
+	| RDots
+    | RDotDotI
 
 // ----------------------------------------------------------------
 // Function
