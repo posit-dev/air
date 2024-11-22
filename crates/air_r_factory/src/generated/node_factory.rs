@@ -69,38 +69,6 @@ pub fn r_complex_value(value_token: SyntaxToken) -> RComplexValue {
         [Some(SyntaxElement::Token(value_token))],
     ))
 }
-pub fn r_default_parameter(
-    name_token: SyntaxToken,
-    eq_token: SyntaxToken,
-) -> RDefaultParameterBuilder {
-    RDefaultParameterBuilder {
-        name_token,
-        eq_token,
-        default: None,
-    }
-}
-pub struct RDefaultParameterBuilder {
-    name_token: SyntaxToken,
-    eq_token: SyntaxToken,
-    default: Option<AnyRExpression>,
-}
-impl RDefaultParameterBuilder {
-    pub fn with_default(mut self, default: AnyRExpression) -> Self {
-        self.default = Some(default);
-        self
-    }
-    pub fn build(self) -> RDefaultParameter {
-        RDefaultParameter::unwrap_cast(SyntaxNode::new_detached(
-            RSyntaxKind::R_DEFAULT_PARAMETER,
-            [
-                Some(SyntaxElement::Token(self.name_token)),
-                Some(SyntaxElement::Token(self.eq_token)),
-                self.default
-                    .map(|token| SyntaxElement::Node(token.into_syntax())),
-            ],
-        ))
-    }
-}
 pub fn r_dot_dot_i(value_token: SyntaxToken) -> RDotDotI {
     RDotDotI::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_DOT_DOT_I,
@@ -111,12 +79,6 @@ pub fn r_dots(value_token: SyntaxToken) -> RDots {
     RDots::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_DOTS,
         [Some(SyntaxElement::Token(value_token))],
-    ))
-}
-pub fn r_dots_parameter(name_token: SyntaxToken) -> RDotsParameter {
-    RDotsParameter::unwrap_cast(SyntaxNode::new_detached(
-        RSyntaxKind::R_DOTS_PARAMETER,
-        [Some(SyntaxElement::Token(name_token))],
     ))
 }
 pub fn r_double_value(value_token: SyntaxToken) -> RDoubleValue {
@@ -196,12 +158,6 @@ pub fn r_hole_argument() -> RHoleArgument {
 pub fn r_identifier(name_token: SyntaxToken) -> RIdentifier {
     RIdentifier::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_IDENTIFIER,
-        [Some(SyntaxElement::Token(name_token))],
-    ))
-}
-pub fn r_identifier_parameter(name_token: SyntaxToken) -> RIdentifierParameter {
-    RIdentifierParameter::unwrap_cast(SyntaxNode::new_detached(
-        RSyntaxKind::R_IDENTIFIER_PARAMETER,
         [Some(SyntaxElement::Token(name_token))],
     ))
 }
@@ -326,6 +282,41 @@ pub fn r_null_expression(null_token: SyntaxToken) -> RNullExpression {
     RNullExpression::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_NULL_EXPRESSION,
         [Some(SyntaxElement::Token(null_token))],
+    ))
+}
+pub fn r_parameter(name: AnyRParameterName) -> RParameterBuilder {
+    RParameterBuilder {
+        name,
+        default: None,
+    }
+}
+pub struct RParameterBuilder {
+    name: AnyRParameterName,
+    default: Option<RParameterDefault>,
+}
+impl RParameterBuilder {
+    pub fn with_default(mut self, default: RParameterDefault) -> Self {
+        self.default = Some(default);
+        self
+    }
+    pub fn build(self) -> RParameter {
+        RParameter::unwrap_cast(SyntaxNode::new_detached(
+            RSyntaxKind::R_PARAMETER,
+            [
+                Some(SyntaxElement::Node(self.name.into_syntax())),
+                self.default
+                    .map(|token| SyntaxElement::Node(token.into_syntax())),
+            ],
+        ))
+    }
+}
+pub fn r_parameter_default(eq_token: SyntaxToken, value: AnyRExpression) -> RParameterDefault {
+    RParameterDefault::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_PARAMETER_DEFAULT,
+        [
+            Some(SyntaxElement::Token(eq_token)),
+            Some(SyntaxElement::Node(value.into_syntax())),
+        ],
     ))
 }
 pub fn r_parameters(
@@ -528,7 +519,7 @@ where
 }
 pub fn r_parameter_list<I, S>(items: I, separators: S) -> RParameterList
 where
-    I: IntoIterator<Item = AnyRParameter>,
+    I: IntoIterator<Item = RParameter>,
     I::IntoIter: ExactSizeIterator,
     S: IntoIterator<Item = RSyntaxToken>,
     S::IntoIter: ExactSizeIterator,
@@ -571,16 +562,6 @@ where
 {
     RBogusExpression::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_BOGUS_EXPRESSION,
-        slots,
-    ))
-}
-pub fn r_bogus_parameter<I>(slots: I) -> RBogusParameter
-where
-    I: IntoIterator<Item = Option<SyntaxElement>>,
-    I::IntoIter: ExactSizeIterator,
-{
-    RBogusParameter::unwrap_cast(SyntaxNode::new_detached(
-        RSyntaxKind::R_BOGUS_PARAMETER,
         slots,
     ))
 }

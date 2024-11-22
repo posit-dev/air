@@ -35,7 +35,6 @@ SyntaxElement = SyntaxElement
 RBogus = SyntaxElement*
 RBogusValue = SyntaxElement*
 RBogusExpression = SyntaxElement*
-RBogusParameter = SyntaxElement*
 RBogusArgument = SyntaxElement*
 
 // ----------------------------------------------------------------
@@ -120,22 +119,25 @@ RParameters =
 	items: RParameterList
 	')'
 
-RParameterList = (AnyRParameter (',' AnyRParameter)*)
+RParameterList = (RParameter (',' RParameter)*)
 
-AnyRParameter =
-	RIdentifierParameter
-	| RDotsParameter
-	| RDefaultParameter
-	| RBogusParameter
+RParameter =
+   name: AnyRParameterName
+   default: RParameterDefault?
 
-RIdentifierParameter = name: 'ident'
+// TODO: tree-sitter-r currently allows the `value` to be optional,
+// but R's parser doesn't allow this. We plan to make it required,
+// so we go ahead and do that here.
+// https://github.com/r-lib/tree-sitter-r/issues/161
 
-RDotsParameter = name: '...'
+RParameterDefault =
+  '='
+  value: AnyRExpression
 
-RDefaultParameter =
-	name: 'ident'
-	'='
-	default: AnyRExpression?
+AnyRParameterName =
+    RIdentifier
+    | RDots
+    | RDotDotI
 
 // ----------------------------------------------------------------
 // If statement

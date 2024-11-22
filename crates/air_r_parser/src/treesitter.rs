@@ -355,7 +355,7 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "namespace_operator" => RSyntaxKind::R_NAMESPACE_EXPRESSION,
         "function_definition" => RSyntaxKind::R_FUNCTION_DEFINITION,
         "parameters" => RSyntaxKind::R_PARAMETERS,
-        "parameter" => parameter_syntax_kind(x),
+        "parameter" => RSyntaxKind::R_PARAMETER,
         "if_statement" => RSyntaxKind::R_IF_STATEMENT,
         "for_statement" => RSyntaxKind::R_FOR_STATEMENT,
         "while_statement" => RSyntaxKind::R_WHILE_STATEMENT,
@@ -440,40 +440,6 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "comment" => RSyntaxKind::COMMENT,
         kind => unreachable!("Not implemented: '{kind}'."),
     }
-}
-
-/// Determine the specific `RSyntaxKind` of a `"parameter"` node
-///
-/// A parameter can be one of 3 kinds:
-/// - `function(x)` = R_IDENTIFIER_PARAMETER
-/// - `function(x = 5)` = R_DEFAULT_PARAMETER
-/// - `function(...)` = R_DOTS_PARAMETER
-///
-/// The tree-sitter grammar doesn't tell us which this is, but
-/// we can figure it out from the node structure.
-fn parameter_syntax_kind(x: &Node) -> RSyntaxKind {
-    // `name` is a mandatory field on all 3 variants
-    let name = x.child_by_field_name("name").unwrap();
-
-    if name.kind() == "dots" {
-        // Clearly `...`
-        return RSyntaxKind::R_DOTS_PARAMETER;
-    }
-
-    let mut cursor = x.walk();
-
-    // If a child is an anonymous `=`, must be default parameter
-    for child in x.children(&mut cursor) {
-        if child.is_named() {
-            continue;
-        }
-        if child.kind() != "=" {
-            continue;
-        }
-        return RSyntaxKind::R_DEFAULT_PARAMETER;
-    }
-
-    RSyntaxKind::R_IDENTIFIER_PARAMETER
 }
 
 // Disambiguate the 3 types of argument groups

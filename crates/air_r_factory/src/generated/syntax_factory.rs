@@ -14,7 +14,7 @@ impl SyntaxFactory for RSyntaxFactory {
         children: ParsedChildren<Self::Kind>,
     ) -> RawSyntaxNode<Self::Kind> {
         match kind {
-            R_BOGUS | R_BOGUS_ARGUMENT | R_BOGUS_EXPRESSION | R_BOGUS_PARAMETER | R_BOGUS_VALUE => {
+            R_BOGUS | R_BOGUS_ARGUMENT | R_BOGUS_EXPRESSION | R_BOGUS_VALUE => {
                 RawSyntaxNode::new(kind, children.into_iter().map(Some))
             }
             R_BINARY_EXPRESSION => {
@@ -206,39 +206,6 @@ impl SyntaxFactory for RSyntaxFactory {
                 }
                 slots.into_node(R_COMPLEX_VALUE, children)
             }
-            R_DEFAULT_PARAMETER => {
-                let mut elements = (&children).into_iter();
-                let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
-                let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == IDENT {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
-                }
-                slots.next_slot();
-                if let Some(element) = &current_element {
-                    if element.kind() == T ! [=] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
-                }
-                slots.next_slot();
-                if let Some(element) = &current_element {
-                    if AnyRExpression::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
-                }
-                slots.next_slot();
-                if current_element.is_some() {
-                    return RawSyntaxNode::new(
-                        R_DEFAULT_PARAMETER.to_bogus(),
-                        children.into_iter().map(Some),
-                    );
-                }
-                slots.into_node(R_DEFAULT_PARAMETER, children)
-            }
             R_DOT_DOT_I => {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
@@ -273,25 +240,6 @@ impl SyntaxFactory for RSyntaxFactory {
                     return RawSyntaxNode::new(R_DOTS.to_bogus(), children.into_iter().map(Some));
                 }
                 slots.into_node(R_DOTS, children)
-            }
-            R_DOTS_PARAMETER => {
-                let mut elements = (&children).into_iter();
-                let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
-                let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T ! [...] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
-                }
-                slots.next_slot();
-                if current_element.is_some() {
-                    return RawSyntaxNode::new(
-                        R_DOTS_PARAMETER.to_bogus(),
-                        children.into_iter().map(Some),
-                    );
-                }
-                slots.into_node(R_DOTS_PARAMETER, children)
             }
             R_DOUBLE_VALUE => {
                 let mut elements = (&children).into_iter();
@@ -514,25 +462,6 @@ impl SyntaxFactory for RSyntaxFactory {
                     );
                 }
                 slots.into_node(R_IDENTIFIER, children)
-            }
-            R_IDENTIFIER_PARAMETER => {
-                let mut elements = (&children).into_iter();
-                let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
-                let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == IDENT {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
-                }
-                slots.next_slot();
-                if current_element.is_some() {
-                    return RawSyntaxNode::new(
-                        R_IDENTIFIER_PARAMETER.to_bogus(),
-                        children.into_iter().map(Some),
-                    );
-                }
-                slots.into_node(R_IDENTIFIER_PARAMETER, children)
             }
             R_IF_STATEMENT => {
                 let mut elements = (&children).into_iter();
@@ -774,6 +703,58 @@ impl SyntaxFactory for RSyntaxFactory {
                     );
                 }
                 slots.into_node(R_NULL_EXPRESSION, children)
+            }
+            R_PARAMETER => {
+                let mut elements = (&children).into_iter();
+                let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
+                let mut current_element = elements.next();
+                if let Some(element) = &current_element {
+                    if AnyRParameterName::can_cast(element.kind()) {
+                        slots.mark_present();
+                        current_element = elements.next();
+                    }
+                }
+                slots.next_slot();
+                if let Some(element) = &current_element {
+                    if RParameterDefault::can_cast(element.kind()) {
+                        slots.mark_present();
+                        current_element = elements.next();
+                    }
+                }
+                slots.next_slot();
+                if current_element.is_some() {
+                    return RawSyntaxNode::new(
+                        R_PARAMETER.to_bogus(),
+                        children.into_iter().map(Some),
+                    );
+                }
+                slots.into_node(R_PARAMETER, children)
+            }
+            R_PARAMETER_DEFAULT => {
+                let mut elements = (&children).into_iter();
+                let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
+                let mut current_element = elements.next();
+                if let Some(element) = &current_element {
+                    if element.kind() == T ! [=] {
+                        slots.mark_present();
+                        current_element = elements.next();
+                    }
+                }
+                slots.next_slot();
+                if let Some(element) = &current_element {
+                    if AnyRExpression::can_cast(element.kind()) {
+                        slots.mark_present();
+                        current_element = elements.next();
+                    }
+                }
+                slots.next_slot();
+                if current_element.is_some() {
+                    return RawSyntaxNode::new(
+                        R_PARAMETER_DEFAULT.to_bogus(),
+                        children.into_iter().map(Some),
+                    );
+                }
+                slots.into_node(R_PARAMETER_DEFAULT, children)
             }
             R_PARAMETERS => {
                 let mut elements = (&children).into_iter();
@@ -1177,7 +1158,7 @@ impl SyntaxFactory for RSyntaxFactory {
             R_PARAMETER_LIST => Self::make_separated_list_syntax(
                 kind,
                 children,
-                AnyRParameter::can_cast,
+                RParameter::can_cast,
                 T ! [,],
                 false,
             ),

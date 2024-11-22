@@ -34,7 +34,6 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             RSyntaxKind::R_BOGUS
             | RSyntaxKind::R_BOGUS_VALUE
             | RSyntaxKind::R_BOGUS_EXPRESSION
-            | RSyntaxKind::R_BOGUS_PARAMETER
             | RSyntaxKind::R_BOGUS_ARGUMENT => true,
 
             RSyntaxKind::TOMBSTONE
@@ -92,9 +91,8 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_FUNCTION_DEFINITION
             | RSyntaxKind::R_PARAMETERS
             | RSyntaxKind::R_PARAMETER_LIST
-            | RSyntaxKind::R_DOTS_PARAMETER
-            | RSyntaxKind::R_IDENTIFIER_PARAMETER
-            | RSyntaxKind::R_DEFAULT_PARAMETER
+            | RSyntaxKind::R_PARAMETER
+            | RSyntaxKind::R_PARAMETER_DEFAULT
             | RSyntaxKind::R_IF_STATEMENT
             | RSyntaxKind::R_ELSE_CLAUSE
             | RSyntaxKind::R_FOR_STATEMENT
@@ -178,12 +176,6 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_NAMESPACE_EXPRESSION
             | RSyntaxKind::R_BOGUS_EXPRESSION => RSyntaxKind::R_BOGUS_EXPRESSION,
 
-            // Bogus parameter
-            RSyntaxKind::R_DOTS_PARAMETER
-            | RSyntaxKind::R_IDENTIFIER_PARAMETER
-            | RSyntaxKind::R_DEFAULT_PARAMETER
-            | RSyntaxKind::R_BOGUS_PARAMETER => RSyntaxKind::R_BOGUS_PARAMETER,
-
             // Bogus argument
             RSyntaxKind::R_NAMED_ARGUMENT
             | RSyntaxKind::R_UNNAMED_ARGUMENT
@@ -251,6 +243,8 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_FUNCTION_DEFINITION
             | RSyntaxKind::R_PARAMETERS
             | RSyntaxKind::R_PARAMETER_LIST
+            | RSyntaxKind::R_PARAMETER
+            | RSyntaxKind::R_PARAMETER_DEFAULT
             | RSyntaxKind::R_IF_STATEMENT
             | RSyntaxKind::R_ELSE_CLAUSE
             | RSyntaxKind::R_FOR_STATEMENT

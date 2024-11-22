@@ -3,6 +3,6 @@
 pub(crate) mod argument;
 pub(crate) mod argument_name;
 pub(crate) mod expression;
-pub(crate) mod parameter;
+pub(crate) mod parameter_name;
 pub(crate) mod symbol_or_string;
 pub(crate) mod value;
