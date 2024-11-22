@@ -113,7 +113,6 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
         "R_ARGUMENT_LIST",
         "R_NAMED_ARGUMENT",
         "R_UNNAMED_ARGUMENT",
-        "R_DOTS_ARGUMENT",
         "R_HOLE_ARGUMENT",
         "R_EXPRESSION_LIST",
         "R_INTEGER_VALUE",

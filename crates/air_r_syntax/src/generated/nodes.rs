@@ -383,41 +383,6 @@ pub struct RDotsFields {
     pub value_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub struct RDotsArgument {
-    pub(crate) syntax: SyntaxNode,
-}
-impl RDotsArgument {
-    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
-    #[doc = r""]
-    #[doc = r" # Safety"]
-    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
-    #[doc = r" or a match on [SyntaxNode::kind]"]
-    #[inline]
-    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
-        Self { syntax }
-    }
-    pub fn as_fields(&self) -> RDotsArgumentFields {
-        RDotsArgumentFields {
-            value_token: self.value_token(),
-        }
-    }
-    pub fn value_token(&self) -> SyntaxResult<SyntaxToken> {
-        support::required_token(&self.syntax, 0usize)
-    }
-}
-impl Serialize for RDotsArgument {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        self.as_fields().serialize(serializer)
-    }
-}
-#[derive(Serialize)]
-pub struct RDotsArgumentFields {
-    pub value_token: SyntaxResult<SyntaxToken>,
-}
-#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RDotsParameter {
     pub(crate) syntax: SyntaxNode,
 }
@@ -1758,7 +1723,6 @@ pub struct RWhileStatementFields {
 #[derive(Clone, PartialEq, Eq, Hash, Serialize)]
 pub enum AnyRArgument {
     RBogusArgument(RBogusArgument),
-    RDotsArgument(RDotsArgument),
     RHoleArgument(RHoleArgument),
     RNamedArgument(RNamedArgument),
     RUnnamedArgument(RUnnamedArgument),
@@ -1767,12 +1731,6 @@ impl AnyRArgument {
     pub fn as_r_bogus_argument(&self) -> Option<&RBogusArgument> {
         match &self {
             AnyRArgument::RBogusArgument(item) => Some(item),
-            _ => None,
-        }
-    }
-    pub fn as_r_dots_argument(&self) -> Option<&RDotsArgument> {
-        match &self {
-            AnyRArgument::RDotsArgument(item) => Some(item),
             _ => None,
         }
     }
@@ -2484,47 +2442,6 @@ impl From<RDots> for SyntaxNode {
 }
 impl From<RDots> for SyntaxElement {
     fn from(n: RDots) -> SyntaxElement {
-        n.syntax.into()
-    }
-}
-impl AstNode for RDotsArgument {
-    type Language = Language;
-    const KIND_SET: SyntaxKindSet<Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(R_DOTS_ARGUMENT as u16));
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == R_DOTS_ARGUMENT
-    }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        if Self::can_cast(syntax.kind()) {
-            Some(Self { syntax })
-        } else {
-            None
-        }
-    }
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode {
-        self.syntax
-    }
-}
-impl std::fmt::Debug for RDotsArgument {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("RDotsArgument")
-            .field(
-                "value_token",
-                &support::DebugSyntaxResult(self.value_token()),
-            )
-            .finish()
-    }
-}
-impl From<RDotsArgument> for SyntaxNode {
-    fn from(n: RDotsArgument) -> SyntaxNode {
-        n.syntax
-    }
-}
-impl From<RDotsArgument> for SyntaxElement {
-    fn from(n: RDotsArgument) -> SyntaxElement {
         n.syntax.into()
     }
 }
@@ -3897,11 +3814,6 @@ impl From<RBogusArgument> for AnyRArgument {
         AnyRArgument::RBogusArgument(node)
     }
 }
-impl From<RDotsArgument> for AnyRArgument {
-    fn from(node: RDotsArgument) -> AnyRArgument {
-        AnyRArgument::RDotsArgument(node)
-    }
-}
 impl From<RHoleArgument> for AnyRArgument {
     fn from(node: RHoleArgument) -> AnyRArgument {
         AnyRArgument::RHoleArgument(node)
@@ -3920,24 +3832,18 @@ impl From<RUnnamedArgument> for AnyRArgument {
 impl AstNode for AnyRArgument {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> = RBogusArgument::KIND_SET
-        .union(RDotsArgument::KIND_SET)
         .union(RHoleArgument::KIND_SET)
         .union(RNamedArgument::KIND_SET)
         .union(RUnnamedArgument::KIND_SET);
     fn can_cast(kind: SyntaxKind) -> bool {
         matches!(
             kind,
-            R_BOGUS_ARGUMENT
-                | R_DOTS_ARGUMENT
-                | R_HOLE_ARGUMENT
-                | R_NAMED_ARGUMENT
-                | R_UNNAMED_ARGUMENT
+            R_BOGUS_ARGUMENT | R_HOLE_ARGUMENT | R_NAMED_ARGUMENT | R_UNNAMED_ARGUMENT
         )
     }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         let res = match syntax.kind() {
             R_BOGUS_ARGUMENT => AnyRArgument::RBogusArgument(RBogusArgument { syntax }),
-            R_DOTS_ARGUMENT => AnyRArgument::RDotsArgument(RDotsArgument { syntax }),
             R_HOLE_ARGUMENT => AnyRArgument::RHoleArgument(RHoleArgument { syntax }),
             R_NAMED_ARGUMENT => AnyRArgument::RNamedArgument(RNamedArgument { syntax }),
             R_UNNAMED_ARGUMENT => AnyRArgument::RUnnamedArgument(RUnnamedArgument { syntax }),
@@ -3948,7 +3854,6 @@ impl AstNode for AnyRArgument {
     fn syntax(&self) -> &SyntaxNode {
         match self {
             AnyRArgument::RBogusArgument(it) => &it.syntax,
-            AnyRArgument::RDotsArgument(it) => &it.syntax,
             AnyRArgument::RHoleArgument(it) => &it.syntax,
             AnyRArgument::RNamedArgument(it) => &it.syntax,
             AnyRArgument::RUnnamedArgument(it) => &it.syntax,
@@ -3957,7 +3862,6 @@ impl AstNode for AnyRArgument {
     fn into_syntax(self) -> SyntaxNode {
         match self {
             AnyRArgument::RBogusArgument(it) => it.syntax,
-            AnyRArgument::RDotsArgument(it) => it.syntax,
             AnyRArgument::RHoleArgument(it) => it.syntax,
             AnyRArgument::RNamedArgument(it) => it.syntax,
             AnyRArgument::RUnnamedArgument(it) => it.syntax,
@@ -3968,7 +3872,6 @@ impl std::fmt::Debug for AnyRArgument {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             AnyRArgument::RBogusArgument(it) => std::fmt::Debug::fmt(it, f),
-            AnyRArgument::RDotsArgument(it) => std::fmt::Debug::fmt(it, f),
             AnyRArgument::RHoleArgument(it) => std::fmt::Debug::fmt(it, f),
             AnyRArgument::RNamedArgument(it) => std::fmt::Debug::fmt(it, f),
             AnyRArgument::RUnnamedArgument(it) => std::fmt::Debug::fmt(it, f),
@@ -3979,7 +3882,6 @@ impl From<AnyRArgument> for SyntaxNode {
     fn from(n: AnyRArgument) -> SyntaxNode {
         match n {
             AnyRArgument::RBogusArgument(it) => it.into(),
-            AnyRArgument::RDotsArgument(it) => it.into(),
             AnyRArgument::RHoleArgument(it) => it.into(),
             AnyRArgument::RNamedArgument(it) => it.into(),
             AnyRArgument::RUnnamedArgument(it) => it.into(),
@@ -4761,11 +4663,6 @@ impl std::fmt::Display for RDotDotI {
     }
 }
 impl std::fmt::Display for RDots {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Display::fmt(self.syntax(), f)
-    }
-}
-impl std::fmt::Display for RDotsArgument {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }

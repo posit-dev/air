@@ -488,20 +488,14 @@ fn arguments_syntax_kind(x: &Node) -> RSyntaxKind {
     }
 }
 
-// Disambiguate the 3 main types of argument kinds.
+// Disambiguate the 2 main types of argument kinds.
 // Holes don't actually show up in the tree-sitter tree.
 fn argument_syntax_kind(x: &Node) -> RSyntaxKind {
     // Required field on `argument` for `R_NAMED_ARGUMENT` case
     if x.child_by_field_name("name").is_some() {
-        return RSyntaxKind::R_NAMED_ARGUMENT;
-    }
-
-    // Required field on `argument` for `R_DOTS_ARGUMENT` and `R_UNNAMED_ARGUMENT` cases
-    let value = x.child_by_field_name("value").unwrap();
-
-    match value.kind() {
-        "dots" => RSyntaxKind::R_DOTS_ARGUMENT,
-        _ => RSyntaxKind::R_UNNAMED_ARGUMENT,
+        RSyntaxKind::R_NAMED_ARGUMENT
+    } else {
+        RSyntaxKind::R_UNNAMED_ARGUMENT
     }
 }
 

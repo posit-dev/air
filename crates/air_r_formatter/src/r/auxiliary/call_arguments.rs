@@ -673,16 +673,13 @@ impl Format<RFormatContext> for FormatGroupedLastArgument<'_> {
             AnyRArgument::RNamedArgument(node) => Some((node.name(), node.eq_token())),
             AnyRArgument::RUnnamedArgument(_)
             | AnyRArgument::RBogusArgument(_)
-            | AnyRArgument::RDotsArgument(_)
             | AnyRArgument::RHoleArgument(_) => None,
         };
 
         let argument_expression = match node {
             AnyRArgument::RNamedArgument(node) => node.value(),
             AnyRArgument::RUnnamedArgument(node) => node.value().ok(),
-            AnyRArgument::RBogusArgument(_)
-            | AnyRArgument::RDotsArgument(_)
-            | AnyRArgument::RHoleArgument(_) => None,
+            AnyRArgument::RBogusArgument(_) | AnyRArgument::RHoleArgument(_) => None,
         };
 
         // For inline functions, re-format the node and pass the argument that it is the
@@ -862,9 +859,7 @@ fn should_group_last_argument(list: &RArgumentList, comments: &RComments) -> Syn
     let argument_expression = |arg| match arg {
         AnyRArgument::RNamedArgument(arg) => arg.value(),
         AnyRArgument::RUnnamedArgument(arg) => arg.value().ok(),
-        AnyRArgument::RBogusArgument(_)
-        | AnyRArgument::RDotsArgument(_)
-        | AnyRArgument::RHoleArgument(_) => None,
+        AnyRArgument::RBogusArgument(_) | AnyRArgument::RHoleArgument(_) => None,
     };
 
     let Some(last) = argument_expression(last) else {

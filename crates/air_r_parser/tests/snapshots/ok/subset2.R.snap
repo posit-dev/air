@@ -104,8 +104,10 @@ RRoot {
             arguments: RSubset2Arguments {
                 l_brack2_token: L_BRACK2@24..26 "[[" [] [],
                 items: RArgumentList [
-                    RDotsArgument {
-                        value_token: DOTS@26..29 "..." [] [],
+                    RUnnamedArgument {
+                        value: RDots {
+                            value_token: DOTS@26..29 "..." [] [],
+                        },
                     },
                 ],
                 r_brack2_token: R_BRACK2@29..31 "]]" [] [],
@@ -124,8 +126,10 @@ RRoot {
                         },
                     },
                     COMMA@37..38 "," [] [],
-                    RDotsArgument {
-                        value_token: DOTS@38..42 "..." [Whitespace(" ")] [],
+                    RUnnamedArgument {
+                        value: RDots {
+                            value_token: DOTS@38..42 "..." [Whitespace(" ")] [],
+                        },
                     },
                     COMMA@42..43 "," [] [],
                     RUnnamedArgument {
@@ -510,8 +514,9 @@ RRoot {
       1: R_SUBSET2_ARGUMENTS@24..31
         0: L_BRACK2@24..26 "[[" [] []
         1: R_ARGUMENT_LIST@26..29
-          0: R_DOTS_ARGUMENT@26..29
-            0: DOTS@26..29 "..." [] []
+          0: R_UNNAMED_ARGUMENT@26..29
+            0: R_DOTS@26..29
+              0: DOTS@26..29 "..." [] []
         2: R_BRACK2@29..31 "]]" [] []
     4: R_SUBSET2@31..47
       0: R_IDENTIFIER@31..34
@@ -523,8 +528,9 @@ RRoot {
             0: R_IDENTIFIER@36..37
               0: IDENT@36..37 "a" [] []
           1: COMMA@37..38 "," [] []
-          2: R_DOTS_ARGUMENT@38..42
-            0: DOTS@38..42 "..." [Whitespace(" ")] []
+          2: R_UNNAMED_ARGUMENT@38..42
+            0: R_DOTS@38..42
+              0: DOTS@38..42 "..." [Whitespace(" ")] []
           3: COMMA@42..43 "," [] []
           4: R_UNNAMED_ARGUMENT@43..45
             0: R_IDENTIFIER@43..45

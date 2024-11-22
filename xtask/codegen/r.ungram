@@ -254,7 +254,6 @@ RArgumentList = (AnyRArgument (',' AnyRArgument)*)
 AnyRArgument =
 	RNamedArgument
 	| RUnnamedArgument
-	| RDotsArgument
 	| RHoleArgument
 	| RBogusArgument
 
@@ -265,8 +264,6 @@ RNamedArgument =
 
 RUnnamedArgument =
 	value: AnyRExpression
-
-RDotsArgument = value: '...'
 
 RHoleArgument = hole: ''?
 

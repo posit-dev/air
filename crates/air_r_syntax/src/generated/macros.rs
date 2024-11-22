@@ -52,10 +52,6 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RDots::new_unchecked(node) };
                     $body
                 }
-                $crate::RSyntaxKind::R_DOTS_ARGUMENT => {
-                    let $pattern = unsafe { $crate::RDotsArgument::new_unchecked(node) };
-                    $body
-                }
                 $crate::RSyntaxKind::R_DOTS_PARAMETER => {
                     let $pattern = unsafe { $crate::RDotsParameter::new_unchecked(node) };
                     $body

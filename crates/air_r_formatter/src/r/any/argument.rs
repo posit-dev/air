@@ -9,7 +9,6 @@ impl FormatRule<AnyRArgument> for FormatAnyRArgument {
     fn fmt(&self, node: &AnyRArgument, f: &mut RFormatter) -> FormatResult<()> {
         match node {
             AnyRArgument::RBogusArgument(node) => node.format().fmt(f),
-            AnyRArgument::RDotsArgument(node) => node.format().fmt(f),
             AnyRArgument::RHoleArgument(node) => node.format().fmt(f),
             AnyRArgument::RNamedArgument(node) => node.format().fmt(f),
             AnyRArgument::RUnnamedArgument(node) => node.format().fmt(f),

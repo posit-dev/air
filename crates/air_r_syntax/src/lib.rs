@@ -111,7 +111,6 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_ARGUMENT_LIST
             | RSyntaxKind::R_NAMED_ARGUMENT
             | RSyntaxKind::R_UNNAMED_ARGUMENT
-            | RSyntaxKind::R_DOTS_ARGUMENT
             | RSyntaxKind::R_HOLE_ARGUMENT
             | RSyntaxKind::R_EXPRESSION_LIST
             | RSyntaxKind::R_INTEGER_VALUE
@@ -188,7 +187,6 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             // Bogus argument
             RSyntaxKind::R_NAMED_ARGUMENT
             | RSyntaxKind::R_UNNAMED_ARGUMENT
-            | RSyntaxKind::R_DOTS_ARGUMENT
             | RSyntaxKind::R_HOLE_ARGUMENT
             | RSyntaxKind::R_BOGUS_ARGUMENT => RSyntaxKind::R_BOGUS_ARGUMENT,
 

@@ -178,7 +178,6 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_SUBSET2_ARGUMENTS => {
                 self.handle_call_like_arguments_enter(kind, node, iter)
             }
-            RSyntaxKind::R_DOTS_ARGUMENT => self.handle_dots_argument_enter(node, iter),
             RSyntaxKind::R_BRACED_EXPRESSIONS => self.handle_braced_expressions_enter(node, iter),
 
             // Literals / wrapped keywords
@@ -322,7 +321,6 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_CALL_ARGUMENTS => self.handle_call_like_arguments_leave(kind),
             RSyntaxKind::R_SUBSET_ARGUMENTS => self.handle_call_like_arguments_leave(kind),
             RSyntaxKind::R_SUBSET2_ARGUMENTS => self.handle_call_like_arguments_leave(kind),
-            RSyntaxKind::R_DOTS_ARGUMENT => self.handle_dots_argument_leave(),
             RSyntaxKind::R_BRACED_EXPRESSIONS => self.handle_braced_expressions_leave(),
 
             // Literals / wrapped keywords
@@ -816,10 +814,6 @@ impl<'src> RWalk<'src> {
                         self.walk_next(iter);
                         last_kind = RSyntaxKind::COMMA;
                     }
-                    RSyntaxKind::R_DOTS_ARGUMENT => {
-                        self.walk_next(iter);
-                        last_kind = RSyntaxKind::R_DOTS_ARGUMENT;
-                    }
                     RSyntaxKind::R_NAMED_ARGUMENT => {
                         self.walk_next(iter);
                         last_kind = RSyntaxKind::R_NAMED_ARGUMENT;
@@ -884,16 +878,6 @@ impl<'src> RWalk<'src> {
             self.handle_node_enter(RSyntaxKind::R_HOLE_ARGUMENT);
             self.handle_node_leave(RSyntaxKind::R_HOLE_ARGUMENT);
         }
-    }
-
-    fn handle_dots_argument_enter(&mut self, node: tree_sitter::Node, iter: &mut Preorder) {
-        iter.skip_subtree();
-        self.handle_node_enter(RSyntaxKind::R_DOTS_ARGUMENT);
-        self.handle_token(node, RSyntaxKind::DOTS);
-    }
-
-    fn handle_dots_argument_leave(&mut self) {
-        self.handle_node_leave(RSyntaxKind::R_DOTS_ARGUMENT);
     }
 }
 

@@ -113,12 +113,6 @@ pub fn r_dots(value_token: SyntaxToken) -> RDots {
         [Some(SyntaxElement::Token(value_token))],
     ))
 }
-pub fn r_dots_argument(value_token: SyntaxToken) -> RDotsArgument {
-    RDotsArgument::unwrap_cast(SyntaxNode::new_detached(
-        RSyntaxKind::R_DOTS_ARGUMENT,
-        [Some(SyntaxElement::Token(value_token))],
-    ))
-}
 pub fn r_dots_parameter(name_token: SyntaxToken) -> RDotsParameter {
     RDotsParameter::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_DOTS_PARAMETER,
