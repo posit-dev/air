@@ -274,7 +274,7 @@ fn na_type(x: &Node) -> NaType {
 }
 
 /// `WalkEvent` describes tree walking process.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum WalkEvent<T> {
     /// Fired before traversing the node.
     Enter(T),
@@ -381,6 +381,11 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "inf" => RSyntaxKind::R_INF_EXPRESSION,
         "nan" => RSyntaxKind::R_NAN_EXPRESSION,
         "na" => RSyntaxKind::R_NA_EXPRESSION,
+        "NA" => RSyntaxKind::NA_LOGICAL_KW,
+        "NA_integer_" => RSyntaxKind::NA_INTEGER_KW,
+        "NA_real_" => RSyntaxKind::NA_DOUBLE_KW,
+        "NA_complex_" => RSyntaxKind::NA_COMPLEX_KW,
+        "NA_character_" => RSyntaxKind::NA_CHARACTER_KW,
         "{" => RSyntaxKind::L_CURLY,
         "}" => RSyntaxKind::R_CURLY,
         "[" => RSyntaxKind::L_BRACK,
