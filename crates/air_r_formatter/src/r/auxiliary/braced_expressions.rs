@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use air_r_syntax::AnyRArgument;
 use air_r_syntax::AnyRExpression;
 use air_r_syntax::RBracedExpressions;
 use air_r_syntax::RBracedExpressionsFields;
@@ -24,7 +25,7 @@ impl FormatNodeRule<RBracedExpressions> for FormatRBracedExpressions {
             return fmt_empty(&l_curly_token, &r_curly_token, node, f);
         }
 
-        // Check if we are formatting curly-curly, like `{{ expr }}`
+        // Check if we are formatting curly-curly, like `fn({{ expr }})`
         if let Some(node) = as_curly_curly(node) {
             return fmt_curly_curly(&node, f);
         }
@@ -113,9 +114,9 @@ pub(crate) struct RCurlyCurly {
 /// - `None` otherwise
 ///
 /// The spec for curly-curly that we are targeting is:
-///
-/// > A `{` expression with exactly 1 child, where that 1 child is also a `{` expression
-/// > with exactly 1 child.
+/// - An outer `{` expression with exactly 1 child, an inner `{`.
+/// - An inner `{` expression with exactly 1 child, a symbol.
+/// - An ancestor of the outer `{` must be an argument node.
 pub(crate) fn as_curly_curly(node: &RBracedExpressions) -> Option<RCurlyCurly> {
     let RBracedExpressionsFields {
         l_curly_token: outer_l_curly_token,
@@ -130,6 +131,7 @@ pub(crate) fn as_curly_curly(node: &RBracedExpressions) -> Option<RCurlyCurly> {
     // Unwrap: Length check ensures there is exactly 1 child
     let node_inner = outer_expressions.first().unwrap();
 
+    // Check that the child of the outer `{` is another `{`
     let node_inner = match node_inner {
         AnyRExpression::RBracedExpressions(node_inner) => node_inner,
         _ => return None,
@@ -143,6 +145,38 @@ pub(crate) fn as_curly_curly(node: &RBracedExpressions) -> Option<RCurlyCurly> {
 
     // Check that inner child `{` itself only has 1 child, i.e. the `expr` in `{{ expr }}`
     if expression.len() != 1 {
+        return None;
+    }
+
+    // Unwrap: Length check ensures there is exactly 1 child
+    let symbol = expression.first().unwrap();
+
+    // Check that the actual expression inside the `{{` is a simple identifier
+    if !matches!(symbol, AnyRExpression::RIdentifier(_)) {
+        return None;
+    }
+
+    // Check that an ancestor of the outer `{` is an argument node
+    //
+    // Curly-curly is only valid when inlined as a function argument, but
+    // it can still be inside of a more complex inlined expression. As long
+    // as one parent is an argument, we consider it to be curly-curly.
+    //
+    // This is likely the most expensive check, so we do this last when we are
+    // mostly sure we have a curly-curly node.
+    //
+    // ```r
+    // my_plus <- function(data, var) {
+    //   dplyr::mutate(data, plus = {{ var }} + 1)
+    // }
+    // my_plus(mtcars, mpg)
+    // ```
+    let has_argument_parent = node
+        .syntax()
+        .ancestors()
+        .any(|syntax| AnyRArgument::can_cast(syntax.kind()));
+
+    if !has_argument_parent {
         return None;
     }
 
@@ -161,7 +195,7 @@ pub(crate) fn as_curly_curly(node: &RBracedExpressions) -> Option<RCurlyCurly> {
 /// These are typically very simple, of the form:
 ///
 /// ```r
-/// {{ var }}
+/// fn({{ var }})
 /// ```
 ///
 /// In these cases:
