@@ -14,7 +14,8 @@ function(
 function(...) 1
 function(a, ..., b) 1
 function(a = 1, ..., b = 2) a
-function(a = , b =) a
+function(..1, ..2) get("..1") + get("..2")
+function(..1 = 1, ..2 = 2) get("..1") + get("..2")
 function(
   x = # important!
   4
@@ -47,8 +48,11 @@ RRoot {
             parameters: RParameters {
                 l_paren_token: L_PAREN@21..22 "(" [] [],
                 items: RParameterList [
-                    RIdentifierParameter {
-                        name_token: IDENT@22..23 "a" [] [],
+                    RParameter {
+                        name: RIdentifier {
+                            name_token: IDENT@22..23 "a" [] [],
+                        },
+                        default: missing (optional),
                     },
                 ],
                 r_paren_token: R_PAREN@23..24 ")" [] [],
@@ -62,12 +66,18 @@ RRoot {
             parameters: RParameters {
                 l_paren_token: L_PAREN@35..36 "(" [] [],
                 items: RParameterList [
-                    RIdentifierParameter {
-                        name_token: IDENT@36..37 "a" [] [],
+                    RParameter {
+                        name: RIdentifier {
+                            name_token: IDENT@36..37 "a" [] [],
+                        },
+                        default: missing (optional),
                     },
                     COMMA@37..38 "," [] [],
-                    RIdentifierParameter {
-                        name_token: IDENT@38..40 "b" [Whitespace(" ")] [],
+                    RParameter {
+                        name: RIdentifier {
+                            name_token: IDENT@38..40 "b" [Whitespace(" ")] [],
+                        },
+                        default: missing (optional),
                     },
                 ],
                 r_paren_token: R_PAREN@40..41 ")" [] [],
@@ -87,8 +97,11 @@ RRoot {
             parameters: RParameters {
                 l_paren_token: L_PAREN@56..57 "(" [] [],
                 items: RParameterList [
-                    RIdentifierParameter {
-                        name_token: IDENT@57..74 "a" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# important!")],
+                    RParameter {
+                        name: RIdentifier {
+                            name_token: IDENT@57..74 "a" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# important!")],
+                        },
+                        default: missing (optional),
                     },
                 ],
                 r_paren_token: R_PAREN@74..76 ")" [Newline("\n")] [],
@@ -102,8 +115,11 @@ RRoot {
             parameters: RParameters {
                 l_paren_token: L_PAREN@87..88 "(" [] [],
                 items: RParameterList [
-                    RDotsParameter {
-                        name_token: DOTS@88..91 "..." [] [],
+                    RParameter {
+                        name: RDots {
+                            value_token: DOTS@88..91 "..." [] [],
+                        },
+                        default: missing (optional),
                     },
                 ],
                 r_paren_token: R_PAREN@91..92 ")" [] [],
@@ -117,16 +133,25 @@ RRoot {
             parameters: RParameters {
                 l_paren_token: L_PAREN@103..104 "(" [] [],
                 items: RParameterList [
-                    RIdentifierParameter {
-                        name_token: IDENT@104..105 "a" [] [],
+                    RParameter {
+                        name: RIdentifier {
+                            name_token: IDENT@104..105 "a" [] [],
+                        },
+                        default: missing (optional),
                     },
                     COMMA@105..106 "," [] [],
-                    RDotsParameter {
-                        name_token: DOTS@106..110 "..." [Whitespace(" ")] [],
+                    RParameter {
+                        name: RDots {
+                            value_token: DOTS@106..110 "..." [Whitespace(" ")] [],
+                        },
+                        default: missing (optional),
                     },
                     COMMA@110..111 "," [] [],
-                    RIdentifierParameter {
-                        name_token: IDENT@111..113 "b" [Whitespace(" ")] [],
+                    RParameter {
+                        name: RIdentifier {
+                            name_token: IDENT@111..113 "b" [Whitespace(" ")] [],
+                        },
+                        default: missing (optional),
                     },
                 ],
                 r_paren_token: R_PAREN@113..114 ")" [] [],
@@ -140,23 +165,34 @@ RRoot {
             parameters: RParameters {
                 l_paren_token: L_PAREN@125..126 "(" [] [],
                 items: RParameterList [
-                    RDefaultParameter {
-                        name_token: IDENT@126..127 "a" [] [],
-                        eq_token: EQUAL@127..129 "=" [Whitespace(" ")] [],
-                        default: RDoubleValue {
-                            value_token: R_DOUBLE_LITERAL@129..131 "1" [Whitespace(" ")] [],
+                    RParameter {
+                        name: RIdentifier {
+                            name_token: IDENT@126..127 "a" [] [],
+                        },
+                        default: RParameterDefault {
+                            eq_token: EQUAL@127..129 "=" [Whitespace(" ")] [],
+                            value: RDoubleValue {
+                                value_token: R_DOUBLE_LITERAL@129..131 "1" [Whitespace(" ")] [],
+                            },
                         },
                     },
                     COMMA@131..132 "," [] [],
-                    RDotsParameter {
-                        name_token: DOTS@132..136 "..." [Whitespace(" ")] [],
+                    RParameter {
+                        name: RDots {
+                            value_token: DOTS@132..136 "..." [Whitespace(" ")] [],
+                        },
+                        default: missing (optional),
                     },
                     COMMA@136..137 "," [] [],
-                    RDefaultParameter {
-                        name_token: IDENT@137..139 "b" [Whitespace(" ")] [],
-                        eq_token: EQUAL@139..141 "=" [Whitespace(" ")] [],
-                        default: RDoubleValue {
-                            value_token: R_DOUBLE_LITERAL@141..143 "2" [Whitespace(" ")] [],
+                    RParameter {
+                        name: RIdentifier {
+                            name_token: IDENT@137..139 "b" [Whitespace(" ")] [],
+                        },
+                        default: RParameterDefault {
+                            eq_token: EQUAL@139..141 "=" [Whitespace(" ")] [],
+                            value: RDoubleValue {
+                                value_token: R_DOUBLE_LITERAL@141..143 "2" [Whitespace(" ")] [],
+                            },
                         },
                     },
                 ],
@@ -171,73 +207,184 @@ RRoot {
             parameters: RParameters {
                 l_paren_token: L_PAREN@155..156 "(" [] [],
                 items: RParameterList [
-                    RDefaultParameter {
-                        name_token: IDENT@156..157 "a" [] [],
-                        eq_token: EQUAL@157..159 "=" [Whitespace(" ")] [],
+                    RParameter {
+                        name: RDotDotI {
+                            value_token: DOTDOTI@156..159 "..1" [] [],
+                        },
                         default: missing (optional),
                     },
-                    COMMA@159..161 "," [Whitespace(" ")] [],
-                    RDefaultParameter {
-                        name_token: IDENT@161..163 "b" [Whitespace(" ")] [],
-                        eq_token: EQUAL@163..165 "=" [Whitespace(" ")] [],
+                    COMMA@159..160 "," [] [],
+                    RParameter {
+                        name: RDotDotI {
+                            value_token: DOTDOTI@160..164 "..2" [Whitespace(" ")] [],
+                        },
                         default: missing (optional),
                     },
                 ],
-                r_paren_token: R_PAREN@165..166 ")" [] [],
+                r_paren_token: R_PAREN@164..165 ")" [] [],
             },
-            body: RIdentifier {
-                name_token: IDENT@166..168 "a" [Whitespace(" ")] [],
+            body: RBinaryExpression {
+                left: RCall {
+                    function: RIdentifier {
+                        name_token: IDENT@165..169 "get" [Whitespace(" ")] [],
+                    },
+                    arguments: RCallArguments {
+                        l_paren_token: L_PAREN@169..170 "(" [] [],
+                        items: RArgumentList [
+                            RUnnamedArgument {
+                                value: RStringValue {
+                                    value_token: R_STRING_LITERAL@170..175 "\"..1\"" [] [],
+                                },
+                            },
+                        ],
+                        r_paren_token: R_PAREN@175..176 ")" [] [],
+                    },
+                },
+                operator: PLUS@176..178 "+" [Whitespace(" ")] [],
+                right: RCall {
+                    function: RIdentifier {
+                        name_token: IDENT@178..182 "get" [Whitespace(" ")] [],
+                    },
+                    arguments: RCallArguments {
+                        l_paren_token: L_PAREN@182..183 "(" [] [],
+                        items: RArgumentList [
+                            RUnnamedArgument {
+                                value: RStringValue {
+                                    value_token: R_STRING_LITERAL@183..188 "\"..2\"" [] [],
+                                },
+                            },
+                        ],
+                        r_paren_token: R_PAREN@188..189 ")" [] [],
+                    },
+                },
             },
         },
         RFunctionDefinition {
-            name: FUNCTION_KW@168..177 "function" [Newline("\n")] [],
+            name: FUNCTION_KW@189..198 "function" [Newline("\n")] [],
             parameters: RParameters {
-                l_paren_token: L_PAREN@177..178 "(" [] [],
+                l_paren_token: L_PAREN@198..199 "(" [] [],
                 items: RParameterList [
-                    RDefaultParameter {
-                        name_token: IDENT@178..182 "x" [Newline("\n"), Whitespace("  ")] [],
-                        eq_token: EQUAL@182..197 "=" [Whitespace(" ")] [Whitespace(" "), Comments("# important!")],
-                        default: RDoubleValue {
-                            value_token: R_DOUBLE_LITERAL@197..201 "4" [Newline("\n"), Whitespace("  ")] [],
+                    RParameter {
+                        name: RDotDotI {
+                            value_token: DOTDOTI@199..202 "..1" [] [],
+                        },
+                        default: RParameterDefault {
+                            eq_token: EQUAL@202..204 "=" [Whitespace(" ")] [],
+                            value: RDoubleValue {
+                                value_token: R_DOUBLE_LITERAL@204..206 "1" [Whitespace(" ")] [],
+                            },
+                        },
+                    },
+                    COMMA@206..207 "," [] [],
+                    RParameter {
+                        name: RDotDotI {
+                            value_token: DOTDOTI@207..211 "..2" [Whitespace(" ")] [],
+                        },
+                        default: RParameterDefault {
+                            eq_token: EQUAL@211..213 "=" [Whitespace(" ")] [],
+                            value: RDoubleValue {
+                                value_token: R_DOUBLE_LITERAL@213..215 "2" [Whitespace(" ")] [],
+                            },
                         },
                     },
                 ],
-                r_paren_token: R_PAREN@201..203 ")" [Newline("\n")] [],
+                r_paren_token: R_PAREN@215..216 ")" [] [],
             },
-            body: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@203..205 "1" [Whitespace(" ")] [],
+            body: RBinaryExpression {
+                left: RCall {
+                    function: RIdentifier {
+                        name_token: IDENT@216..220 "get" [Whitespace(" ")] [],
+                    },
+                    arguments: RCallArguments {
+                        l_paren_token: L_PAREN@220..221 "(" [] [],
+                        items: RArgumentList [
+                            RUnnamedArgument {
+                                value: RStringValue {
+                                    value_token: R_STRING_LITERAL@221..226 "\"..1\"" [] [],
+                                },
+                            },
+                        ],
+                        r_paren_token: R_PAREN@226..227 ")" [] [],
+                    },
+                },
+                operator: PLUS@227..229 "+" [Whitespace(" ")] [],
+                right: RCall {
+                    function: RIdentifier {
+                        name_token: IDENT@229..233 "get" [Whitespace(" ")] [],
+                    },
+                    arguments: RCallArguments {
+                        l_paren_token: L_PAREN@233..234 "(" [] [],
+                        items: RArgumentList [
+                            RUnnamedArgument {
+                                value: RStringValue {
+                                    value_token: R_STRING_LITERAL@234..239 "\"..2\"" [] [],
+                                },
+                            },
+                        ],
+                        r_paren_token: R_PAREN@239..240 ")" [] [],
+                    },
+                },
             },
         },
         RFunctionDefinition {
-            name: BACKSLASH@205..208 "\\" [Newline("\n"), Newline("\n")] [],
+            name: FUNCTION_KW@240..249 "function" [Newline("\n")] [],
             parameters: RParameters {
-                l_paren_token: L_PAREN@208..209 "(" [] [],
+                l_paren_token: L_PAREN@249..250 "(" [] [],
                 items: RParameterList [
-                    RIdentifierParameter {
-                        name_token: IDENT@209..210 "x" [] [],
-                    },
-                    COMMA@210..211 "," [] [],
-                    RIdentifierParameter {
-                        name_token: IDENT@211..213 "y" [Whitespace(" ")] [],
+                    RParameter {
+                        name: RIdentifier {
+                            name_token: IDENT@250..254 "x" [Newline("\n"), Whitespace("  ")] [],
+                        },
+                        default: RParameterDefault {
+                            eq_token: EQUAL@254..269 "=" [Whitespace(" ")] [Whitespace(" "), Comments("# important!")],
+                            value: RDoubleValue {
+                                value_token: R_DOUBLE_LITERAL@269..273 "4" [Newline("\n"), Whitespace("  ")] [],
+                            },
+                        },
                     },
                 ],
-                r_paren_token: R_PAREN@213..214 ")" [] [],
+                r_paren_token: R_PAREN@273..275 ")" [Newline("\n")] [],
             },
             body: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@214..216 "1" [Whitespace(" ")] [],
+                value_token: R_DOUBLE_LITERAL@275..277 "1" [Whitespace(" ")] [],
+            },
+        },
+        RFunctionDefinition {
+            name: BACKSLASH@277..280 "\\" [Newline("\n"), Newline("\n")] [],
+            parameters: RParameters {
+                l_paren_token: L_PAREN@280..281 "(" [] [],
+                items: RParameterList [
+                    RParameter {
+                        name: RIdentifier {
+                            name_token: IDENT@281..282 "x" [] [],
+                        },
+                        default: missing (optional),
+                    },
+                    COMMA@282..283 "," [] [],
+                    RParameter {
+                        name: RIdentifier {
+                            name_token: IDENT@283..285 "y" [Whitespace(" ")] [],
+                        },
+                        default: missing (optional),
+                    },
+                ],
+                r_paren_token: R_PAREN@285..286 ")" [] [],
+            },
+            body: RDoubleValue {
+                value_token: R_DOUBLE_LITERAL@286..288 "1" [Whitespace(" ")] [],
             },
         },
     ],
-    eof_token: EOF@216..217 "" [Newline("\n")] [],
+    eof_token: EOF@288..289 "" [Newline("\n")] [],
 }
 ```
 
 ## CST
 
 ```
-0: R_ROOT@0..217
+0: R_ROOT@0..289
   0: (empty)
-  1: R_EXPRESSION_LIST@0..216
+  1: R_EXPRESSION_LIST@0..288
     0: R_FUNCTION_DEFINITION@0..12
       0: FUNCTION_KW@0..8 "function" [] []
       1: R_PARAMETERS@8..10
@@ -251,8 +398,10 @@ RRoot {
       1: R_PARAMETERS@21..24
         0: L_PAREN@21..22 "(" [] []
         1: R_PARAMETER_LIST@22..23
-          0: R_IDENTIFIER_PARAMETER@22..23
-            0: IDENT@22..23 "a" [] []
+          0: R_PARAMETER@22..23
+            0: R_IDENTIFIER@22..23
+              0: IDENT@22..23 "a" [] []
+            1: (empty)
         2: R_PAREN@23..24 ")" [] []
       2: R_IDENTIFIER@24..26
         0: IDENT@24..26 "a" [Whitespace(" ")] []
@@ -261,11 +410,15 @@ RRoot {
       1: R_PARAMETERS@35..41
         0: L_PAREN@35..36 "(" [] []
         1: R_PARAMETER_LIST@36..40
-          0: R_IDENTIFIER_PARAMETER@36..37
-            0: IDENT@36..37 "a" [] []
+          0: R_PARAMETER@36..37
+            0: R_IDENTIFIER@36..37
+              0: IDENT@36..37 "a" [] []
+            1: (empty)
           1: COMMA@37..38 "," [] []
-          2: R_IDENTIFIER_PARAMETER@38..40
-            0: IDENT@38..40 "b" [Whitespace(" ")] []
+          2: R_PARAMETER@38..40
+            0: R_IDENTIFIER@38..40
+              0: IDENT@38..40 "b" [Whitespace(" ")] []
+            1: (empty)
         2: R_PAREN@40..41 ")" [] []
       2: R_BINARY_EXPRESSION@41..47
         0: R_IDENTIFIER@41..43
@@ -278,8 +431,10 @@ RRoot {
       1: R_PARAMETERS@56..76
         0: L_PAREN@56..57 "(" [] []
         1: R_PARAMETER_LIST@57..74
-          0: R_IDENTIFIER_PARAMETER@57..74
-            0: IDENT@57..74 "a" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# important!")]
+          0: R_PARAMETER@57..74
+            0: R_IDENTIFIER@57..74
+              0: IDENT@57..74 "a" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# important!")]
+            1: (empty)
         2: R_PAREN@74..76 ")" [Newline("\n")] []
       2: R_IDENTIFIER@76..78
         0: IDENT@76..78 "a" [Whitespace(" ")] []
@@ -288,8 +443,10 @@ RRoot {
       1: R_PARAMETERS@87..92
         0: L_PAREN@87..88 "(" [] []
         1: R_PARAMETER_LIST@88..91
-          0: R_DOTS_PARAMETER@88..91
-            0: DOTS@88..91 "..." [] []
+          0: R_PARAMETER@88..91
+            0: R_DOTS@88..91
+              0: DOTS@88..91 "..." [] []
+            1: (empty)
         2: R_PAREN@91..92 ")" [] []
       2: R_DOUBLE_VALUE@92..94
         0: R_DOUBLE_LITERAL@92..94 "1" [Whitespace(" ")] []
@@ -298,14 +455,20 @@ RRoot {
       1: R_PARAMETERS@103..114
         0: L_PAREN@103..104 "(" [] []
         1: R_PARAMETER_LIST@104..113
-          0: R_IDENTIFIER_PARAMETER@104..105
-            0: IDENT@104..105 "a" [] []
+          0: R_PARAMETER@104..105
+            0: R_IDENTIFIER@104..105
+              0: IDENT@104..105 "a" [] []
+            1: (empty)
           1: COMMA@105..106 "," [] []
-          2: R_DOTS_PARAMETER@106..110
-            0: DOTS@106..110 "..." [Whitespace(" ")] []
+          2: R_PARAMETER@106..110
+            0: R_DOTS@106..110
+              0: DOTS@106..110 "..." [Whitespace(" ")] []
+            1: (empty)
           3: COMMA@110..111 "," [] []
-          4: R_IDENTIFIER_PARAMETER@111..113
-            0: IDENT@111..113 "b" [Whitespace(" ")] []
+          4: R_PARAMETER@111..113
+            0: R_IDENTIFIER@111..113
+              0: IDENT@111..113 "b" [Whitespace(" ")] []
+            1: (empty)
         2: R_PAREN@113..114 ")" [] []
       2: R_DOUBLE_VALUE@114..116
         0: R_DOUBLE_LITERAL@114..116 "1" [Whitespace(" ")] []
@@ -314,66 +477,141 @@ RRoot {
       1: R_PARAMETERS@125..144
         0: L_PAREN@125..126 "(" [] []
         1: R_PARAMETER_LIST@126..143
-          0: R_DEFAULT_PARAMETER@126..131
-            0: IDENT@126..127 "a" [] []
-            1: EQUAL@127..129 "=" [Whitespace(" ")] []
-            2: R_DOUBLE_VALUE@129..131
-              0: R_DOUBLE_LITERAL@129..131 "1" [Whitespace(" ")] []
+          0: R_PARAMETER@126..131
+            0: R_IDENTIFIER@126..127
+              0: IDENT@126..127 "a" [] []
+            1: R_PARAMETER_DEFAULT@127..131
+              0: EQUAL@127..129 "=" [Whitespace(" ")] []
+              1: R_DOUBLE_VALUE@129..131
+                0: R_DOUBLE_LITERAL@129..131 "1" [Whitespace(" ")] []
           1: COMMA@131..132 "," [] []
-          2: R_DOTS_PARAMETER@132..136
-            0: DOTS@132..136 "..." [Whitespace(" ")] []
+          2: R_PARAMETER@132..136
+            0: R_DOTS@132..136
+              0: DOTS@132..136 "..." [Whitespace(" ")] []
+            1: (empty)
           3: COMMA@136..137 "," [] []
-          4: R_DEFAULT_PARAMETER@137..143
-            0: IDENT@137..139 "b" [Whitespace(" ")] []
-            1: EQUAL@139..141 "=" [Whitespace(" ")] []
-            2: R_DOUBLE_VALUE@141..143
-              0: R_DOUBLE_LITERAL@141..143 "2" [Whitespace(" ")] []
+          4: R_PARAMETER@137..143
+            0: R_IDENTIFIER@137..139
+              0: IDENT@137..139 "b" [Whitespace(" ")] []
+            1: R_PARAMETER_DEFAULT@139..143
+              0: EQUAL@139..141 "=" [Whitespace(" ")] []
+              1: R_DOUBLE_VALUE@141..143
+                0: R_DOUBLE_LITERAL@141..143 "2" [Whitespace(" ")] []
         2: R_PAREN@143..144 ")" [] []
       2: R_IDENTIFIER@144..146
         0: IDENT@144..146 "a" [Whitespace(" ")] []
-    7: R_FUNCTION_DEFINITION@146..168
+    7: R_FUNCTION_DEFINITION@146..189
       0: FUNCTION_KW@146..155 "function" [Newline("\n")] []
-      1: R_PARAMETERS@155..166
+      1: R_PARAMETERS@155..165
         0: L_PAREN@155..156 "(" [] []
-        1: R_PARAMETER_LIST@156..165
-          0: R_DEFAULT_PARAMETER@156..159
-            0: IDENT@156..157 "a" [] []
-            1: EQUAL@157..159 "=" [Whitespace(" ")] []
-            2: (empty)
-          1: COMMA@159..161 "," [Whitespace(" ")] []
-          2: R_DEFAULT_PARAMETER@161..165
-            0: IDENT@161..163 "b" [Whitespace(" ")] []
-            1: EQUAL@163..165 "=" [Whitespace(" ")] []
-            2: (empty)
-        2: R_PAREN@165..166 ")" [] []
-      2: R_IDENTIFIER@166..168
-        0: IDENT@166..168 "a" [Whitespace(" ")] []
-    8: R_FUNCTION_DEFINITION@168..205
-      0: FUNCTION_KW@168..177 "function" [Newline("\n")] []
-      1: R_PARAMETERS@177..203
-        0: L_PAREN@177..178 "(" [] []
-        1: R_PARAMETER_LIST@178..201
-          0: R_DEFAULT_PARAMETER@178..201
-            0: IDENT@178..182 "x" [Newline("\n"), Whitespace("  ")] []
-            1: EQUAL@182..197 "=" [Whitespace(" ")] [Whitespace(" "), Comments("# important!")]
-            2: R_DOUBLE_VALUE@197..201
-              0: R_DOUBLE_LITERAL@197..201 "4" [Newline("\n"), Whitespace("  ")] []
-        2: R_PAREN@201..203 ")" [Newline("\n")] []
-      2: R_DOUBLE_VALUE@203..205
-        0: R_DOUBLE_LITERAL@203..205 "1" [Whitespace(" ")] []
-    9: R_FUNCTION_DEFINITION@205..216
-      0: BACKSLASH@205..208 "\\" [Newline("\n"), Newline("\n")] []
-      1: R_PARAMETERS@208..214
-        0: L_PAREN@208..209 "(" [] []
-        1: R_PARAMETER_LIST@209..213
-          0: R_IDENTIFIER_PARAMETER@209..210
-            0: IDENT@209..210 "x" [] []
-          1: COMMA@210..211 "," [] []
-          2: R_IDENTIFIER_PARAMETER@211..213
-            0: IDENT@211..213 "y" [Whitespace(" ")] []
-        2: R_PAREN@213..214 ")" [] []
-      2: R_DOUBLE_VALUE@214..216
-        0: R_DOUBLE_LITERAL@214..216 "1" [Whitespace(" ")] []
-  2: EOF@216..217 "" [Newline("\n")] []
+        1: R_PARAMETER_LIST@156..164
+          0: R_PARAMETER@156..159
+            0: R_DOT_DOT_I@156..159
+              0: DOTDOTI@156..159 "..1" [] []
+            1: (empty)
+          1: COMMA@159..160 "," [] []
+          2: R_PARAMETER@160..164
+            0: R_DOT_DOT_I@160..164
+              0: DOTDOTI@160..164 "..2" [Whitespace(" ")] []
+            1: (empty)
+        2: R_PAREN@164..165 ")" [] []
+      2: R_BINARY_EXPRESSION@165..189
+        0: R_CALL@165..176
+          0: R_IDENTIFIER@165..169
+            0: IDENT@165..169 "get" [Whitespace(" ")] []
+          1: R_CALL_ARGUMENTS@169..176
+            0: L_PAREN@169..170 "(" [] []
+            1: R_ARGUMENT_LIST@170..175
+              0: R_UNNAMED_ARGUMENT@170..175
+                0: R_STRING_VALUE@170..175
+                  0: R_STRING_LITERAL@170..175 "\"..1\"" [] []
+            2: R_PAREN@175..176 ")" [] []
+        1: PLUS@176..178 "+" [Whitespace(" ")] []
+        2: R_CALL@178..189
+          0: R_IDENTIFIER@178..182
+            0: IDENT@178..182 "get" [Whitespace(" ")] []
+          1: R_CALL_ARGUMENTS@182..189
+            0: L_PAREN@182..183 "(" [] []
+            1: R_ARGUMENT_LIST@183..188
+              0: R_UNNAMED_ARGUMENT@183..188
+                0: R_STRING_VALUE@183..188
+                  0: R_STRING_LITERAL@183..188 "\"..2\"" [] []
+            2: R_PAREN@188..189 ")" [] []
+    8: R_FUNCTION_DEFINITION@189..240
+      0: FUNCTION_KW@189..198 "function" [Newline("\n")] []
+      1: R_PARAMETERS@198..216
+        0: L_PAREN@198..199 "(" [] []
+        1: R_PARAMETER_LIST@199..215
+          0: R_PARAMETER@199..206
+            0: R_DOT_DOT_I@199..202
+              0: DOTDOTI@199..202 "..1" [] []
+            1: R_PARAMETER_DEFAULT@202..206
+              0: EQUAL@202..204 "=" [Whitespace(" ")] []
+              1: R_DOUBLE_VALUE@204..206
+                0: R_DOUBLE_LITERAL@204..206 "1" [Whitespace(" ")] []
+          1: COMMA@206..207 "," [] []
+          2: R_PARAMETER@207..215
+            0: R_DOT_DOT_I@207..211
+              0: DOTDOTI@207..211 "..2" [Whitespace(" ")] []
+            1: R_PARAMETER_DEFAULT@211..215
+              0: EQUAL@211..213 "=" [Whitespace(" ")] []
+              1: R_DOUBLE_VALUE@213..215
+                0: R_DOUBLE_LITERAL@213..215 "2" [Whitespace(" ")] []
+        2: R_PAREN@215..216 ")" [] []
+      2: R_BINARY_EXPRESSION@216..240
+        0: R_CALL@216..227
+          0: R_IDENTIFIER@216..220
+            0: IDENT@216..220 "get" [Whitespace(" ")] []
+          1: R_CALL_ARGUMENTS@220..227
+            0: L_PAREN@220..221 "(" [] []
+            1: R_ARGUMENT_LIST@221..226
+              0: R_UNNAMED_ARGUMENT@221..226
+                0: R_STRING_VALUE@221..226
+                  0: R_STRING_LITERAL@221..226 "\"..1\"" [] []
+            2: R_PAREN@226..227 ")" [] []
+        1: PLUS@227..229 "+" [Whitespace(" ")] []
+        2: R_CALL@229..240
+          0: R_IDENTIFIER@229..233
+            0: IDENT@229..233 "get" [Whitespace(" ")] []
+          1: R_CALL_ARGUMENTS@233..240
+            0: L_PAREN@233..234 "(" [] []
+            1: R_ARGUMENT_LIST@234..239
+              0: R_UNNAMED_ARGUMENT@234..239
+                0: R_STRING_VALUE@234..239
+                  0: R_STRING_LITERAL@234..239 "\"..2\"" [] []
+            2: R_PAREN@239..240 ")" [] []
+    9: R_FUNCTION_DEFINITION@240..277
+      0: FUNCTION_KW@240..249 "function" [Newline("\n")] []
+      1: R_PARAMETERS@249..275
+        0: L_PAREN@249..250 "(" [] []
+        1: R_PARAMETER_LIST@250..273
+          0: R_PARAMETER@250..273
+            0: R_IDENTIFIER@250..254
+              0: IDENT@250..254 "x" [Newline("\n"), Whitespace("  ")] []
+            1: R_PARAMETER_DEFAULT@254..273
+              0: EQUAL@254..269 "=" [Whitespace(" ")] [Whitespace(" "), Comments("# important!")]
+              1: R_DOUBLE_VALUE@269..273
+                0: R_DOUBLE_LITERAL@269..273 "4" [Newline("\n"), Whitespace("  ")] []
+        2: R_PAREN@273..275 ")" [Newline("\n")] []
+      2: R_DOUBLE_VALUE@275..277
+        0: R_DOUBLE_LITERAL@275..277 "1" [Whitespace(" ")] []
+    10: R_FUNCTION_DEFINITION@277..288
+      0: BACKSLASH@277..280 "\\" [Newline("\n"), Newline("\n")] []
+      1: R_PARAMETERS@280..286
+        0: L_PAREN@280..281 "(" [] []
+        1: R_PARAMETER_LIST@281..285
+          0: R_PARAMETER@281..282
+            0: R_IDENTIFIER@281..282
+              0: IDENT@281..282 "x" [] []
+            1: (empty)
+          1: COMMA@282..283 "," [] []
+          2: R_PARAMETER@283..285
+            0: R_IDENTIFIER@283..285
+              0: IDENT@283..285 "y" [Whitespace(" ")] []
+            1: (empty)
+        2: R_PAREN@285..286 ")" [] []
+      2: R_DOUBLE_VALUE@286..288
+        0: R_DOUBLE_LITERAL@286..288 "1" [Whitespace(" ")] []
+  2: EOF@288..289 "" [Newline("\n")] []
 
 ```

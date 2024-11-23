@@ -20,6 +20,9 @@ fn(a = , b = 2)
 fn(... = 1)
 fn(... =)
 
+fn(..1 = 2)
+fn(..1 =)
+
 fn("arg" = 1)
 fn("arg" =)
 
@@ -111,8 +114,10 @@ RRoot {
             arguments: RCallArguments {
                 l_paren_token: L_PAREN@22..23 "(" [] [],
                 items: RArgumentList [
-                    RDotsArgument {
-                        value_token: DOTS@23..26 "..." [] [],
+                    RUnnamedArgument {
+                        value: RDots {
+                            value_token: DOTS@23..26 "..." [] [],
+                        },
                     },
                 ],
                 r_paren_token: R_PAREN@26..27 ")" [] [],
@@ -131,8 +136,10 @@ RRoot {
                         },
                     },
                     COMMA@32..33 "," [] [],
-                    RDotsArgument {
-                        value_token: DOTS@33..37 "..." [Whitespace(" ")] [],
+                    RUnnamedArgument {
+                        value: RDots {
+                            value_token: DOTS@33..37 "..." [Whitespace(" ")] [],
+                        },
                     },
                     COMMA@37..38 "," [] [],
                     RUnnamedArgument {
@@ -286,205 +293,243 @@ RRoot {
                 l_paren_token: L_PAREN@122..123 "(" [] [],
                 items: RArgumentList [
                     RNamedArgument {
-                        name: RStringValue {
-                            value_token: R_STRING_LITERAL@123..128 "\"arg\"" [] [],
+                        name: RDotDotI {
+                            value_token: DOTDOTI@123..126 "..1" [] [],
                         },
-                        eq_token: EQUAL@128..130 "=" [Whitespace(" ")] [],
+                        eq_token: EQUAL@126..128 "=" [Whitespace(" ")] [],
                         value: RDoubleValue {
-                            value_token: R_DOUBLE_LITERAL@130..132 "1" [Whitespace(" ")] [],
+                            value_token: R_DOUBLE_LITERAL@128..130 "2" [Whitespace(" ")] [],
                         },
                     },
                 ],
-                r_paren_token: R_PAREN@132..133 ")" [] [],
+                r_paren_token: R_PAREN@130..131 ")" [] [],
             },
         },
         RCall {
             function: RIdentifier {
-                name_token: IDENT@133..136 "fn" [Newline("\n")] [],
+                name_token: IDENT@131..134 "fn" [Newline("\n")] [],
             },
             arguments: RCallArguments {
-                l_paren_token: L_PAREN@136..137 "(" [] [],
+                l_paren_token: L_PAREN@134..135 "(" [] [],
                 items: RArgumentList [
                     RNamedArgument {
-                        name: RStringValue {
-                            value_token: R_STRING_LITERAL@137..142 "\"arg\"" [] [],
+                        name: RDotDotI {
+                            value_token: DOTDOTI@135..138 "..1" [] [],
                         },
-                        eq_token: EQUAL@142..144 "=" [Whitespace(" ")] [],
+                        eq_token: EQUAL@138..140 "=" [Whitespace(" ")] [],
                         value: missing (optional),
                     },
                 ],
-                r_paren_token: R_PAREN@144..145 ")" [] [],
+                r_paren_token: R_PAREN@140..141 ")" [] [],
             },
         },
         RCall {
             function: RIdentifier {
-                name_token: IDENT@145..163 "fn" [Newline("\n"), Newline("\n"), Comments("# Comma tests"), Newline("\n")] [],
+                name_token: IDENT@141..145 "fn" [Newline("\n"), Newline("\n")] [],
             },
             arguments: RCallArguments {
-                l_paren_token: L_PAREN@163..164 "(" [] [],
+                l_paren_token: L_PAREN@145..146 "(" [] [],
                 items: RArgumentList [
-                    RHoleArgument,
-                    COMMA@164..165 "," [] [],
-                    RHoleArgument,
-                ],
-                r_paren_token: R_PAREN@165..166 ")" [] [],
-            },
-        },
-        RCall {
-            function: RIdentifier {
-                name_token: IDENT@166..169 "fn" [Newline("\n")] [],
-            },
-            arguments: RCallArguments {
-                l_paren_token: L_PAREN@169..170 "(" [] [],
-                items: RArgumentList [
-                    RHoleArgument,
-                    COMMA@170..171 "," [] [],
-                    RHoleArgument,
-                    COMMA@171..172 "," [] [],
-                    RHoleArgument,
-                    COMMA@172..173 "," [] [],
-                    RHoleArgument,
-                ],
-                r_paren_token: R_PAREN@173..174 ")" [] [],
-            },
-        },
-        RCall {
-            function: RIdentifier {
-                name_token: IDENT@174..177 "fn" [Newline("\n")] [],
-            },
-            arguments: RCallArguments {
-                l_paren_token: L_PAREN@177..178 "(" [] [],
-                items: RArgumentList [
-                    RHoleArgument,
-                    COMMA@178..179 "," [] [],
-                    RHoleArgument,
-                    COMMA@179..180 "," [] [],
-                    RUnnamedArgument {
-                        value: RIdentifier {
-                            name_token: IDENT@180..181 "a" [] [],
+                    RNamedArgument {
+                        name: RStringValue {
+                            value_token: R_STRING_LITERAL@146..151 "\"arg\"" [] [],
+                        },
+                        eq_token: EQUAL@151..153 "=" [Whitespace(" ")] [],
+                        value: RDoubleValue {
+                            value_token: R_DOUBLE_LITERAL@153..155 "1" [Whitespace(" ")] [],
                         },
                     },
-                    COMMA@181..182 "," [] [],
-                    RHoleArgument,
-                    COMMA@182..183 "," [] [],
-                    RUnnamedArgument {
-                        value: RIdentifier {
-                            name_token: IDENT@183..184 "b" [] [],
-                        },
-                    },
-                    COMMA@184..185 "," [] [],
-                    RHoleArgument,
-                    COMMA@185..186 "," [] [],
-                    RHoleArgument,
                 ],
-                r_paren_token: R_PAREN@186..187 ")" [] [],
+                r_paren_token: R_PAREN@155..156 ")" [] [],
             },
         },
         RCall {
             function: RIdentifier {
-                name_token: IDENT@187..207 "fn" [Newline("\n"), Newline("\n"), Comments("# Comment tests"), Newline("\n")] [],
+                name_token: IDENT@156..159 "fn" [Newline("\n")] [],
             },
             arguments: RCallArguments {
-                l_paren_token: L_PAREN@207..208 "(" [] [],
+                l_paren_token: L_PAREN@159..160 "(" [] [],
+                items: RArgumentList [
+                    RNamedArgument {
+                        name: RStringValue {
+                            value_token: R_STRING_LITERAL@160..165 "\"arg\"" [] [],
+                        },
+                        eq_token: EQUAL@165..167 "=" [Whitespace(" ")] [],
+                        value: missing (optional),
+                    },
+                ],
+                r_paren_token: R_PAREN@167..168 ")" [] [],
+            },
+        },
+        RCall {
+            function: RIdentifier {
+                name_token: IDENT@168..186 "fn" [Newline("\n"), Newline("\n"), Comments("# Comma tests"), Newline("\n")] [],
+            },
+            arguments: RCallArguments {
+                l_paren_token: L_PAREN@186..187 "(" [] [],
+                items: RArgumentList [
+                    RHoleArgument,
+                    COMMA@187..188 "," [] [],
+                    RHoleArgument,
+                ],
+                r_paren_token: R_PAREN@188..189 ")" [] [],
+            },
+        },
+        RCall {
+            function: RIdentifier {
+                name_token: IDENT@189..192 "fn" [Newline("\n")] [],
+            },
+            arguments: RCallArguments {
+                l_paren_token: L_PAREN@192..193 "(" [] [],
+                items: RArgumentList [
+                    RHoleArgument,
+                    COMMA@193..194 "," [] [],
+                    RHoleArgument,
+                    COMMA@194..195 "," [] [],
+                    RHoleArgument,
+                    COMMA@195..196 "," [] [],
+                    RHoleArgument,
+                ],
+                r_paren_token: R_PAREN@196..197 ")" [] [],
+            },
+        },
+        RCall {
+            function: RIdentifier {
+                name_token: IDENT@197..200 "fn" [Newline("\n")] [],
+            },
+            arguments: RCallArguments {
+                l_paren_token: L_PAREN@200..201 "(" [] [],
+                items: RArgumentList [
+                    RHoleArgument,
+                    COMMA@201..202 "," [] [],
+                    RHoleArgument,
+                    COMMA@202..203 "," [] [],
+                    RUnnamedArgument {
+                        value: RIdentifier {
+                            name_token: IDENT@203..204 "a" [] [],
+                        },
+                    },
+                    COMMA@204..205 "," [] [],
+                    RHoleArgument,
+                    COMMA@205..206 "," [] [],
+                    RUnnamedArgument {
+                        value: RIdentifier {
+                            name_token: IDENT@206..207 "b" [] [],
+                        },
+                    },
+                    COMMA@207..208 "," [] [],
+                    RHoleArgument,
+                    COMMA@208..209 "," [] [],
+                    RHoleArgument,
+                ],
+                r_paren_token: R_PAREN@209..210 ")" [] [],
+            },
+        },
+        RCall {
+            function: RIdentifier {
+                name_token: IDENT@210..230 "fn" [Newline("\n"), Newline("\n"), Comments("# Comment tests"), Newline("\n")] [],
+            },
+            arguments: RCallArguments {
+                l_paren_token: L_PAREN@230..231 "(" [] [],
                 items: RArgumentList [],
-                r_paren_token: R_PAREN@208..222 ")" [Newline("\n"), Whitespace("  "), Comments("# comment"), Newline("\n")] [],
+                r_paren_token: R_PAREN@231..245 ")" [Newline("\n"), Whitespace("  "), Comments("# comment"), Newline("\n")] [],
             },
         },
         RCall {
             function: RIdentifier {
-                name_token: IDENT@222..225 "fn" [Newline("\n")] [],
+                name_token: IDENT@245..248 "fn" [Newline("\n")] [],
             },
             arguments: RCallArguments {
-                l_paren_token: L_PAREN@225..226 "(" [] [],
+                l_paren_token: L_PAREN@248..249 "(" [] [],
                 items: RArgumentList [
                     RHoleArgument,
-                    COMMA@226..227 "," [] [],
+                    COMMA@249..250 "," [] [],
                     RHoleArgument,
-                    COMMA@227..241 "," [Newline("\n"), Whitespace("  "), Comments("# comment"), Newline("\n")] [],
+                    COMMA@250..264 "," [Newline("\n"), Whitespace("  "), Comments("# comment"), Newline("\n")] [],
                     RHoleArgument,
                 ],
-                r_paren_token: R_PAREN@241..242 ")" [] [],
+                r_paren_token: R_PAREN@264..265 ")" [] [],
             },
         },
         RCall {
             function: RIdentifier {
-                name_token: IDENT@242..245 "fn" [Newline("\n")] [],
+                name_token: IDENT@265..268 "fn" [Newline("\n")] [],
             },
             arguments: RCallArguments {
-                l_paren_token: L_PAREN@245..246 "(" [] [],
+                l_paren_token: L_PAREN@268..269 "(" [] [],
                 items: RArgumentList [
                     RUnnamedArgument {
                         value: RIdentifier {
-                            name_token: IDENT@246..250 "a" [Newline("\n"), Whitespace("  ")] [],
+                            name_token: IDENT@269..273 "a" [Newline("\n"), Whitespace("  ")] [],
                         },
                     },
-                    COMMA@250..262 "," [] [Whitespace(" "), Comments("# comment1")],
+                    COMMA@273..285 "," [] [Whitespace(" "), Comments("# comment1")],
                     RUnnamedArgument {
                         value: RIdentifier {
-                            name_token: IDENT@262..277 "b" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")],
+                            name_token: IDENT@285..300 "b" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")],
                         },
                     },
                 ],
-                r_paren_token: R_PAREN@277..279 ")" [Newline("\n")] [],
+                r_paren_token: R_PAREN@300..302 ")" [Newline("\n")] [],
             },
         },
         RCall {
             function: RIdentifier {
-                name_token: IDENT@279..282 "fn" [Newline("\n")] [],
+                name_token: IDENT@302..305 "fn" [Newline("\n")] [],
             },
             arguments: RCallArguments {
-                l_paren_token: L_PAREN@282..283 "(" [] [],
+                l_paren_token: L_PAREN@305..306 "(" [] [],
                 items: RArgumentList [
                     RNamedArgument {
                         name: RIdentifier {
-                            name_token: IDENT@283..298 "a" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment1")],
+                            name_token: IDENT@306..321 "a" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment1")],
                         },
-                        eq_token: EQUAL@298..313 "=" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")],
+                        eq_token: EQUAL@321..336 "=" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")],
                         value: RDoubleValue {
-                            value_token: R_DOUBLE_LITERAL@313..328 "1" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment3")],
+                            value_token: R_DOUBLE_LITERAL@336..351 "1" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment3")],
                         },
                     },
                 ],
-                r_paren_token: R_PAREN@328..330 ")" [Newline("\n")] [],
+                r_paren_token: R_PAREN@351..353 ")" [Newline("\n")] [],
             },
         },
         RCall {
             function: RBracedExpressions {
-                l_curly_token: L_CURLY@330..333 "{" [Newline("\n"), Newline("\n")] [],
+                l_curly_token: L_CURLY@353..356 "{" [Newline("\n"), Newline("\n")] [],
                 expressions: RExpressionList [
                     RIdentifier {
-                        name_token: IDENT@333..337 "expr" [] [],
+                        name_token: IDENT@356..360 "expr" [] [],
                     },
                 ],
-                r_curly_token: R_CURLY@337..338 "}" [] [],
+                r_curly_token: R_CURLY@360..361 "}" [] [],
             },
             arguments: RCallArguments {
-                l_paren_token: L_PAREN@338..339 "(" [] [],
+                l_paren_token: L_PAREN@361..362 "(" [] [],
                 items: RArgumentList [
                     RNamedArgument {
                         name: RIdentifier {
-                            name_token: IDENT@339..340 "a" [] [],
+                            name_token: IDENT@362..363 "a" [] [],
                         },
-                        eq_token: EQUAL@340..342 "=" [Whitespace(" ")] [],
+                        eq_token: EQUAL@363..365 "=" [Whitespace(" ")] [],
                         value: RDoubleValue {
-                            value_token: R_DOUBLE_LITERAL@342..344 "1" [Whitespace(" ")] [],
+                            value_token: R_DOUBLE_LITERAL@365..367 "1" [Whitespace(" ")] [],
                         },
                     },
                 ],
-                r_paren_token: R_PAREN@344..345 ")" [] [],
+                r_paren_token: R_PAREN@367..368 ")" [] [],
             },
         },
     ],
-    eof_token: EOF@345..346 "" [Newline("\n")] [],
+    eof_token: EOF@368..369 "" [Newline("\n")] [],
 }
 ```
 
 ## CST
 
 ```
-0: R_ROOT@0..346
+0: R_ROOT@0..369
   0: (empty)
-  1: R_EXPRESSION_LIST@0..345
+  1: R_EXPRESSION_LIST@0..368
     0: R_CALL@0..4
       0: R_IDENTIFIER@0..2
         0: IDENT@0..2 "fn" [] []
@@ -522,8 +567,9 @@ RRoot {
       1: R_CALL_ARGUMENTS@22..27
         0: L_PAREN@22..23 "(" [] []
         1: R_ARGUMENT_LIST@23..26
-          0: R_DOTS_ARGUMENT@23..26
-            0: DOTS@23..26 "..." [] []
+          0: R_UNNAMED_ARGUMENT@23..26
+            0: R_DOTS@23..26
+              0: DOTS@23..26 "..." [] []
         2: R_PAREN@26..27 ")" [] []
     4: R_CALL@27..41
       0: R_IDENTIFIER@27..30
@@ -535,8 +581,9 @@ RRoot {
             0: R_IDENTIFIER@31..32
               0: IDENT@31..32 "a" [] []
           1: COMMA@32..33 "," [] []
-          2: R_DOTS_ARGUMENT@33..37
-            0: DOTS@33..37 "..." [Whitespace(" ")] []
+          2: R_UNNAMED_ARGUMENT@33..37
+            0: R_DOTS@33..37
+              0: DOTS@33..37 "..." [Whitespace(" ")] []
           3: COMMA@37..38 "," [] []
           4: R_UNNAMED_ARGUMENT@38..40
             0: R_IDENTIFIER@38..40
@@ -631,142 +678,167 @@ RRoot {
             1: EQUAL@115..117 "=" [Whitespace(" ")] []
             2: (empty)
         2: R_PAREN@117..118 ")" [] []
-    11: R_CALL@118..133
+    11: R_CALL@118..131
       0: R_IDENTIFIER@118..122
         0: IDENT@118..122 "fn" [Newline("\n"), Newline("\n")] []
-      1: R_CALL_ARGUMENTS@122..133
+      1: R_CALL_ARGUMENTS@122..131
         0: L_PAREN@122..123 "(" [] []
-        1: R_ARGUMENT_LIST@123..132
-          0: R_NAMED_ARGUMENT@123..132
-            0: R_STRING_VALUE@123..128
-              0: R_STRING_LITERAL@123..128 "\"arg\"" [] []
-            1: EQUAL@128..130 "=" [Whitespace(" ")] []
-            2: R_DOUBLE_VALUE@130..132
-              0: R_DOUBLE_LITERAL@130..132 "1" [Whitespace(" ")] []
-        2: R_PAREN@132..133 ")" [] []
-    12: R_CALL@133..145
-      0: R_IDENTIFIER@133..136
-        0: IDENT@133..136 "fn" [Newline("\n")] []
-      1: R_CALL_ARGUMENTS@136..145
-        0: L_PAREN@136..137 "(" [] []
-        1: R_ARGUMENT_LIST@137..144
-          0: R_NAMED_ARGUMENT@137..144
-            0: R_STRING_VALUE@137..142
-              0: R_STRING_LITERAL@137..142 "\"arg\"" [] []
-            1: EQUAL@142..144 "=" [Whitespace(" ")] []
+        1: R_ARGUMENT_LIST@123..130
+          0: R_NAMED_ARGUMENT@123..130
+            0: R_DOT_DOT_I@123..126
+              0: DOTDOTI@123..126 "..1" [] []
+            1: EQUAL@126..128 "=" [Whitespace(" ")] []
+            2: R_DOUBLE_VALUE@128..130
+              0: R_DOUBLE_LITERAL@128..130 "2" [Whitespace(" ")] []
+        2: R_PAREN@130..131 ")" [] []
+    12: R_CALL@131..141
+      0: R_IDENTIFIER@131..134
+        0: IDENT@131..134 "fn" [Newline("\n")] []
+      1: R_CALL_ARGUMENTS@134..141
+        0: L_PAREN@134..135 "(" [] []
+        1: R_ARGUMENT_LIST@135..140
+          0: R_NAMED_ARGUMENT@135..140
+            0: R_DOT_DOT_I@135..138
+              0: DOTDOTI@135..138 "..1" [] []
+            1: EQUAL@138..140 "=" [Whitespace(" ")] []
             2: (empty)
-        2: R_PAREN@144..145 ")" [] []
-    13: R_CALL@145..166
-      0: R_IDENTIFIER@145..163
-        0: IDENT@145..163 "fn" [Newline("\n"), Newline("\n"), Comments("# Comma tests"), Newline("\n")] []
-      1: R_CALL_ARGUMENTS@163..166
-        0: L_PAREN@163..164 "(" [] []
-        1: R_ARGUMENT_LIST@164..165
-          0: R_HOLE_ARGUMENT@164..164
-          1: COMMA@164..165 "," [] []
-          2: R_HOLE_ARGUMENT@165..165
-        2: R_PAREN@165..166 ")" [] []
-    14: R_CALL@166..174
-      0: R_IDENTIFIER@166..169
-        0: IDENT@166..169 "fn" [Newline("\n")] []
-      1: R_CALL_ARGUMENTS@169..174
-        0: L_PAREN@169..170 "(" [] []
-        1: R_ARGUMENT_LIST@170..173
-          0: R_HOLE_ARGUMENT@170..170
-          1: COMMA@170..171 "," [] []
-          2: R_HOLE_ARGUMENT@171..171
-          3: COMMA@171..172 "," [] []
-          4: R_HOLE_ARGUMENT@172..172
-          5: COMMA@172..173 "," [] []
-          6: R_HOLE_ARGUMENT@173..173
-        2: R_PAREN@173..174 ")" [] []
-    15: R_CALL@174..187
-      0: R_IDENTIFIER@174..177
-        0: IDENT@174..177 "fn" [Newline("\n")] []
-      1: R_CALL_ARGUMENTS@177..187
-        0: L_PAREN@177..178 "(" [] []
-        1: R_ARGUMENT_LIST@178..186
-          0: R_HOLE_ARGUMENT@178..178
-          1: COMMA@178..179 "," [] []
-          2: R_HOLE_ARGUMENT@179..179
-          3: COMMA@179..180 "," [] []
-          4: R_UNNAMED_ARGUMENT@180..181
-            0: R_IDENTIFIER@180..181
-              0: IDENT@180..181 "a" [] []
-          5: COMMA@181..182 "," [] []
-          6: R_HOLE_ARGUMENT@182..182
-          7: COMMA@182..183 "," [] []
-          8: R_UNNAMED_ARGUMENT@183..184
-            0: R_IDENTIFIER@183..184
-              0: IDENT@183..184 "b" [] []
-          9: COMMA@184..185 "," [] []
-          10: R_HOLE_ARGUMENT@185..185
-          11: COMMA@185..186 "," [] []
-          12: R_HOLE_ARGUMENT@186..186
-        2: R_PAREN@186..187 ")" [] []
-    16: R_CALL@187..222
-      0: R_IDENTIFIER@187..207
-        0: IDENT@187..207 "fn" [Newline("\n"), Newline("\n"), Comments("# Comment tests"), Newline("\n")] []
-      1: R_CALL_ARGUMENTS@207..222
-        0: L_PAREN@207..208 "(" [] []
-        1: R_ARGUMENT_LIST@208..208
-        2: R_PAREN@208..222 ")" [Newline("\n"), Whitespace("  "), Comments("# comment"), Newline("\n")] []
-    17: R_CALL@222..242
-      0: R_IDENTIFIER@222..225
-        0: IDENT@222..225 "fn" [Newline("\n")] []
-      1: R_CALL_ARGUMENTS@225..242
-        0: L_PAREN@225..226 "(" [] []
-        1: R_ARGUMENT_LIST@226..241
-          0: R_HOLE_ARGUMENT@226..226
-          1: COMMA@226..227 "," [] []
-          2: R_HOLE_ARGUMENT@227..227
-          3: COMMA@227..241 "," [Newline("\n"), Whitespace("  "), Comments("# comment"), Newline("\n")] []
-          4: R_HOLE_ARGUMENT@241..241
-        2: R_PAREN@241..242 ")" [] []
-    18: R_CALL@242..279
-      0: R_IDENTIFIER@242..245
-        0: IDENT@242..245 "fn" [Newline("\n")] []
-      1: R_CALL_ARGUMENTS@245..279
-        0: L_PAREN@245..246 "(" [] []
-        1: R_ARGUMENT_LIST@246..277
-          0: R_UNNAMED_ARGUMENT@246..250
-            0: R_IDENTIFIER@246..250
-              0: IDENT@246..250 "a" [Newline("\n"), Whitespace("  ")] []
-          1: COMMA@250..262 "," [] [Whitespace(" "), Comments("# comment1")]
-          2: R_UNNAMED_ARGUMENT@262..277
-            0: R_IDENTIFIER@262..277
-              0: IDENT@262..277 "b" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")]
-        2: R_PAREN@277..279 ")" [Newline("\n")] []
-    19: R_CALL@279..330
-      0: R_IDENTIFIER@279..282
-        0: IDENT@279..282 "fn" [Newline("\n")] []
-      1: R_CALL_ARGUMENTS@282..330
-        0: L_PAREN@282..283 "(" [] []
-        1: R_ARGUMENT_LIST@283..328
-          0: R_NAMED_ARGUMENT@283..328
-            0: R_IDENTIFIER@283..298
-              0: IDENT@283..298 "a" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment1")]
-            1: EQUAL@298..313 "=" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")]
-            2: R_DOUBLE_VALUE@313..328
-              0: R_DOUBLE_LITERAL@313..328 "1" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment3")]
-        2: R_PAREN@328..330 ")" [Newline("\n")] []
-    20: R_CALL@330..345
-      0: R_BRACED_EXPRESSIONS@330..338
-        0: L_CURLY@330..333 "{" [Newline("\n"), Newline("\n")] []
-        1: R_EXPRESSION_LIST@333..337
-          0: R_IDENTIFIER@333..337
-            0: IDENT@333..337 "expr" [] []
-        2: R_CURLY@337..338 "}" [] []
-      1: R_CALL_ARGUMENTS@338..345
-        0: L_PAREN@338..339 "(" [] []
-        1: R_ARGUMENT_LIST@339..344
-          0: R_NAMED_ARGUMENT@339..344
-            0: R_IDENTIFIER@339..340
-              0: IDENT@339..340 "a" [] []
-            1: EQUAL@340..342 "=" [Whitespace(" ")] []
-            2: R_DOUBLE_VALUE@342..344
-              0: R_DOUBLE_LITERAL@342..344 "1" [Whitespace(" ")] []
-        2: R_PAREN@344..345 ")" [] []
-  2: EOF@345..346 "" [Newline("\n")] []
+        2: R_PAREN@140..141 ")" [] []
+    13: R_CALL@141..156
+      0: R_IDENTIFIER@141..145
+        0: IDENT@141..145 "fn" [Newline("\n"), Newline("\n")] []
+      1: R_CALL_ARGUMENTS@145..156
+        0: L_PAREN@145..146 "(" [] []
+        1: R_ARGUMENT_LIST@146..155
+          0: R_NAMED_ARGUMENT@146..155
+            0: R_STRING_VALUE@146..151
+              0: R_STRING_LITERAL@146..151 "\"arg\"" [] []
+            1: EQUAL@151..153 "=" [Whitespace(" ")] []
+            2: R_DOUBLE_VALUE@153..155
+              0: R_DOUBLE_LITERAL@153..155 "1" [Whitespace(" ")] []
+        2: R_PAREN@155..156 ")" [] []
+    14: R_CALL@156..168
+      0: R_IDENTIFIER@156..159
+        0: IDENT@156..159 "fn" [Newline("\n")] []
+      1: R_CALL_ARGUMENTS@159..168
+        0: L_PAREN@159..160 "(" [] []
+        1: R_ARGUMENT_LIST@160..167
+          0: R_NAMED_ARGUMENT@160..167
+            0: R_STRING_VALUE@160..165
+              0: R_STRING_LITERAL@160..165 "\"arg\"" [] []
+            1: EQUAL@165..167 "=" [Whitespace(" ")] []
+            2: (empty)
+        2: R_PAREN@167..168 ")" [] []
+    15: R_CALL@168..189
+      0: R_IDENTIFIER@168..186
+        0: IDENT@168..186 "fn" [Newline("\n"), Newline("\n"), Comments("# Comma tests"), Newline("\n")] []
+      1: R_CALL_ARGUMENTS@186..189
+        0: L_PAREN@186..187 "(" [] []
+        1: R_ARGUMENT_LIST@187..188
+          0: R_HOLE_ARGUMENT@187..187
+          1: COMMA@187..188 "," [] []
+          2: R_HOLE_ARGUMENT@188..188
+        2: R_PAREN@188..189 ")" [] []
+    16: R_CALL@189..197
+      0: R_IDENTIFIER@189..192
+        0: IDENT@189..192 "fn" [Newline("\n")] []
+      1: R_CALL_ARGUMENTS@192..197
+        0: L_PAREN@192..193 "(" [] []
+        1: R_ARGUMENT_LIST@193..196
+          0: R_HOLE_ARGUMENT@193..193
+          1: COMMA@193..194 "," [] []
+          2: R_HOLE_ARGUMENT@194..194
+          3: COMMA@194..195 "," [] []
+          4: R_HOLE_ARGUMENT@195..195
+          5: COMMA@195..196 "," [] []
+          6: R_HOLE_ARGUMENT@196..196
+        2: R_PAREN@196..197 ")" [] []
+    17: R_CALL@197..210
+      0: R_IDENTIFIER@197..200
+        0: IDENT@197..200 "fn" [Newline("\n")] []
+      1: R_CALL_ARGUMENTS@200..210
+        0: L_PAREN@200..201 "(" [] []
+        1: R_ARGUMENT_LIST@201..209
+          0: R_HOLE_ARGUMENT@201..201
+          1: COMMA@201..202 "," [] []
+          2: R_HOLE_ARGUMENT@202..202
+          3: COMMA@202..203 "," [] []
+          4: R_UNNAMED_ARGUMENT@203..204
+            0: R_IDENTIFIER@203..204
+              0: IDENT@203..204 "a" [] []
+          5: COMMA@204..205 "," [] []
+          6: R_HOLE_ARGUMENT@205..205
+          7: COMMA@205..206 "," [] []
+          8: R_UNNAMED_ARGUMENT@206..207
+            0: R_IDENTIFIER@206..207
+              0: IDENT@206..207 "b" [] []
+          9: COMMA@207..208 "," [] []
+          10: R_HOLE_ARGUMENT@208..208
+          11: COMMA@208..209 "," [] []
+          12: R_HOLE_ARGUMENT@209..209
+        2: R_PAREN@209..210 ")" [] []
+    18: R_CALL@210..245
+      0: R_IDENTIFIER@210..230
+        0: IDENT@210..230 "fn" [Newline("\n"), Newline("\n"), Comments("# Comment tests"), Newline("\n")] []
+      1: R_CALL_ARGUMENTS@230..245
+        0: L_PAREN@230..231 "(" [] []
+        1: R_ARGUMENT_LIST@231..231
+        2: R_PAREN@231..245 ")" [Newline("\n"), Whitespace("  "), Comments("# comment"), Newline("\n")] []
+    19: R_CALL@245..265
+      0: R_IDENTIFIER@245..248
+        0: IDENT@245..248 "fn" [Newline("\n")] []
+      1: R_CALL_ARGUMENTS@248..265
+        0: L_PAREN@248..249 "(" [] []
+        1: R_ARGUMENT_LIST@249..264
+          0: R_HOLE_ARGUMENT@249..249
+          1: COMMA@249..250 "," [] []
+          2: R_HOLE_ARGUMENT@250..250
+          3: COMMA@250..264 "," [Newline("\n"), Whitespace("  "), Comments("# comment"), Newline("\n")] []
+          4: R_HOLE_ARGUMENT@264..264
+        2: R_PAREN@264..265 ")" [] []
+    20: R_CALL@265..302
+      0: R_IDENTIFIER@265..268
+        0: IDENT@265..268 "fn" [Newline("\n")] []
+      1: R_CALL_ARGUMENTS@268..302
+        0: L_PAREN@268..269 "(" [] []
+        1: R_ARGUMENT_LIST@269..300
+          0: R_UNNAMED_ARGUMENT@269..273
+            0: R_IDENTIFIER@269..273
+              0: IDENT@269..273 "a" [Newline("\n"), Whitespace("  ")] []
+          1: COMMA@273..285 "," [] [Whitespace(" "), Comments("# comment1")]
+          2: R_UNNAMED_ARGUMENT@285..300
+            0: R_IDENTIFIER@285..300
+              0: IDENT@285..300 "b" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")]
+        2: R_PAREN@300..302 ")" [Newline("\n")] []
+    21: R_CALL@302..353
+      0: R_IDENTIFIER@302..305
+        0: IDENT@302..305 "fn" [Newline("\n")] []
+      1: R_CALL_ARGUMENTS@305..353
+        0: L_PAREN@305..306 "(" [] []
+        1: R_ARGUMENT_LIST@306..351
+          0: R_NAMED_ARGUMENT@306..351
+            0: R_IDENTIFIER@306..321
+              0: IDENT@306..321 "a" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment1")]
+            1: EQUAL@321..336 "=" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")]
+            2: R_DOUBLE_VALUE@336..351
+              0: R_DOUBLE_LITERAL@336..351 "1" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment3")]
+        2: R_PAREN@351..353 ")" [Newline("\n")] []
+    22: R_CALL@353..368
+      0: R_BRACED_EXPRESSIONS@353..361
+        0: L_CURLY@353..356 "{" [Newline("\n"), Newline("\n")] []
+        1: R_EXPRESSION_LIST@356..360
+          0: R_IDENTIFIER@356..360
+            0: IDENT@356..360 "expr" [] []
+        2: R_CURLY@360..361 "}" [] []
+      1: R_CALL_ARGUMENTS@361..368
+        0: L_PAREN@361..362 "(" [] []
+        1: R_ARGUMENT_LIST@362..367
+          0: R_NAMED_ARGUMENT@362..367
+            0: R_IDENTIFIER@362..363
+              0: IDENT@362..363 "a" [] []
+            1: EQUAL@363..365 "=" [Whitespace(" ")] []
+            2: R_DOUBLE_VALUE@365..367
+              0: R_DOUBLE_LITERAL@365..367 "1" [Whitespace(" ")] []
+        2: R_PAREN@367..368 ")" [] []
+  2: EOF@368..369 "" [Newline("\n")] []
 
 ```

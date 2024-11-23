@@ -38,9 +38,7 @@ impl RCall {
         let argument_expression = |arg| match arg {
             AnyRArgument::RNamedArgument(arg) => arg.value(),
             AnyRArgument::RUnnamedArgument(arg) => arg.value().ok(),
-            AnyRArgument::RBogusArgument(_)
-            | AnyRArgument::RDotsArgument(_)
-            | AnyRArgument::RHoleArgument(_) => None,
+            AnyRArgument::RBogusArgument(_) | AnyRArgument::RHoleArgument(_) => None,
         };
 
         // Must have exactly 2 arguments

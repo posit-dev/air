@@ -40,24 +40,12 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RComplexValue::new_unchecked(node) };
                     $body
                 }
-                $crate::RSyntaxKind::R_DEFAULT_PARAMETER => {
-                    let $pattern = unsafe { $crate::RDefaultParameter::new_unchecked(node) };
-                    $body
-                }
                 $crate::RSyntaxKind::R_DOT_DOT_I => {
                     let $pattern = unsafe { $crate::RDotDotI::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_DOTS => {
                     let $pattern = unsafe { $crate::RDots::new_unchecked(node) };
-                    $body
-                }
-                $crate::RSyntaxKind::R_DOTS_ARGUMENT => {
-                    let $pattern = unsafe { $crate::RDotsArgument::new_unchecked(node) };
-                    $body
-                }
-                $crate::RSyntaxKind::R_DOTS_PARAMETER => {
-                    let $pattern = unsafe { $crate::RDotsParameter::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_DOUBLE_VALUE => {
@@ -90,10 +78,6 @@ macro_rules! map_syntax_node {
                 }
                 $crate::RSyntaxKind::R_IDENTIFIER => {
                     let $pattern = unsafe { $crate::RIdentifier::new_unchecked(node) };
-                    $body
-                }
-                $crate::RSyntaxKind::R_IDENTIFIER_PARAMETER => {
-                    let $pattern = unsafe { $crate::RIdentifierParameter::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_IF_STATEMENT => {
@@ -130,6 +114,14 @@ macro_rules! map_syntax_node {
                 }
                 $crate::RSyntaxKind::R_NULL_EXPRESSION => {
                     let $pattern = unsafe { $crate::RNullExpression::new_unchecked(node) };
+                    $body
+                }
+                $crate::RSyntaxKind::R_PARAMETER => {
+                    let $pattern = unsafe { $crate::RParameter::new_unchecked(node) };
+                    $body
+                }
+                $crate::RSyntaxKind::R_PARAMETER_DEFAULT => {
+                    let $pattern = unsafe { $crate::RParameterDefault::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_PARAMETERS => {
@@ -198,10 +190,6 @@ macro_rules! map_syntax_node {
                 }
                 $crate::RSyntaxKind::R_BOGUS_EXPRESSION => {
                     let $pattern = unsafe { $crate::RBogusExpression::new_unchecked(node) };
-                    $body
-                }
-                $crate::RSyntaxKind::R_BOGUS_PARAMETER => {
-                    let $pattern = unsafe { $crate::RBogusParameter::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_BOGUS_VALUE => {

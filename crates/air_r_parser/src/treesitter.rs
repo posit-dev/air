@@ -355,7 +355,7 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "namespace_operator" => RSyntaxKind::R_NAMESPACE_EXPRESSION,
         "function_definition" => RSyntaxKind::R_FUNCTION_DEFINITION,
         "parameters" => RSyntaxKind::R_PARAMETERS,
-        "parameter" => parameter_syntax_kind(x),
+        "parameter" => RSyntaxKind::R_PARAMETER,
         "if_statement" => RSyntaxKind::R_IF_STATEMENT,
         "for_statement" => RSyntaxKind::R_FOR_STATEMENT,
         "while_statement" => RSyntaxKind::R_WHILE_STATEMENT,
@@ -435,45 +435,11 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "while" => RSyntaxKind::WHILE_KW,
         "repeat" => RSyntaxKind::REPEAT_KW,
         "comma" => RSyntaxKind::COMMA,
-        "dots" => RSyntaxKind::DOTS,
+        "dots" => RSyntaxKind::R_DOTS,
         "dot_dot_i" => RSyntaxKind::R_DOT_DOT_I,
         "comment" => RSyntaxKind::COMMENT,
         kind => unreachable!("Not implemented: '{kind}'."),
     }
-}
-
-/// Determine the specific `RSyntaxKind` of a `"parameter"` node
-///
-/// A parameter can be one of 3 kinds:
-/// - `function(x)` = R_IDENTIFIER_PARAMETER
-/// - `function(x = 5)` = R_DEFAULT_PARAMETER
-/// - `function(...)` = R_DOTS_PARAMETER
-///
-/// The tree-sitter grammar doesn't tell us which this is, but
-/// we can figure it out from the node structure.
-fn parameter_syntax_kind(x: &Node) -> RSyntaxKind {
-    // `name` is a mandatory field on all 3 variants
-    let name = x.child_by_field_name("name").unwrap();
-
-    if name.kind() == "dots" {
-        // Clearly `...`
-        return RSyntaxKind::R_DOTS_PARAMETER;
-    }
-
-    let mut cursor = x.walk();
-
-    // If a child is an anonymous `=`, must be default parameter
-    for child in x.children(&mut cursor) {
-        if child.is_named() {
-            continue;
-        }
-        if child.kind() != "=" {
-            continue;
-        }
-        return RSyntaxKind::R_DEFAULT_PARAMETER;
-    }
-
-    RSyntaxKind::R_IDENTIFIER_PARAMETER
 }
 
 // Disambiguate the 3 types of argument groups
@@ -488,20 +454,14 @@ fn arguments_syntax_kind(x: &Node) -> RSyntaxKind {
     }
 }
 
-// Disambiguate the 3 main types of argument kinds.
+// Disambiguate the 2 main types of argument kinds.
 // Holes don't actually show up in the tree-sitter tree.
 fn argument_syntax_kind(x: &Node) -> RSyntaxKind {
     // Required field on `argument` for `R_NAMED_ARGUMENT` case
     if x.child_by_field_name("name").is_some() {
-        return RSyntaxKind::R_NAMED_ARGUMENT;
-    }
-
-    // Required field on `argument` for `R_DOTS` ad `R_UNNAMED_ARGUMENT` cases
-    let value = x.child_by_field_name("value").unwrap();
-
-    match value.kind() {
-        "dots" => RSyntaxKind::R_DOTS_ARGUMENT,
-        _ => RSyntaxKind::R_UNNAMED_ARGUMENT,
+        RSyntaxKind::R_NAMED_ARGUMENT
+    } else {
+        RSyntaxKind::R_UNNAMED_ARGUMENT
     }
 }
 

@@ -8,6 +8,7 @@ impl FormatRule<AnyRArgumentName> for FormatAnyRArgumentName {
     type Context = RFormatContext;
     fn fmt(&self, node: &AnyRArgumentName, f: &mut RFormatter) -> FormatResult<()> {
         match node {
+            AnyRArgumentName::RDotDotI(node) => node.format().fmt(f),
             AnyRArgumentName::RDots(node) => node.format().fmt(f),
             AnyRArgumentName::RIdentifier(node) => node.format().fmt(f),
             AnyRArgumentName::RStringValue(node) => node.format().fmt(f),

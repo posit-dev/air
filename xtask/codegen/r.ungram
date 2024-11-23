@@ -35,7 +35,6 @@ SyntaxElement = SyntaxElement
 RBogus = SyntaxElement*
 RBogusValue = SyntaxElement*
 RBogusExpression = SyntaxElement*
-RBogusParameter = SyntaxElement*
 RBogusArgument = SyntaxElement*
 
 // ----------------------------------------------------------------
@@ -53,7 +52,6 @@ RUnaryExpression =
   operator: ('+' | '-' | '~' | '!' | '?')
   argument: AnyRExpression
 
-// TODO: User-defined infix operators
 RBinaryExpression =
 	left: AnyRExpression
     operator: (
@@ -93,19 +91,23 @@ RBinaryExpression =
 	)
 	right: AnyRExpression
 
-// Binary expression that is restricted on the LHS
+// Binary expression that is restricted on the RHS
 RExtractExpression =
 	left: AnyRExpression
-    operator: ('$' | '@')
-	right: RSymbolOrString
+	operator: ('$' | '@')
+	right: AnyRSelector
 
 // Binary expression that is restricted on both the LHS and RHS
 RNamespaceExpression =
-	left: RSymbolOrString
-    operator: ('::' | ':::')
-	right: RSymbolOrString
+	left: AnyRSelector
+	operator: ('::' | ':::')
+	right: AnyRSelector
 
-RSymbolOrString = RIdentifier | RStringValue
+AnyRSelector =
+	RIdentifier
+	| RStringValue
+	| RDots
+	| RDotDotI
 
 // ----------------------------------------------------------------
 // Function
@@ -120,22 +122,25 @@ RParameters =
 	items: RParameterList
 	')'
 
-RParameterList = (AnyRParameter (',' AnyRParameter)*)
+RParameterList = (RParameter (',' RParameter)*)
 
-AnyRParameter =
-	RIdentifierParameter
-	| RDotsParameter
-	| RDefaultParameter
-	| RBogusParameter
+RParameter =
+	name: AnyRParameterName
+	default: RParameterDefault?
 
-RIdentifierParameter = name: 'ident'
+// TODO: tree-sitter-r currently allows the `value` to be optional,
+// but R's parser doesn't allow this. We plan to make it required,
+// so we go ahead and do that here.
+// https://github.com/r-lib/tree-sitter-r/issues/161
 
-RDotsParameter = name: '...'
-
-RDefaultParameter =
-	name: 'ident'
+RParameterDefault =
 	'='
-	default: AnyRExpression?
+	value: AnyRExpression
+
+AnyRParameterName =
+	RIdentifier
+	| RDots
+	| RDotDotI
 
 // ----------------------------------------------------------------
 // If statement
@@ -191,10 +196,6 @@ RBracedExpressions =
 
 // ----------------------------------------------------------------
 // Parenthesized expressions
-
-// Note that the R grammar requires exactly 1 expression inside parenthesis,
-// but tree-sitter-r currently allows 0 or >1, but we are going to fix that.
-// https://github.com/r-lib/tree-sitter-r/issues/144
 
 RParenthesizedExpression =
 	'('
@@ -258,7 +259,6 @@ RArgumentList = (AnyRArgument (',' AnyRArgument)*)
 AnyRArgument =
 	RNamedArgument
 	| RUnnamedArgument
-	| RDotsArgument
 	| RHoleArgument
 	| RBogusArgument
 
@@ -270,14 +270,13 @@ RNamedArgument =
 RUnnamedArgument =
 	value: AnyRExpression
 
-RDotsArgument = value: '...'
-
 RHoleArgument = hole: ''?
 
 AnyRArgumentName =
 	RIdentifier
 	| RStringValue
 	| RDots
+	| RDotDotI
 
 // ----------------------------------------------------------------
 // Expression
@@ -310,6 +309,7 @@ AnyRExpression =
 	| RInfExpression
 	| RNanExpression
 	| RNaExpression
+	| RDots
 	| RDotDotI
 	| RBogusExpression
 
