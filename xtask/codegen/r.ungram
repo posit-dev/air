@@ -94,20 +94,20 @@ RBinaryExpression =
 // Binary expression that is restricted on the RHS
 RExtractExpression =
 	left: AnyRExpression
-    operator: ('$' | '@')
+	operator: ('$' | '@')
 	right: AnyRSelector
 
 // Binary expression that is restricted on both the LHS and RHS
 RNamespaceExpression =
 	left: AnyRSelector
-    operator: ('::' | ':::')
+	operator: ('::' | ':::')
 	right: AnyRSelector
 
 AnyRSelector =
 	RIdentifier
 	| RStringValue
 	| RDots
-    | RDotDotI
+	| RDotDotI
 
 // ----------------------------------------------------------------
 // Function
@@ -125,8 +125,8 @@ RParameters =
 RParameterList = (RParameter (',' RParameter)*)
 
 RParameter =
-   name: AnyRParameterName
-   default: RParameterDefault?
+	name: AnyRParameterName
+	default: RParameterDefault?
 
 // TODO: tree-sitter-r currently allows the `value` to be optional,
 // but R's parser doesn't allow this. We plan to make it required,
@@ -134,13 +134,13 @@ RParameter =
 // https://github.com/r-lib/tree-sitter-r/issues/161
 
 RParameterDefault =
-  '='
-  value: AnyRExpression
+	'='
+	value: AnyRExpression
 
 AnyRParameterName =
-    RIdentifier
-    | RDots
-    | RDotDotI
+	RIdentifier
+	| RDots
+	| RDotDotI
 
 // ----------------------------------------------------------------
 // If statement
@@ -276,7 +276,7 @@ AnyRArgumentName =
 	RIdentifier
 	| RStringValue
 	| RDots
-    | RDotDotI
+	| RDotDotI
 
 // ----------------------------------------------------------------
 // Expression
@@ -309,7 +309,7 @@ AnyRExpression =
 	| RInfExpression
 	| RNanExpression
 	| RNaExpression
-    | RDots
+	| RDots
 	| RDotDotI
 	| RBogusExpression
 
