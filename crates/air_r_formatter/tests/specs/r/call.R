@@ -1,6 +1,5 @@
 fn()
 fn(a)
-fn(a = 1, ... = 2)
 
 # ------------------------------------------------------------------------
 # Holes
@@ -15,7 +14,14 @@ fn(a_really_long_argument_here,,another_really_really_long_argument_to_test_this
 
 fn(...)
 fn(..., a = 1)
+fn(a = 1, ... = 2)
 fn(a = 1, another_really_really_long_argument_to_test_this_feature, a_really_long_argument_here, ...)
+
+# ------------------------------------------------------------------------
+# Dot dot i
+
+fn(..1, ..2)
+fn(..1 = 1, ..2 = 2)
 
 # ------------------------------------------------------------------------
 # User requested line break

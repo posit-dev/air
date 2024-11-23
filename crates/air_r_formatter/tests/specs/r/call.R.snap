@@ -7,7 +7,6 @@ info: r/call.R
 ```R
 fn()
 fn(a)
-fn(a = 1, ... = 2)
 
 # ------------------------------------------------------------------------
 # Holes
@@ -22,7 +21,14 @@ fn(a_really_long_argument_here,,another_really_really_long_argument_to_test_this
 
 fn(...)
 fn(..., a = 1)
+fn(a = 1, ... = 2)
 fn(a = 1, another_really_really_long_argument_to_test_this_feature, a_really_long_argument_here, ...)
+
+# ------------------------------------------------------------------------
+# Dot dot i
+
+fn(..1, ..2)
+fn(..1 = 1, ..2 = 2)
 
 # ------------------------------------------------------------------------
 # User requested line break
@@ -478,7 +484,6 @@ Line width: 80
 ```R
 fn()
 fn(a)
-fn(a = 1, ... = 2)
 
 # ------------------------------------------------------------------------
 # Holes
@@ -498,12 +503,19 @@ fn(
 
 fn(...)
 fn(..., a = 1)
+fn(a = 1, ... = 2)
 fn(
 	a = 1,
 	another_really_really_long_argument_to_test_this_feature,
 	a_really_long_argument_here,
 	...
 )
+
+# ------------------------------------------------------------------------
+# Dot dot i
+
+fn(..1, ..2)
+fn(..1 = 1, ..2 = 2)
 
 # ------------------------------------------------------------------------
 # User requested line break
@@ -967,6 +979,6 @@ fn(
 
 # Lines exceeding max width of 80 characters
 ```
-   79: # `RHoleArgument`, so we can't compute the "number of lines before the first token".
-  136: 	my_long_list_my_long_list_my_long_list_my_long_list_long_long_long_long_long_list,
+   85: # `RHoleArgument`, so we can't compute the "number of lines before the first token".
+  142: 	my_long_list_my_long_list_my_long_list_my_long_list_long_long_long_long_long_list,
 ```
