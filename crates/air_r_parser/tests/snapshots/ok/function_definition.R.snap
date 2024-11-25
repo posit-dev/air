@@ -231,7 +231,8 @@ RRoot {
                     arguments: RCallArguments {
                         l_paren_token: L_PAREN@169..170 "(" [] [],
                         items: RArgumentList [
-                            RUnnamedArgument {
+                            RArgument {
+                                name_clause: missing (optional),
                                 value: RStringValue {
                                     value_token: R_STRING_LITERAL@170..175 "\"..1\"" [] [],
                                 },
@@ -248,7 +249,8 @@ RRoot {
                     arguments: RCallArguments {
                         l_paren_token: L_PAREN@182..183 "(" [] [],
                         items: RArgumentList [
-                            RUnnamedArgument {
+                            RArgument {
+                                name_clause: missing (optional),
                                 value: RStringValue {
                                     value_token: R_STRING_LITERAL@183..188 "\"..2\"" [] [],
                                 },
@@ -298,7 +300,8 @@ RRoot {
                     arguments: RCallArguments {
                         l_paren_token: L_PAREN@220..221 "(" [] [],
                         items: RArgumentList [
-                            RUnnamedArgument {
+                            RArgument {
+                                name_clause: missing (optional),
                                 value: RStringValue {
                                     value_token: R_STRING_LITERAL@221..226 "\"..1\"" [] [],
                                 },
@@ -315,7 +318,8 @@ RRoot {
                     arguments: RCallArguments {
                         l_paren_token: L_PAREN@233..234 "(" [] [],
                         items: RArgumentList [
-                            RUnnamedArgument {
+                            RArgument {
+                                name_clause: missing (optional),
                                 value: RStringValue {
                                     value_token: R_STRING_LITERAL@234..239 "\"..2\"" [] [],
                                 },
@@ -522,8 +526,9 @@ RRoot {
           1: R_CALL_ARGUMENTS@169..176
             0: L_PAREN@169..170 "(" [] []
             1: R_ARGUMENT_LIST@170..175
-              0: R_UNNAMED_ARGUMENT@170..175
-                0: R_STRING_VALUE@170..175
+              0: R_ARGUMENT@170..175
+                0: (empty)
+                1: R_STRING_VALUE@170..175
                   0: R_STRING_LITERAL@170..175 "\"..1\"" [] []
             2: R_PAREN@175..176 ")" [] []
         1: PLUS@176..178 "+" [Whitespace(" ")] []
@@ -533,8 +538,9 @@ RRoot {
           1: R_CALL_ARGUMENTS@182..189
             0: L_PAREN@182..183 "(" [] []
             1: R_ARGUMENT_LIST@183..188
-              0: R_UNNAMED_ARGUMENT@183..188
-                0: R_STRING_VALUE@183..188
+              0: R_ARGUMENT@183..188
+                0: (empty)
+                1: R_STRING_VALUE@183..188
                   0: R_STRING_LITERAL@183..188 "\"..2\"" [] []
             2: R_PAREN@188..189 ")" [] []
     8: R_FUNCTION_DEFINITION@189..240
@@ -565,8 +571,9 @@ RRoot {
           1: R_CALL_ARGUMENTS@220..227
             0: L_PAREN@220..221 "(" [] []
             1: R_ARGUMENT_LIST@221..226
-              0: R_UNNAMED_ARGUMENT@221..226
-                0: R_STRING_VALUE@221..226
+              0: R_ARGUMENT@221..226
+                0: (empty)
+                1: R_STRING_VALUE@221..226
                   0: R_STRING_LITERAL@221..226 "\"..1\"" [] []
             2: R_PAREN@226..227 ")" [] []
         1: PLUS@227..229 "+" [Whitespace(" ")] []
@@ -576,8 +583,9 @@ RRoot {
           1: R_CALL_ARGUMENTS@233..240
             0: L_PAREN@233..234 "(" [] []
             1: R_ARGUMENT_LIST@234..239
-              0: R_UNNAMED_ARGUMENT@234..239
-                0: R_STRING_VALUE@234..239
+              0: R_ARGUMENT@234..239
+                0: (empty)
+                1: R_STRING_VALUE@234..239
                   0: R_STRING_LITERAL@234..239 "\"..2\"" [] []
             2: R_PAREN@239..240 ")" [] []
     9: R_FUNCTION_DEFINITION@240..277
