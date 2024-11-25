@@ -1,8 +1,9 @@
 use crate::prelude::*;
 use air_r_syntax::AnyRExpression;
+use air_r_syntax::RArgument;
+use air_r_syntax::RArgumentNameClause;
 use air_r_syntax::RIfStatement;
 use air_r_syntax::RLanguage;
-use air_r_syntax::RNamedArgument;
 use air_r_syntax::RParenthesizedExpression;
 use air_r_syntax::RSyntaxKind;
 use air_r_syntax::RWhileStatement;
@@ -63,14 +64,16 @@ impl CommentStyle for RCommentStyle {
                 .or_else(handle_repeat_comment)
                 .or_else(handle_if_statement_comment)
                 .or_else(handle_parenthesized_expression_comment)
-                .or_else(handle_named_argument_comment),
+                .or_else(handle_argument_name_clause_comment)
+                .or_else(handle_argument_comment),
             CommentTextPosition::OwnLine => handle_for_comment(comment)
                 .or_else(handle_function_comment)
                 .or_else(handle_while_comment)
                 .or_else(handle_repeat_comment)
                 .or_else(handle_if_statement_comment)
                 .or_else(handle_parenthesized_expression_comment)
-                .or_else(handle_named_argument_comment),
+                .or_else(handle_argument_name_clause_comment)
+                .or_else(handle_argument_comment),
             CommentTextPosition::SameLine => {
                 // Not applicable for R, we don't have `/* */` comments
                 CommentPlacement::Default(comment)
@@ -276,15 +279,15 @@ fn handle_parenthesized_expression_comment(
     CommentPlacement::Default(comment)
 }
 
-fn handle_named_argument_comment(
+fn handle_argument_name_clause_comment(
     comment: DecoratedComment<RLanguage>,
 ) -> CommentPlacement<RLanguage> {
-    let Some(enclosing) = RNamedArgument::cast_ref(comment.enclosing_node()) else {
+    let Some(enclosing) = RArgumentNameClause::cast_ref(comment.enclosing_node()) else {
         return CommentPlacement::Default(comment);
     };
 
     let Ok(name) = enclosing.name() else {
-        // Should always have a `name`
+        // We expect to always have a `name` and never fall through here
         return CommentPlacement::Default(comment);
     };
 
@@ -300,6 +303,29 @@ fn handle_named_argument_comment(
         //    = expr
         // )
         // ```
+        if name.syntax() == preceding {
+            return CommentPlacement::leading(preceding.clone(), comment);
+        }
+    }
+
+    CommentPlacement::Default(comment)
+}
+
+fn handle_argument_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
+    let Some(enclosing) = RArgument::cast_ref(comment.enclosing_node()) else {
+        return CommentPlacement::Default(comment);
+    };
+
+    let Some(name_clause) = enclosing.name_clause() else {
+        // Don't need to worry about comment placement on unnamed arguments
+        return CommentPlacement::Default(comment);
+    };
+
+    if let Some(preceding) = comment.preceding_node() {
+        // Make comments directly after the `name_clause` leading comments of
+        // the `name_clause`
+        //
+        // Needed for idempotence.
         //
         // ```r
         // fn(
@@ -309,7 +335,6 @@ fn handle_named_argument_comment(
         // )
         // ```
         //
-        //
         // ```r
         // fn(
         //  xs,
@@ -318,7 +343,7 @@ fn handle_named_argument_comment(
         //    expr
         // )
         // ```
-        if name.syntax() == preceding {
+        if name_clause.syntax() == preceding {
             return CommentPlacement::leading(preceding.clone(), comment);
         }
     }
