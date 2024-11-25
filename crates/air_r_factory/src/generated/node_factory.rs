@@ -6,6 +6,49 @@ use air_r_syntax::{
     RSyntaxElement as SyntaxElement, RSyntaxNode as SyntaxNode, RSyntaxToken as SyntaxToken, *,
 };
 use biome_rowan::AstNode;
+pub fn r_argument() -> RArgumentBuilder {
+    RArgumentBuilder {
+        name_clause: None,
+        value: None,
+    }
+}
+pub struct RArgumentBuilder {
+    name_clause: Option<RArgumentNameClause>,
+    value: Option<AnyRExpression>,
+}
+impl RArgumentBuilder {
+    pub fn with_name_clause(mut self, name_clause: RArgumentNameClause) -> Self {
+        self.name_clause = Some(name_clause);
+        self
+    }
+    pub fn with_value(mut self, value: AnyRExpression) -> Self {
+        self.value = Some(value);
+        self
+    }
+    pub fn build(self) -> RArgument {
+        RArgument::unwrap_cast(SyntaxNode::new_detached(
+            RSyntaxKind::R_ARGUMENT,
+            [
+                self.name_clause
+                    .map(|token| SyntaxElement::Node(token.into_syntax())),
+                self.value
+                    .map(|token| SyntaxElement::Node(token.into_syntax())),
+            ],
+        ))
+    }
+}
+pub fn r_argument_name_clause(
+    name: AnyRArgumentName,
+    eq_token: SyntaxToken,
+) -> RArgumentNameClause {
+    RArgumentNameClause::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_ARGUMENT_NAME_CLAUSE,
+        [
+            Some(SyntaxElement::Node(name.into_syntax())),
+            Some(SyntaxElement::Token(eq_token)),
+        ],
+    ))
+}
 pub fn r_binary_expression(
     left: AnyRExpression,
     operator_token: SyntaxToken,
@@ -152,9 +195,6 @@ pub fn r_function_definition(
         ],
     ))
 }
-pub fn r_hole_argument() -> RHoleArgument {
-    RHoleArgument::unwrap_cast(SyntaxNode::new_detached(RSyntaxKind::R_HOLE_ARGUMENT, []))
-}
 pub fn r_identifier(name_token: SyntaxToken) -> RIdentifier {
     RIdentifier::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_IDENTIFIER,
@@ -222,35 +262,6 @@ pub fn r_na_expression(value_token: SyntaxToken) -> RNaExpression {
         RSyntaxKind::R_NA_EXPRESSION,
         [Some(SyntaxElement::Token(value_token))],
     ))
-}
-pub fn r_named_argument(name: AnyRArgumentName, eq_token: SyntaxToken) -> RNamedArgumentBuilder {
-    RNamedArgumentBuilder {
-        name,
-        eq_token,
-        value: None,
-    }
-}
-pub struct RNamedArgumentBuilder {
-    name: AnyRArgumentName,
-    eq_token: SyntaxToken,
-    value: Option<AnyRExpression>,
-}
-impl RNamedArgumentBuilder {
-    pub fn with_value(mut self, value: AnyRExpression) -> Self {
-        self.value = Some(value);
-        self
-    }
-    pub fn build(self) -> RNamedArgument {
-        RNamedArgument::unwrap_cast(SyntaxNode::new_detached(
-            RSyntaxKind::R_NAMED_ARGUMENT,
-            [
-                Some(SyntaxElement::Node(self.name.into_syntax())),
-                Some(SyntaxElement::Token(self.eq_token)),
-                self.value
-                    .map(|token| SyntaxElement::Node(token.into_syntax())),
-            ],
-        ))
-    }
 }
 pub fn r_namespace_expression(
     left: AnyRSelector,
@@ -460,12 +471,6 @@ pub fn r_unary_expression(
         ],
     ))
 }
-pub fn r_unnamed_argument(value: AnyRExpression) -> RUnnamedArgument {
-    RUnnamedArgument::unwrap_cast(SyntaxNode::new_detached(
-        RSyntaxKind::R_UNNAMED_ARGUMENT,
-        [Some(SyntaxElement::Node(value.into_syntax()))],
-    ))
-}
 pub fn r_while_statement(
     while_token: SyntaxToken,
     l_paren_token: SyntaxToken,
@@ -486,7 +491,7 @@ pub fn r_while_statement(
 }
 pub fn r_argument_list<I, S>(items: I, separators: S) -> RArgumentList
 where
-    I: IntoIterator<Item = AnyRArgument>,
+    I: IntoIterator<Item = RArgument>,
     I::IntoIter: ExactSizeIterator,
     S: IntoIterator<Item = RSyntaxToken>,
     S::IntoIter: ExactSizeIterator,
@@ -544,16 +549,6 @@ where
     I::IntoIter: ExactSizeIterator,
 {
     RBogus::unwrap_cast(SyntaxNode::new_detached(RSyntaxKind::R_BOGUS, slots))
-}
-pub fn r_bogus_argument<I>(slots: I) -> RBogusArgument
-where
-    I: IntoIterator<Item = Option<SyntaxElement>>,
-    I::IntoIter: ExactSizeIterator,
-{
-    RBogusArgument::unwrap_cast(SyntaxNode::new_detached(
-        RSyntaxKind::R_BOGUS_ARGUMENT,
-        slots,
-    ))
 }
 pub fn r_bogus_expression<I>(slots: I) -> RBogusExpression
 where
