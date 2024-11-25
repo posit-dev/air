@@ -154,27 +154,33 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_FOR_STATEMENT
             | RSyntaxKind::R_WHILE_STATEMENT
             | RSyntaxKind::R_REPEAT_STATEMENT
-            | RSyntaxKind::R_CALL
-            | RSyntaxKind::R_SUBSET
-            | RSyntaxKind::R_SUBSET2
             | RSyntaxKind::R_PARENTHESIZED_EXPRESSION
             | RSyntaxKind::R_EXTRACT_EXPRESSION
             | RSyntaxKind::R_NAMESPACE_EXPRESSION
             | RSyntaxKind::R_NA_EXPRESSION => self.handle_node_enter(kind),
 
+            RSyntaxKind::R_CALL => self.handle_call_like_enter(
+                RSyntaxKind::R_CALL,
+                RSyntaxKind::R_CALL_ARGUMENTS,
+                node,
+                iter,
+            ),
+            RSyntaxKind::R_SUBSET => self.handle_call_like_enter(
+                RSyntaxKind::R_SUBSET,
+                RSyntaxKind::R_SUBSET_ARGUMENTS,
+                node,
+                iter,
+            ),
+            RSyntaxKind::R_SUBSET2 => self.handle_call_like_enter(
+                RSyntaxKind::R_SUBSET2,
+                RSyntaxKind::R_SUBSET2_ARGUMENTS,
+                node,
+                iter,
+            ),
             RSyntaxKind::R_PARAMETERS => self.handle_parameters_enter(node, iter),
             RSyntaxKind::R_PARAMETER => self.handle_parameter_enter(node, iter),
             RSyntaxKind::R_IF_STATEMENT => self.handle_if_statement_enter(node, iter),
             RSyntaxKind::R_ARGUMENT => self.handle_argument_enter(node, iter),
-            RSyntaxKind::R_CALL_ARGUMENTS => {
-                self.handle_call_like_arguments_enter(kind, node, iter)
-            }
-            RSyntaxKind::R_SUBSET_ARGUMENTS => {
-                self.handle_call_like_arguments_enter(kind, node, iter)
-            }
-            RSyntaxKind::R_SUBSET2_ARGUMENTS => {
-                self.handle_call_like_arguments_enter(kind, node, iter)
-            }
             RSyntaxKind::R_BRACED_EXPRESSIONS => self.handle_braced_expressions_enter(node, iter),
 
             // Literals / wrapped keywords
@@ -257,6 +263,9 @@ impl<'src> RWalk<'src> {
 
             // Unreachable
             RSyntaxKind::R_ELSE_CLAUSE
+            | RSyntaxKind::R_CALL_ARGUMENTS
+            | RSyntaxKind::R_SUBSET_ARGUMENTS
+            | RSyntaxKind::R_SUBSET2_ARGUMENTS
             | RSyntaxKind::R_ARGUMENT_NAME_CLAUSE
             | RSyntaxKind::R_PARAMETER_LIST
             | RSyntaxKind::R_ARGUMENT_LIST
@@ -302,18 +311,15 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_PARENTHESIZED_EXPRESSION
             | RSyntaxKind::R_EXTRACT_EXPRESSION
             | RSyntaxKind::R_NAMESPACE_EXPRESSION
-            | RSyntaxKind::R_NA_EXPRESSION
-            | RSyntaxKind::R_CALL
-            | RSyntaxKind::R_SUBSET
-            | RSyntaxKind::R_SUBSET2 => self.handle_node_leave(kind),
+            | RSyntaxKind::R_NA_EXPRESSION => self.handle_node_leave(kind),
 
+            RSyntaxKind::R_CALL => self.handle_call_like_leave(kind),
+            RSyntaxKind::R_SUBSET => self.handle_call_like_leave(kind),
+            RSyntaxKind::R_SUBSET2 => self.handle_call_like_leave(kind),
             RSyntaxKind::R_PARAMETERS => self.handle_parameters_leave(),
             RSyntaxKind::R_PARAMETER => self.handle_parameter_leave(),
             RSyntaxKind::R_IF_STATEMENT => self.handle_if_statement_leave(),
             RSyntaxKind::R_ARGUMENT => self.handle_argument_leave(),
-            RSyntaxKind::R_CALL_ARGUMENTS => self.handle_call_like_arguments_leave(kind),
-            RSyntaxKind::R_SUBSET_ARGUMENTS => self.handle_call_like_arguments_leave(kind),
-            RSyntaxKind::R_SUBSET2_ARGUMENTS => self.handle_call_like_arguments_leave(kind),
             RSyntaxKind::R_BRACED_EXPRESSIONS => self.handle_braced_expressions_leave(),
 
             // Literals / wrapped keywords
@@ -413,6 +419,9 @@ impl<'src> RWalk<'src> {
 
             // Unreachable directly
             RSyntaxKind::R_ELSE_CLAUSE
+            | RSyntaxKind::R_CALL_ARGUMENTS
+            | RSyntaxKind::R_SUBSET_ARGUMENTS
+            | RSyntaxKind::R_SUBSET2_ARGUMENTS
             | RSyntaxKind::R_ARGUMENT_NAME_CLAUSE
             | RSyntaxKind::R_PARAMETER_LIST
             | RSyntaxKind::R_ARGUMENT_LIST
@@ -749,7 +758,57 @@ impl<'src> RWalk<'src> {
         self.handle_node_leave(RSyntaxKind::R_BRACED_EXPRESSIONS);
     }
 
-    fn handle_call_like_arguments_enter(
+    fn handle_call_like_enter(
+        &mut self,
+        kind: RSyntaxKind,
+        arguments_kind: RSyntaxKind,
+        node: tree_sitter::Node,
+        iter: &mut Preorder,
+    ) {
+        self.handle_node_enter(kind);
+
+        while let Some(event) = iter.peek() {
+            match event {
+                WalkEvent::Enter(_) => match iter.peek_field_name() {
+                    Some("arguments") => self.handle_arguments(arguments_kind, iter),
+                    // `"function"` field and comments
+                    _ => self.walk_next(iter),
+                },
+                WalkEvent::Leave(next) => {
+                    if node != *next {
+                        panic!("Expected next `Leave` event to be for `node`.");
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    fn handle_call_like_leave(&mut self, kind: RSyntaxKind) {
+        self.handle_node_leave(kind);
+    }
+
+    fn handle_arguments(&mut self, kind: RSyntaxKind, iter: &mut Preorder) {
+        // `Enter` event for arguments
+        let event = iter.next().unwrap();
+        let WalkEvent::Enter(node) = event else {
+            panic!("Expected to `Enter` arguments");
+        };
+
+        self.handle_arguments_enter(kind, node, iter);
+
+        // `Leave` event for arguments
+        let event = iter.next().unwrap();
+        assert_eq!(
+            event,
+            WalkEvent::Leave(node),
+            "Expected to `Leave` arguments"
+        );
+
+        self.handle_arguments_leave(kind);
+    }
+
+    fn handle_arguments_enter(
         &mut self,
         kind: RSyntaxKind,
         node: tree_sitter::Node,
@@ -805,7 +864,7 @@ impl<'src> RWalk<'src> {
         }
     }
 
-    fn handle_call_like_arguments_leave(&mut self, kind: RSyntaxKind) {
+    fn handle_arguments_leave(&mut self, kind: RSyntaxKind) {
         self.handle_node_leave(kind);
     }
 

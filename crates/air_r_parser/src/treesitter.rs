@@ -105,7 +105,6 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "call" => RSyntaxKind::R_CALL,
         "subset" => RSyntaxKind::R_SUBSET,
         "subset2" => RSyntaxKind::R_SUBSET2,
-        "arguments" => arguments_syntax_kind(x),
         "argument" => RSyntaxKind::R_ARGUMENT,
         "identifier" => RSyntaxKind::R_IDENTIFIER,
         "integer" => RSyntaxKind::R_INTEGER_VALUE,
@@ -179,18 +178,6 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "dot_dot_i" => RSyntaxKind::R_DOT_DOT_I,
         "comment" => RSyntaxKind::COMMENT,
         kind => unreachable!("Not implemented: '{kind}'."),
-    }
-}
-
-// Disambiguate the 3 types of argument groups
-fn arguments_syntax_kind(x: &Node) -> RSyntaxKind {
-    let open = x.child_by_field_name("open").unwrap();
-
-    match open.kind() {
-        "(" => RSyntaxKind::R_CALL_ARGUMENTS,
-        "[" => RSyntaxKind::R_SUBSET_ARGUMENTS,
-        "[[" => RSyntaxKind::R_SUBSET2_ARGUMENTS,
-        _ => unreachable!("Unknown arguments `open` token: {}", open.kind()),
     }
 }
 
