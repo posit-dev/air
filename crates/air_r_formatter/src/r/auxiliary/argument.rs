@@ -11,6 +11,9 @@ impl FormatNodeRule<RArgument> for FormatRArgument {
 
         match (name_clause, value) {
             // Hole
+            // `foo(,)`
+            // `foo(value, )`
+            // `foo(, value)`
             (None, None) => Ok(()),
 
             // Unnamed argument
