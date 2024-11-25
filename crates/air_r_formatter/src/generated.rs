@@ -4,6 +4,80 @@ use crate::{
     AsFormat, FormatBogusNodeRule, FormatNodeRule, IntoFormat, RFormatContext, RFormatter,
 };
 use biome_formatter::{FormatOwnedWithRule, FormatRefWithRule, FormatResult, FormatRule};
+impl FormatRule<air_r_syntax::RArgument> for crate::r::auxiliary::argument::FormatRArgument {
+    type Context = RFormatContext;
+    #[inline(always)]
+    fn fmt(&self, node: &air_r_syntax::RArgument, f: &mut RFormatter) -> FormatResult<()> {
+        FormatNodeRule::<air_r_syntax::RArgument>::fmt(self, node, f)
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::RArgument {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::RArgument,
+        crate::r::auxiliary::argument::FormatRArgument,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::auxiliary::argument::FormatRArgument::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::RArgument {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::RArgument,
+        crate::r::auxiliary::argument::FormatRArgument,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::auxiliary::argument::FormatRArgument::default(),
+        )
+    }
+}
+impl FormatRule<air_r_syntax::RArgumentNameClause>
+    for crate::r::auxiliary::argument_name_clause::FormatRArgumentNameClause
+{
+    type Context = RFormatContext;
+    #[inline(always)]
+    fn fmt(
+        &self,
+        node: &air_r_syntax::RArgumentNameClause,
+        f: &mut RFormatter,
+    ) -> FormatResult<()> {
+        FormatNodeRule::<air_r_syntax::RArgumentNameClause>::fmt(self, node, f)
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::RArgumentNameClause {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::RArgumentNameClause,
+        crate::r::auxiliary::argument_name_clause::FormatRArgumentNameClause,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::auxiliary::argument_name_clause::FormatRArgumentNameClause::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::RArgumentNameClause {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::RArgumentNameClause,
+        crate::r::auxiliary::argument_name_clause::FormatRArgumentNameClause,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::auxiliary::argument_name_clause::FormatRArgumentNameClause::default(),
+        )
+    }
+}
 impl FormatRule<air_r_syntax::RBinaryExpression>
     for crate::r::auxiliary::binary_expression::FormatRBinaryExpression
 {
@@ -478,42 +552,6 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RFunctionDefinition {
         )
     }
 }
-impl FormatRule<air_r_syntax::RHoleArgument>
-    for crate::r::auxiliary::hole_argument::FormatRHoleArgument
-{
-    type Context = RFormatContext;
-    #[inline(always)]
-    fn fmt(&self, node: &air_r_syntax::RHoleArgument, f: &mut RFormatter) -> FormatResult<()> {
-        FormatNodeRule::<air_r_syntax::RHoleArgument>::fmt(self, node, f)
-    }
-}
-impl AsFormat<RFormatContext> for air_r_syntax::RHoleArgument {
-    type Format<'a> = FormatRefWithRule<
-        'a,
-        air_r_syntax::RHoleArgument,
-        crate::r::auxiliary::hole_argument::FormatRHoleArgument,
-    >;
-    fn format(&self) -> Self::Format<'_> {
-        #![allow(clippy::default_constructed_unit_structs)]
-        FormatRefWithRule::new(
-            self,
-            crate::r::auxiliary::hole_argument::FormatRHoleArgument::default(),
-        )
-    }
-}
-impl IntoFormat<RFormatContext> for air_r_syntax::RHoleArgument {
-    type Format = FormatOwnedWithRule<
-        air_r_syntax::RHoleArgument,
-        crate::r::auxiliary::hole_argument::FormatRHoleArgument,
-    >;
-    fn into_format(self) -> Self::Format {
-        #![allow(clippy::default_constructed_unit_structs)]
-        FormatOwnedWithRule::new(
-            self,
-            crate::r::auxiliary::hole_argument::FormatRHoleArgument::default(),
-        )
-    }
-}
 impl FormatRule<air_r_syntax::RIdentifier> for crate::r::auxiliary::identifier::FormatRIdentifier {
     type Context = RFormatContext;
     #[inline(always)]
@@ -689,42 +727,6 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RNaExpression {
         FormatOwnedWithRule::new(
             self,
             crate::r::auxiliary::na_expression::FormatRNaExpression::default(),
-        )
-    }
-}
-impl FormatRule<air_r_syntax::RNamedArgument>
-    for crate::r::auxiliary::named_argument::FormatRNamedArgument
-{
-    type Context = RFormatContext;
-    #[inline(always)]
-    fn fmt(&self, node: &air_r_syntax::RNamedArgument, f: &mut RFormatter) -> FormatResult<()> {
-        FormatNodeRule::<air_r_syntax::RNamedArgument>::fmt(self, node, f)
-    }
-}
-impl AsFormat<RFormatContext> for air_r_syntax::RNamedArgument {
-    type Format<'a> = FormatRefWithRule<
-        'a,
-        air_r_syntax::RNamedArgument,
-        crate::r::auxiliary::named_argument::FormatRNamedArgument,
-    >;
-    fn format(&self) -> Self::Format<'_> {
-        #![allow(clippy::default_constructed_unit_structs)]
-        FormatRefWithRule::new(
-            self,
-            crate::r::auxiliary::named_argument::FormatRNamedArgument::default(),
-        )
-    }
-}
-impl IntoFormat<RFormatContext> for air_r_syntax::RNamedArgument {
-    type Format = FormatOwnedWithRule<
-        air_r_syntax::RNamedArgument,
-        crate::r::auxiliary::named_argument::FormatRNamedArgument,
-    >;
-    fn into_format(self) -> Self::Format {
-        #![allow(clippy::default_constructed_unit_structs)]
-        FormatOwnedWithRule::new(
-            self,
-            crate::r::auxiliary::named_argument::FormatRNamedArgument::default(),
         )
     }
 }
@@ -1351,42 +1353,6 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RUnaryExpression {
         )
     }
 }
-impl FormatRule<air_r_syntax::RUnnamedArgument>
-    for crate::r::auxiliary::unnamed_argument::FormatRUnnamedArgument
-{
-    type Context = RFormatContext;
-    #[inline(always)]
-    fn fmt(&self, node: &air_r_syntax::RUnnamedArgument, f: &mut RFormatter) -> FormatResult<()> {
-        FormatNodeRule::<air_r_syntax::RUnnamedArgument>::fmt(self, node, f)
-    }
-}
-impl AsFormat<RFormatContext> for air_r_syntax::RUnnamedArgument {
-    type Format<'a> = FormatRefWithRule<
-        'a,
-        air_r_syntax::RUnnamedArgument,
-        crate::r::auxiliary::unnamed_argument::FormatRUnnamedArgument,
-    >;
-    fn format(&self) -> Self::Format<'_> {
-        #![allow(clippy::default_constructed_unit_structs)]
-        FormatRefWithRule::new(
-            self,
-            crate::r::auxiliary::unnamed_argument::FormatRUnnamedArgument::default(),
-        )
-    }
-}
-impl IntoFormat<RFormatContext> for air_r_syntax::RUnnamedArgument {
-    type Format = FormatOwnedWithRule<
-        air_r_syntax::RUnnamedArgument,
-        crate::r::auxiliary::unnamed_argument::FormatRUnnamedArgument,
-    >;
-    fn into_format(self) -> Self::Format {
-        #![allow(clippy::default_constructed_unit_structs)]
-        FormatOwnedWithRule::new(
-            self,
-            crate::r::auxiliary::unnamed_argument::FormatRUnnamedArgument::default(),
-        )
-    }
-}
 impl FormatRule<air_r_syntax::RWhileStatement>
     for crate::r::auxiliary::while_statement::FormatRWhileStatement
 {
@@ -1526,42 +1492,6 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RBogus {
         FormatOwnedWithRule::new(self, crate::r::bogus::bogus::FormatRBogus::default())
     }
 }
-impl FormatRule<air_r_syntax::RBogusArgument>
-    for crate::r::bogus::bogus_argument::FormatRBogusArgument
-{
-    type Context = RFormatContext;
-    #[inline(always)]
-    fn fmt(&self, node: &air_r_syntax::RBogusArgument, f: &mut RFormatter) -> FormatResult<()> {
-        FormatBogusNodeRule::<air_r_syntax::RBogusArgument>::fmt(self, node, f)
-    }
-}
-impl AsFormat<RFormatContext> for air_r_syntax::RBogusArgument {
-    type Format<'a> = FormatRefWithRule<
-        'a,
-        air_r_syntax::RBogusArgument,
-        crate::r::bogus::bogus_argument::FormatRBogusArgument,
-    >;
-    fn format(&self) -> Self::Format<'_> {
-        #![allow(clippy::default_constructed_unit_structs)]
-        FormatRefWithRule::new(
-            self,
-            crate::r::bogus::bogus_argument::FormatRBogusArgument::default(),
-        )
-    }
-}
-impl IntoFormat<RFormatContext> for air_r_syntax::RBogusArgument {
-    type Format = FormatOwnedWithRule<
-        air_r_syntax::RBogusArgument,
-        crate::r::bogus::bogus_argument::FormatRBogusArgument,
-    >;
-    fn into_format(self) -> Self::Format {
-        #![allow(clippy::default_constructed_unit_structs)]
-        FormatOwnedWithRule::new(
-            self,
-            crate::r::bogus::bogus_argument::FormatRBogusArgument::default(),
-        )
-    }
-}
 impl FormatRule<air_r_syntax::RBogusExpression>
     for crate::r::bogus::bogus_expression::FormatRBogusExpression
 {
@@ -1630,27 +1560,6 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RBogusValue {
             self,
             crate::r::bogus::bogus_value::FormatRBogusValue::default(),
         )
-    }
-}
-impl AsFormat<RFormatContext> for air_r_syntax::AnyRArgument {
-    type Format<'a> = FormatRefWithRule<
-        'a,
-        air_r_syntax::AnyRArgument,
-        crate::r::any::argument::FormatAnyRArgument,
-    >;
-    fn format(&self) -> Self::Format<'_> {
-        #![allow(clippy::default_constructed_unit_structs)]
-        FormatRefWithRule::new(self, crate::r::any::argument::FormatAnyRArgument::default())
-    }
-}
-impl IntoFormat<RFormatContext> for air_r_syntax::AnyRArgument {
-    type Format = FormatOwnedWithRule<
-        air_r_syntax::AnyRArgument,
-        crate::r::any::argument::FormatAnyRArgument,
-    >;
-    fn into_format(self) -> Self::Format {
-        #![allow(clippy::default_constructed_unit_structs)]
-        FormatOwnedWithRule::new(self, crate::r::any::argument::FormatAnyRArgument::default())
     }
 }
 impl AsFormat<RFormatContext> for air_r_syntax::AnyRArgumentName {

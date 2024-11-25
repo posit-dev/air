@@ -1,6 +1,6 @@
 use crate::prelude::*;
-use air_r_syntax::AnyRArgument;
 use air_r_syntax::AnyRExpression;
+use air_r_syntax::RArgument;
 use air_r_syntax::RBracedExpressions;
 use air_r_syntax::RBracedExpressionsFields;
 use air_r_syntax::RExpressionList;
@@ -174,7 +174,7 @@ pub(crate) fn as_curly_curly(node: &RBracedExpressions) -> Option<RCurlyCurly> {
     let has_argument_parent = node
         .syntax()
         .ancestors()
-        .any(|syntax| AnyRArgument::can_cast(syntax.kind()));
+        .any(|syntax| RArgument::can_cast(syntax.kind()));
 
     if !has_argument_parent {
         return None;
