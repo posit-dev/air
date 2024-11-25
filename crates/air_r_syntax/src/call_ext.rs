@@ -1,7 +1,6 @@
 use biome_rowan::AstSeparatedList;
 use biome_rowan::SyntaxResult;
 
-use crate::AnyRArgument;
 use crate::AnyRExpression;
 use crate::AnyRValue;
 use crate::RCall;
@@ -33,14 +32,6 @@ impl RCall {
     fn is_titled_block_call(arguments: &RCallArguments) -> bool {
         let mut arguments = arguments.items().iter();
 
-        // Unwraps `AnyRArgument` that are internally named or unnamed arguments
-        // into their `AnyRExpression`
-        let argument_expression = |arg| match arg {
-            AnyRArgument::RNamedArgument(arg) => arg.value(),
-            AnyRArgument::RUnnamedArgument(arg) => arg.value().ok(),
-            AnyRArgument::RBogusArgument(_) | AnyRArgument::RHoleArgument(_) => None,
-        };
-
         // Must have exactly 2 arguments
         let Some(Ok(first)) = arguments.next() else {
             return false;
@@ -50,11 +41,11 @@ impl RCall {
         };
         let None = arguments.next() else { return false };
 
-        // Both args must be named or unnamed arguments
-        let Some(first) = argument_expression(first) else {
+        // Both arguments must have a value. They are allowed to be named arguments.
+        let Some(first) = first.value() else {
             return false;
         };
-        let Some(second) = argument_expression(second) else {
+        let Some(second) = second.value() else {
             return false;
         };
 

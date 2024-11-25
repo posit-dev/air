@@ -110,9 +110,8 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
         "R_SUBSET2",
         "R_SUBSET2_ARGUMENTS",
         "R_ARGUMENT_LIST",
-        "R_NAMED_ARGUMENT",
-        "R_UNNAMED_ARGUMENT",
-        "R_HOLE_ARGUMENT",
+        "R_ARGUMENT",
+        "R_ARGUMENT_NAME_CLAUSE",
         "R_EXPRESSION_LIST",
         "R_INTEGER_VALUE",
         "R_DOUBLE_VALUE",
@@ -131,6 +130,5 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
         "R_BOGUS",
         "R_BOGUS_VALUE",
         "R_BOGUS_EXPRESSION",
-        "R_BOGUS_ARGUMENT",
     ],
 };

@@ -31,10 +31,9 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
 
     fn is_bogus(&self) -> bool {
         match self {
-            RSyntaxKind::R_BOGUS
-            | RSyntaxKind::R_BOGUS_VALUE
-            | RSyntaxKind::R_BOGUS_EXPRESSION
-            | RSyntaxKind::R_BOGUS_ARGUMENT => true,
+            RSyntaxKind::R_BOGUS | RSyntaxKind::R_BOGUS_VALUE | RSyntaxKind::R_BOGUS_EXPRESSION => {
+                true
+            }
 
             RSyntaxKind::TOMBSTONE
             | RSyntaxKind::EOF
@@ -107,9 +106,8 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_SUBSET2
             | RSyntaxKind::R_SUBSET2_ARGUMENTS
             | RSyntaxKind::R_ARGUMENT_LIST
-            | RSyntaxKind::R_NAMED_ARGUMENT
-            | RSyntaxKind::R_UNNAMED_ARGUMENT
-            | RSyntaxKind::R_HOLE_ARGUMENT
+            | RSyntaxKind::R_ARGUMENT
+            | RSyntaxKind::R_ARGUMENT_NAME_CLAUSE
             | RSyntaxKind::R_EXPRESSION_LIST
             | RSyntaxKind::R_INTEGER_VALUE
             | RSyntaxKind::R_DOUBLE_VALUE
@@ -175,12 +173,6 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_EXTRACT_EXPRESSION
             | RSyntaxKind::R_NAMESPACE_EXPRESSION
             | RSyntaxKind::R_BOGUS_EXPRESSION => RSyntaxKind::R_BOGUS_EXPRESSION,
-
-            // Bogus argument
-            RSyntaxKind::R_NAMED_ARGUMENT
-            | RSyntaxKind::R_UNNAMED_ARGUMENT
-            | RSyntaxKind::R_HOLE_ARGUMENT
-            | RSyntaxKind::R_BOGUS_ARGUMENT => RSyntaxKind::R_BOGUS_ARGUMENT,
 
             // Bogus
             RSyntaxKind::TOMBSTONE
@@ -259,6 +251,8 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_SUBSET2
             | RSyntaxKind::R_SUBSET2_ARGUMENTS
             | RSyntaxKind::R_ARGUMENT_LIST
+            | RSyntaxKind::R_ARGUMENT
+            | RSyntaxKind::R_ARGUMENT_NAME_CLAUSE
             | RSyntaxKind::R_EXPRESSION_LIST
             | RSyntaxKind::TILDE
             | RSyntaxKind::ASSIGN

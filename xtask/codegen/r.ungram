@@ -35,7 +35,6 @@ SyntaxElement = SyntaxElement
 RBogus = SyntaxElement*
 RBogusValue = SyntaxElement*
 RBogusExpression = SyntaxElement*
-RBogusArgument = SyntaxElement*
 
 // ----------------------------------------------------------------
 // Root
@@ -236,11 +235,10 @@ RSubset2Arguments =
 // - Any number of sequential commas
 // - But two arguments must be separated by at least 1 comma
 //
-// The way we implement this is by physically representing
-// empty "holes" created by commas by a zero width `RHoleArgument`
-// node. This is similar to `JsArrayHole`, and allows us to use
-// standard repetition syntax while still enforcing the
-// above rules. It's quite elegant, really.
+// We implement this by allowing both the `name_clause` and
+// the `value` to be optional. In the parser, when we see a
+// hole we open an `RArgument` node and then immediately
+// close it without pushing any children.
 //
 // # Allowed
 // fn()
@@ -254,23 +252,15 @@ RSubset2Arguments =
 //
 // # Not allowed
 // fn(a b)
-RArgumentList = (AnyRArgument (',' AnyRArgument)*)
+RArgumentList = (RArgument (',' RArgument)*)
 
-AnyRArgument =
-	RNamedArgument
-	| RUnnamedArgument
-	| RHoleArgument
-	| RBogusArgument
-
-RNamedArgument =
-	name: AnyRArgumentName
-	'='
+RArgument =
+	name_clause: RArgumentNameClause?
 	value: AnyRExpression?
 
-RUnnamedArgument =
-	value: AnyRExpression
-
-RHoleArgument = hole: ''?
+RArgumentNameClause =
+	name: AnyRArgumentName
+	'='
 
 AnyRArgumentName =
 	RIdentifier
