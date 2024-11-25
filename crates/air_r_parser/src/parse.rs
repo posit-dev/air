@@ -157,16 +157,15 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_CALL
             | RSyntaxKind::R_SUBSET
             | RSyntaxKind::R_SUBSET2
-            | RSyntaxKind::R_UNNAMED_ARGUMENT
             | RSyntaxKind::R_PARENTHESIZED_EXPRESSION
             | RSyntaxKind::R_EXTRACT_EXPRESSION
             | RSyntaxKind::R_NAMESPACE_EXPRESSION
-            | RSyntaxKind::R_NAMED_ARGUMENT
             | RSyntaxKind::R_NA_EXPRESSION => self.handle_node_enter(kind),
 
             RSyntaxKind::R_PARAMETERS => self.handle_parameters_enter(node, iter),
             RSyntaxKind::R_PARAMETER => self.handle_parameter_enter(node, iter),
             RSyntaxKind::R_IF_STATEMENT => self.handle_if_statement_enter(node, iter),
+            RSyntaxKind::R_ARGUMENT => self.handle_argument_enter(node, iter),
             RSyntaxKind::R_CALL_ARGUMENTS => {
                 self.handle_call_like_arguments_enter(kind, node, iter)
             }
@@ -258,7 +257,7 @@ impl<'src> RWalk<'src> {
 
             // Unreachable
             RSyntaxKind::R_ELSE_CLAUSE
-            | RSyntaxKind::R_HOLE_ARGUMENT
+            | RSyntaxKind::R_ARGUMENT_NAME_CLAUSE
             | RSyntaxKind::R_PARAMETER_LIST
             | RSyntaxKind::R_ARGUMENT_LIST
             | RSyntaxKind::R_EXPRESSION_LIST
@@ -285,7 +284,6 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_BOGUS
             | RSyntaxKind::R_BOGUS_VALUE
             | RSyntaxKind::R_BOGUS_EXPRESSION
-            | RSyntaxKind::R_BOGUS_ARGUMENT
             | RSyntaxKind::TOMBSTONE
             | RSyntaxKind::__LAST => unreachable!("{kind:?}"),
         }
@@ -301,11 +299,9 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_FOR_STATEMENT
             | RSyntaxKind::R_WHILE_STATEMENT
             | RSyntaxKind::R_REPEAT_STATEMENT
-            | RSyntaxKind::R_UNNAMED_ARGUMENT
             | RSyntaxKind::R_PARENTHESIZED_EXPRESSION
             | RSyntaxKind::R_EXTRACT_EXPRESSION
             | RSyntaxKind::R_NAMESPACE_EXPRESSION
-            | RSyntaxKind::R_NAMED_ARGUMENT
             | RSyntaxKind::R_NA_EXPRESSION
             | RSyntaxKind::R_CALL
             | RSyntaxKind::R_SUBSET
@@ -314,6 +310,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_PARAMETERS => self.handle_parameters_leave(),
             RSyntaxKind::R_PARAMETER => self.handle_parameter_leave(),
             RSyntaxKind::R_IF_STATEMENT => self.handle_if_statement_leave(),
+            RSyntaxKind::R_ARGUMENT => self.handle_argument_leave(),
             RSyntaxKind::R_CALL_ARGUMENTS => self.handle_call_like_arguments_leave(kind),
             RSyntaxKind::R_SUBSET_ARGUMENTS => self.handle_call_like_arguments_leave(kind),
             RSyntaxKind::R_SUBSET2_ARGUMENTS => self.handle_call_like_arguments_leave(kind),
@@ -416,7 +413,7 @@ impl<'src> RWalk<'src> {
 
             // Unreachable directly
             RSyntaxKind::R_ELSE_CLAUSE
-            | RSyntaxKind::R_HOLE_ARGUMENT
+            | RSyntaxKind::R_ARGUMENT_NAME_CLAUSE
             | RSyntaxKind::R_PARAMETER_LIST
             | RSyntaxKind::R_ARGUMENT_LIST
             | RSyntaxKind::R_EXPRESSION_LIST
@@ -443,7 +440,6 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_BOGUS
             | RSyntaxKind::R_BOGUS_VALUE
             | RSyntaxKind::R_BOGUS_EXPRESSION
-            | RSyntaxKind::R_BOGUS_ARGUMENT
             | RSyntaxKind::TOMBSTONE
             | RSyntaxKind::__LAST => unreachable!("{kind:?}"),
         }
@@ -789,13 +785,9 @@ impl<'src> RWalk<'src> {
                         self.walk_next(iter);
                         last_kind = RSyntaxKind::COMMA;
                     }
-                    RSyntaxKind::R_NAMED_ARGUMENT => {
+                    RSyntaxKind::R_ARGUMENT => {
                         self.walk_next(iter);
-                        last_kind = RSyntaxKind::R_NAMED_ARGUMENT;
-                    }
-                    RSyntaxKind::R_UNNAMED_ARGUMENT => {
-                        self.walk_next(iter);
-                        last_kind = RSyntaxKind::R_UNNAMED_ARGUMENT;
+                        last_kind = RSyntaxKind::R_ARGUMENT;
                     }
                     RSyntaxKind::COMMENT => {
                         self.walk_next(iter);
@@ -817,6 +809,54 @@ impl<'src> RWalk<'src> {
         self.handle_node_leave(kind);
     }
 
+    fn handle_argument_enter(&mut self, node: tree_sitter::Node, iter: &mut Preorder) {
+        self.handle_node_enter(RSyntaxKind::R_ARGUMENT);
+
+        // A complication with arguments is that tree-sitter-r doesn't differentiate
+        // between named and unnamed arguments at the node level. Named arguments
+        // have a `"name"` field node (identifier/string/dots/dotdoti) followed
+        // by an `=` sign. If we see that `"name"` field, we open the name clause
+        // node and close it after we see the `=`.
+        let mut seen_equal = false;
+
+        while let Some(event) = iter.peek() {
+            match event {
+                WalkEvent::Enter(next) => match next.syntax_kind() {
+                    RSyntaxKind::R_IDENTIFIER
+                    | RSyntaxKind::R_STRING_VALUE
+                    | RSyntaxKind::R_DOTS
+                    | RSyntaxKind::R_DOT_DOT_I => {
+                        if !seen_equal {
+                            if let Some(next_field_name) = iter.peek_field_name() {
+                                if next_field_name == "name" {
+                                    self.handle_node_enter(RSyntaxKind::R_ARGUMENT_NAME_CLAUSE)
+                                }
+                            }
+                        }
+                        self.walk_next(iter);
+                    }
+                    RSyntaxKind::EQUAL => {
+                        seen_equal = true;
+                        self.walk_next(iter);
+                        self.handle_node_leave(RSyntaxKind::R_ARGUMENT_NAME_CLAUSE);
+                    }
+                    // Comments, values, etc
+                    _ => self.walk_next(iter),
+                },
+                WalkEvent::Leave(next) => {
+                    if node != *next {
+                        panic!("Expected next `Leave` event to be for `node`.");
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    fn handle_argument_leave(&mut self) {
+        self.handle_node_leave(RSyntaxKind::R_ARGUMENT);
+    }
+
     /// Is there a hole before this `)`, `]`, or `]]`?
     ///
     /// ```r
@@ -830,8 +870,8 @@ impl<'src> RWalk<'src> {
     /// ```
     fn handle_hole_before_close(&mut self, last_kind: RSyntaxKind) {
         if last_kind == RSyntaxKind::COMMA {
-            self.handle_node_enter(RSyntaxKind::R_HOLE_ARGUMENT);
-            self.handle_node_leave(RSyntaxKind::R_HOLE_ARGUMENT);
+            self.handle_node_enter(RSyntaxKind::R_ARGUMENT);
+            self.handle_node_leave(RSyntaxKind::R_ARGUMENT);
         }
     }
 
@@ -850,8 +890,8 @@ impl<'src> RWalk<'src> {
     /// ```
     fn handle_hole_before_comma(&mut self, last_kind: RSyntaxKind, open: RSyntaxKind) {
         if last_kind == RSyntaxKind::COMMA || last_kind == open {
-            self.handle_node_enter(RSyntaxKind::R_HOLE_ARGUMENT);
-            self.handle_node_leave(RSyntaxKind::R_HOLE_ARGUMENT);
+            self.handle_node_enter(RSyntaxKind::R_ARGUMENT);
+            self.handle_node_leave(RSyntaxKind::R_ARGUMENT);
         }
     }
 }

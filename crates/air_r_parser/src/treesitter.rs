@@ -304,8 +304,20 @@ impl<'tree> Preorder<'tree> {
         Preorder { cursor, next }
     }
 
+    /// Peek at the upcoming node without advancing to it
+    ///
+    /// NOTE: Effectively free, since we track this anyways
     pub fn peek(&self) -> &Option<WalkEvent<Node<'tree>>> {
         &self.next
+    }
+
+    /// Peek at the upcoming node's field name
+    ///
+    /// NOTE: The `self.cursor` is kept in sync with `self.next` and is always
+    /// pointing to the upcoming node, so using the cursor to extract the field
+    /// name is always valid.
+    pub fn peek_field_name(&self) -> Option<&'static str> {
+        self.cursor.field_name()
     }
 
     pub fn skip_subtree(&mut self) {
@@ -366,7 +378,7 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "subset" => RSyntaxKind::R_SUBSET,
         "subset2" => RSyntaxKind::R_SUBSET2,
         "arguments" => arguments_syntax_kind(x),
-        "argument" => argument_syntax_kind(x),
+        "argument" => RSyntaxKind::R_ARGUMENT,
         "identifier" => RSyntaxKind::R_IDENTIFIER,
         "integer" => RSyntaxKind::R_INTEGER_VALUE,
         "float" => RSyntaxKind::R_DOUBLE_VALUE,
@@ -451,17 +463,6 @@ fn arguments_syntax_kind(x: &Node) -> RSyntaxKind {
         "[" => RSyntaxKind::R_SUBSET_ARGUMENTS,
         "[[" => RSyntaxKind::R_SUBSET2_ARGUMENTS,
         _ => unreachable!("Unknown arguments `open` token: {}", open.kind()),
-    }
-}
-
-// Disambiguate the 2 main types of argument kinds.
-// Holes don't actually show up in the tree-sitter tree.
-fn argument_syntax_kind(x: &Node) -> RSyntaxKind {
-    // Required field on `argument` for `R_NAMED_ARGUMENT` case
-    if x.child_by_field_name("name").is_some() {
-        RSyntaxKind::R_NAMED_ARGUMENT
-    } else {
-        RSyntaxKind::R_UNNAMED_ARGUMENT
     }
 }
 
