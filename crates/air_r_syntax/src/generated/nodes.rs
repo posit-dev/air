@@ -23,6 +23,86 @@ use std::fmt::{Debug, Formatter};
 #[allow(dead_code)]
 pub(crate) const SLOT_MAP_EMPTY_VALUE: u8 = u8::MAX;
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RArgument {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RArgument {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RArgumentFields {
+        RArgumentFields {
+            name_clause: self.name_clause(),
+            value: self.value(),
+        }
+    }
+    pub fn name_clause(&self) -> Option<RArgumentNameClause> {
+        support::node(&self.syntax, 0usize)
+    }
+    pub fn value(&self) -> Option<AnyRExpression> {
+        support::node(&self.syntax, 1usize)
+    }
+}
+impl Serialize for RArgument {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RArgumentFields {
+    pub name_clause: Option<RArgumentNameClause>,
+    pub value: Option<AnyRExpression>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RArgumentNameClause {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RArgumentNameClause {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RArgumentNameClauseFields {
+        RArgumentNameClauseFields {
+            name: self.name(),
+            eq_token: self.eq_token(),
+        }
+    }
+    pub fn name(&self) -> SyntaxResult<AnyRArgumentName> {
+        support::required_node(&self.syntax, 0usize)
+    }
+    pub fn eq_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 1usize)
+    }
+}
+impl Serialize for RArgumentNameClause {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RArgumentNameClauseFields {
+    pub name: SyntaxResult<AnyRArgumentName>,
+    pub eq_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RBinaryExpression {
     pub(crate) syntax: SyntaxNode,
 }
@@ -603,34 +683,6 @@ pub struct RFunctionDefinitionFields {
     pub body: SyntaxResult<AnyRExpression>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub struct RHoleArgument {
-    pub(crate) syntax: SyntaxNode,
-}
-impl RHoleArgument {
-    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
-    #[doc = r""]
-    #[doc = r" # Safety"]
-    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
-    #[doc = r" or a match on [SyntaxNode::kind]"]
-    #[inline]
-    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
-        Self { syntax }
-    }
-    pub fn as_fields(&self) -> RHoleArgumentFields {
-        RHoleArgumentFields {}
-    }
-}
-impl Serialize for RHoleArgument {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        self.as_fields().serialize(serializer)
-    }
-}
-#[derive(Serialize)]
-pub struct RHoleArgumentFields {}
-#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RIdentifier {
     pub(crate) syntax: SyntaxNode,
 }
@@ -829,51 +881,6 @@ impl Serialize for RNaExpression {
 #[derive(Serialize)]
 pub struct RNaExpressionFields {
     pub value: SyntaxResult<SyntaxToken>,
-}
-#[derive(Clone, PartialEq, Eq, Hash)]
-pub struct RNamedArgument {
-    pub(crate) syntax: SyntaxNode,
-}
-impl RNamedArgument {
-    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
-    #[doc = r""]
-    #[doc = r" # Safety"]
-    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
-    #[doc = r" or a match on [SyntaxNode::kind]"]
-    #[inline]
-    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
-        Self { syntax }
-    }
-    pub fn as_fields(&self) -> RNamedArgumentFields {
-        RNamedArgumentFields {
-            name: self.name(),
-            eq_token: self.eq_token(),
-            value: self.value(),
-        }
-    }
-    pub fn name(&self) -> SyntaxResult<AnyRArgumentName> {
-        support::required_node(&self.syntax, 0usize)
-    }
-    pub fn eq_token(&self) -> SyntaxResult<SyntaxToken> {
-        support::required_token(&self.syntax, 1usize)
-    }
-    pub fn value(&self) -> Option<AnyRExpression> {
-        support::node(&self.syntax, 2usize)
-    }
-}
-impl Serialize for RNamedArgument {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        self.as_fields().serialize(serializer)
-    }
-}
-#[derive(Serialize)]
-pub struct RNamedArgumentFields {
-    pub name: SyntaxResult<AnyRArgumentName>,
-    pub eq_token: SyntaxResult<SyntaxToken>,
-    pub value: Option<AnyRExpression>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RNamespaceExpression {
@@ -1596,41 +1603,6 @@ pub struct RUnaryExpressionFields {
     pub argument: SyntaxResult<AnyRExpression>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub struct RUnnamedArgument {
-    pub(crate) syntax: SyntaxNode,
-}
-impl RUnnamedArgument {
-    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
-    #[doc = r""]
-    #[doc = r" # Safety"]
-    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
-    #[doc = r" or a match on [SyntaxNode::kind]"]
-    #[inline]
-    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
-        Self { syntax }
-    }
-    pub fn as_fields(&self) -> RUnnamedArgumentFields {
-        RUnnamedArgumentFields {
-            value: self.value(),
-        }
-    }
-    pub fn value(&self) -> SyntaxResult<AnyRExpression> {
-        support::required_node(&self.syntax, 0usize)
-    }
-}
-impl Serialize for RUnnamedArgument {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        self.as_fields().serialize(serializer)
-    }
-}
-#[derive(Serialize)]
-pub struct RUnnamedArgumentFields {
-    pub value: SyntaxResult<AnyRExpression>,
-}
-#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RWhileStatement {
     pub(crate) syntax: SyntaxNode,
 }
@@ -1684,39 +1656,6 @@ pub struct RWhileStatementFields {
     pub condition: SyntaxResult<AnyRExpression>,
     pub r_paren_token: SyntaxResult<SyntaxToken>,
     pub body: SyntaxResult<AnyRExpression>,
-}
-#[derive(Clone, PartialEq, Eq, Hash, Serialize)]
-pub enum AnyRArgument {
-    RBogusArgument(RBogusArgument),
-    RHoleArgument(RHoleArgument),
-    RNamedArgument(RNamedArgument),
-    RUnnamedArgument(RUnnamedArgument),
-}
-impl AnyRArgument {
-    pub fn as_r_bogus_argument(&self) -> Option<&RBogusArgument> {
-        match &self {
-            AnyRArgument::RBogusArgument(item) => Some(item),
-            _ => None,
-        }
-    }
-    pub fn as_r_hole_argument(&self) -> Option<&RHoleArgument> {
-        match &self {
-            AnyRArgument::RHoleArgument(item) => Some(item),
-            _ => None,
-        }
-    }
-    pub fn as_r_named_argument(&self) -> Option<&RNamedArgument> {
-        match &self {
-            AnyRArgument::RNamedArgument(item) => Some(item),
-            _ => None,
-        }
-    }
-    pub fn as_r_unnamed_argument(&self) -> Option<&RUnnamedArgument> {
-        match &self {
-            AnyRArgument::RUnnamedArgument(item) => Some(item),
-            _ => None,
-        }
-    }
 }
 #[derive(Clone, PartialEq, Eq, Hash, Serialize)]
 pub enum AnyRArgumentName {
@@ -2049,6 +1988,87 @@ impl AnyRValue {
             AnyRValue::RStringValue(item) => Some(item),
             _ => None,
         }
+    }
+}
+impl AstNode for RArgument {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_ARGUMENT as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_ARGUMENT
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RArgument {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RArgument")
+            .field(
+                "name_clause",
+                &support::DebugOptionalElement(self.name_clause()),
+            )
+            .field("value", &support::DebugOptionalElement(self.value()))
+            .finish()
+    }
+}
+impl From<RArgument> for SyntaxNode {
+    fn from(n: RArgument) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RArgument> for SyntaxElement {
+    fn from(n: RArgument) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
+impl AstNode for RArgumentNameClause {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_ARGUMENT_NAME_CLAUSE as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_ARGUMENT_NAME_CLAUSE
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RArgumentNameClause {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RArgumentNameClause")
+            .field("name", &support::DebugSyntaxResult(self.name()))
+            .field("eq_token", &support::DebugSyntaxResult(self.eq_token()))
+            .finish()
+    }
+}
+impl From<RArgumentNameClause> for SyntaxNode {
+    fn from(n: RArgumentNameClause) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RArgumentNameClause> for SyntaxElement {
+    fn from(n: RArgumentNameClause) -> SyntaxElement {
+        n.syntax.into()
     }
 }
 impl AstNode for RBinaryExpression {
@@ -2638,42 +2658,6 @@ impl From<RFunctionDefinition> for SyntaxElement {
         n.syntax.into()
     }
 }
-impl AstNode for RHoleArgument {
-    type Language = Language;
-    const KIND_SET: SyntaxKindSet<Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(R_HOLE_ARGUMENT as u16));
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == R_HOLE_ARGUMENT
-    }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        if Self::can_cast(syntax.kind()) {
-            Some(Self { syntax })
-        } else {
-            None
-        }
-    }
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode {
-        self.syntax
-    }
-}
-impl std::fmt::Debug for RHoleArgument {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("RHoleArgument").finish()
-    }
-}
-impl From<RHoleArgument> for SyntaxNode {
-    fn from(n: RHoleArgument) -> SyntaxNode {
-        n.syntax
-    }
-}
-impl From<RHoleArgument> for SyntaxElement {
-    fn from(n: RHoleArgument) -> SyntaxElement {
-        n.syntax.into()
-    }
-}
 impl AstNode for RIdentifier {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> =
@@ -2881,46 +2865,6 @@ impl From<RNaExpression> for SyntaxNode {
 }
 impl From<RNaExpression> for SyntaxElement {
     fn from(n: RNaExpression) -> SyntaxElement {
-        n.syntax.into()
-    }
-}
-impl AstNode for RNamedArgument {
-    type Language = Language;
-    const KIND_SET: SyntaxKindSet<Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(R_NAMED_ARGUMENT as u16));
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == R_NAMED_ARGUMENT
-    }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        if Self::can_cast(syntax.kind()) {
-            Some(Self { syntax })
-        } else {
-            None
-        }
-    }
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode {
-        self.syntax
-    }
-}
-impl std::fmt::Debug for RNamedArgument {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("RNamedArgument")
-            .field("name", &support::DebugSyntaxResult(self.name()))
-            .field("eq_token", &support::DebugSyntaxResult(self.eq_token()))
-            .field("value", &support::DebugOptionalElement(self.value()))
-            .finish()
-    }
-}
-impl From<RNamedArgument> for SyntaxNode {
-    fn from(n: RNamedArgument) -> SyntaxNode {
-        n.syntax
-    }
-}
-impl From<RNamedArgument> for SyntaxElement {
-    fn from(n: RNamedArgument) -> SyntaxElement {
         n.syntax.into()
     }
 }
@@ -3661,44 +3605,6 @@ impl From<RUnaryExpression> for SyntaxElement {
         n.syntax.into()
     }
 }
-impl AstNode for RUnnamedArgument {
-    type Language = Language;
-    const KIND_SET: SyntaxKindSet<Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(R_UNNAMED_ARGUMENT as u16));
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == R_UNNAMED_ARGUMENT
-    }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        if Self::can_cast(syntax.kind()) {
-            Some(Self { syntax })
-        } else {
-            None
-        }
-    }
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode {
-        self.syntax
-    }
-}
-impl std::fmt::Debug for RUnnamedArgument {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("RUnnamedArgument")
-            .field("value", &support::DebugSyntaxResult(self.value()))
-            .finish()
-    }
-}
-impl From<RUnnamedArgument> for SyntaxNode {
-    fn from(n: RUnnamedArgument) -> SyntaxNode {
-        n.syntax
-    }
-}
-impl From<RUnnamedArgument> for SyntaxElement {
-    fn from(n: RUnnamedArgument) -> SyntaxElement {
-        n.syntax.into()
-    }
-}
 impl AstNode for RWhileStatement {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> =
@@ -3748,91 +3654,6 @@ impl From<RWhileStatement> for SyntaxNode {
 impl From<RWhileStatement> for SyntaxElement {
     fn from(n: RWhileStatement) -> SyntaxElement {
         n.syntax.into()
-    }
-}
-impl From<RBogusArgument> for AnyRArgument {
-    fn from(node: RBogusArgument) -> AnyRArgument {
-        AnyRArgument::RBogusArgument(node)
-    }
-}
-impl From<RHoleArgument> for AnyRArgument {
-    fn from(node: RHoleArgument) -> AnyRArgument {
-        AnyRArgument::RHoleArgument(node)
-    }
-}
-impl From<RNamedArgument> for AnyRArgument {
-    fn from(node: RNamedArgument) -> AnyRArgument {
-        AnyRArgument::RNamedArgument(node)
-    }
-}
-impl From<RUnnamedArgument> for AnyRArgument {
-    fn from(node: RUnnamedArgument) -> AnyRArgument {
-        AnyRArgument::RUnnamedArgument(node)
-    }
-}
-impl AstNode for AnyRArgument {
-    type Language = Language;
-    const KIND_SET: SyntaxKindSet<Language> = RBogusArgument::KIND_SET
-        .union(RHoleArgument::KIND_SET)
-        .union(RNamedArgument::KIND_SET)
-        .union(RUnnamedArgument::KIND_SET);
-    fn can_cast(kind: SyntaxKind) -> bool {
-        matches!(
-            kind,
-            R_BOGUS_ARGUMENT | R_HOLE_ARGUMENT | R_NAMED_ARGUMENT | R_UNNAMED_ARGUMENT
-        )
-    }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        let res = match syntax.kind() {
-            R_BOGUS_ARGUMENT => AnyRArgument::RBogusArgument(RBogusArgument { syntax }),
-            R_HOLE_ARGUMENT => AnyRArgument::RHoleArgument(RHoleArgument { syntax }),
-            R_NAMED_ARGUMENT => AnyRArgument::RNamedArgument(RNamedArgument { syntax }),
-            R_UNNAMED_ARGUMENT => AnyRArgument::RUnnamedArgument(RUnnamedArgument { syntax }),
-            _ => return None,
-        };
-        Some(res)
-    }
-    fn syntax(&self) -> &SyntaxNode {
-        match self {
-            AnyRArgument::RBogusArgument(it) => &it.syntax,
-            AnyRArgument::RHoleArgument(it) => &it.syntax,
-            AnyRArgument::RNamedArgument(it) => &it.syntax,
-            AnyRArgument::RUnnamedArgument(it) => &it.syntax,
-        }
-    }
-    fn into_syntax(self) -> SyntaxNode {
-        match self {
-            AnyRArgument::RBogusArgument(it) => it.syntax,
-            AnyRArgument::RHoleArgument(it) => it.syntax,
-            AnyRArgument::RNamedArgument(it) => it.syntax,
-            AnyRArgument::RUnnamedArgument(it) => it.syntax,
-        }
-    }
-}
-impl std::fmt::Debug for AnyRArgument {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            AnyRArgument::RBogusArgument(it) => std::fmt::Debug::fmt(it, f),
-            AnyRArgument::RHoleArgument(it) => std::fmt::Debug::fmt(it, f),
-            AnyRArgument::RNamedArgument(it) => std::fmt::Debug::fmt(it, f),
-            AnyRArgument::RUnnamedArgument(it) => std::fmt::Debug::fmt(it, f),
-        }
-    }
-}
-impl From<AnyRArgument> for SyntaxNode {
-    fn from(n: AnyRArgument) -> SyntaxNode {
-        match n {
-            AnyRArgument::RBogusArgument(it) => it.into(),
-            AnyRArgument::RHoleArgument(it) => it.into(),
-            AnyRArgument::RNamedArgument(it) => it.into(),
-            AnyRArgument::RUnnamedArgument(it) => it.into(),
-        }
-    }
-}
-impl From<AnyRArgument> for SyntaxElement {
-    fn from(n: AnyRArgument) -> SyntaxElement {
-        let node: SyntaxNode = n.into();
-        node.into()
     }
 }
 impl From<RDotDotI> for AnyRArgumentName {
@@ -4551,11 +4372,6 @@ impl From<AnyRValue> for SyntaxElement {
         node.into()
     }
 }
-impl std::fmt::Display for AnyRArgument {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Display::fmt(self.syntax(), f)
-    }
-}
 impl std::fmt::Display for AnyRArgumentName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
@@ -4577,6 +4393,16 @@ impl std::fmt::Display for AnyRSelector {
     }
 }
 impl std::fmt::Display for AnyRValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RArgument {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RArgumentNameClause {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
@@ -4651,11 +4477,6 @@ impl std::fmt::Display for RFunctionDefinition {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for RHoleArgument {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Display::fmt(self.syntax(), f)
-    }
-}
 impl std::fmt::Display for RIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
@@ -4677,11 +4498,6 @@ impl std::fmt::Display for RIntegerValue {
     }
 }
 impl std::fmt::Display for RNaExpression {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Display::fmt(self.syntax(), f)
-    }
-}
-impl std::fmt::Display for RNamedArgument {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
@@ -4776,11 +4592,6 @@ impl std::fmt::Display for RUnaryExpression {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for RUnnamedArgument {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Display::fmt(self.syntax(), f)
-    }
-}
 impl std::fmt::Display for RWhileStatement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
@@ -4839,62 +4650,6 @@ impl From<RBogus> for SyntaxNode {
 }
 impl From<RBogus> for SyntaxElement {
     fn from(n: RBogus) -> SyntaxElement {
-        n.syntax.into()
-    }
-}
-#[derive(Clone, PartialEq, Eq, Hash, Serialize)]
-pub struct RBogusArgument {
-    syntax: SyntaxNode,
-}
-impl RBogusArgument {
-    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
-    #[doc = r""]
-    #[doc = r" # Safety"]
-    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
-    #[doc = r" or a match on [SyntaxNode::kind]"]
-    #[inline]
-    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
-        Self { syntax }
-    }
-    pub fn items(&self) -> SyntaxElementChildren {
-        support::elements(&self.syntax)
-    }
-}
-impl AstNode for RBogusArgument {
-    type Language = Language;
-    const KIND_SET: SyntaxKindSet<Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(R_BOGUS_ARGUMENT as u16));
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == R_BOGUS_ARGUMENT
-    }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        if Self::can_cast(syntax.kind()) {
-            Some(Self { syntax })
-        } else {
-            None
-        }
-    }
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode {
-        self.syntax
-    }
-}
-impl std::fmt::Debug for RBogusArgument {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("RBogusArgument")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
-    }
-}
-impl From<RBogusArgument> for SyntaxNode {
-    fn from(n: RBogusArgument) -> SyntaxNode {
-        n.syntax
-    }
-}
-impl From<RBogusArgument> for SyntaxElement {
-    fn from(n: RBogusArgument) -> SyntaxElement {
         n.syntax.into()
     }
 }
@@ -5064,7 +4819,7 @@ impl Serialize for RArgumentList {
 }
 impl AstSeparatedList for RArgumentList {
     type Language = Language;
-    type Node = AnyRArgument;
+    type Node = RArgument;
     fn syntax_list(&self) -> &SyntaxList {
         &self.syntax_list
     }
@@ -5079,15 +4834,15 @@ impl Debug for RArgumentList {
     }
 }
 impl IntoIterator for RArgumentList {
-    type Item = SyntaxResult<AnyRArgument>;
-    type IntoIter = AstSeparatedListNodesIterator<Language, AnyRArgument>;
+    type Item = SyntaxResult<RArgument>;
+    type IntoIter = AstSeparatedListNodesIterator<Language, RArgument>;
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
     }
 }
 impl IntoIterator for &RArgumentList {
-    type Item = SyntaxResult<AnyRArgument>;
-    type IntoIter = AstSeparatedListNodesIterator<Language, AnyRArgument>;
+    type Item = SyntaxResult<RArgument>;
+    type IntoIter = AstSeparatedListNodesIterator<Language, RArgument>;
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
     }

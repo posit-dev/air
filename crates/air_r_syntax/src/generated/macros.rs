@@ -16,6 +16,14 @@ macro_rules! map_syntax_node {
     ($ node : expr , $ pattern : pat => $ body : expr) => {
         match $node {
             node => match $crate::RSyntaxNode::kind(&node) {
+                $crate::RSyntaxKind::R_ARGUMENT => {
+                    let $pattern = unsafe { $crate::RArgument::new_unchecked(node) };
+                    $body
+                }
+                $crate::RSyntaxKind::R_ARGUMENT_NAME_CLAUSE => {
+                    let $pattern = unsafe { $crate::RArgumentNameClause::new_unchecked(node) };
+                    $body
+                }
                 $crate::RSyntaxKind::R_BINARY_EXPRESSION => {
                     let $pattern = unsafe { $crate::RBinaryExpression::new_unchecked(node) };
                     $body
@@ -72,10 +80,6 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RFunctionDefinition::new_unchecked(node) };
                     $body
                 }
-                $crate::RSyntaxKind::R_HOLE_ARGUMENT => {
-                    let $pattern = unsafe { $crate::RHoleArgument::new_unchecked(node) };
-                    $body
-                }
                 $crate::RSyntaxKind::R_IDENTIFIER => {
                     let $pattern = unsafe { $crate::RIdentifier::new_unchecked(node) };
                     $body
@@ -94,10 +98,6 @@ macro_rules! map_syntax_node {
                 }
                 $crate::RSyntaxKind::R_NA_EXPRESSION => {
                     let $pattern = unsafe { $crate::RNaExpression::new_unchecked(node) };
-                    $body
-                }
-                $crate::RSyntaxKind::R_NAMED_ARGUMENT => {
-                    let $pattern = unsafe { $crate::RNamedArgument::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_NAMESPACE_EXPRESSION => {
@@ -172,20 +172,12 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RUnaryExpression::new_unchecked(node) };
                     $body
                 }
-                $crate::RSyntaxKind::R_UNNAMED_ARGUMENT => {
-                    let $pattern = unsafe { $crate::RUnnamedArgument::new_unchecked(node) };
-                    $body
-                }
                 $crate::RSyntaxKind::R_WHILE_STATEMENT => {
                     let $pattern = unsafe { $crate::RWhileStatement::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_BOGUS => {
                     let $pattern = unsafe { $crate::RBogus::new_unchecked(node) };
-                    $body
-                }
-                $crate::RSyntaxKind::R_BOGUS_ARGUMENT => {
-                    let $pattern = unsafe { $crate::RBogusArgument::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_BOGUS_EXPRESSION => {
