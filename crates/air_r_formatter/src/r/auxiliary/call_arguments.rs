@@ -5,8 +5,8 @@ use crate::prelude::*;
 use crate::r::auxiliary::braced_expressions::as_curly_curly;
 use crate::r::auxiliary::function_definition::FormatFunctionOptions;
 use crate::separated::FormatAstSeparatedListExtension;
-use air_r_syntax::AnyRArgument;
 use air_r_syntax::AnyRExpression;
+use air_r_syntax::RArgument;
 use air_r_syntax::RArgumentList;
 use air_r_syntax::RCall;
 use air_r_syntax::RCallArguments;
@@ -218,7 +218,7 @@ fn needs_user_requested_expansion(arguments: &[FormatCallArgument]) -> bool {
 enum FormatCallArgument {
     /// Argument that has not been inspected if its formatted content breaks.
     Default {
-        element: AstSeparatedElement<RLanguage, AnyRArgument>,
+        element: AstSeparatedElement<RLanguage, RArgument>,
 
         /// Whether this is the last element.
         is_last: bool,
@@ -235,7 +235,7 @@ enum FormatCallArgument {
         content: FormatResult<Option<FormatElement>>,
 
         /// The separated element
-        element: AstSeparatedElement<RLanguage, AnyRArgument>,
+        element: AstSeparatedElement<RLanguage, RArgument>,
 
         /// The lines before this element
         leading_lines: usize,
@@ -316,7 +316,7 @@ impl FormatCallArgument {
     }
 
     /// Returns the [`separated element`](AstSeparatedElement) of this argument.
-    fn element(&self) -> &AstSeparatedElement<RLanguage, AnyRArgument> {
+    fn element(&self) -> &AstSeparatedElement<RLanguage, RArgument> {
         match self {
             FormatCallArgument::Default { element, .. } => element,
             FormatCallArgument::Inspected { element, .. } => element,
@@ -667,30 +667,17 @@ impl Format<RFormatContext> for FormatGroupedLastArgument<'_> {
     fn fmt(&self, f: &mut Formatter<RFormatContext>) -> FormatResult<()> {
         use air_r_syntax::AnyRExpression::*;
         let element = self.argument.element();
-        let node = element.node()?;
-
-        let argument_name = match node {
-            AnyRArgument::RNamedArgument(node) => Some((node.name(), node.eq_token())),
-            AnyRArgument::RUnnamedArgument(_)
-            | AnyRArgument::RBogusArgument(_)
-            | AnyRArgument::RHoleArgument(_) => None,
-        };
-
-        let argument_expression = match node {
-            AnyRArgument::RNamedArgument(node) => node.value(),
-            AnyRArgument::RUnnamedArgument(node) => node.value().ok(),
-            AnyRArgument::RBogusArgument(_) | AnyRArgument::RHoleArgument(_) => None,
-        };
+        let argument = element.node()?;
 
         // For inline functions, re-format the node and pass the argument that it is the
         // last grouped argument. This changes the formatting of parameters to remove any
         // soft line breaks. When the inline function is the only argument, we want it
         // to hug the `()` of the function call and breaking in the parameters is okay.
-        match argument_expression {
+        match argument.value() {
             Some(RFunctionDefinition(function)) if !self.is_only => {
                 with_token_tracking_disabled(f, |f| {
-                    if let Some((name, eq_token)) = argument_name {
-                        write!(f, [name.format(), space(), eq_token.format(), space()])?;
+                    if let Some(name_clause) = argument.name_clause() {
+                        write!(f, [name_clause.format(), space()])?;
                     }
 
                     write!(
@@ -839,30 +826,19 @@ fn should_group_last_argument(list: &RArgumentList, comments: &RComments) -> Syn
         return Ok(false);
     }
 
-    // If this is a named argument node and the `name` or `value` nodes have comments,
-    // not groupable. This avoids idempotence issues. Plus, the comments by definition
-    // make it non groupable.
-    if let AnyRArgument::RNamedArgument(ref last) = last {
-        let name = last.name()?;
-        if comments.has_comments(name.syntax()) {
+    // If this is a named argument and the `name_clause` has comments, not
+    // groupable. This avoids idempotence issues. Plus, the comments by
+    // definition make it non groupable. The `comments.rs` handlers should
+    // ensure that the underlying `name` node inside `name_clause` does not
+    // have any comments (they get put on `name_clause` instead), so we should
+    // not need to check that.
+    if let Some(name_clause) = last.name_clause() {
+        if comments.has_comments(name_clause.syntax()) {
             return Ok(false);
-        }
-
-        let value = last.value();
-        if let Some(value) = value {
-            if comments.has_comments(value.syntax()) {
-                return Ok(false);
-            }
         }
     }
 
-    let argument_expression = |arg| match arg {
-        AnyRArgument::RNamedArgument(arg) => arg.value(),
-        AnyRArgument::RUnnamedArgument(arg) => arg.value().ok(),
-        AnyRArgument::RBogusArgument(_) | AnyRArgument::RHoleArgument(_) => None,
-    };
-
-    let Some(last) = argument_expression(last) else {
+    let Some(last) = last.value() else {
         return Ok(false);
     };
 
