@@ -1,6 +1,6 @@
-use air_cli::args::Args;
-use air_cli::run;
-use air_cli::status::ExitStatus;
+use air::args::Args;
+use air::run;
+use air::status::ExitStatus;
 use clap::Parser;
 use tempfile::TempDir;
 

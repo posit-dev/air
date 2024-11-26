@@ -1,6 +1,4 @@
 [workspace]
-# Use the newer version of the cargo resolver
-# https://doc.rust-lang.org/cargo/reference/resolver.html#resolver-versions
 members = ["crates/*", "xtask/codegen"]
 resolver = "2"
 
@@ -8,30 +6,26 @@ resolver = "2"
 authors = ["Air Developers and Contributors"]
 categories = ["development-tools"]
 edition = "2021"
-homepage = "https://github.com/posit-dev/ark"
+homepage = "https://github.com/posit-dev/air"
 keywords = ["parser", "formatter"]
 license = "MIT"
-repository = "https://github.com/posit-dev/ark"
+repository = "https://github.com/posit-dev/air"
 
 [profile.release-with-debug]
 debug = true
 inherits = "release"
 
 [workspace.dependencies]
-# publish
-air_r_factory = { version = "0.1.0", path = "./crates/air_r_factory" }
-air_r_formatter = { version = "0.1.0", path = "./crates/air_r_formatter" }
-air_r_parser = { version = "0.1.0", path = "./crates/air_r_parser" }
-air_r_syntax = { version = "0.1.0", path = "./crates/air_r_syntax" }
-lsp = { version = "0.1.0", path = "./crates/lsp" }
-
-# not publish
 air_formatter_test = { path = "./crates/air_formatter_test" }
+air_r_factory = { path = "./crates/air_r_factory" }
+air_r_formatter = { path = "./crates/air_r_formatter" }
+air_r_parser = { path = "./crates/air_r_parser" }
+air_r_syntax = { path = "./crates/air_r_syntax" }
 biome_ungrammar = { path = "./crates/biome_ungrammar" }
+lsp = { path = "./crates/lsp" }
 lsp_test = { path = "./crates/lsp_test" }
 tests_macros = { path = "./crates/tests_macros" }
 
-# Crates needed in the workspace
 anyhow = "1.0.89"
 assert_matches = "1.5.0"
 biome_console = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }

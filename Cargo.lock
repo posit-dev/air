@@ -27,7 +27,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "air_cli"
+name = "air"
 version = "0.1.0"
 dependencies = [
  "air_r_formatter",
@@ -56,7 +56,7 @@ dependencies = [
 
 [[package]]
 name = "air_r_factory"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "air_r_syntax",
  "biome_rowan",
@@ -64,7 +64,7 @@ dependencies = [
 
 [[package]]
 name = "air_r_formatter"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "air_formatter_test",
  "air_r_parser",
@@ -78,7 +78,7 @@ dependencies = [
 
 [[package]]
 name = "air_r_parser"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "air_r_factory",
  "air_r_syntax",
@@ -97,7 +97,7 @@ dependencies = [
 
 [[package]]
 name = "air_r_syntax"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "biome_rowan",
  "biome_string_case",
@@ -1229,7 +1229,7 @@ checksum = "a7a70ba024b9dc04c27ea2f0c0548feb474ec5c54bba33a7f72f873a39d07b24"
 
 [[package]]
 name = "lsp"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "air_r_formatter",
  "air_r_parser",
@@ -1280,7 +1280,7 @@ dependencies = [
 
 [[package]]
 name = "lsp_test"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "bytes",
  "futures",

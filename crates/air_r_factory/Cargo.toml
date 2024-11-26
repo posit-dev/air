@@ -1,6 +1,7 @@
 [package]
 name = "air_r_factory"
-version = "0.1.0"
+version = "0.0.0"
+publish = false
 authors.workspace = true
 categories.workspace = true
 edition.workspace = true
