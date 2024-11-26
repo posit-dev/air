@@ -23,28 +23,51 @@ air_r_factory = { version = "0.1.0", path = "./crates/air_r_factory" }
 air_r_formatter = { version = "0.1.0", path = "./crates/air_r_formatter" }
 air_r_parser = { version = "0.1.0", path = "./crates/air_r_parser" }
 air_r_syntax = { version = "0.1.0", path = "./crates/air_r_syntax" }
+lsp = { version = "0.1.0", path = "./crates/lsp" }
 
 # not publish
 air_formatter_test = { path = "./crates/air_formatter_test" }
 biome_ungrammar = { path = "./crates/biome_ungrammar" }
+lsp_test = { path = "./crates/lsp_test" }
 tests_macros = { path = "./crates/tests_macros" }
 
 # Crates needed in the workspace
 anyhow = "1.0.89"
-biome_console = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
-biome_diagnostics = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
-biome_formatter = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
-biome_parser = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
-biome_rowan = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
-biome_string_case = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
-biome_unicode_table = { git = "https://github.com/biomejs/biome", rev = "561b54c93625c9a83035562022af47237e6c00b2" }
+assert_matches = "1.5.0"
+biome_console = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
+biome_diagnostics = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
+biome_formatter = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
+biome_lsp_converters = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
+biome_parser = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
+biome_rowan = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
+biome_string_case = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
+biome_text_size = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
+biome_unicode_table = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
+bytes = "1.8.0"
 clap = { version = "4.5.20", features = ["derive"] }
+crossbeam = "0.8.4"
+futures = "0.3.31"
+futures-util = "0.3.31"
+httparse = "1.9.5"
 insta = "1.40.0"
+itertools = "0.13.0"
+line-index = "0.1.2"
+log = "0.4.22"
+memchr = "2.7.4"
 proc-macro2 = "1.0.86"
-serde = { version = "1.0.210", features = ["derive"] }
+serde = { version = "1.0.215", features = ["derive"] }
+serde_json = "1.0.132"
+struct-field-names-as-array = "0.3.0"
+tokio = { version = "1.41.1" }
+tokio-util = "0.7.12"
+# For https://github.com/ebkalderon/tower-lsp/pull/428
+tower-lsp = { git = "https://github.com/lionel-/tower-lsp", branch = "bugfix/patches" }
 tracing = { version = "0.1.40", default-features = false, features = ["std"] }
 tree-sitter = "0.23.0"
 tree-sitter-r = { git = "https://github.com/r-lib/tree-sitter-r", rev = "a0d3e3307489c3ca54da8c7b5b4e0c5f5fd6953a" }
+triomphe = "0.1.14"
+url = "2.5.3"
+uuid = { version = "1.11.0", features = ["v4"] }
 
 [workspace.lints.clippy]
 # pedantic

@@ -6,7 +6,7 @@ use std::path::PathBuf;
 #[command(
     author,
     name = "air",
-    about = "Air: An R formatter",
+    about = "Air: An R language server and formatter",
     after_help = "For help with a specific command, see: `air help <command>`."
 )]
 #[command(version)]
@@ -17,9 +17,15 @@ pub struct Args {
 
 #[derive(Subcommand)]
 pub(crate) enum Command {
+    /// Start a language server
+    Lsp(LspCommand),
+
     /// Format a file
     Format(FormatCommand),
 }
+
+#[derive(Clone, Debug, Parser)]
+pub(crate) struct LspCommand {}
 
 #[derive(Clone, Debug, Parser)]
 pub(crate) struct FormatCommand {

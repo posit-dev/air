@@ -6,8 +6,10 @@
 //
 
 use anyhow::anyhow;
+use biome_lsp_converters::PositionEncoding;
 use serde_json::Value;
 use struct_field_names_as_array::FieldNamesAsArray;
+use tower_lsp::lsp_types;
 use tower_lsp::lsp_types::ConfigurationItem;
 use tower_lsp::lsp_types::DidChangeConfigurationParams;
 use tower_lsp::lsp_types::DidChangeTextDocumentParams;
@@ -31,7 +33,6 @@ use crate::config::DocumentConfig;
 use crate::config::VscDiagnosticsConfig;
 use crate::config::VscDocumentConfig;
 use crate::documents::Document;
-use crate::encoding::get_position_encoding_kind;
 use crate::main_loop::LspState;
 use crate::state::workspace_uris;
 use crate::state::WorldState;
@@ -61,6 +62,23 @@ pub(crate) fn initialize(
     lsp_state: &mut LspState,
     state: &mut WorldState,
 ) -> anyhow::Result<InitializeResult> {
+    // Defaults to UTF-16
+    let mut position_encoding = None;
+
+    if let Some(caps) = params.capabilities.general {
+        // If the client supports UTF-8 we use that, even if it's not its
+        // preferred encoding (at position 0). Otherwise we use the mandatory
+        // UTF-16 encoding that all clients and servers must support, even if
+        // the client would have preferred UTF-32. Note that VSCode and Positron
+        // only support UTF-16.
+        if let Some(caps) = caps.position_encodings {
+            if caps.contains(&lsp_types::PositionEncodingKind::UTF8) {
+                lsp_state.position_encoding = PositionEncoding::Utf8;
+                position_encoding = Some(lsp_types::PositionEncodingKind::UTF8);
+            }
+        }
+    }
+
     // Take note of supported capabilities so we can register them in the
     // `Initialized` handler
     if let Some(ws_caps) = params.capabilities.workspace {
@@ -89,7 +107,7 @@ pub(crate) fn initialize(
             version: Some(env!("CARGO_PKG_VERSION").to_string()),
         }),
         capabilities: ServerCapabilities {
-            position_encoding: Some(get_position_encoding_kind()),
+            position_encoding,
             text_document_sync: Some(TextDocumentSyncCapability::Kind(
                 TextDocumentSyncKind::INCREMENTAL,
             )),
@@ -100,6 +118,7 @@ pub(crate) fn initialize(
                 }),
                 file_operations: None,
             }),
+            document_formatting_provider: Some(OneOf::Left(true)),
             ..ServerCapabilities::default()
         },
     })
@@ -108,20 +127,15 @@ pub(crate) fn initialize(
 #[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn did_open(
     params: DidOpenTextDocumentParams,
+    lsp_state: &LspState,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
-    let contents = params.text_document.text.as_str();
+    let contents = params.text_document.text;
     let uri = params.text_document.uri;
     let version = params.text_document.version;
 
-    // TODO!
-
-    let document = Document::new(contents, Some(version));
-
-    state.documents.insert(uri.clone(), document.clone());
-
-    // NOTE: Do we need to call `update_config()` here?
-    // update_config(vec![uri]).await;
+    let document = Document::new(contents, Some(version), lsp_state.position_encoding);
+    state.documents.insert(uri, document);
 
     Ok(())
 }
@@ -132,9 +146,8 @@ pub(crate) fn did_change(
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
     let uri = &params.text_document.uri;
-    let _doc = state.get_document_mut(uri)?;
-
-    // TODO!
+    let doc = state.get_document_mut(uri)?;
+    doc.on_did_change(params);
 
     Ok(())
 }

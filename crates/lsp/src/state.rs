@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::path::Path;
 
 use anyhow::anyhow;
 use url::Url;
@@ -68,39 +67,6 @@ impl WorldState {
             Err(anyhow!("Can't find document for URI {uri}"))
         }
     }
-}
-
-pub(crate) fn with_document<T, F>(
-    path: &Path,
-    state: &WorldState,
-    mut callback: F,
-) -> anyhow::Result<T>
-where
-    F: FnMut(&Document) -> anyhow::Result<T>,
-{
-    let mut fallback = || {
-        let contents = std::fs::read_to_string(path)?;
-        let document = Document::new(contents.as_str(), None);
-        return callback(&document);
-    };
-
-    // If we have a cached copy of the document (because we're monitoring it)
-    // then use that; otherwise, try to read the document from the provided
-    // path and use that instead.
-    let Ok(uri) = Url::from_file_path(path) else {
-        log::info!(
-            "couldn't construct uri from {}; reading from disk instead",
-            path.display()
-        );
-        return fallback();
-    };
-
-    let Ok(document) = state.get_document(&uri) else {
-        log::info!("no document for uri {uri}; reading from disk instead");
-        return fallback();
-    };
-
-    return callback(document);
 }
 
 pub(crate) fn workspace_uris(state: &WorldState) -> Vec<Url> {

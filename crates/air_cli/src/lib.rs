@@ -8,6 +8,7 @@ pub mod status;
 
 pub fn run(args: Args) -> anyhow::Result<ExitStatus> {
     match args.command {
+        Command::Lsp(command) => commands::lsp::lsp(command),
         Command::Format(command) => commands::format::format(command),
     }
 }

@@ -10,6 +10,8 @@ use std::future;
 use std::pin::Pin;
 
 use anyhow::anyhow;
+use biome_lsp_converters::PositionEncoding;
+use biome_lsp_converters::WideEncoding;
 use futures::StreamExt;
 use tokio::sync::mpsc::unbounded_channel as tokio_unbounded_channel;
 use tokio::task::JoinHandle;
@@ -20,9 +22,10 @@ use tower_lsp::Client;
 use url::Url;
 
 use crate::handlers;
+use crate::handlers_format;
+use crate::handlers_state;
+use crate::handlers_state::ConsoleInputs;
 use crate::state::WorldState;
-use crate::state_handlers;
-use crate::state_handlers::ConsoleInputs;
 use crate::tower_lsp::LspMessage;
 use crate::tower_lsp::LspNotification;
 use crate::tower_lsp::LspRequest;
@@ -101,8 +104,12 @@ pub(crate) struct GlobalState {
 
 /// Unlike `WorldState`, `ParserState` cannot be cloned and is only accessed by
 /// exclusive handlers.
-#[derive(Default)]
 pub(crate) struct LspState {
+    /// The negociated encoding for document positions. Note that documents are
+    /// always stored as UTF-8 in Rust Strings. This encoding is only used to
+    /// translate UTF-16 positions sent by the client to UTF-8 ones.
+    pub(crate) position_encoding: PositionEncoding,
+
     /// The set of tree-sitter document parsers managed by the `GlobalState`.
     pub(crate) parsers: HashMap<Url, tree_sitter::Parser>,
 
@@ -112,9 +119,25 @@ pub(crate) struct LspState {
     // Add handle to aux loop here?
 }
 
+impl Default for LspState {
+    fn default() -> Self {
+        Self {
+            // Default encoding specified in the LSP protocol
+            position_encoding: PositionEncoding::Wide(WideEncoding::Utf16),
+            parsers: Default::default(),
+            needs_registration: Default::default(),
+        }
+    }
+}
+
 #[derive(Debug, Default)]
 pub(crate) struct ClientCaps {
     pub(crate) did_change_configuration: bool,
+}
+
+enum LoopControl {
+    Shutdown,
+    None,
 }
 
 /// State for the auxiliary loop
@@ -165,11 +188,6 @@ impl GlobalState {
     pub(crate) fn start(self) -> tokio::task::JoinSet<()> {
         let mut set = tokio::task::JoinSet::<()>::new();
 
-        // Spawn latency-sensitive auxiliary loop. Must be first to initialise
-        // global transmission channel.
-        let aux = AuxiliaryState::new(self.client.clone());
-        set.spawn(async move { aux.start().await });
-
         // Spawn main loop
         set.spawn(async move { self.main_loop().await });
 
@@ -181,12 +199,25 @@ impl GlobalState {
     /// This takes ownership of all global state and handles one by one LSP
     /// requests, notifications, and other internal events.
     async fn main_loop(mut self) {
+        // Spawn latency-sensitive auxiliary loop. Must be first to initialise
+        // global transmission channel.
+        let aux = AuxiliaryState::new(self.client.clone());
+        let mut set = tokio::task::JoinSet::<()>::new();
+        set.spawn(async move { aux.start().await });
+
         loop {
             let event = self.next_event().await;
-            if let Err(err) = self.handle_event(event).await {
-                crate::log_error!("Failure while handling event:\n{err:?}")
+            match self.handle_event(event).await {
+                Err(err) => crate::log_error!("Failure while handling event:\n{err:?}"),
+                Ok(LoopControl::Shutdown) => break,
+                _ => {}
             }
         }
+
+        log::trace!("Main loop closed. Shutting down auxiliary loop.");
+        set.shutdown().await;
+
+        log::trace!("Main loop exited.");
     }
 
     async fn next_event(&mut self) -> Event {
@@ -207,14 +238,13 @@ impl GlobalState {
     ///   of the main loop should be as fast as possible to increase throughput)
     ///   they are spawned on blocking threads and provided a snapshot (clone) of
     ///   the state.
-    async fn handle_event(&mut self, event: Event) -> anyhow::Result<()> {
+    async fn handle_event(&mut self, event: Event) -> anyhow::Result<LoopControl> {
         let loop_tick = std::time::Instant::now();
+        let mut out = LoopControl::None;
 
         match event {
             Event::Lsp(msg) => match msg {
                 LspMessage::Notification(notif) => {
-                    crate::log_info!("{notif:#?}");
-
                     match notif {
                         LspNotification::Initialized(_params) => {
                             handlers::handle_initialized(&self.client, &self.lsp_state).await?;
@@ -223,36 +253,37 @@ impl GlobalState {
                             // TODO: Restart indexer with new folders.
                         },
                         LspNotification::DidChangeConfiguration(params) => {
-                            state_handlers::did_change_configuration(params, &self.client, &mut self.world).await?;
+                            handlers_state::did_change_configuration(params, &self.client, &mut self.world).await?;
                         },
                         LspNotification::DidChangeWatchedFiles(_params) => {
                             // TODO: Re-index the changed files.
                         },
                         LspNotification::DidOpenTextDocument(params) => {
-                            state_handlers::did_open(params, &mut self.world)?;
+                            handlers_state::did_open(params, &self.lsp_state, &mut self.world)?;
                         },
                         LspNotification::DidChangeTextDocument(params) => {
-                            state_handlers::did_change(params, &mut self.world)?;
+                            handlers_state::did_change(params, &mut self.world)?;
                         },
                         LspNotification::DidSaveTextDocument(_params) => {
                             // Currently ignored
                         },
                         LspNotification::DidCloseTextDocument(params) => {
-                            state_handlers::did_close(params, &mut self.world)?;
+                            handlers_state::did_close(params, &mut self.world)?;
                         },
                     }
                 },
 
                 LspMessage::Request(request, tx) => {
-                    crate::log_info!("{request:#?}");
-
                     match request {
                         LspRequest::Initialize(params) => {
-                            respond(tx, state_handlers::initialize(params, &mut self.lsp_state, &mut self.world), LspResponse::Initialize)?;
+                            respond(tx, handlers_state::initialize(params, &mut self.lsp_state, &mut self.world), LspResponse::Initialize)?;
                         },
                         LspRequest::Shutdown() => {
-                            // TODO
+                            out = LoopControl::Shutdown;
                             respond(tx, Ok(()), LspResponse::Shutdown)?;
+                        },
+                        LspRequest::DocumentFormatting(params) => {
+                            respond(tx, handlers_format::document_formatting(params, &self.world), LspResponse::DocumentFormatting)?;
                         },
                     };
                 },
@@ -270,7 +301,7 @@ impl GlobalState {
             crate::log_info!("Handler took {}ms", loop_tick.elapsed().as_millis());
         }
 
-        Ok(())
+        Ok(out)
     }
 
     #[allow(dead_code)] // Currently unused

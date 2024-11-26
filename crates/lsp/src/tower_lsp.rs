@@ -7,19 +7,14 @@
 
 #![allow(deprecated)]
 
-use std::sync::Arc;
-
-use crossbeam::channel::Sender;
-use tokio::net::TcpListener;
-use tokio::runtime::Runtime;
+use tokio::io::{AsyncRead, AsyncWrite};
 use tokio::sync::mpsc::unbounded_channel as tokio_unbounded_channel;
-use tower_lsp::jsonrpc;
 use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::*;
 use tower_lsp::Client;
 use tower_lsp::LanguageServer;
 use tower_lsp::LspService;
-use tower_lsp::Server;
+use tower_lsp::{jsonrpc, ClientSocket};
 
 use crate::main_loop::Event;
 use crate::main_loop::GlobalState;
@@ -60,12 +55,14 @@ pub(crate) enum LspNotification {
 #[derive(Debug)]
 pub(crate) enum LspRequest {
     Initialize(InitializeParams),
+    DocumentFormatting(DocumentFormattingParams),
     Shutdown(),
 }
 
 #[derive(Debug)]
 pub(crate) enum LspResponse {
     Initialize(InitializeResult),
+    DocumentFormatting(Option<Vec<TextEdit>>),
     Shutdown(()),
 }
 
@@ -81,6 +78,8 @@ struct Backend {
 
 impl Backend {
     async fn request(&self, request: LspRequest) -> anyhow::Result<LspResponse> {
+        crate::log_info!("Incoming: {request:#?}");
+
         let (response_tx, mut response_rx) =
             tokio_unbounded_channel::<anyhow::Result<LspResponse>>();
 
@@ -90,10 +89,15 @@ impl Backend {
             .unwrap();
 
         // Wait for response from main loop
-        response_rx.recv().await.unwrap()
+        let out = response_rx.recv().await.unwrap()?;
+
+        crate::log_info!("Outgoing {out:#?}");
+        Ok(out)
     }
 
     fn notify(&self, notif: LspNotification) {
+        crate::log_info!("Incoming: {notif:#?}");
+
         // Relay notification to main loop
         self.events_tx
             .send(Event::Lsp(LspMessage::Notification(notif)))
@@ -148,47 +152,44 @@ impl LanguageServer for Backend {
     async fn did_close(&self, params: DidCloseTextDocumentParams) {
         self.notify(LspNotification::DidCloseTextDocument(params));
     }
+
+    async fn formatting(&self, params: DocumentFormattingParams) -> Result<Option<Vec<TextEdit>>> {
+        cast_response!(
+            self.request(LspRequest::DocumentFormatting(params)).await,
+            LspResponse::DocumentFormatting
+        )
+    }
 }
 
-impl Backend {
-    pub fn start_lsp(runtime: Arc<Runtime>, address: String, conn_init_tx: Sender<bool>) {
-        runtime.block_on(async {
-            log::trace!("Connecting to LSP at '{}'", &address);
-            let listener = TcpListener::bind(&address).await.unwrap();
+pub async fn start_lsp<I, O>(read: I, write: O)
+where
+    I: AsyncRead + Unpin,
+    O: AsyncWrite,
+{
+    log::trace!("Starting LSP");
 
-            // Notify frontend that we are ready to accept connections
-            if let Err(err) = conn_init_tx.send(true) {
-                log::warn!("Couldn't send LSP server init notification: {err:?}");
-            }
+    let (service, socket) = new_lsp();
+    let server = tower_lsp::Server::new(read, write, socket);
+    server.serve(service).await;
 
-            let (stream, _) = listener.accept().await.unwrap();
-            log::trace!("Connected to LSP at '{}'", address);
-            let (read, write) = tokio::io::split(stream);
+    log::trace!("LSP exiting gracefully.",);
+}
 
-            let init = |client: Client| {
-                let state = GlobalState::new(client);
-                let events_tx = state.events_tx();
+fn new_lsp() -> (LspService<Backend>, ClientSocket) {
+    let init = |client: Client| {
+        let state = GlobalState::new(client);
+        let events_tx = state.events_tx();
 
-                // Start main loop and hold onto the handle that keeps it alive
-                let main_loop = state.start();
+        // Start main loop and hold onto the handle that keeps it alive
+        let main_loop = state.start();
 
-                Backend {
-                    events_tx,
-                    _main_loop: main_loop,
-                }
-            };
+        Backend {
+            events_tx,
+            _main_loop: main_loop,
+        }
+    };
 
-            let (service, socket) = LspService::build(init).finish();
-
-            let server = Server::new(read, write, socket);
-            server.serve(service).await;
-
-            log::trace!(
-                "LSP thread exiting gracefully after connection closed ({:?}).",
-                address
-            );
-        })
-    }
+    LspService::new(init)
 }
 
 fn new_jsonrpc_error(message: String) -> jsonrpc::Error {
@@ -196,5 +197,64 @@ fn new_jsonrpc_error(message: String) -> jsonrpc::Error {
         code: jsonrpc::ErrorCode::ServerError(-1),
         message: message.into(),
         data: None,
+    }
+}
+
+#[cfg(test)]
+pub(crate) async fn start_test_client() -> lsp_test::lsp_client::TestClient {
+    lsp_test::lsp_client::TestClient::new(|server_rx, client_tx| async {
+        start_lsp(server_rx, client_tx).await
+    })
+}
+
+#[cfg(test)]
+pub(crate) async fn init_test_client() -> lsp_test::lsp_client::TestClient {
+    let mut client = start_test_client().await;
+
+    client.initialize().await;
+    client.recv_response().await;
+
+    client
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use assert_matches::assert_matches;
+    use tower_lsp::lsp_types;
+
+    #[tests_macros::lsp_test]
+    async fn test_init() {
+        let mut client = start_test_client().await;
+
+        client.initialize().await;
+
+        let value = client.recv_response().await;
+        let value: lsp_types::InitializeResult =
+            serde_json::from_value(value.result().unwrap().clone()).unwrap();
+
+        assert_matches!(
+            value,
+            lsp_types::InitializeResult {
+                capabilities,
+                server_info
+            } => {
+                assert_matches!(capabilities, ServerCapabilities {
+                    position_encoding,
+                    text_document_sync,
+                    ..
+                } => {
+                    assert_eq!(position_encoding, None);
+                    assert_eq!(text_document_sync, Some(TextDocumentSyncCapability::Kind(TextDocumentSyncKind::INCREMENTAL)));
+                });
+
+                assert_matches!(server_info, Some(ServerInfo { name, version }) => {
+                    assert!(name.contains("Air Language Server"));
+                    assert!(version.is_some());
+                });
+            }
+        );
+
+        client
     }
 }

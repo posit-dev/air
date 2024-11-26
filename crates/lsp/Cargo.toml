@@ -10,20 +10,40 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+air_r_formatter.workspace = true
+air_r_parser.workspace = true
+air_r_syntax.workspace = true
 anyhow.workspace = true
-crossbeam = "0.8.4"
-futures = "0.3.31"
-itertools = "0.13.0"
-log = "0.4.22"
+biome_formatter.workspace = true
+biome_lsp_converters.workspace = true
+biome_parser.workspace = true
+biome_text_size.workspace = true
+crossbeam.workspace = true
+futures.workspace = true
+itertools.workspace = true
+log.workspace = true
+memchr.workspace = true
 serde.workspace = true
-serde_json = "1.0.132"
-struct-field-names-as-array = "0.3.0"
-tokio = { version = "1.41.1", features = ["full"] }
-tower-lsp = "0.20.0"
+serde_json.workspace = true
+struct-field-names-as-array.workspace = true
+tokio = { workspace = true, features = ["full"] }
+tower-lsp.workspace = true
 tracing.workspace = true
-tree-sitter = "0.23.0"
-url = "2.5.3"
-uuid = { version = "1.11.0", features = ["v4"] }
+tree-sitter.workspace = true
+triomphe.workspace = true
+url.workspace = true
+uuid = { workspace = true, features = ["v4"] }
 
 [lints]
 workspace = true
+
+[dev-dependencies]
+assert_matches.workspace = true
+bytes.workspace = true
+futures-util.workspace = true
+httparse.workspace = true
+insta.workspace = true
+lsp_test.workspace = true
+memchr.workspace = true
+tests_macros.workspace = true
+tokio-util.workspace = true
