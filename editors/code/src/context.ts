@@ -24,7 +24,3 @@ export class Ctx {
 }
 
 export type Cmd = (...args: any[]) => unknown;
-
-export interface Disposable {
-	dispose(): void;
-}
