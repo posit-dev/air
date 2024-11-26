@@ -16,7 +16,7 @@ use tower_lsp::LanguageServer;
 use tower_lsp::LspService;
 use tower_lsp::{jsonrpc, ClientSocket};
 
-use crate::handlers_air::ViewFileParams;
+use crate::handlers_ext::ViewFileParams;
 use crate::main_loop::Event;
 use crate::main_loop::GlobalState;
 use crate::main_loop::TokioUnboundedSender;
