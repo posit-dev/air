@@ -16,15 +16,15 @@ export function registerCommands(ctx: Ctx) {
 
 	ctx.extension.subscriptions.push(
 		vscode.commands.registerCommand(
-			"air.viewSyntaxTree",
-			viewSyntaxTree(ctx),
+			"air.viewTreeSitter",
+			viewTreeSitter(ctx),
 		),
 	);
 
 	ctx.extension.subscriptions.push(
 		vscode.commands.registerCommand(
-			"air.viewSyntaxTreeTs",
-			viewSyntaxTreeTs(ctx),
+			"air.viewSyntaxTree",
+			viewSyntaxTree(ctx),
 		),
 	);
 
@@ -39,7 +39,7 @@ export function registerCommands(ctx: Ctx) {
 		vscode.commands.registerCommand(
 			"air.viewFileRepresentations",
 			async () => {
-				await vscode.commands.executeCommand("air.viewSyntaxTreeTs");
+				await vscode.commands.executeCommand("air.viewTreeSitter");
 				await vscode.commands.executeCommand("air.viewSyntaxTree");
 				await vscode.commands.executeCommand("air.viewFormatTree");
 			},
@@ -59,6 +59,20 @@ export function registerCommands(ctx: Ctx) {
 	);
 }
 
+function viewTreeSitter(ctx: Ctx): Cmd {
+	const uri = "air-tree-sitter://syntax/treesitter";
+	const scheme = "air-tree-sitter";
+
+	return viewFileUsingTextDocumentContentProvider(
+		ctx,
+		ext.viewFile,
+		"TreeSitter",
+		uri,
+		scheme,
+		true,
+	);
+}
+
 function viewSyntaxTree(ctx: Ctx): Cmd {
 	const uri = "air-syntax-tree://syntax/tree.rast";
 	const scheme = "air-syntax-tree";
@@ -67,20 +81,6 @@ function viewSyntaxTree(ctx: Ctx): Cmd {
 		ctx,
 		ext.viewFile,
 		"SyntaxTree",
-		uri,
-		scheme,
-		true,
-	);
-}
-
-function viewSyntaxTreeTs(ctx: Ctx): Cmd {
-	const uri = "air-syntax-tree-ts://syntax/treesitter";
-	const scheme = "air-syntax-tree-ts";
-
-	return viewFileUsingTextDocumentContentProvider(
-		ctx,
-		ext.viewFile,
-		"SyntaxTreeTs",
 		uri,
 		scheme,
 		true,
@@ -104,8 +104,8 @@ function viewFormatTree(ctx: Ctx): Cmd {
 async function zipFileRepresentations() {
 	const docs = vscode.workspace.textDocuments.filter((doc) => {
 		switch (doc.uri.scheme) {
+			case "air-tree-sitter":
 			case "air-syntax-tree":
-			case "air-syntax-tree-ts":
 			case "air-format-tree":
 				return true;
 			default:

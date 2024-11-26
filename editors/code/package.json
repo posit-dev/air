@@ -47,14 +47,14 @@
 				"command": "air.restart"
 			},
 			{
+				"title": "View Tree Sitter",
+				"category": "Air",
+				"command": "air.viewTreeSitter"
+			},
+			{
 				"title": "View Syntax Tree",
 				"category": "Air",
 				"command": "air.viewSyntaxTree"
-			},
-			{
-				"title": "View Syntax Tree (TS)",
-				"category": "Air",
-				"command": "air.viewSyntaxTreeTs"
 			},
 			{
 				"title": "View Format Tree",

@@ -17,8 +17,8 @@ pub(crate) struct ViewFileParams {
 
 #[derive(Debug, Eq, PartialEq, Clone, serde::Deserialize, serde::Serialize)]
 pub(crate) enum ViewFileKind {
+    TreeSitter,
     SyntaxTree,
-    SyntaxTreeTs,
     FormatTree,
 }
 
@@ -26,12 +26,7 @@ pub(crate) fn view_file(params: ViewFileParams, state: &WorldState) -> anyhow::R
     let doc = state.get_document(&params.text_document.uri)?;
 
     match params.kind {
-        ViewFileKind::SyntaxTree => {
-            let syntax = doc.syntax();
-            Ok(format!("{syntax:#?}"))
-        }
-
-        ViewFileKind::SyntaxTreeTs => {
+        ViewFileKind::TreeSitter => {
             let mut parser = tree_sitter::Parser::new();
             parser
                 .set_language(&tree_sitter_r::LANGUAGE.into())
@@ -48,6 +43,11 @@ pub(crate) fn view_file(params: ViewFileParams, state: &WorldState) -> anyhow::R
             format_ts_node(&mut cursor, 0, &mut output);
 
             Ok(output)
+        }
+
+        ViewFileKind::SyntaxTree => {
+            let syntax = doc.syntax();
+            Ok(format!("{syntax:#?}"))
         }
 
         ViewFileKind::FormatTree => {
