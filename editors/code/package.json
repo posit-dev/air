@@ -4,6 +4,7 @@
 	"description": "Air Language Server",
 	"version": "0.0.1",
 	"publisher": "Posit",
+	"license": "MIT",
 	"repository": "https://github.com/posit-dev/air",
 	"engines": {
 		"vscode": "^1.90.0"
