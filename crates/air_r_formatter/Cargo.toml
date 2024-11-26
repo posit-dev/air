@@ -8,8 +8,9 @@ homepage.workspace = true
 keywords.workspace = true
 license.workspace = true
 name = "air_r_formatter"
+publish = false
 repository.workspace = true
-version = "0.1.0"
+version = "0.0.0"
 
 [dependencies]
 air_r_syntax = { workspace = true }
