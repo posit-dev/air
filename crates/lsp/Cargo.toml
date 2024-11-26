@@ -30,6 +30,7 @@ tokio = { workspace = true, features = ["full"] }
 tower-lsp.workspace = true
 tracing.workspace = true
 tree-sitter.workspace = true
+tree-sitter-r.workspace = true
 triomphe.workspace = true
 url.workspace = true
 uuid = { workspace = true, features = ["v4"] }

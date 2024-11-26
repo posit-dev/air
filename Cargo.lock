@@ -1259,6 +1259,7 @@ dependencies = [
  "tower-lsp 0.20.0 (git+https://github.com/lionel-/tower-lsp?branch=bugfix/patches)",
  "tracing",
  "tree-sitter",
+ "tree-sitter-r",
  "triomphe",
  "url",
  "uuid",

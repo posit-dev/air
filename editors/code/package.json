@@ -45,6 +45,31 @@
 				"title": "Restart Server",
 				"category": "Air",
 				"command": "air.restart"
+			},
+			{
+				"title": "View Tree Sitter",
+				"category": "Air",
+				"command": "air.viewTreeSitter"
+			},
+			{
+				"title": "View Syntax Tree",
+				"category": "Air",
+				"command": "air.viewSyntaxTree"
+			},
+			{
+				"title": "View Format Tree",
+				"category": "Air",
+				"command": "air.viewFormatTree"
+			},
+			{
+				"title": "View File Representations",
+				"category": "Air",
+				"command": "air.viewFileRepresentations"
+			},
+			{
+				"title": "Save File Representations",
+				"category": "Air",
+				"command": "air.saveFileRepresentations"
 			}
 		]
 	},
@@ -62,9 +87,11 @@
 	"dependencies": {
 		"@types/p-queue": "^3.1.0",
 		"p-queue": "npm:@esm2cjs/p-queue@^7.3.0",
+		"adm-zip": "^0.5.16",
 		"vscode-languageclient": "^9.0.1"
 	},
 	"devDependencies": {
+		"@types/adm-zip": "^0.5.6",
 		"@types/mocha": "^10.0.9",
 		"@types/node": "20.x",
 		"@types/vscode": "^1.90.0",

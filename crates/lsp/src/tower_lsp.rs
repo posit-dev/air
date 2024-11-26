@@ -16,6 +16,7 @@ use tower_lsp::LanguageServer;
 use tower_lsp::LspService;
 use tower_lsp::{jsonrpc, ClientSocket};
 
+use crate::handlers_ext::ViewFileParams;
 use crate::main_loop::Event;
 use crate::main_loop::GlobalState;
 use crate::main_loop::TokioUnboundedSender;
@@ -57,6 +58,7 @@ pub(crate) enum LspRequest {
     Initialize(InitializeParams),
     DocumentFormatting(DocumentFormattingParams),
     Shutdown(),
+    AirViewFile(ViewFileParams),
 }
 
 #[derive(Debug)]
@@ -64,6 +66,7 @@ pub(crate) enum LspResponse {
     Initialize(InitializeResult),
     DocumentFormatting(Option<Vec<TextEdit>>),
     Shutdown(()),
+    AirViewFile(String),
 }
 
 #[derive(Debug)]
@@ -102,6 +105,13 @@ impl Backend {
         self.events_tx
             .send(Event::Lsp(LspMessage::Notification(notif)))
             .unwrap();
+    }
+
+    async fn air_view_file(&self, params: ViewFileParams) -> tower_lsp::jsonrpc::Result<String> {
+        cast_response!(
+            self.request(LspRequest::AirViewFile(params)).await,
+            LspResponse::AirViewFile
+        )
     }
 }
 
@@ -189,7 +199,9 @@ fn new_lsp() -> (LspService<Backend>, ClientSocket) {
         }
     };
 
-    LspService::new(init)
+    LspService::build(init)
+        .custom_method("air/viewFile", Backend::air_view_file)
+        .finish()
 }
 
 fn new_jsonrpc_error(message: String) -> jsonrpc::Error {

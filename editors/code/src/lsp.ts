@@ -12,7 +12,7 @@ enum State {
 }
 
 export class Lsp {
-	private client: lc.LanguageClient | null = null;
+	public client: lc.LanguageClient | null = null;
 
 	// We use the same output channel for all LSP instances (e.g. a new instance
 	// after a restart) to avoid having multiple channels in the Output viewpane.
@@ -25,6 +25,13 @@ export class Lsp {
 		this.channel = vscode.window.createOutputChannel("Air Language Server");
 		context.subscriptions.push(this.channel);
 		this.stateQueue = new PQueue({ concurrency: 1 });
+	}
+
+	public getClient(): lc.LanguageClient {
+		if (!this.client) {
+			throw new Error("LSP must be started");
+		}
+		return this.client;
 	}
 
 	public async start() {

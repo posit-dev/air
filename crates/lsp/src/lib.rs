@@ -7,6 +7,7 @@ pub mod config;
 pub mod documents;
 pub mod encoding;
 pub mod handlers;
+pub mod handlers_ext;
 pub mod handlers_format;
 pub mod handlers_state;
 pub mod main_loop;
