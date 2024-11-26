@@ -14,7 +14,6 @@ use tower_lsp::lsp_types::*;
 use tower_lsp::Client;
 use tower_lsp::LanguageServer;
 use tower_lsp::LspService;
-use tower_lsp::Server;
 use tower_lsp::{jsonrpc, ClientSocket};
 
 use crate::main_loop::Event;
