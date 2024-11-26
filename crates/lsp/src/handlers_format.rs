@@ -12,8 +12,6 @@ use tower_lsp::lsp_types;
 use crate::state::WorldState;
 use crate::to_proto;
 
-// TODO: Handle FormattingOptions
-
 #[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn document_formatting(
     params: lsp_types::DocumentFormattingParams,
@@ -23,10 +21,14 @@ pub(crate) fn document_formatting(
 
     let line_width = LineWidth::try_from(80).map_err(|err| anyhow::anyhow!("{err}"))?;
 
-    // WIP
+    // TODO: Handle FormattingOptions
     let options = RFormatOptions::default()
         .with_indent_style(IndentStyle::Space)
         .with_line_width(line_width);
+
+    if doc.parse.has_errors() {
+        return Err(anyhow::anyhow!("Can't format when there are parse errors."));
+    }
 
     let formatted = format_node(options.clone(), &doc.parse.syntax())?;
     let output = formatted.print()?.into_code();
