@@ -1,5 +1,5 @@
 [package]
-name = "air_cli"
+name = "air"
 version = "0.1.0"
 publish = false
 authors.workspace = true
@@ -23,7 +23,3 @@ tempfile = "3.9.0"
 
 [lints]
 workspace = true
-
-[[bin]]
-name = "air"
-path = "src/main.rs"

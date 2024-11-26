@@ -1,7 +1,7 @@
 - Install the Air CLI to `~/.cargo/bin` (which must be on your `PATH`):
 
   ```sh
-  cargo install --path "crates/air_cli"
+  cargo install --path "crates/air"
   ```
 
   Add a `--debug` flag if you're a developer.
