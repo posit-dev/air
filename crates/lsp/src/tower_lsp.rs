@@ -170,7 +170,7 @@ where
     log::trace!("Starting LSP");
 
     let (service, socket) = new_lsp();
-    let server = Server::new(read, write, socket);
+    let server = tower_lsp::Server::new(read, write, socket);
     server.serve(service).await;
 
     log::trace!("LSP exiting gracefully.",);
