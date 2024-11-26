@@ -10,6 +10,8 @@ use biome_lsp_converters::line_index;
 use tower_lsp::lsp_types;
 use triomphe::Arc;
 
+use crate::from_proto;
+
 use super::line_index::{LineEndings, LineIndex};
 
 pub(crate) fn apply_document_changes(
@@ -54,11 +56,8 @@ pub(crate) fn apply_document_changes(
                 *Arc::make_mut(&mut line_index.index) = line_index::LineIndex::new(&text);
             }
             index_valid = range.start.line;
-            if let Ok(range) = biome_lsp_converters::from_proto::text_range(
-                &line_index.index,
-                range,
-                line_index.encoding,
-            ) {
+            if let Ok(range) = from_proto::text_range(&line_index.index, range, line_index.encoding)
+            {
                 text.replace_range(Range::<usize>::from(range), &change.text);
             }
         }

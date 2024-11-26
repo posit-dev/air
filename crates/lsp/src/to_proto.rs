@@ -7,17 +7,16 @@
 
 // Utilites for converting internal types to LSP types
 
-pub use crate::rust_analyzer::to_proto as rust_analyzer;
+pub(crate) use rust_analyzer::to_proto::text_edit_vec;
 
+use crate::rust_analyzer::{self, line_index::LineIndex, text_edit::TextEdit};
 use tower_lsp::lsp_types;
-
-use crate::rust_analyzer::{line_index::LineIndex, text_edit::TextEdit, to_proto};
 
 pub(crate) fn doc_edit_vec(
     line_index: &LineIndex,
     text_edit: TextEdit,
 ) -> anyhow::Result<Vec<lsp_types::TextDocumentContentChangeEvent>> {
-    let edits = to_proto::text_edit_vec(line_index, text_edit)?;
+    let edits = text_edit_vec(line_index, text_edit)?;
 
     Ok(edits
         .into_iter()
@@ -35,5 +34,5 @@ pub(crate) fn replace_all_edit(
     replace_with: String,
 ) -> anyhow::Result<Vec<lsp_types::TextEdit>> {
     let edit = TextEdit::replace_all(text, replace_with);
-    to_proto::text_edit_vec(line_index, edit)
+    text_edit_vec(line_index, edit)
 }
