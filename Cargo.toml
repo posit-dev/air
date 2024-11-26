@@ -64,7 +64,7 @@ tokio-util = "0.7.12"
 tower-lsp = { git = "https://github.com/lionel-/tower-lsp", branch = "bugfix/patches" }
 tracing = { version = "0.1.40", default-features = false, features = ["std"] }
 tree-sitter = "0.23.0"
-tree-sitter-r = { git = "https://github.com/r-lib/tree-sitter-r", rev = "2097fa502efa21349d26af0ffee55d773015e481" }
+tree-sitter-r = { git = "https://github.com/r-lib/tree-sitter-r", rev = "a0d3e3307489c3ca54da8c7b5b4e0c5f5fd6953a" }
 triomphe = "0.1.14"
 url = "2.5.3"
 uuid = { version = "1.11.0", features = ["v4"] }

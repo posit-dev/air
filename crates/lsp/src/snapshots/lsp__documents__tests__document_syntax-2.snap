@@ -11,8 +11,9 @@ expression: updated_syntax
       1: R_CALL_ARGUMENTS@3..10
         0: L_PAREN@3..4 "(" [] []
         1: R_ARGUMENT_LIST@4..9
-          0: R_UNNAMED_ARGUMENT@4..9
-            0: R_BINARY_EXPRESSION@4..9
+          0: R_ARGUMENT@4..9
+            0: (empty)
+            1: R_BINARY_EXPRESSION@4..9
               0: R_DOUBLE_VALUE@4..5
                 0: R_DOUBLE_LITERAL@4..5 "1" [] []
               1: PLUS@5..7 "+" [Whitespace(" ")] []
