@@ -39,8 +39,8 @@ export function registerCommands(ctx: Ctx) {
 		vscode.commands.registerCommand(
 			"air.viewFileRepresentations",
 			async () => {
-				await vscode.commands.executeCommand("air.viewSyntaxTree");
 				await vscode.commands.executeCommand("air.viewSyntaxTreeTs");
+				await vscode.commands.executeCommand("air.viewSyntaxTree");
 				await vscode.commands.executeCommand("air.viewFormatTree");
 			},
 		),
