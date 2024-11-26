@@ -15,6 +15,10 @@ repository = "https://github.com/posit-dev/air"
 debug = true
 inherits = "release"
 
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+
 [workspace.dependencies]
 air_formatter_test = { path = "./crates/air_formatter_test" }
 air_r_factory = { path = "./crates/air_r_factory" }
