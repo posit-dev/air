@@ -37,6 +37,6 @@ pub(crate) fn document_formatting(
     // files that don't have extensions like `NAMESPACE`, do we hard-code a
     // list? What about unnamed temporary files?
 
-    let edits = to_proto::replace_all_edit(&doc.line_index, &doc.contents, output)?;
+    let edits = to_proto::replace_all_edit(&doc.line_index, &doc.contents, &output)?;
     Ok(Some(edits))
 }
