@@ -27,6 +27,13 @@ export class Lsp {
 		this.stateQueue = new PQueue({ concurrency: 1 });
 	}
 
+	public getClient(): lc.LanguageClient {
+		if (!this.client) {
+			throw new Error("LSP must be started");
+		}
+		return this.client;
+	}
+
 	public async start() {
 		await this.stateQueue.add(async () => await this.startImpl());
 	}
