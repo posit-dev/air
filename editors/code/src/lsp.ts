@@ -1,5 +1,15 @@
 import * as vscode from "vscode";
 import * as lc from "vscode-languageclient/node";
+import { default as PQueue } from "p-queue";
+
+// All session management operations are put on a queue. They can't run
+// concurrently and either result in a started or stopped state. Starting when
+// started is a noop, same for stopping when stopped. On the other hand
+// restarting is always scheduled.
+enum State {
+	Started = "started",
+	Stopped = "stopped",
+}
 
 export class Lsp {
 	private client: lc.LanguageClient | null = null;
@@ -8,18 +18,31 @@ export class Lsp {
 	// after a restart) to avoid having multiple channels in the Output viewpane.
 	private channel: vscode.OutputChannel;
 
-	// Simple flags to manage the state of the LSP
-	private restartInProgress = false;
-	private stopInProgress = false;
+	private state = State.Stopped;
+	private stateQueue: PQueue;
 
 	constructor(context: vscode.ExtensionContext) {
 		this.channel = vscode.window.createOutputChannel("Air Language Server");
 		context.subscriptions.push(this.channel);
+		this.stateQueue = new PQueue({ concurrency: 1 });
 	}
 
 	public async start() {
-		if (this.client) {
-			throw new Error("Air is already running");
+		await this.stateQueue.add(async () => await this.startImpl());
+	}
+
+	public async restart() {
+		await this.stateQueue.add(async () => await this.restartImpl());
+	}
+
+	public async stop() {
+		await this.stateQueue.add(async () => await this.stopImpl());
+	}
+
+	private async startImpl() {
+		// Noop if already started
+		if (this.state === State.Started) {
+			return;
 		}
 
 		let options: lc.ServerOptions = {
@@ -43,46 +66,40 @@ export class Lsp {
 			outputChannel: this.channel,
 		};
 
-		this.client = new lc.LanguageClient(
+		const client = new lc.LanguageClient(
 			"airLanguageServer",
 			"Air Language Server",
 			options,
 			clientOptions,
 		);
-		await this.client.start();
+		await client.start();
+
+		// Only update state if no error occurred
+		this.client = client;
+		this.state = State.Started;
 	}
 
-	public async stop() {
-		if (!this.client) {
-			throw new Error("Air is not running");
+	private async stopImpl() {
+		// Noop if already stopped
+		if (this.state === State.Stopped) {
+			return;
 		}
-
-		if (this.stopInProgress) {
-			throw new Error("Air is already restarting");
-		}
-		this.stopInProgress = true;
 
 		try {
-			await this.client.stop();
+			await this.client?.stop();
 		} finally {
+			// We're always stopped even if an error happens. Hard to do better
+			// in that case, we just drop the client and hope an eventual restart
+			// will put us back in a good place.
+			this.state = State.Stopped;
 			this.client = null;
-			this.stopInProgress = false;
 		}
 	}
 
-	public async restart() {
-		if (this.restartInProgress) {
-			throw new Error("Air is already restarting");
+	private async restartImpl() {
+		if (this.state === State.Started) {
+			await this.stopImpl();
 		}
-		this.restartInProgress = true;
-
-		try {
-			if (this.client) {
-				await this.stop();
-			}
-			await this.start();
-		} finally {
-			this.restartInProgress = false;
-		}
+		await this.startImpl();
 	}
 }
