@@ -28,7 +28,13 @@ export class Lsp {
 		};
 
 		let clientOptions: lc.LanguageClientOptions = {
-			documentSelector: [{ scheme: "file", language: "r" }],
+			// Look for unnamed scheme
+			documentSelector: [
+				{ language: "r", scheme: "untitled" },
+				{ language: "r", scheme: "file" },
+				{ language: "r", pattern: "**/*.{r,R}" },
+				{ language: "r", pattern: "**/*.{rprofile,Rprofile}" },
+			],
 			synchronize: {
 				// Notify the server about file changes to R files contained in the workspace
 				fileEvents:
