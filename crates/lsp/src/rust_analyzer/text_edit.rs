@@ -80,13 +80,8 @@ impl TextEdit {
     }
 
     // --- Start Posit
-    pub fn replace_all(text: &str, replace_with: String) -> TextEdit {
-        let mut builder = TextEdit::builder();
-
-        let range = TextRange::new(TextSize::from(0), TextSize::of(text));
-
-        builder.replace(range, replace_with);
-        builder.finish()
+    pub fn diff(text: &str, replace_with: &str) -> TextEdit {
+        super::diff::diff(text, replace_with)
     }
     // --- End Posit
 

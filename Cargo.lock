@@ -675,6 +675,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "dissimilar"
+version = "1.0.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "59f8e79d1fbf76bdfbde321e902714bf6c49df88a7dda6fc682fc2979226962d"
+
+[[package]]
 name = "drop_bomb"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1242,6 +1248,7 @@ dependencies = [
  "biome_text_size",
  "bytes",
  "crossbeam",
+ "dissimilar",
  "futures",
  "futures-util",
  "httparse",
@@ -1293,6 +1300,7 @@ dependencies = [
  "tokio-util",
  "tower-lsp 0.20.0 (git+https://github.com/lionel-/tower-lsp?branch=bugfix/patches)",
  "tracing",
+ "url",
 ]
 
 [[package]]

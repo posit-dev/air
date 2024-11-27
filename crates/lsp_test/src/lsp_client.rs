@@ -94,6 +94,13 @@ impl TestClient {
         self.init_params = Some(init_params);
     }
 
+    pub async fn close_document(&mut self, uri: url::Url) {
+        let params = lsp_types::DidCloseTextDocumentParams {
+            text_document: lsp_types::TextDocumentIdentifier { uri },
+        };
+        self.did_close_text_document(params).await;
+    }
+
     pub async fn shutdown(&mut self) {
         // TODO: Check that no messages are incoming
 
@@ -116,5 +123,19 @@ impl TestClient {
         // Now wait for the server task to complete.
         // Unwrap: Panics if task can't shut down as expected
         handle.await.unwrap();
+    }
+
+    pub async fn did_open_text_document(&mut self, params: lsp_types::DidOpenTextDocumentParams) {
+        self.notify::<lsp_types::notification::DidOpenTextDocument>(params)
+            .await
+    }
+
+    pub async fn did_close_text_document(&mut self, params: lsp_types::DidCloseTextDocumentParams) {
+        self.notify::<lsp_types::notification::DidCloseTextDocument>(params)
+            .await
+    }
+
+    pub async fn formatting(&mut self, params: lsp_types::DocumentFormattingParams) -> i64 {
+        self.request::<lsp_types::request::Formatting>(params).await
     }
 }

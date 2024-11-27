@@ -31,8 +31,8 @@ pub(crate) fn doc_edit_vec(
 pub(crate) fn replace_all_edit(
     line_index: &LineIndex,
     text: &str,
-    replace_with: String,
+    replace_with: &str,
 ) -> anyhow::Result<Vec<lsp_types::TextEdit>> {
-    let edit = TextEdit::replace_all(text, replace_with);
+    let edit = TextEdit::diff(text, replace_with);
     text_edit_vec(line_index, edit)
 }

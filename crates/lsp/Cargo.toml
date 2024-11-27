@@ -20,6 +20,7 @@ biome_lsp_converters.workspace = true
 biome_parser.workspace = true
 biome_text_size.workspace = true
 crossbeam.workspace = true
+dissimilar.workspace = true
 futures.workspace = true
 itertools.workspace = true
 log.workspace = true
