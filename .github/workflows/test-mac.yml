@@ -1,0 +1,32 @@
+name: "Test - mac"
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    name: "Rust: ${{ matrix.config.rust }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - { rust: 'stable' }
+    timeout-minutes: 30
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Report rust toolchain
+        run: rustup show
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build
+        run: cargo build
+
+      - name: Run unit tests
+        run: cargo test

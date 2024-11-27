@@ -1,0 +1,23 @@
+name: "Test"
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test_macos:
+    name: Test mac
+    uses: ./.github/workflows/test-mac.yml
+    secrets: inherit
+
+  test_windows:
+    name: Test windows
+    uses: ./.github/workflows/test-windows.yml
+    secrets: inherit
+
+  test_linux:
+    name: Test linux
+    uses: ./.github/workflows/test-linux.yml
+    secrets: inherit
