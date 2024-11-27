@@ -17,6 +17,9 @@ pub mod state;
 pub mod to_proto;
 pub mod tower_lsp;
 
+#[cfg(test)]
+pub mod tower_lsp_test_client;
+
 // These send LSP messages in a non-async and non-blocking way.
 // The LOG level is not timestamped so we're not using it.
 macro_rules! log_info {

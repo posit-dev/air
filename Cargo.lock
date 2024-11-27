@@ -1300,6 +1300,7 @@ dependencies = [
  "tokio-util",
  "tower-lsp 0.20.0 (git+https://github.com/lionel-/tower-lsp?branch=bugfix/patches)",
  "tracing",
+ "url",
 ]
 
 [[package]]
