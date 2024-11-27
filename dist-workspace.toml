@@ -19,8 +19,8 @@ unix-archive = ".tar.gz"
 targets = ["aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc"]
 # Whether to auto-include files like READMEs, LICENSEs, and CHANGELOGs (default true)
 auto-includes = false
-# Which actions to run on pull requests
-pr-run-mode = "upload"
+# Which actions to run on pull requests (use "upload" to force a build in CI for testing)
+pr-run-mode = "skip"
 # Path that installers should place binaries in
 install-path = ["$XDG_BIN_HOME/", "$XDG_DATA_HOME/../bin", "~/.local/bin"]
 # Whether to install an updater program
