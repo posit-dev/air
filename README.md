@@ -9,16 +9,23 @@ An R formatter and language server, written in Rust.
 
 # Installation
 
-Install air using our standalone installers:
+Install air using our standalone installers.
+
+On macOS and Linux:
 
 ```shell
-# On macOS and Linux
 curl -LsSf https://github.com/posit-dev/air/releases/latest/download/air-installer.sh | sh
+```
 
-# On Windows, using Powershell
+On Windows:
+
+```shell
 powershell -c "irm https://github.com/posit-dev/air/releases/latest/download/air-installer.ps1 | iex"
+```
 
-# For a specific version
+For a specific version:
+
+```shell
 curl -LsSf https://github.com/posit-dev/air/releases/download/0.1.0/air-installer.sh | sh
 powershell -c "irm https://github.com/posit-dev/air/releases/download/0.1.0/air-installer.ps1 | iex"
 ```
