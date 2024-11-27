@@ -1,0 +1,37 @@
+name: "Git tag"
+
+on:
+    push:
+        branches:
+            - main
+    workflow_dispatch:
+
+jobs:
+    tag:
+        name: Push git tag for new release
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout sources
+              uses: actions/checkout@v4
+
+            - name: Determine version
+              id: extract_version
+              run: |
+                VERSION=$(cat crates/air/Cargo.toml | grep '^version' | sed -e "s/[^.0-9]//g")
+                echo "air version: ${VERSION}"
+                echo "result=${VERSION}" >> $GITHUB_OUTPUT
+
+            - name: Check for existing tag
+              id: check_tag
+              uses: mukunku/tag-exists-action@v1.6.0
+              with:
+                tag: ${{ steps.extract_version.outputs.result }}
+
+            - name: Push tag
+              if: ${{ steps.check_tag.outputs.exists == 'false' }}
+              id: tag_version
+              uses: mathieudutour/github-tag-action@v6.2
+              with:
+                github_token: ${{ secrets.GITHUB_TOKEN }}
+                custom_tag: ${{ steps.extract_version.outputs.result }}
+                tag_prefix: ''
