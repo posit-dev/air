@@ -21,6 +21,8 @@ targets = ["aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-unknown-linux-
 auto-includes = false
 # Which actions to run on pull requests (use "upload" to force a build in CI for testing)
 pr-run-mode = "skip"
+# Whether CI should trigger releases with dispatches instead of tag pushes
+dispatch-releases = true
 # Path that installers should place binaries in
 install-path = ["$XDG_BIN_HOME/", "$XDG_DATA_HOME/../bin", "~/.local/bin"]
 # Whether to install an updater program
