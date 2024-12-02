@@ -1,1 +1,4 @@
 * text=auto eol=lf
+
+# Windows specific test files where we need CRLF endings
+crates/air_r_formatter/tests/specs/r/crlf/*.R text eol=crlf
