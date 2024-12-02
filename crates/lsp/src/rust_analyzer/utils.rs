@@ -7,12 +7,13 @@
 use std::ops::Range;
 
 use biome_lsp_converters::line_index;
+use line_ending::LineEnding;
 use tower_lsp::lsp_types;
 use triomphe::Arc;
 
 use crate::from_proto;
 
-use super::line_index::{LineEndings, LineIndex};
+use super::line_index::LineIndex;
 
 pub(crate) fn apply_document_changes(
     encoding: biome_lsp_converters::PositionEncoding,
@@ -39,7 +40,7 @@ pub(crate) fn apply_document_changes(
         // the index will be overwritten in the bottom loop's first iteration
         index: Arc::new(line_index::LineIndex::new(&text)),
         // We don't care about line endings here.
-        endings: LineEndings::Unix,
+        endings: LineEnding::Lf,
         encoding,
     };
 
