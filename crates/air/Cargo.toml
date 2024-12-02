@@ -15,7 +15,9 @@ rust-version.workspace = true
 air_r_formatter = { workspace = true }
 air_r_parser = { workspace = true }
 anyhow = { workspace = true }
+biome_formatter = { workspace = true }
 clap = { workspace = true }
+line_ending = { workspace = true }
 lsp = { workspace = true }
 tokio = "1.41.1"
 

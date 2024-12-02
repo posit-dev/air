@@ -1,0 +1,20 @@
+[package]
+name = "line_ending"
+description = "Utilities for normalizing line endings"
+version = "0.0.0"
+publish = false
+authors.workspace = true
+categories.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+memchr.workspace = true
+
+[dev-dependencies]
+
+[lints]
+workspace = true

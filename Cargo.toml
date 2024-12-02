@@ -27,6 +27,7 @@ air_r_formatter = { path = "./crates/air_r_formatter" }
 air_r_parser = { path = "./crates/air_r_parser" }
 air_r_syntax = { path = "./crates/air_r_syntax" }
 biome_ungrammar = { path = "./crates/biome_ungrammar" }
+line_ending = { path = "./crates/line_ending" }
 lsp = { path = "./crates/lsp" }
 lsp_test = { path = "./crates/lsp_test" }
 tests_macros = { path = "./crates/tests_macros" }
@@ -76,7 +77,6 @@ checked_conversions = "warn"
 cloned_instead_of_copied = "warn"
 copy_iterator = "warn"
 dbg_macro = "warn"
-doc_link_with_quotes = "warn"
 empty_enum = "warn"
 expl_impl_clone_on_copy = "warn"
 explicit_into_iter_loop = "warn"

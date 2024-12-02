@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use air_r_formatter::context::RFormatOptions;
 use air_r_parser::RParserOptions;
+use line_ending::LineEnding;
 
 use crate::args::FormatCommand;
 use crate::ExitStatus;
@@ -29,16 +30,30 @@ fn _format_dir(path: &PathBuf) -> anyhow::Result<ExitStatus> {
 }
 
 fn format_file(path: &PathBuf) -> anyhow::Result<ExitStatus> {
-    let text = std::fs::read_to_string(path)?;
+    let contents = std::fs::read_to_string(path)?;
+
+    let line_ending = line_ending::infer(&contents);
+
+    // Normalize to Unix line endings
+    let contents = match line_ending {
+        LineEnding::Lf => contents,
+        LineEnding::Crlf => line_ending::normalize(contents),
+    };
 
     let parser_options = RParserOptions::default();
-    let parsed = air_r_parser::parse(text.as_str(), parser_options);
+    let parsed = air_r_parser::parse(contents.as_str(), parser_options);
 
     if parsed.has_errors() {
         return Ok(ExitStatus::Error);
     }
 
-    let formatter_options = RFormatOptions::default();
+    // TODO: Respect user specified `LineEnding` option too, not just inferred line endings
+    let line_ending = match line_ending {
+        LineEnding::Lf => biome_formatter::LineEnding::Lf,
+        LineEnding::Crlf => biome_formatter::LineEnding::Crlf,
+    };
+
+    let formatter_options = RFormatOptions::default().with_line_ending(line_ending);
     let formatted = air_r_formatter::format_node(formatter_options, &parsed.syntax())?;
     let result = formatted.print()?;
     let code = result.as_code();
