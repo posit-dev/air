@@ -6,10 +6,11 @@
 //
 
 use biome_lsp_converters::{line_index, PositionEncoding};
+use line_ending::LineEnding;
 use tower_lsp::lsp_types;
 
 use crate::config::DocumentConfig;
-use crate::rust_analyzer::line_index::{LineEndings, LineIndex};
+use crate::rust_analyzer::line_index::LineIndex;
 use crate::rust_analyzer::utils::apply_document_changes;
 
 #[derive(Clone)]
@@ -51,8 +52,14 @@ impl Document {
         version: Option<i32>,
         position_encoding: PositionEncoding,
     ) -> Self {
+        // Detect existing endings
+        let endings = line_ending::infer(&contents);
+
         // Normalize to Unix line endings
-        let (contents, endings) = LineEndings::normalize(contents);
+        let contents = match endings {
+            LineEnding::Lf => contents,
+            LineEnding::Crlf => line_ending::normalize(contents),
+        };
 
         // Create line index to keep track of newline offsets
         let line_index = LineIndex {
@@ -100,7 +107,7 @@ impl Document {
         // col] coordinates.
         for event in &mut params.content_changes {
             let text = std::mem::take(&mut event.text);
-            event.text = LineEndings::normalize(text).0;
+            event.text = line_ending::normalize(text);
         }
 
         let contents = apply_document_changes(

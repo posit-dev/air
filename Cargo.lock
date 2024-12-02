@@ -33,7 +33,9 @@ dependencies = [
  "air_r_formatter",
  "air_r_parser",
  "anyhow",
+ "biome_formatter",
  "clap",
+ "line_ending",
  "lsp",
  "tempfile",
  "tokio",
@@ -49,6 +51,7 @@ dependencies = [
  "biome_parser",
  "biome_rowan",
  "insta",
+ "line_ending",
  "serde",
  "similar",
  "similar-asserts",
@@ -72,6 +75,7 @@ dependencies = [
  "biome_formatter",
  "biome_parser",
  "biome_rowan",
+ "line_ending",
  "tests_macros",
  "tracing",
 ]
@@ -88,6 +92,7 @@ dependencies = [
  "biome_rowan",
  "biome_unicode_table",
  "insta",
+ "line_ending",
  "serde",
  "tests_macros",
  "tracing",
@@ -1200,6 +1205,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "line_ending"
+version = "0.0.0"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "linked-hash-map"
 version = "0.5.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1254,6 +1266,7 @@ dependencies = [
  "httparse",
  "insta",
  "itertools",
+ "line_ending",
  "log",
  "lsp_test",
  "memchr",

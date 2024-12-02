@@ -6,12 +6,12 @@
 
 //! Conversion of rust-analyzer specific types to lsp_types equivalents.
 
-use tower_lsp::lsp_types;
-
 use super::{
-    line_index::{LineEndings, LineIndex},
+    line_index::LineIndex,
     text_edit::{Indel, TextEdit},
 };
+use line_ending::LineEnding;
+use tower_lsp::lsp_types;
 
 pub(crate) fn text_edit(
     line_index: &LineIndex,
@@ -23,8 +23,8 @@ pub(crate) fn text_edit(
         line_index.encoding,
     )?;
     let new_text = match line_index.endings {
-        LineEndings::Unix => indel.insert,
-        LineEndings::Dos => indel.insert.replace('\n', "\r\n"),
+        LineEnding::Lf => indel.insert,
+        LineEnding::Crlf => indel.insert.replace('\n', "\r\n"),
     };
     Ok(lsp_types::TextEdit { range, new_text })
 }
