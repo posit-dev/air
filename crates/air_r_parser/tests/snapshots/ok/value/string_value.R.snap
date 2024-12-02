@@ -10,6 +10,8 @@ expression: snapshot
 'hi there!'
 '\''
 "'"
+"multiline
+string"
 r"("some raw string
 business")"
 
@@ -38,19 +40,22 @@ RRoot {
             value_token: R_STRING_LITERAL@33..37 "\"'\"" [Newline("\n")] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@37..69 "r\"(\"some raw string\nbusiness\")\"" [Newline("\n")] [],
+            value_token: R_STRING_LITERAL@37..56 "\"multiline\nstring\"" [Newline("\n")] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@56..88 "r\"(\"some raw string\nbusiness\")\"" [Newline("\n")] [],
         },
     ],
-    eof_token: EOF@69..70 "" [Newline("\n")] [],
+    eof_token: EOF@88..89 "" [Newline("\n")] [],
 }
 ```
 
 ## CST
 
 ```
-0: R_ROOT@0..70
+0: R_ROOT@0..89
   0: (empty)
-  1: R_EXPRESSION_LIST@0..69
+  1: R_EXPRESSION_LIST@0..88
     0: R_STRING_VALUE@0..11
       0: R_STRING_LITERAL@0..11 "\"hi there!\"" [] []
     1: R_STRING_VALUE@11..16
@@ -61,8 +66,10 @@ RRoot {
       0: R_STRING_LITERAL@28..33 "'\\''" [Newline("\n")] []
     4: R_STRING_VALUE@33..37
       0: R_STRING_LITERAL@33..37 "\"'\"" [Newline("\n")] []
-    5: R_STRING_VALUE@37..69
-      0: R_STRING_LITERAL@37..69 "r\"(\"some raw string\nbusiness\")\"" [Newline("\n")] []
-  2: EOF@69..70 "" [Newline("\n")] []
+    5: R_STRING_VALUE@37..56
+      0: R_STRING_LITERAL@37..56 "\"multiline\nstring\"" [Newline("\n")] []
+    6: R_STRING_VALUE@56..88
+      0: R_STRING_LITERAL@56..88 "r\"(\"some raw string\nbusiness\")\"" [Newline("\n")] []
+  2: EOF@88..89 "" [Newline("\n")] []
 
 ```

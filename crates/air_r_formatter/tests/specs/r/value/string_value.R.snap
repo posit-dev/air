@@ -10,6 +10,8 @@ info: r/value/string_value.R
 'hi there!'
 '\''
 "'"
+"multiline
+string"
 r"("some raw string
 business")"
 
@@ -35,6 +37,8 @@ Line width: 80
 'hi there!'
 '\''
 "'"
+"multiline
+string"
 r"("some raw string
 business")"
 ```
