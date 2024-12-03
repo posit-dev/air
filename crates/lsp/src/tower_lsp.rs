@@ -17,6 +17,7 @@ use tower_lsp::LspService;
 use tower_lsp::{jsonrpc, ClientSocket};
 
 use crate::handlers_ext::ViewFileParams;
+use crate::main_loop::AuxiliaryEventSender;
 use crate::main_loop::Event;
 use crate::main_loop::GlobalState;
 use crate::main_loop::TokioUnboundedSender;
@@ -74,6 +75,10 @@ struct Backend {
     /// Channel for communication with the main loop.
     events_tx: TokioUnboundedSender<Event>,
 
+    /// Channel for communication with the auxiliary loop.
+    /// Used for latency sensitive logging.
+    auxiliary_event_tx: AuxiliaryEventSender,
+
     /// Handle to main loop. Drop it to cancel the loop, all associated tasks,
     /// and drop all owned state.
     _main_loop: tokio::task::JoinSet<()>,
@@ -81,7 +86,7 @@ struct Backend {
 
 impl Backend {
     async fn request(&self, request: LspRequest) -> anyhow::Result<LspResponse> {
-        crate::log_info!("Incoming: {request:#?}");
+        self.log_info(format!("Incoming: {request:#?}"));
 
         let (response_tx, mut response_rx) =
             tokio_unbounded_channel::<anyhow::Result<LspResponse>>();
@@ -94,12 +99,12 @@ impl Backend {
         // Wait for response from main loop
         let out = response_rx.recv().await.unwrap()?;
 
-        crate::log_info!("Outgoing {out:#?}");
+        self.log_info(format!("Outgoing {out:#?}"));
         Ok(out)
     }
 
     fn notify(&self, notif: LspNotification) {
-        crate::log_info!("Incoming: {notif:#?}");
+        self.log_info(format!("Incoming: {notif:#?}"));
 
         // Relay notification to main loop
         self.events_tx
@@ -112,6 +117,10 @@ impl Backend {
             self.request(LspRequest::AirViewFile(params)).await,
             LspResponse::AirViewFile
         )
+    }
+
+    fn log_info(&self, message: String) {
+        self.auxiliary_event_tx.log_info(message);
     }
 }
 
@@ -189,12 +198,14 @@ fn new_lsp() -> (LspService<Backend>, ClientSocket) {
     let init = |client: Client| {
         let state = GlobalState::new(client);
         let events_tx = state.events_tx();
+        let auxiliary_event_tx = state.auxiliary_event_tx();
 
         // Start main loop and hold onto the handle that keeps it alive
         let main_loop = state.start();
 
         Backend {
             events_tx,
+            auxiliary_event_tx,
             _main_loop: main_loop,
         }
     };
