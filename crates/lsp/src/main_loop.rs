@@ -120,6 +120,27 @@ impl AuxiliaryEventSender {
             _ => log::info!("{message}"),
         };
     }
+
+    /// Spawn a blocking task
+    ///
+    /// This runs tasks that do semantic analysis on a separate thread pool to avoid
+    /// blocking the main loop.
+    ///
+    /// Can optionally return an event for the auxiliary loop (i.e. a log message or
+    /// diagnostics publication).
+    pub(crate) fn spawn_blocking_task<Handler>(&self, handler: Handler)
+    where
+        Handler: FnOnce() -> anyhow::Result<Option<AuxiliaryEvent>>,
+        Handler: Send + 'static,
+    {
+        let handle = tokio::task::spawn_blocking(handler);
+
+        // Send the join handle to the auxiliary loop so it can log any errors
+        // or panics
+        if let Err(err) = self.send(AuxiliaryEvent::SpawnedTask(handle)) {
+            log::warn!("Failed to send task to auxiliary loop due to {err}");
+        }
+    }
 }
 
 /// Global state for the main loop
@@ -397,33 +418,9 @@ impl GlobalState {
         Handler: FnOnce() -> anyhow::Result<T>,
         Handler: Send + 'static,
     {
-        self.spawn_blocking(move || {
+        self.auxiliary_event_tx.spawn_blocking_task(move || {
             respond(response_tx, handler(), into_lsp_response).and(Ok(None))
-        })
-    }
-
-    /// Spawn a blocking task
-    ///
-    /// This runs tasks that do semantic analysis on a separate thread pool to avoid
-    /// blocking the main loop.
-    ///
-    /// Can optionally return an event for the auxiliary loop (i.e. a log message or
-    /// diagnostics publication).
-    fn spawn_blocking<Handler>(&self, handler: Handler)
-    where
-        Handler: FnOnce() -> anyhow::Result<Option<AuxiliaryEvent>>,
-        Handler: Send + 'static,
-    {
-        let handle = tokio::task::spawn_blocking(|| handler());
-
-        // Send the join handle to the auxiliary loop so it can log any errors
-        // or panics
-        if let Err(err) = self
-            .auxiliary_event_tx
-            .send(AuxiliaryEvent::SpawnedTask(handle))
-        {
-            log::warn!("Failed to send task to auxiliary loop due to {err}");
-        }
+        });
     }
 
     fn log_info(&self, message: String) {
