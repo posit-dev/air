@@ -10,10 +10,28 @@ fn[["description", {
 # ------------------------------------------------------------------------
 # Holes
 
+# Leading holes should hug the `[[` token
 fn[[,]]
 fn[[,,]]
+
 fn[[a,,b,,]]
 fn[[a_really_long_argument_here,,another_really_really_long_argument_to_test_this_feature,,]]
+
+# Holes are "invisible" when determining user requested expansion
+# These all expand
+fn[[,
+  x = 1
+]]
+fn[[
+  ,
+  x = 1
+]]
+fn[[
+  , x = 1
+]]
+fn[[
+  ,, x = 1
+]]
 
 # ------------------------------------------------------------------------
 # Dots
@@ -61,9 +79,10 @@ df[[df$col > 7, map[[
   names(df)
 ]]]]
 
-# TODO: Holes currently don't force expansion. There is no token attached to
-# `RHoleArgument`, so we can't compute the "number of lines before the first token".
-df[[
-  ,
-  x = 1
+# ------------------------------------------------------------------------
+# Comments "after" holes
+
+df[[,
+  # comment
+  x
 ]]
