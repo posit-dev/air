@@ -101,7 +101,7 @@ impl From<VscDocumentConfig> for DocumentConfig {
                 if var == "tabSize" {
                     x.tab_size
                 } else {
-                    crate::log_warn!("Unknown indent alias {var}, using default");
+                    log::warn!("Unknown indent alias {var}, using default");
                     2
                 }
             }
