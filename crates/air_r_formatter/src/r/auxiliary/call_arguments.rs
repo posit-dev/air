@@ -10,8 +10,10 @@ use air_r_syntax::RArgument;
 use air_r_syntax::RArgumentList;
 use air_r_syntax::RCall;
 use air_r_syntax::RCallArguments;
-use air_r_syntax::RCallArgumentsFields;
 use air_r_syntax::RLanguage;
+use air_r_syntax::RSubset2Arguments;
+use air_r_syntax::RSubsetArguments;
+use air_r_syntax::RSyntaxNode;
 use air_r_syntax::RSyntaxToken;
 use biome_formatter::separated::TrailingSeparator;
 use biome_formatter::{format_args, format_element, write, VecBuffer};
@@ -22,12 +24,61 @@ pub(crate) struct FormatRCallArguments;
 impl FormatNodeRule<RCallArguments> for FormatRCallArguments {
     fn fmt_fields(&self, node: &RCallArguments, f: &mut RFormatter) -> FormatResult<()> {
         // TODO: Special handling for comments? See `handle_array_holes` for JS.
+        RCallLikeArguments::Call(node.clone()).fmt(f)
+    }
 
-        let RCallArgumentsFields {
-            l_paren_token,
-            items,
-            r_paren_token,
-        } = node.as_fields();
+    fn fmt_dangling_comments(&self, _: &RCallArguments, _: &mut RFormatter) -> FormatResult<()> {
+        // Formatted inside of `fmt_fields`
+        // Only applicable for the empty arguments case
+        Ok(())
+    }
+}
+
+pub(crate) enum RCallLikeArguments {
+    Call(RCallArguments),
+    Subset(RSubsetArguments),
+    Subset2(RSubset2Arguments),
+}
+
+impl RCallLikeArguments {
+    fn l_token(&self) -> SyntaxResult<RSyntaxToken> {
+        match self {
+            Self::Call(node) => node.l_paren_token(),
+            Self::Subset(node) => node.l_brack_token(),
+            Self::Subset2(node) => node.l_brack2_token(),
+        }
+    }
+
+    fn r_token(&self) -> SyntaxResult<RSyntaxToken> {
+        match self {
+            Self::Call(node) => node.r_paren_token(),
+            Self::Subset(node) => node.r_brack_token(),
+            Self::Subset2(node) => node.r_brack2_token(),
+        }
+    }
+
+    fn items(&self) -> RArgumentList {
+        match self {
+            Self::Call(node) => node.items(),
+            Self::Subset(node) => node.items(),
+            Self::Subset2(node) => node.items(),
+        }
+    }
+
+    fn syntax(&self) -> &RSyntaxNode {
+        match self {
+            Self::Call(node) => node.syntax(),
+            Self::Subset(node) => node.syntax(),
+            Self::Subset2(node) => node.syntax(),
+        }
+    }
+}
+
+impl Format<RFormatContext> for RCallLikeArguments {
+    fn fmt(&self, f: &mut Formatter<RFormatContext>) -> FormatResult<()> {
+        let l_token = self.l_token()?;
+        let items = self.items();
+        let r_token = self.r_token()?;
 
         // Special case where the dangling comment has no node to attach to:
         //
@@ -42,73 +93,42 @@ impl FormatNodeRule<RCallArguments> for FormatRCallArguments {
             return write!(
                 f,
                 [
-                    l_paren_token.format(),
-                    format_dangling_comments(node.syntax()).with_soft_block_indent(),
-                    r_paren_token.format()
+                    l_token.format(),
+                    format_dangling_comments(self.syntax()).with_soft_block_indent(),
+                    r_token.format()
                 ]
             );
         }
 
         // Special case where we have a test call where we never want to break
-        // even if we exceed the line length
-        let is_test_call = node
-            .parent::<RCall>()
-            .map_or(Ok(false), |call| call.is_test_call())?;
+        // even if we exceed the line length. Only applies to `Call` variants.
+        if let RCallLikeArguments::Call(node) = self {
+            let is_test_call = node
+                .parent::<RCall>()
+                .map_or(Ok(false), |call| call.is_test_call())?;
 
-        if is_test_call {
-            let items = format_with(|f| {
-                f.join_with(space())
-                    .entries(
-                        items
-                            .format_separated(",")
-                            .with_trailing_separator(TrailingSeparator::Disallowed),
-                    )
-                    .finish()
-            });
+            if is_test_call {
+                let items = format_with(|f| {
+                    f.join_with(space())
+                        .entries(
+                            items
+                                .format_separated(",")
+                                .with_trailing_separator(TrailingSeparator::Disallowed),
+                        )
+                        .finish()
+                });
 
-            return write!(f, [l_paren_token.format(), &items, r_paren_token.format()]);
+                return write!(f, [l_token.format(), &items, r_token.format()]);
+            }
         }
 
-        FormatRCallLikeArguments::new(l_paren_token, items, r_paren_token).fmt(f)
-    }
-
-    fn fmt_dangling_comments(&self, _: &RCallArguments, _: &mut RFormatter) -> FormatResult<()> {
-        // Formatted inside of `fmt_fields`
-        // Only applicable for the empty arguments case
-        Ok(())
-    }
-}
-
-pub(crate) struct FormatRCallLikeArguments {
-    l_token: SyntaxResult<RSyntaxToken>,
-    items: RArgumentList,
-    r_token: SyntaxResult<RSyntaxToken>,
-}
-
-impl FormatRCallLikeArguments {
-    pub(crate) fn new(
-        l_token: SyntaxResult<RSyntaxToken>,
-        items: RArgumentList,
-        r_token: SyntaxResult<RSyntaxToken>,
-    ) -> Self {
-        Self {
-            l_token,
-            items,
-            r_token,
-        }
-    }
-}
-
-impl Format<RFormatContext> for FormatRCallLikeArguments {
-    fn fmt(&self, f: &mut Formatter<RFormatContext>) -> FormatResult<()> {
-        let last_index = self.items.len().saturating_sub(1);
+        let last_index = items.len().saturating_sub(1);
         let mut has_empty_line = false;
 
         // Wrap `RArgumentList` elements in a `FormatCallArgument` type that
         // knows how to cache itself when we use `will_break()` to check if
         // the argument breaks
-        let arguments: Vec<_> = self
-            .items
+        let arguments: Vec<_> = items
             .elements()
             .enumerate()
             .map(|(index, element)| {
@@ -132,9 +152,9 @@ impl Format<RFormatContext> for FormatRCallLikeArguments {
             return write!(
                 f,
                 [FormatAllArgsBrokenOut {
-                    l_token: &self.l_token.format(),
+                    l_token: &l_token.format(),
                     args: &arguments,
-                    r_token: &self.r_token.format(),
+                    r_token: &r_token.format(),
                     expand: true,
                 }]
             );
@@ -146,23 +166,23 @@ impl Format<RFormatContext> for FormatRCallLikeArguments {
             return write!(
                 f,
                 [FormatAllArgsBrokenOut {
-                    l_token: &self.l_token.format(),
+                    l_token: &l_token.format(),
                     args: &arguments,
-                    r_token: &self.r_token.format(),
+                    r_token: &r_token.format(),
                     expand: true,
                 }]
             );
         }
 
-        if let Some(group_layout) = arguments_grouped_layout(&self.items, f.comments()) {
-            write_grouped_arguments(&self.l_token, &self.r_token, arguments, group_layout, f)
+        if let Some(group_layout) = arguments_grouped_layout(&items, f.comments()) {
+            write_grouped_arguments(&l_token, &r_token, arguments, group_layout, f)
         } else {
             write!(
                 f,
                 [FormatAllArgsBrokenOut {
-                    l_token: &self.l_token.format(),
+                    l_token: &l_token.format(),
                     args: &arguments,
-                    r_token: &self.r_token.format(),
+                    r_token: &r_token.format(),
                     expand: false,
                 }]
             )
@@ -446,8 +466,8 @@ impl Format<RFormatContext> for FormatCallArgument {
 /// )
 /// ```
 fn write_grouped_arguments(
-    l_token: &SyntaxResult<RSyntaxToken>,
-    r_token: &SyntaxResult<RSyntaxToken>,
+    l_token: &RSyntaxToken,
+    r_token: &RSyntaxToken,
     mut arguments: Vec<FormatCallArgument>,
     group_layout: GroupedCallArgumentLayout,
     f: &mut RFormatter,
