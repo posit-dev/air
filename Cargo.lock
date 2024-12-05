@@ -72,6 +72,7 @@ dependencies = [
  "biome_formatter",
  "biome_parser",
  "biome_rowan",
+ "itertools",
  "tests_macros",
  "tracing",
 ]

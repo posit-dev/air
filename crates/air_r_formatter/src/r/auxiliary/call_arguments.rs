@@ -18,6 +18,7 @@ use air_r_syntax::RSyntaxToken;
 use biome_formatter::separated::TrailingSeparator;
 use biome_formatter::{format_args, format_element, write, VecBuffer};
 use biome_rowan::{AstSeparatedElement, AstSeparatedList, SyntaxResult};
+use itertools::Itertools;
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct FormatRCallArguments;
@@ -121,28 +122,41 @@ impl Format<RFormatContext> for RCallLikeArguments {
             }
         }
 
-        let last_index = items.len().saturating_sub(1);
-        let mut has_empty_line = false;
+        let mut iter_elements = items.elements();
 
-        // Wrap `RArgumentList` elements in a `FormatCallArgument` type that
+        // TODO: Don't clone, maybe delay interning until first format()
+        // call by using interior mutability?
+        let comments = f.comments().clone();
+
+        // Split leading holes out from the remainder of the arguments.
+        // Leading holes tightly hug the `l_token` no matter what.
+        // Because they are intended to tightly hug, a node is only considered
+        // a leading hole if there isn't a comment attached.
+        let leading_holes: Vec<_> = iter_elements
+            .take_while_ref(|element| {
+                element.node().map_or(false, |node| {
+                    node.is_hole() && !comments.has_comments(node.syntax())
+                })
+            })
+            .map(|element| FormatCallArgumentHole::new(element, f))
+            .collect();
+
+        let last_index = (items.len() - leading_holes.len()).saturating_sub(1);
+
+        // Wrap remaining `RArgumentList` elements in a `FormatCallArgument` type that
         // knows how to cache itself when we use `will_break()` to check if
         // the argument breaks
-        let arguments: Vec<_> = items
-            .elements()
+        let arguments: Vec<_> = iter_elements
             .enumerate()
-            .map(|(index, element)| {
-                let leading_lines = element
-                    .node()
-                    .map_or(0, |node| get_lines_before(node.syntax()));
-                has_empty_line = has_empty_line || leading_lines > 1;
-
-                FormatCallArgument::Default {
-                    element,
-                    is_last: index == last_index,
-                    leading_lines,
-                }
-            })
+            .map(|(index, element)| FormatCallArgument::new(element, index == last_index))
             .collect();
+
+        let has_empty_line = leading_holes
+            .iter()
+            .any(|leading_hole| leading_hole.leading_lines() > 1)
+            || arguments
+                .iter()
+                .any(|argument| argument.leading_lines() > 1);
 
         // Special case where the user has requested a fully empty line between
         // some of their arguments. Let's respect that and use it as an
@@ -152,6 +166,7 @@ impl Format<RFormatContext> for RCallLikeArguments {
                 f,
                 [FormatAllArgsBrokenOut {
                     l_token: &l_token.format(),
+                    leading_holes: &leading_holes,
                     args: &arguments,
                     r_token: &r_token.format(),
                     expand: true,
@@ -160,12 +175,13 @@ impl Format<RFormatContext> for RCallLikeArguments {
         }
 
         // Special case where a line break exists between the `l_token` and the
-        // first argument. Treat this as a user request to expand.
-        if needs_user_requested_expansion(&arguments) {
+        // first non-hole argument. Treat this as a user request to expand.
+        if needs_user_requested_expansion(&leading_holes, &arguments) {
             return write!(
                 f,
                 [FormatAllArgsBrokenOut {
                     l_token: &l_token.format(),
+                    leading_holes: &leading_holes,
                     args: &arguments,
                     r_token: &r_token.format(),
                     expand: true,
@@ -174,12 +190,13 @@ impl Format<RFormatContext> for RCallLikeArguments {
         }
 
         if let Some(group_layout) = arguments_grouped_layout(&items, f.comments()) {
-            write_grouped_arguments(&l_token, &r_token, arguments, group_layout, f)
+            write_grouped_arguments(l_token, leading_holes, arguments, r_token, group_layout, f)
         } else {
             write!(
                 f,
                 [FormatAllArgsBrokenOut {
                     l_token: &l_token.format(),
+                    leading_holes: &leading_holes,
                     args: &arguments,
                     r_token: &r_token.format(),
                     expand: false,
@@ -189,8 +206,9 @@ impl Format<RFormatContext> for RCallLikeArguments {
     }
 }
 
-/// Check if the user has inserted a leading newline before the very first `argument`.
-/// If so, we respect that and treat it as a request to break ALL of the arguments.
+/// Check if the user has inserted a leading newline before the very first
+/// non-hole `argument`. If so, we respect that and treat it as a request to
+/// break ALL of the arguments.
 /// Note this is a case of irreversible formatting!
 ///
 /// ```r
@@ -225,12 +243,116 @@ impl Format<RFormatContext> for RCallLikeArguments {
 /// # Output
 /// dictionary <- list(bob = "burger", dina = "dairy", john = "juice")
 /// ```
-fn needs_user_requested_expansion(arguments: &[FormatCallArgument]) -> bool {
+///
+/// The leading line check is done on the first non-hole argument, so this
+/// is considered a user requested expansion and stays as is because there
+/// is a leading newline before the `j` argument node.
+///
+/// ```r
+/// dt[,
+///   j = complex + things,
+///   by = col
+/// ]
+/// ```
+///
+/// This is also considered a user requested expansion. We treat holes as
+/// "invisible" for this check, so if you squint and remove the leading `,`
+/// and there are any leading lines before the first non-hole argument,
+/// that is still considered a user requested expansion, but the `,`s attached
+/// to the hole will get moved to hug the `[`.
+///
+/// ```r
+/// dt[
+///   , j = complex + things,
+///   by = col
+/// ]
+/// ```
+fn needs_user_requested_expansion(
+    leading_holes: &[FormatCallArgumentHole],
+    arguments: &[FormatCallArgument],
+) -> bool {
     // TODO: This should be configurable by an option, since it is a case of
     // irreversible formatting
-    arguments
+
+    // Do any leading holes have leading lines?
+    // We treat leading holes as "invisible" so a leading line in the hole
+    // implies a leading line in the first argument.
+    if leading_holes.iter().any(|hole| hole.leading_lines() > 0) {
+        return true;
+    }
+
+    // Does the first non-hole argument have leading lines?
+    if arguments
         .first()
         .map_or(false, |argument| argument.leading_lines() > 0)
+    {
+        return true;
+    }
+
+    false
+}
+
+/// Helper for formatting a call argument hole
+///
+/// We format on creation and cache the result. This is necessary because
+/// using `BestFitting` will try and print the hole multiple times as it
+/// tries out the different variants, which would be an error if it wasn't
+/// cached.
+struct FormatCallArgumentHole {
+    /// The formatted element
+    content: FormatResult<Option<FormatElement>>,
+
+    /// The number of lines before this node
+    leading_lines: usize,
+}
+
+impl FormatCallArgumentHole {
+    fn new(
+        element: AstSeparatedElement<RLanguage, RArgument>,
+        f: &mut Formatter<RFormatContext>,
+    ) -> Self {
+        // Note that holes by their very nature don't have any physical nodes
+        // to attach trivia to, so we can't use `get_lines_before()` on the
+        // node. Instead we look at the attached `,` token and look for lines
+        // before that!
+        let leading_lines = element
+            .trailing_separator()
+            .unwrap_or(None)
+            .map_or(0, get_lines_before_token);
+
+        // Go ahead and intern the node, its printed contents are going to
+        // be requested multiple times
+        let content = f.intern(&format_with(|f| {
+            write!(
+                f,
+                [
+                    element.node()?.format(),
+                    element.trailing_separator()?.format()
+                ]
+            )
+        }));
+
+        Self {
+            content,
+            leading_lines,
+        }
+    }
+
+    fn leading_lines(&self) -> usize {
+        self.leading_lines
+    }
+}
+
+impl Format<RFormatContext> for FormatCallArgumentHole {
+    fn fmt(&self, f: &mut Formatter<RFormatContext>) -> FormatResult<()> {
+        match self.content.clone()? {
+            Some(element) => {
+                f.write_element(element)?;
+                Ok(())
+            }
+            None => Ok(()),
+        }
+    }
 }
 
 /// Helper for formatting a call argument
@@ -262,6 +384,18 @@ enum FormatCallArgument {
 }
 
 impl FormatCallArgument {
+    fn new(element: AstSeparatedElement<RLanguage, RArgument>, is_last: bool) -> Self {
+        let leading_lines = element
+            .node()
+            .map_or(0, |node| get_lines_before(node.syntax()));
+
+        FormatCallArgument::Default {
+            element,
+            is_last,
+            leading_lines,
+        }
+    }
+
     /// Returns `true` if this argument contains any content that forces a group to [`break`](FormatElements::will_break).
     ///
     /// Caches the formatted content after we check, so we can utilize it later
@@ -465,9 +599,10 @@ impl Format<RFormatContext> for FormatCallArgument {
 /// )
 /// ```
 fn write_grouped_arguments(
-    l_token: &RSyntaxToken,
-    r_token: &RSyntaxToken,
+    l_token: RSyntaxToken,
+    leading_holes: Vec<FormatCallArgumentHole>,
     mut arguments: Vec<FormatCallArgument>,
+    r_token: RSyntaxToken,
     group_layout: GroupedCallArgumentLayout,
     f: &mut RFormatter,
 ) -> FormatResult<()> {
@@ -493,6 +628,7 @@ fn write_grouped_arguments(
                 f,
                 [FormatAllArgsBrokenOut {
                     l_token: &l_token.format(),
+                    leading_holes: &leading_holes,
                     args: &arguments,
                     r_token: &r_token.format(),
                     expand: true,
@@ -520,6 +656,7 @@ fn write_grouped_arguments(
             buffer,
             [FormatAllArgsBrokenOut {
                 l_token: &l_token,
+                leading_holes: &leading_holes,
                 args: &arguments,
                 r_token: &r_token,
                 expand: true,
@@ -573,6 +710,8 @@ fn write_grouped_arguments(
             buffer,
             [
                 l_token,
+                format_with(|f| { f.join().entries(leading_holes.iter()).finish() }),
+                maybe_space(!leading_holes.is_empty() && !grouped.is_empty()),
                 format_with(|f| {
                     f.join_with(soft_line_break_or_space())
                         .entries(grouped.iter())
@@ -613,6 +752,8 @@ fn write_grouped_arguments(
             buffer,
             [
                 l_token,
+                format_with(|f| { f.join().entries(leading_holes.iter()).finish() }),
+                maybe_space(!leading_holes.is_empty() && !grouped.is_empty()),
                 format_with(|f| {
                     let mut joiner = f.join_with(soft_line_break_or_space());
 
@@ -769,6 +910,7 @@ impl Format<RFormatContext> for FormatGroupedArgument {
 
 struct FormatAllArgsBrokenOut<'a> {
     l_token: &'a dyn Format<RFormatContext>,
+    leading_holes: &'a [FormatCallArgumentHole],
     args: &'a [FormatCallArgument],
     r_token: &'a dyn Format<RFormatContext>,
     expand: bool,
@@ -797,6 +939,8 @@ impl<'a> Format<RFormatContext> for FormatAllArgsBrokenOut<'a> {
             f,
             [group(&format_args![
                 self.l_token,
+                format_with(|f| f.join().entries(self.leading_holes.iter()).finish()),
+                maybe_space(!self.leading_holes.is_empty() && !self.args.is_empty()),
                 soft_block_indent(&args),
                 self.r_token,
             ])
