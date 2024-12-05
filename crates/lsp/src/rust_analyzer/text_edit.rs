@@ -327,7 +327,7 @@ mod tests {
         let mut builder = TextEditBuilder::default();
         builder.replace(range(1, 3), "au".into());
         builder.replace(range(3, 5), "www".into());
-        builder.replace(range(5, 8), "".into());
+        builder.replace(range(5, 8), String::new());
         builder.replace(range(8, 9), "ub".into());
 
         let edit = builder.finish();

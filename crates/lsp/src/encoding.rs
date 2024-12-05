@@ -35,7 +35,7 @@ fn convert_character_from_utf16_to_utf8(x: &str, character: usize) -> usize {
     }
 
     log::error!("Failed to locate UTF-16 offset of {character}. Line: '{x}'.");
-    return 0;
+    0
 }
 
 /// Converts a character offset into a particular line from UTF-8 to UTF-16

@@ -290,7 +290,7 @@ async fn update_config(
 
     // --- Documents
     // For each document, deserialise the vector of JSON values into a typed config
-    for uri in uris.into_iter() {
+    for uri in uris {
         let keys = document_keys.into_iter();
         let items: Vec<Value> = configs.by_ref().take(n_document_items).collect();
 

@@ -32,6 +32,7 @@ macro_rules! cast_response {
     }};
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub(crate) enum LspMessage {
     Notification(LspNotification),
@@ -53,14 +54,16 @@ pub(crate) enum LspNotification {
     DidCloseTextDocument(DidCloseTextDocumentParams),
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub(crate) enum LspRequest {
     Initialize(InitializeParams),
     DocumentFormatting(DocumentFormattingParams),
-    Shutdown(),
+    Shutdown,
     AirViewFile(ViewFileParams),
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub(crate) enum LspResponse {
     Initialize(InitializeResult),
@@ -130,7 +133,7 @@ impl LanguageServer for Backend {
 
     async fn shutdown(&self) -> Result<()> {
         cast_response!(
-            self.request(LspRequest::Shutdown()).await,
+            self.request(LspRequest::Shutdown).await,
             LspResponse::Shutdown
         )
     }

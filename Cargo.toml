@@ -10,6 +10,7 @@ homepage = "https://github.com/posit-dev/air"
 keywords = ["parser", "formatter"]
 license = "MIT"
 repository = "https://github.com/posit-dev/air"
+rust-version = "1.83"
 
 [profile.release-with-debug]
 debug = true
@@ -124,7 +125,6 @@ empty_drop = "warn"
 empty_enum_variants_with_brackets = "warn"
 float_cmp_const = "warn"
 get_unwrap = "warn"
-infinite_loop = "warn"
 lossy_float_literal = "warn"
 rc_buffer = "warn"
 rc_mutex = "warn"
