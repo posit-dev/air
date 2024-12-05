@@ -86,7 +86,7 @@ impl TestClient {
 
     pub async fn initialize(&mut self) -> i64 {
         let params: Option<lsp_types::InitializeParams> = std::mem::take(&mut self.init_params);
-        let params = params.unwrap_or(Default::default());
+        let params = params.unwrap_or_default();
         self.request::<lsp_types::request::Initialize>(params).await
     }
 

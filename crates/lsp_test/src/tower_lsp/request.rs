@@ -148,7 +148,7 @@ impl Display for Request {
             inner: &'a mut Formatter<'b>,
         }
 
-        impl<'a, 'b> io::Write for WriterFormatter<'a, 'b> {
+        impl io::Write for WriterFormatter<'_, '_> {
             fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
                 fn io_error<E>(_: E) -> io::Error {
                     // Error value does not matter because fmt::Display impl below just

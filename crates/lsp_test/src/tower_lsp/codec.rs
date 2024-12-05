@@ -219,7 +219,7 @@ fn decode_headers(headers: &[httparse::Header<'_>]) -> Result<usize, ParseError>
                     .find_map(|param| param.strip_prefix("charset="));
 
                 match charset {
-                    Some("utf-8") | Some("utf8") => {}
+                    Some("utf-8" | "utf8") => {}
                     _ => return Err(ParseError::InvalidContentType),
                 }
             }

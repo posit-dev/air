@@ -159,7 +159,7 @@ mod tests {
         insta::assert_debug_snapshot!(original_syntax);
 
         let edit = TextEdit::replace(
-            TextRange::new(TextSize::from(4 as u32), TextSize::from(7)),
+            TextRange::new(TextSize::from(4_u32), TextSize::from(7)),
             String::from("1 + 2"),
         );
         let edits = to_proto::doc_edit_vec(&doc.line_index, edit).unwrap();

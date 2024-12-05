@@ -923,7 +923,7 @@ struct FormatAllArgsBrokenOut<'a> {
     expand: bool,
 }
 
-impl<'a> Format<RFormatContext> for FormatAllArgsBrokenOut<'a> {
+impl Format<RFormatContext> for FormatAllArgsBrokenOut<'_> {
     fn fmt(&self, f: &mut Formatter<RFormatContext>) -> FormatResult<()> {
         let args = format_with(|f| {
             for (index, entry) in self.args.iter().enumerate() {

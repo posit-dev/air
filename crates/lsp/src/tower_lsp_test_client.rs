@@ -35,7 +35,7 @@ impl TestClientExt for TestClient {
     }
 
     async fn format_document_edits(&mut self, doc: &Document) -> Option<Vec<lsp_types::TextEdit>> {
-        let lsp_doc = self.open_document(&doc).await;
+        let lsp_doc = self.open_document(doc).await;
 
         let options = lsp_types::FormattingOptions {
             tab_size: 4,

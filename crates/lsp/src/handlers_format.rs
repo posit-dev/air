@@ -82,7 +82,7 @@ mod tests {
         let edits = client.format_document_edits(&doc).await.unwrap();
         assert!(edits.len() == 1);
 
-        let edit = edits.get(0).unwrap();
+        let edit = &edits[0];
         assert_eq!(edit.new_text, " + ");
 
         client

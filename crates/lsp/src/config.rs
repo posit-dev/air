@@ -10,7 +10,7 @@ use serde::Serialize;
 use struct_field_names_as_array::FieldNamesAsArray;
 
 /// Configuration of the LSP
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub(crate) struct LspConfig {}
 
 /// Configuration of a document.
@@ -60,12 +60,6 @@ pub(crate) struct VscDiagnosticsConfig {
 pub(crate) enum VscIndentSize {
     Alias(String),
     Size(usize),
-}
-
-impl Default for LspConfig {
-    fn default() -> Self {
-        Self {}
-    }
 }
 
 impl Default for IndentationConfig {

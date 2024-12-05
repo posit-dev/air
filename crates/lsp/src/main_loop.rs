@@ -279,7 +279,7 @@ impl GlobalState {
                         LspRequest::Initialize(params) => {
                             respond(tx, handlers_state::initialize(params, &mut self.lsp_state, &mut self.world), LspResponse::Initialize)?;
                         },
-                        LspRequest::Shutdown() => {
+                        LspRequest::Shutdown => {
                             out = LoopControl::Shutdown;
                             respond(tx, Ok(()), LspResponse::Shutdown)?;
                         },
@@ -411,7 +411,7 @@ impl AuxiliaryState {
     ///
     /// Takes ownership of auxiliary state and start the low-latency auxiliary
     /// loop.
-    async fn start(mut self) {
+    async fn start(mut self) -> ! {
         loop {
             match self.next_event().await {
                 AuxiliaryEvent::Log(level, message) => self.log(level, message).await,
@@ -474,7 +474,10 @@ pub(crate) fn log(level: lsp_types::MessageType, message: String) {
 
     // Check that channel is still alive in case the LSP was closed.
     // If closed, fallthrough.
-    if let Ok(_) = auxiliary_tx().send(AuxiliaryEvent::Log(level, message.clone())) {
+    if auxiliary_tx()
+        .send(AuxiliaryEvent::Log(level, message.clone()))
+        .is_ok()
+    {
         return;
     }
 
@@ -500,7 +503,7 @@ where
     Handler: FnOnce() -> anyhow::Result<Option<AuxiliaryEvent>>,
     Handler: Send + 'static,
 {
-    let handle = tokio::task::spawn_blocking(|| handler());
+    let handle = tokio::task::spawn_blocking(handler);
 
     // Send the join handle to the auxiliary loop so it can log any errors
     // or panics

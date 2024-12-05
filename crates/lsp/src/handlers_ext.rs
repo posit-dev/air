@@ -67,7 +67,7 @@ fn format_ts_node(cursor: &mut tree_sitter::TreeCursor, depth: usize, output: &m
     let node = cursor.node();
     let field_name = match cursor.field_name() {
         Some(name) => format!("{name}: "),
-        None => String::from(""),
+        None => String::new(),
     };
 
     let start = node.start_position();
