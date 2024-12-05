@@ -7,7 +7,7 @@ fn["description", {
   1 + 1
 }]
 
-# TODO: Think about data.table usage, like:
+# Leading hole hugs `[`
 DT[, {
   # write each group to a different file
   fwrite(.SD, "name")
@@ -22,10 +22,48 @@ DT[, by=x, {
 # ------------------------------------------------------------------------
 # Holes
 
+# Leading holes should hug the `[` token
 fn[,]
 fn[,,]
+
+# Trailing holes get a trailing space
+df[a,]
+
 fn[a,,b,,]
 fn[a_really_long_argument_here,,another_really_really_long_argument_to_test_this_feature,,]
+
+# Holes are "invisible" when determining user requested expansion
+# These all expand
+fn[,
+  x = 1
+]
+fn[
+  ,
+  x = 1
+]
+fn[
+  , x = 1
+]
+fn[
+  ,, x = 1
+]
+
+# ------------------------------------------------------------------------
+# Holes and trailing inline functions / braced expressions
+
+dt[, {
+  1 + 1
+}]
+dt[, , j, {
+  1 + 1
+}]
+
+dt[, function(x) {
+  1 + x
+}]
+dt[, , j, function(x) {
+  1 + x
+}]
 
 # ------------------------------------------------------------------------
 # Dots
@@ -73,9 +111,30 @@ df[df$col > 7, map[
   names(df)
 ]]
 
-# TODO: Holes currently don't force expansion. There is no token attached to
-# `RHoleArgument`, so we can't compute the "number of lines before the first token".
-df[
-  ,
-  x = 1
+# ------------------------------------------------------------------------
+# User requested line break and leading holes
+
+# Leading holes are "invisible" when computing user requested line breaks,
+# so you can break the line before or after the hole as long as you are
+# before the first argument.
+# Starting from:
+# dt[, j, by = col]
+
+dt[
+  , j, by = col]
+
+dt[,
+  j, by = col]
+
+# No longer user requested expansion
+dt[, j
+  , by = col]
+
+# ------------------------------------------------------------------------
+# Comments "after" holes
+
+# Common in data.table world
+dt[,
+  # comment
+  x
 ]

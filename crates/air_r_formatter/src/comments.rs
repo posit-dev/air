@@ -6,6 +6,7 @@ use air_r_syntax::RIfStatement;
 use air_r_syntax::RLanguage;
 use air_r_syntax::RParenthesizedExpression;
 use air_r_syntax::RSyntaxKind;
+use air_r_syntax::RSyntaxToken;
 use air_r_syntax::RWhileStatement;
 use biome_formatter::comments::CommentKind;
 use biome_formatter::comments::CommentPlacement;
@@ -65,7 +66,8 @@ impl CommentStyle for RCommentStyle {
                 .or_else(handle_if_statement_comment)
                 .or_else(handle_parenthesized_expression_comment)
                 .or_else(handle_argument_name_clause_comment)
-                .or_else(handle_argument_comment),
+                .or_else(handle_argument_comment)
+                .or_else(handle_hole_argument_comment),
             CommentTextPosition::OwnLine => handle_for_comment(comment)
                 .or_else(handle_function_comment)
                 .or_else(handle_while_comment)
@@ -73,7 +75,8 @@ impl CommentStyle for RCommentStyle {
                 .or_else(handle_if_statement_comment)
                 .or_else(handle_parenthesized_expression_comment)
                 .or_else(handle_argument_name_clause_comment)
-                .or_else(handle_argument_comment),
+                .or_else(handle_argument_comment)
+                .or_else(handle_hole_argument_comment),
             CommentTextPosition::SameLine => {
                 // Not applicable for R, we don't have `/* */` comments
                 CommentPlacement::Default(comment)
@@ -349,6 +352,184 @@ fn handle_argument_comment(comment: DecoratedComment<RLanguage>) -> CommentPlace
     }
 
     CommentPlacement::Default(comment)
+}
+
+/// Handle comments close to an argument hole
+///
+/// Hole comment handling is complicated by the fact that holes don't have any
+/// associated tokens. This has two important consequences that we exploit:
+///
+/// - Comments are never enclosed by holes, i.e. `enclosing_node()` never
+///   returns a hole.
+///
+/// - Comments will ALWAYS trail the hole by default, i.e. `preceding_node()`
+///   is how you access the hole node connected to the comment.
+///
+/// Here is the logic for placing hole comments, assuming that we've already
+/// determined that the `preceding_node()` is a hole. Note that this logic is
+/// symmetric, which we quite like:
+///
+/// - If the following token is `,`, `)`, `]`, or `]]`, the comment is
+///   "inside" the hole.
+///
+///   - If the previous sibling node before the hole exists and is not another
+///     hole, attach the comment as trailing trivia on that.
+///
+/// - Else the comment is "after" the hole.
+///
+///   - If the following sibling node after the hole exists and is not another
+///     hole, attach the comment as leading trivia on that.
+///
+/// - Otherwise attach the comment as leading on the hole itself. This happens
+///   when there is not another preceding/following node, or that node is
+///   another hole.
+///
+/// Note that the "following token" check skips following whitespace and
+/// comments, which is what we want.
+///
+/// ## Comments "inside" the hole
+///
+/// Comment trails `a`. Following token is `,` and previous-sibling of hole is a
+/// non-hole.
+///
+/// ```r
+/// fn(
+///   a,<hole> # comment
+///   ,
+///   b
+/// )
+/// ```
+///
+/// CommentB trails `b`. Following token is `)` and previous-sibling of hole is
+/// a non-hole.
+///
+/// This example is particularly important. We want comments on trailing
+/// `,` in `list2()` calls to get attached to the `b` non-hole node,
+/// otherwise it will get moved to the next line if it stays attached to
+/// the hole.
+///
+/// ```r
+/// list2(
+///   a, # commentA
+///   b,<hole> # commentB
+/// )
+/// ```
+///
+/// Comment1 leads hole. Following token is `,` and there is no previous-sibling
+/// of the hole. Note that `following_token()` skips `# comment2` here and jumps
+/// straight to `,`, which is what we want.
+///
+/// Comment2 leads hole. Following token is `,` and there is no previous-sibling
+/// of the hole.
+///
+/// ```r
+/// fn(<hole># comment1
+///  # comment2
+///  ,
+///  x
+/// )
+/// ```
+///
+/// Comment leads hole. Following token is `,` and the previous-sibling of
+/// the hole is another hole.
+///
+/// ```r
+/// fn(
+///  a,<another-hole>
+///  ,<hole># comment
+///  ,
+///  b
+/// )
+/// ```
+///
+/// Comment leads hole. Following token is `,` and the previous-sibling of
+/// the hole is another hole.
+///
+/// ```r
+/// fn(<another-hole>
+///  ,<hole># comment
+///  ,
+///  x
+/// )
+/// ```
+///
+/// ## Comment "after" the hole
+///
+/// Comment leads `x`. Following token is not `,`, `)`, `]`, or `]]`, and the
+/// following-sibling of the hole is a non-hole we can lead.
+///
+/// ```r
+/// fn(
+///  ,<hole>
+///  ,# comment
+///  x
+/// )
+/// ```
+///
+/// Comment1 leads `x`. Following token is not `,`, `)`, `]`, or `]]`, and the
+/// following-sibling of the hole is a non-hole we can lead. Note that
+/// `following_token()` skips `# comment2` here and jumps straight to `,`, which
+/// is what we want.
+///
+/// Comment2 leads `x`. Following token is not `,`, `)`, `]`, or `]]`, and the
+/// following-sibling of the hole is a non-hole we can lead.
+///
+/// ```r
+/// fn(
+///   ,<hole>
+///   ,# comment1
+///   # comment2
+///   x
+/// )
+/// ```
+///
+/// We can't think of any scenario where we have a comment "after" the hole,
+/// but we don't have a following-sibling to lead.
+fn handle_hole_argument_comment(
+    comment: DecoratedComment<RLanguage>,
+) -> CommentPlacement<RLanguage> {
+    let Some(hole) = comment
+        .preceding_node()
+        .and_then(RArgument::cast_ref)
+        .filter(RArgument::is_hole)
+        .map(RArgument::into_syntax)
+    else {
+        return CommentPlacement::Default(comment);
+    };
+
+    // Note that `following_token()` nicely skips over following comments
+    let is_comment_inside_hole = matches!(
+        comment.following_token().map(RSyntaxToken::kind),
+        Some(
+            RSyntaxKind::COMMA
+                | RSyntaxKind::R_PAREN
+                | RSyntaxKind::R_BRACK
+                | RSyntaxKind::R_BRACK2
+        )
+    );
+
+    #[allow(clippy::collapsible_else_if)]
+    if is_comment_inside_hole {
+        if let Some(previous) = hole
+            .prev_sibling()
+            .and_then(RArgument::cast)
+            .filter(|argument| !argument.is_hole())
+            .map(RArgument::into_syntax)
+        {
+            return CommentPlacement::trailing(previous, comment);
+        }
+    } else {
+        if let Some(following) = comment
+            .following_node()
+            .and_then(RArgument::cast_ref)
+            .filter(|argument| !argument.is_hole())
+            .map(RArgument::into_syntax)
+        {
+            return CommentPlacement::leading(following, comment);
+        }
+    }
+
+    CommentPlacement::leading(hole, comment)
 }
 
 /// Make line comments between a `)` token and a `body`:
