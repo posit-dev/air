@@ -112,6 +112,25 @@ df[df$col > 7, map[
 ]]
 
 # ------------------------------------------------------------------------
+# User requested line break and leading holes
+
+# Leading holes are "invisible" when computing user requested line breaks,
+# so you can break the line before or after the hole as long as you are
+# before the first argument.
+# Starting from:
+# dt[, j, by = col]
+
+dt[
+  , j, by = col]
+
+dt[,
+  j, by = col]
+
+# No longer user requested expansion
+dt[, j
+  , by = col]
+
+# ------------------------------------------------------------------------
 # Comments "after" holes
 
 # Common in data.table world
