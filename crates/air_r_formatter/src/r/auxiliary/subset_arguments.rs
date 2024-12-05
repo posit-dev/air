@@ -6,7 +6,6 @@ use air_r_syntax::RSubsetArguments;
 pub(crate) struct FormatRSubsetArguments;
 impl FormatNodeRule<RSubsetArguments> for FormatRSubsetArguments {
     fn fmt_fields(&self, node: &RSubsetArguments, f: &mut RFormatter) -> FormatResult<()> {
-        // TODO: Special handling for comments? See `handle_array_holes` for JS.
         RCallLikeArguments::Subset(node.clone()).fmt(f)
     }
 

@@ -23,7 +23,6 @@ use biome_rowan::{AstSeparatedElement, AstSeparatedList, SyntaxResult};
 pub(crate) struct FormatRCallArguments;
 impl FormatNodeRule<RCallArguments> for FormatRCallArguments {
     fn fmt_fields(&self, node: &RCallArguments, f: &mut RFormatter) -> FormatResult<()> {
-        // TODO: Special handling for comments? See `handle_array_holes` for JS.
         RCallLikeArguments::Call(node.clone()).fmt(f)
     }
 

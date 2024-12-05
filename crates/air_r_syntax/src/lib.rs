@@ -1,5 +1,6 @@
 #[macro_use]
 mod generated;
+pub mod argument_ext;
 pub mod call_ext;
 mod file_source;
 pub mod string_ext;
