@@ -1,15 +1,16 @@
 [package]
-authors.workspace    = true
-categories.workspace = true
-description          = "Air R parser"
-edition.workspace    = true
-homepage.workspace   = true
-keywords.workspace   = true
-license.workspace    = true
-name                 = "air_r_parser"
-publish              = false
-repository.workspace = true
-version              = "0.0.0"
+authors.workspace      = true
+categories.workspace   = true
+description            = "Air R parser"
+edition.workspace      = true
+homepage.workspace     = true
+keywords.workspace     = true
+license.workspace      = true
+name                   = "air_r_parser"
+publish                = false
+repository.workspace   = true
+rust-version.workspace = true
+version                = "0.0.0"
 
 [dependencies]
 air_r_factory       = { workspace = true }
