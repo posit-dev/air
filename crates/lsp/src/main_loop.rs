@@ -379,6 +379,7 @@ impl AuxiliaryState {
         // with the auxiliary loop (logging messages or spawning a task) from
         // free functions.
         unsafe {
+            #[allow(static_mut_refs)]
             if let Some(val) = AUXILIARY_EVENT_TX.get_mut() {
                 // Reset channel if already set. Happens e.g. on reconnection after a refresh.
                 *val = auxiliary_event_tx;
@@ -454,7 +455,10 @@ impl AuxiliaryState {
 fn auxiliary_tx() -> &'static TokioUnboundedSender<AuxiliaryEvent> {
     // If we get here that means the LSP was initialised at least once. The
     // channel might be closed if the LSP was dropped, but it should exist.
-    unsafe { AUXILIARY_EVENT_TX.get().unwrap() }
+    unsafe {
+        #[allow(static_mut_refs)]
+        AUXILIARY_EVENT_TX.get().unwrap()
+    }
 }
 
 fn send_auxiliary(event: AuxiliaryEvent) {
