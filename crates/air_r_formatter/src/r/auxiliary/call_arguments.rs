@@ -1,5 +1,7 @@
 // TODO: (c) Biome
 
+use std::cell::Cell;
+
 use crate::comments::RComments;
 use crate::prelude::*;
 use crate::r::auxiliary::braced_expressions::as_curly_curly;
@@ -122,11 +124,9 @@ impl Format<RFormatContext> for RCallLikeArguments {
             }
         }
 
-        let mut iter_elements = items.elements();
+        let comments = f.comments();
 
-        // TODO: Don't clone, maybe delay interning until first format()
-        // call by using interior mutability?
-        let comments = f.comments().clone();
+        let mut iter_elements = items.elements();
 
         // Split leading holes out from the remainder of the arguments.
         // Leading holes tightly hug the `l_token` no matter what.
@@ -138,7 +138,7 @@ impl Format<RFormatContext> for RCallLikeArguments {
                     node.is_hole() && !comments.has_comments(node.syntax())
                 })
             })
-            .map(|element| FormatCallArgumentHole::new(element, f))
+            .map(FormatCallArgumentHole::new)
             .collect();
 
         let last_index = (items.len() - leading_holes.len()).saturating_sub(1);
@@ -189,7 +189,7 @@ impl Format<RFormatContext> for RCallLikeArguments {
             );
         }
 
-        if let Some(group_layout) = arguments_grouped_layout(&items, f.comments()) {
+        if let Some(group_layout) = arguments_grouped_layout(&items, comments) {
             write_grouped_arguments(l_token, leading_holes, arguments, r_token, group_layout, f)
         } else {
             write!(
@@ -294,23 +294,25 @@ fn needs_user_requested_expansion(
 
 /// Helper for formatting a call argument hole
 ///
-/// We format on creation and cache the result. This is necessary because
+/// We cache the result at `fmt()` time. This is necessary because
 /// using `BestFitting` will try and print the hole multiple times as it
 /// tries out the different variants, which would be an error if it wasn't
 /// cached.
 struct FormatCallArgumentHole {
+    /// The element to format
+    element: AstSeparatedElement<RLanguage, RArgument>,
+
     /// The formatted element
-    content: FormatResult<Option<FormatElement>>,
+    ///
+    /// Cached using interior mutability the first time `fmt()` is called.
+    content: Cell<Option<FormatResult<Option<FormatElement>>>>,
 
     /// The number of lines before this node
     leading_lines: usize,
 }
 
 impl FormatCallArgumentHole {
-    fn new(
-        element: AstSeparatedElement<RLanguage, RArgument>,
-        f: &mut Formatter<RFormatContext>,
-    ) -> Self {
+    fn new(element: AstSeparatedElement<RLanguage, RArgument>) -> Self {
         // Note that holes by their very nature don't have any physical nodes
         // to attach trivia to, so we can't use `get_lines_before()` on the
         // node. Instead we look at the attached `,` token and look for lines
@@ -320,20 +322,9 @@ impl FormatCallArgumentHole {
             .unwrap_or(None)
             .map_or(0, get_lines_before_token);
 
-        // Go ahead and intern the node, its printed contents are going to
-        // be requested multiple times
-        let content = f.intern(&format_with(|f| {
-            write!(
-                f,
-                [
-                    element.node()?.format(),
-                    element.trailing_separator()?.format()
-                ]
-            )
-        }));
-
         Self {
-            content,
+            element,
+            content: Cell::new(None),
             leading_lines,
         }
     }
@@ -345,13 +336,29 @@ impl FormatCallArgumentHole {
 
 impl Format<RFormatContext> for FormatCallArgumentHole {
     fn fmt(&self, f: &mut Formatter<RFormatContext>) -> FormatResult<()> {
-        match self.content.clone()? {
-            Some(element) => {
-                f.write_element(element)?;
-                Ok(())
-            }
-            None => Ok(()),
+        // If we've formatted this hole before, reuse the content.
+        // Otherwise `intern()` the hole and cache it.
+        let content = match self.content.take() {
+            Some(content) => content,
+            None => f.intern(&format_with(|f| {
+                write!(
+                    f,
+                    [
+                        self.element.node()?.format(),
+                        self.element.trailing_separator()?.format()
+                    ]
+                )
+            })),
+        };
+
+        // Set before writing in case there is an error at write time
+        self.content.set(Some(content.clone()));
+
+        if let Some(element) = content? {
+            f.write_element(element)?;
         }
+
+        Ok(())
     }
 }
 
