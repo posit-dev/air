@@ -1,29 +1,30 @@
 [package]
-authors.workspace      = true
-categories.workspace   = true
-description            = "Air's formatter test shared infrastructure"
-edition.workspace      = true
-homepage.workspace     = true
-keywords.workspace     = true
-license.workspace      = true
-name                   = "air_formatter_test"
-publish                = false
-repository.workspace   = true
+authors.workspace = true
+categories.workspace = true
+description = "Air's formatter test shared infrastructure"
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+name = "air_formatter_test"
+publish = false
+repository.workspace = true
 rust-version.workspace = true
-version                = "0.0.0"
+version = "0.0.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-biome_console       = { workspace = true }
-biome_diagnostics   = { workspace = true }
-biome_formatter     = { workspace = true }
-biome_parser        = { workspace = true }
-biome_rowan         = { workspace = true }
-insta               = { workspace = true, features = ["glob"] }
-serde               = { workspace = true, features = ["derive"] }
-similar             = "2.6.0"
-similar-asserts     = "1.6.0"
+biome_console = { workspace = true }
+biome_diagnostics = { workspace = true }
+biome_formatter = { workspace = true }
+biome_parser = { workspace = true }
+biome_rowan = { workspace = true }
+insta = { workspace = true, features = ["glob"] }
+line_ending = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+similar = "2.6.0"
+similar-asserts = "1.6.0"
 
 [lints]
 workspace = true

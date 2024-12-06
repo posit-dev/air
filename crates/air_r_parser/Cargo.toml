@@ -1,33 +1,34 @@
 [package]
-authors.workspace      = true
-categories.workspace   = true
-description            = "Air R parser"
-edition.workspace      = true
-homepage.workspace     = true
-keywords.workspace     = true
-license.workspace      = true
-name                   = "air_r_parser"
-publish                = false
-repository.workspace   = true
+authors.workspace = true
+categories.workspace = true
+description = "Air R parser"
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+name = "air_r_parser"
+publish = false
+repository.workspace = true
 rust-version.workspace = true
-version                = "0.0.0"
+version = "0.0.0"
 
 [dependencies]
-air_r_factory       = { workspace = true }
-air_r_syntax        = { workspace = true }
-biome_parser        = { workspace = true }
-biome_rowan         = { workspace = true }
+air_r_factory = { workspace = true }
+air_r_syntax = { workspace = true }
+biome_parser = { workspace = true }
+biome_rowan = { workspace = true }
 biome_unicode_table = { workspace = true }
-serde               = { workspace = true, features = ["derive"] }
-tracing             = { workspace = true }
-tree-sitter         = { workspace = true }
-tree-sitter-r       = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+tracing = { workspace = true }
+tree-sitter = { workspace = true }
+tree-sitter-r = { workspace = true }
 
 [dev-dependencies]
-biome_console     = { workspace = true }
+biome_console = { workspace = true }
 biome_diagnostics = { workspace = true }
-insta             = { workspace = true }
-tests_macros      = { workspace = true }
+insta = { workspace = true }
+line_ending = { workspace = true }
+tests_macros = { workspace = true }
 
 # cargo-workspaces metadata
 [package.metadata.workspaces]

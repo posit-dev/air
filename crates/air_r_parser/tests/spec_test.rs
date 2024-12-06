@@ -50,6 +50,9 @@ pub fn run(test_case: &str, _snapshot_name: &str, test_directory: &str, outcome_
     let content = fs::read_to_string(test_case_path)
         .expect("Expected test path to be a readable file in UTF8 encoding");
 
+    // Normalize to Unix line endings
+    let content = line_ending::normalize(content);
+
     let options = RParserOptions::default();
     let parsed = parse(&content, options);
     let root = RRoot::unwrap_cast(parsed.syntax());
