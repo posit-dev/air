@@ -14,7 +14,10 @@ rust-version.workspace = true
 version = "0.0.0"
 
 [dependencies]
-path-absolutize = { workspace = true }
+path-absolutize = { workspace = true, features = [
+    "once_cell_cache",
+    "use_unix_paths_on_wasm",
+] }
 
 [lints]
 workspace = true

@@ -5,6 +5,7 @@ use std::io::stdout;
 use std::io::Write;
 use std::path::PathBuf;
 
+use air_fs::relativize_path;
 use air_r_formatter::context::RFormatOptions;
 use air_workspace::format::format_source;
 use air_workspace::format::FormatSourceError;
@@ -223,29 +224,42 @@ impl Display for FormatCommandError {
                 if let ignore::Error::WithPath { path, .. } = err {
                     write!(
                         f,
-                        "Failed to format {}: {}",
-                        path.display(),
-                        err.io_error()
+                        "Failed to format {path}: {err}",
+                        path = relativize_path(path),
+                        err = err
+                            .io_error()
                             .map_or_else(|| err.to_string(), std::string::ToString::to_string)
                     )
                 } else {
                     write!(
                         f,
-                        "Encountered error: {error}",
-                        error = err
+                        "Encountered error: {err}",
+                        err = err
                             .io_error()
                             .map_or_else(|| err.to_string(), std::string::ToString::to_string)
                     )
                 }
             }
             Self::Read(path, err) => {
-                write!(f, "Failed to read {}: {err}", path.display())
+                write!(
+                    f,
+                    "Failed to read {path}: {err}",
+                    path = relativize_path(path),
+                )
             }
             Self::Write(path, err) => {
-                write!(f, "Failed to write {}: {err}", path.display())
+                write!(
+                    f,
+                    "Failed to write {path}: {err}",
+                    path = relativize_path(path),
+                )
             }
             Self::Format(path, err) => {
-                write!(f, "Failed to format {}: {err}", path.display())
+                write!(
+                    f,
+                    "Failed to format {path}: {err}",
+                    path = relativize_path(path),
+                )
             }
         }
     }

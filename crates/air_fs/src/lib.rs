@@ -23,3 +23,18 @@ pub fn normalize_path<P: AsRef<Path>>(path: P) -> PathBuf {
         path.to_path_buf()
     }
 }
+
+/// Convert an absolute path to be relative to the current working directory.
+pub fn relativize_path<P: AsRef<Path>>(path: P) -> String {
+    let path = path.as_ref();
+
+    #[cfg(target_arch = "wasm32")]
+    let cwd = Path::new(".");
+    #[cfg(not(target_arch = "wasm32"))]
+    let cwd = path_absolutize::path_dedot::CWD.as_path();
+
+    if let Ok(path) = path.strip_prefix(cwd) {
+        return format!("{}", path.display());
+    }
+    format!("{}", path.display())
+}
