@@ -1,5 +1,5 @@
 use air_r_parser::{parse, RParserOptions};
-use air_r_syntax::{RLanguage, RRoot, RSyntaxNode};
+use air_r_syntax::{RRoot, RSyntaxNode};
 use biome_console::fmt::{Formatter, Termcolor};
 use biome_console::markup;
 use biome_diagnostics::display::PrintDiagnostic;
@@ -75,7 +75,7 @@ pub fn run(test_case: &str, _snapshot_name: &str, test_directory: &str, outcome_
 {:#?}
 ```
 "#,
-        parsed.syntax::<RLanguage>()
+        parsed.syntax()
     )
     .unwrap();
 
@@ -124,7 +124,7 @@ pub fn run(test_case: &str, _snapshot_name: &str, test_directory: &str, outcome_
                 panic!("Parsed tree of a 'OK' test case should not contain any missing required children or bogus nodes: \n {formatted_ast:#?} \n\n {formatted_ast}");
             }
 
-            let syntax = parsed.syntax::<RLanguage>();
+            let syntax = parsed.syntax();
             if has_bogus_nodes_or_empty_slots(&syntax) {
                 panic!("modified tree has bogus nodes or empty slots:\n{syntax:#?} \n\n {syntax}")
             }

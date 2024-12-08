@@ -1,8 +1,14 @@
+use std::marker::PhantomData;
+
+use air_r_syntax::RLanguage;
+use air_r_syntax::RRoot;
 use air_r_syntax::RSyntaxKind;
+use air_r_syntax::RSyntaxNode;
 use biome_parser::event::Event;
 use biome_parser::prelude::ParseDiagnostic;
 use biome_parser::prelude::Trivia;
 use biome_parser::AnyParse;
+use biome_rowan::AstNode;
 use biome_rowan::NodeCache;
 use biome_rowan::TextRange;
 use biome_rowan::TextSize;
@@ -16,20 +22,112 @@ use crate::treesitter::WalkEvent;
 use crate::RLosslessTreeSink;
 use crate::RParserOptions;
 
-// TODO(r): These should really return an intermediate `Parse` type which
-// can `.into()` an `AnyParse`, see `biome_js_parser`'s `Parse` type
-pub fn parse(text: &str, options: RParserOptions) -> AnyParse {
+/// A utility struct for managing the result of a parser job
+#[derive(Debug, Clone)]
+pub struct Parse<T> {
+    root: RSyntaxNode,
+    diagnostics: Vec<ParseDiagnostic>,
+    _ty: PhantomData<T>,
+}
+
+impl<T> Parse<T> {
+    pub fn new(root: RSyntaxNode, diagnostics: Vec<ParseDiagnostic>) -> Parse<T> {
+        Parse {
+            root,
+            diagnostics,
+            _ty: PhantomData,
+        }
+    }
+
+    pub fn cast<N: AstNode<Language = RLanguage>>(self) -> Option<Parse<N>> {
+        if N::can_cast(self.syntax().kind()) {
+            Some(Parse::new(self.root, self.diagnostics))
+        } else {
+            None
+        }
+    }
+
+    /// The syntax node represented by this Parse result
+    pub fn syntax(&self) -> RSyntaxNode {
+        self.root.clone()
+    }
+
+    /// Get the diagnostics which occurred when parsing
+    pub fn diagnostics(&self) -> &[ParseDiagnostic] {
+        self.diagnostics.as_slice()
+    }
+
+    /// Get the diagnostics which occurred when parsing
+    pub fn into_diagnostics(self) -> Vec<ParseDiagnostic> {
+        self.diagnostics
+    }
+
+    /// Returns [true] if the parser encountered some errors during the parsing.
+    pub fn has_errors(&self) -> bool {
+        self.diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.is_error())
+    }
+}
+
+impl<T: AstNode<Language = RLanguage>> Parse<T> {
+    /// Convert this parse result into a typed AST node.
+    ///
+    /// # Panics
+    /// Panics if the node represented by this parse result mismatches.
+    pub fn tree(&self) -> T {
+        self.try_tree().unwrap_or_else(|| {
+            panic!(
+                "Expected tree to be a {} but root is:\n{:#?}",
+                std::any::type_name::<T>(),
+                self.syntax()
+            )
+        })
+    }
+
+    /// Try to convert this parse's untyped syntax node into an AST node.
+    pub fn try_tree(&self) -> Option<T> {
+        T::cast(self.syntax())
+    }
+
+    /// Convert this parse into a result
+    pub fn into_result(self) -> Result<T, Vec<ParseDiagnostic>> {
+        if !self.has_errors() {
+            Ok(self.tree())
+        } else {
+            Err(self.diagnostics)
+        }
+    }
+}
+
+impl<T> From<Parse<T>> for AnyParse {
+    fn from(parse: Parse<T>) -> Self {
+        let root = parse.syntax();
+        let diagnostics = parse.into_diagnostics();
+        Self::new(
+            // SAFETY: the parser should always return a root node
+            root.as_send().unwrap(),
+            diagnostics,
+        )
+    }
+}
+
+pub fn parse(text: &str, options: RParserOptions) -> Parse<RRoot> {
     let mut cache = NodeCache::default();
     parse_r_with_cache(text, options, &mut cache)
 }
 
-pub fn parse_r_with_cache(text: &str, options: RParserOptions, cache: &mut NodeCache) -> AnyParse {
+pub fn parse_r_with_cache(
+    text: &str,
+    options: RParserOptions,
+    cache: &mut NodeCache,
+) -> Parse<RRoot> {
     tracing::debug_span!("parse").in_scope(move || {
-        let (events, tokens, errors) = parse_text(text, options);
+        let (events, tokens, diagnostics) = parse_text(text, options);
         let mut tree_sink = RLosslessTreeSink::with_cache(text, &tokens, cache);
-        biome_parser::event::process(&mut tree_sink, events, errors);
-        let (green, parse_errors) = tree_sink.finish();
-        AnyParse::new(green.as_send().unwrap(), parse_errors)
+        biome_parser::event::process(&mut tree_sink, events, diagnostics);
+        let (green, diagnostics) = tree_sink.finish();
+        Parse::new(green, diagnostics)
     })
 }
 

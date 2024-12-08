@@ -8,6 +8,7 @@ use air_r_factory::RSyntaxFactory;
 pub use options::RParserOptions;
 pub use parse::parse;
 pub use parse::parse_r_with_cache;
+pub use parse::Parse;
 
 use air_r_syntax::RLanguage;
 use biome_parser::tree_sink::LosslessTreeSink;
