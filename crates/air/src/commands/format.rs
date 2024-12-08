@@ -13,6 +13,7 @@ use ignore::DirEntry;
 use itertools::Either;
 use itertools::Itertools;
 use line_ending::LineEnding;
+use thiserror::Error;
 
 use crate::args::FormatCommand;
 use crate::ExitStatus;
@@ -25,7 +26,7 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
         .into_iter()
         .map(|path| match path {
             Ok(path) => format_file(path, mode),
-            Err(err) => Err(FormatCommandError::Ignore(err)),
+            Err(err) => Err(err.into()),
         })
         .partition_map(|result| match result {
             Ok(result) => Either::Left(result),
@@ -207,8 +208,9 @@ fn format_file(path: PathBuf, mode: FormatMode) -> Result<FormatFileResult, Form
     }
 }
 
+#[derive(Error, Debug)]
 pub(crate) enum FormatCommandError {
-    Ignore(ignore::Error),
+    Ignore(#[from] ignore::Error),
     Format(PathBuf, FormatSourceError),
     Read(PathBuf, io::Error),
     Write(PathBuf, io::Error),

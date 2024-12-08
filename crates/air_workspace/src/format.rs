@@ -1,12 +1,11 @@
 use std::fmt::Debug;
-use std::fmt::Display;
-use std::fmt::Formatter;
 
 use air_r_formatter::context::RFormatOptions;
 use air_r_parser::ParseError;
 use air_r_parser::RParserOptions;
 use biome_formatter::FormatError;
 use biome_formatter::PrintError;
+use thiserror::Error;
 
 #[derive(Debug)]
 pub enum FormattedSource {
@@ -16,39 +15,14 @@ pub enum FormattedSource {
     Unchanged,
 }
 
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum FormatSourceError {
-    Parse(ParseError),
-    Format(FormatError),
-    Print(PrintError),
-}
-
-impl Display for FormatSourceError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            FormatSourceError::Parse(err) => std::fmt::Display::fmt(err, f),
-            FormatSourceError::Format(err) => std::fmt::Display::fmt(err, f),
-            FormatSourceError::Print(err) => std::fmt::Display::fmt(err, f),
-        }
-    }
-}
-
-impl From<ParseError> for FormatSourceError {
-    fn from(value: ParseError) -> Self {
-        FormatSourceError::Parse(value)
-    }
-}
-
-impl From<FormatError> for FormatSourceError {
-    fn from(value: FormatError) -> Self {
-        FormatSourceError::Format(value)
-    }
-}
-
-impl From<PrintError> for FormatSourceError {
-    fn from(value: PrintError) -> Self {
-        FormatSourceError::Print(value)
-    }
+    #[error(transparent)]
+    Parse(#[from] ParseError),
+    #[error(transparent)]
+    Format(#[from] FormatError),
+    #[error(transparent)]
+    Print(#[from] PrintError),
 }
 
 /// Formats a vector of `source` code

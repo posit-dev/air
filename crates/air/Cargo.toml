@@ -26,6 +26,7 @@ ignore = { workspace = true }
 itertools = { workspace = true }
 line_ending = { workspace = true }
 lsp = { workspace = true }
+thiserror = { workspace = true }
 tokio = "1.41.1"
 tracing = { workspace = true }
 
