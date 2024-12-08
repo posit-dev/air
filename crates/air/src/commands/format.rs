@@ -35,6 +35,7 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
         });
 
     for error in &errors {
+        // TODO: Hook up a tracing subscriber!
         tracing::error!("{error}");
     }
 
