@@ -1,3 +1,4 @@
+mod error;
 mod options;
 mod parse;
 
@@ -5,6 +6,7 @@ mod parse;
 mod treesitter;
 
 use air_r_factory::RSyntaxFactory;
+pub use error::ParseError;
 pub use options::RParserOptions;
 pub use parse::parse;
 pub use parse::parse_r_with_cache;
