@@ -1,0 +1,20 @@
+
+[package]
+authors.workspace = true
+categories.workspace = true
+description = "Air filesystem utilities"
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+name = "air_fs"
+publish = false
+repository.workspace = true
+rust-version.workspace = true
+version = "0.0.0"
+
+[dependencies]
+path-absolutize = { workspace = true }
+
+[lints]
+workspace = true

@@ -1,36 +1,26 @@
+
 [package]
-name = "air"
-version = "0.1.0"
-publish = true
 authors.workspace = true
 categories.workspace = true
+description = "Air workspace utilities"
 edition.workspace = true
 homepage.workspace = true
 keywords.workspace = true
 license.workspace = true
+name = "air_workspace"
+publish = false
 repository.workspace = true
 rust-version.workspace = true
+version = "0.0.0"
 
 [dependencies]
-air_fs = { workspace = true }
-air_r_formatter = { workspace = true }
 air_r_parser = { workspace = true }
-air_workspace = { workspace = true }
-anyhow = { workspace = true }
+air_r_formatter = { workspace = true }
 biome_console = { workspace = true }
 biome_diagnostics = { workspace = true }
 biome_formatter = { workspace = true }
 biome_parser = { workspace = true }
-clap = { workspace = true, features = ["wrap_help"] }
-ignore = { workspace = true }
-itertools = { workspace = true }
-line_ending = { workspace = true }
-lsp = { workspace = true }
-tokio = "1.41.1"
-tracing = { workspace = true }
-
-[dev-dependencies]
-tempfile = "3.9.0"
+biome_rowan = { workspace = true }
 
 [lints]
 workspace = true

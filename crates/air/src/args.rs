@@ -20,7 +20,7 @@ pub(crate) enum Command {
     /// Start a language server
     Lsp(LspCommand),
 
-    /// Format a file
+    /// Format a set of files or directories
     Format(FormatCommand),
 }
 
@@ -28,7 +28,14 @@ pub(crate) enum Command {
 pub(crate) struct LspCommand {}
 
 #[derive(Clone, Debug, Parser)]
+#[command(arg_required_else_help(true))]
 pub(crate) struct FormatCommand {
-    /// The file to format
-    pub file: PathBuf,
+    /// The files or directories to format
+    pub paths: Vec<PathBuf>,
+
+    /// If enabled, format results are not written back to the file. Instead,
+    /// exit with a non-zero status code if any files would have been modified,
+    /// and zero otherwise.
+    #[arg(long)]
+    pub check: bool,
 }
