@@ -138,4 +138,12 @@ impl TestClient {
     pub async fn formatting(&mut self, params: lsp_types::DocumentFormattingParams) -> i64 {
         self.request::<lsp_types::request::Formatting>(params).await
     }
+
+    pub async fn range_formatting(
+        &mut self,
+        params: lsp_types::DocumentRangeFormattingParams,
+    ) -> i64 {
+        self.request::<lsp_types::request::RangeFormatting>(params)
+            .await
+    }
 }

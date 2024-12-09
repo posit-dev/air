@@ -73,6 +73,8 @@ pub(crate) fn document_range_formatting(
 
 #[cfg(test)]
 mod tests {
+    use biome_text_size::{TextRange, TextSize};
+
     use crate::{
         documents::Document, tower_lsp::init_test_client, tower_lsp_test_client::TestClientExt,
     };
@@ -114,6 +116,25 @@ mod tests {
 
         let edit = &edits[0];
         assert_eq!(edit.new_text, " + ");
+
+        client
+    }
+
+    #[tests_macros::lsp_test]
+    async fn test_format_range_minimal() {
+        // FIXME: This currently fails. Line 0 should not be affected by formatting line 1.
+        let mut client = init_test_client().await;
+
+        #[rustfmt::skip]
+        let doc = Document::doodle(
+"1+1
+2+2
+",
+        );
+        let range = TextRange::new(TextSize::from(4), TextSize::from(7));
+
+        let output = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output);
 
         client
     }
