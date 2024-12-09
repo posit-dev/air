@@ -121,6 +121,42 @@ mod tests {
     }
 
     #[tests_macros::lsp_test]
+    async fn test_format_range_none() {
+        let mut client = init_test_client().await;
+
+        #[rustfmt::skip]
+        let doc = Document::doodle(
+"",
+        );
+        let range = TextRange::new(TextSize::from(0), TextSize::from(0));
+
+        let output = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output);
+
+        #[rustfmt::skip]
+        let doc = Document::doodle(
+"
+",
+        );
+        let range = TextRange::new(TextSize::from(0), TextSize::from(1));
+
+        let output = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output);
+
+        #[rustfmt::skip]
+        let doc = Document::doodle(
+"1
+",
+        );
+        let range = TextRange::new(TextSize::from(0), TextSize::from(1));
+
+        let output = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output);
+
+        client
+    }
+
+    #[tests_macros::lsp_test]
     async fn test_format_range_minimal() {
         // FIXME: This currently fails. Line 0 should not be affected by formatting line 1.
         let mut client = init_test_client().await;
