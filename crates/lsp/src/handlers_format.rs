@@ -175,6 +175,19 @@ mod tests {
         let output = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output);
 
+        // This currently works because biome selects the curly brace expression
+        // as node to format, so `1+1` is left alone
+        #[rustfmt::skip]
+        let doc = Document::doodle(
+"1+1
+{2+2}
+",
+        );
+        let range = TextRange::new(TextSize::from(5), TextSize::from(8));
+
+        let output = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output);
+
         client
     }
 }
