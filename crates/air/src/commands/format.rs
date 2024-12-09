@@ -54,11 +54,9 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
         }
         FormatMode::Check => {
             if errors.is_empty() {
-                let any_would_format = results
-                    .iter()
-                    .any(|result| matches!(result, FormatFileResult::Formatted(_)));
+                let any_changed = results.iter().any(FormatFileResult::is_changed);
 
-                if any_would_format {
+                if any_changed {
                     Ok(ExitStatus::Failure)
                 } else {
                     Ok(ExitStatus::Success)
@@ -166,6 +164,12 @@ fn judge_entry(entry: DirEntry) -> Option<PathBuf> {
 pub(crate) enum FormatFileResult {
     Formatted(PathBuf),
     Unchanged,
+}
+
+impl FormatFileResult {
+    fn is_changed(&self) -> bool {
+        matches!(self, FormatFileResult::Formatted(_))
+    }
 }
 
 // TODO: Take workspace `FormatOptions` that get resolved to `RFormatOptions`
