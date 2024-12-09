@@ -57,14 +57,17 @@ pub(crate) fn document_range_formatting(
         .with_indent_style(IndentStyle::Space)
         .with_line_width(line_width);
 
-    let output = biome_formatter::format_range(
+    let format_info = biome_formatter::format_range(
         &doc.parse.syntax(),
         range,
         air_r_formatter::RFormatLanguage::new(options),
-    )?
-    .into_code();
+    )?;
 
-    let edits = to_proto::replace_all_edit(&doc.line_index, &doc.contents, &output)?;
+    // TODO! When can this be None?
+    let format_range = format_info.range().unwrap();
+    let format_text = format_info.into_code();
+
+    let edits = to_proto::replace_range_edit(&doc.line_index, format_range, format_text)?;
     Ok(Some(edits))
 }
 
