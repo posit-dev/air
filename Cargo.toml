@@ -3,7 +3,7 @@ members = ["crates/*", "xtask/codegen"]
 resolver = "2"
 
 [workspace.package]
-authors = ["Air Developers and Contributors"]
+authors = ["Posit Software, PBC"]
 categories = ["development-tools"]
 edition = "2021"
 homepage = "https://github.com/posit-dev/air"
