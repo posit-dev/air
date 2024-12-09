@@ -43,7 +43,9 @@ impl TestClientExt for TestClient {
     }
 
     async fn format_document_range(&mut self, doc: &Document, range: TextRange) -> String {
-        let edits = self.format_document_range_edits(doc, range).await.unwrap();
+        let Some(edits) = self.format_document_range_edits(doc, range).await else {
+            return doc.contents.clone();
+        };
         from_proto::apply_text_edits(doc, edits).unwrap()
     }
 
@@ -66,6 +68,10 @@ impl TestClientExt for TestClient {
         .await;
 
         let response = self.recv_response().await;
+
+        if let Some(err) = response.error() {
+            panic!("Unexpected error: {}", err.message);
+        };
 
         let value: Option<Vec<lsp_types::TextEdit>> =
             serde_json::from_value(response.result().unwrap().clone()).unwrap();
@@ -101,6 +107,10 @@ impl TestClientExt for TestClient {
         .await;
 
         let response = self.recv_response().await;
+
+        if let Some(err) = response.error() {
+            panic!("Unexpected error: {}", err.message);
+        };
 
         let value: Option<Vec<lsp_types::TextEdit>> =
             serde_json::from_value(response.result().unwrap().clone()).unwrap();
