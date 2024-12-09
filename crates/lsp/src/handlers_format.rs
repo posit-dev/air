@@ -63,11 +63,14 @@ pub(crate) fn document_range_formatting(
         air_r_formatter::RFormatLanguage::new(options),
     )?;
 
-    // TODO! When can this be None?
-    let format_range = format_info.range().unwrap();
-    let format_text = format_info.into_code();
+    let Some(format_range) = format_info.range() else {
+        // Happens in edge cases when biome returns a `Printed::new_empty()`
+        return Ok(None);
+    };
 
+    let format_text = format_info.into_code();
     let edits = to_proto::replace_range_edit(&doc.line_index, format_range, format_text)?;
+
     Ok(Some(edits))
 }
 
