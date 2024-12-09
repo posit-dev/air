@@ -27,7 +27,6 @@ air_r_factory = { path = "./crates/air_r_factory" }
 air_r_formatter = { path = "./crates/air_r_formatter" }
 air_r_parser = { path = "./crates/air_r_parser" }
 air_r_syntax = { path = "./crates/air_r_syntax" }
-air_workspace = { path = "./crates/air_workspace" }
 biome_ungrammar = { path = "./crates/biome_ungrammar" }
 line_ending = { path = "./crates/line_ending" }
 lsp = { path = "./crates/lsp" }

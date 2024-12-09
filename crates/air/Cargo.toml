@@ -15,7 +15,6 @@ rust-version.workspace = true
 air_fs = { workspace = true }
 air_r_formatter = { workspace = true }
 air_r_parser = { workspace = true }
-air_workspace = { workspace = true }
 anyhow = { workspace = true }
 biome_console = { workspace = true }
 biome_diagnostics = { workspace = true }

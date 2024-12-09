@@ -7,9 +7,7 @@ use std::path::PathBuf;
 
 use air_fs::relativize_path;
 use air_r_formatter::context::RFormatOptions;
-use air_workspace::format::format_source;
-use air_workspace::format::FormatSourceError;
-use air_workspace::format::FormattedSource;
+use air_r_parser::RParserOptions;
 use ignore::DirEntry;
 use itertools::Either;
 use itertools::Itertools;
@@ -207,6 +205,49 @@ fn format_file(path: PathBuf, mode: FormatMode) -> Result<FormatFileResult, Form
             Ok(FormatFileResult::Formatted(path))
         }
         FormattedSource::Unchanged => Ok(FormatFileResult::Unchanged),
+    }
+}
+
+#[derive(Debug)]
+pub(crate) enum FormattedSource {
+    /// The source was formatted, and the [`String`] contains the transformed source code.
+    Formatted(String),
+    /// The source was unchanged.
+    Unchanged,
+}
+
+#[derive(Error, Debug)]
+pub(crate) enum FormatSourceError {
+    #[error(transparent)]
+    Parse(#[from] air_r_parser::ParseError),
+    #[error(transparent)]
+    Format(#[from] biome_formatter::FormatError),
+    #[error(transparent)]
+    Print(#[from] biome_formatter::PrintError),
+}
+
+/// Formats a vector of `source` code
+///
+/// Safety: `source` should already be normalized to Unix line endings
+pub(crate) fn format_source(
+    source: &str,
+    options: RFormatOptions,
+) -> std::result::Result<FormattedSource, FormatSourceError> {
+    let parsed = air_r_parser::parse(source, RParserOptions::default());
+
+    if parsed.has_errors() {
+        let error = parsed.into_errors().into_iter().next().unwrap();
+        return Err(error.into());
+    }
+
+    let formatted = air_r_formatter::format_node(options, &parsed.syntax())?;
+    let formatted = formatted.print()?;
+    let formatted = formatted.into_code();
+
+    if source.len() == formatted.len() && source == formatted.as_str() {
+        Ok(FormattedSource::Unchanged)
+    } else {
+        Ok(FormattedSource::Formatted(formatted))
     }
 }
 
