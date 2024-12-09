@@ -69,7 +69,7 @@ impl Document {
         };
 
         // Parse document immediately for now
-        let parse = air_r_parser::parse(&contents, Default::default());
+        let parse = air_r_parser::parse(&contents, Default::default()).into();
 
         Self {
             contents,
@@ -117,7 +117,7 @@ impl Document {
         );
 
         // No incrementality for now
-        let parse = air_r_parser::parse(&contents, Default::default());
+        let parse = air_r_parser::parse(&contents, Default::default()).into();
 
         self.parse = parse;
         self.contents = contents;

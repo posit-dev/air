@@ -1,10 +1,12 @@
+use air_r_parser::ParseError;
 use air_r_parser::{parse, RParserOptions};
-use air_r_syntax::{RLanguage, RRoot, RSyntaxNode};
+use air_r_syntax::{RRoot, RSyntaxNode};
 use biome_console::fmt::{Formatter, Termcolor};
 use biome_console::markup;
 use biome_diagnostics::display::PrintDiagnostic;
 use biome_diagnostics::termcolor;
 use biome_diagnostics::DiagnosticExt;
+use biome_parser::prelude::ParseDiagnostic;
 use biome_rowan::SyntaxNode;
 use biome_rowan::SyntaxSlot;
 use biome_rowan::{AstNode, SyntaxKind};
@@ -75,12 +77,18 @@ pub fn run(test_case: &str, _snapshot_name: &str, test_directory: &str, outcome_
 {:#?}
 ```
 "#,
-        parsed.syntax::<RLanguage>()
+        parsed.syntax()
     )
     .unwrap();
 
-    let diagnostics = parsed.diagnostics();
-    if !diagnostics.is_empty() {
+    if parsed.has_errors() {
+        let diagnostics: Vec<ParseDiagnostic> = parsed
+            .errors()
+            .iter()
+            .map(ParseError::diagnostic)
+            .map(ParseDiagnostic::clone)
+            .collect();
+
         let mut diagnostics_buffer = termcolor::Buffer::no_color();
 
         let termcolor = &mut Termcolor(&mut diagnostics_buffer);
@@ -124,13 +132,13 @@ pub fn run(test_case: &str, _snapshot_name: &str, test_directory: &str, outcome_
                 panic!("Parsed tree of a 'OK' test case should not contain any missing required children or bogus nodes: \n {formatted_ast:#?} \n\n {formatted_ast}");
             }
 
-            let syntax = parsed.syntax::<RLanguage>();
+            let syntax = parsed.syntax();
             if has_bogus_nodes_or_empty_slots(&syntax) {
                 panic!("modified tree has bogus nodes or empty slots:\n{syntax:#?} \n\n {syntax}")
             }
         }
         ExpectedOutcome::Fail => {
-            if parsed.diagnostics().is_empty() {
+            if !parsed.has_errors() {
                 panic!("Failing test must have diagnostics");
             }
         }
