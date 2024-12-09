@@ -8,6 +8,7 @@
 use std::collections::HashMap;
 use std::future;
 use std::pin::Pin;
+use std::sync::OnceLock;
 
 use anyhow::anyhow;
 use biome_lsp_converters::PositionEncoding;
@@ -31,16 +32,15 @@ use crate::tower_lsp::LspMessage;
 use crate::tower_lsp::LspNotification;
 use crate::tower_lsp::LspRequest;
 use crate::tower_lsp::LspResponse;
+use crate::TESTING;
 
 pub(crate) type TokioUnboundedSender<T> = tokio::sync::mpsc::UnboundedSender<T>;
 pub(crate) type TokioUnboundedReceiver<T> = tokio::sync::mpsc::UnboundedReceiver<T>;
 
 // The global instance of the auxiliary event channel, used for sending log
 // messages or spawning threads from free functions. Since this is an unbounded
-// channel, sending a log message is not async nor blocking. Tokio senders are
-// Send and Sync so this global variable can be safely shared across threads.
-static mut AUXILIARY_EVENT_TX: std::cell::OnceCell<TokioUnboundedSender<AuxiliaryEvent>> =
-    std::cell::OnceCell::new();
+// channel, sending a log message is not async nor blocking.
+static AUXILIARY_EVENT_TX: OnceLock<TokioUnboundedSender<AuxiliaryEvent>> = OnceLock::new();
 
 // This is the syntax for trait aliases until an official one is stabilised.
 // This alias is for the future of a `JoinHandle<anyhow::Result<T>>`
@@ -378,16 +378,9 @@ impl AuxiliaryState {
         // Set global instance of this channel. This is used for interacting
         // with the auxiliary loop (logging messages or spawning a task) from
         // free functions.
-        unsafe {
-            #[allow(static_mut_refs)]
-            if let Some(val) = AUXILIARY_EVENT_TX.get_mut() {
-                // Reset channel if already set. Happens e.g. on reconnection after a refresh.
-                *val = auxiliary_event_tx;
-            } else {
-                // Set channel for the first time
-                AUXILIARY_EVENT_TX.set(auxiliary_event_tx).unwrap();
-            }
-        }
+        AUXILIARY_EVENT_TX
+            .set(auxiliary_event_tx)
+            .expect("Auxiliary event channel can't be set more than once.");
 
         // List of pending tasks for which we manage the lifecycle (mainly relay
         // errors and panics)
@@ -453,12 +446,10 @@ impl AuxiliaryState {
 }
 
 fn auxiliary_tx() -> &'static TokioUnboundedSender<AuxiliaryEvent> {
-    // If we get here that means the LSP was initialised at least once. The
-    // channel might be closed if the LSP was dropped, but it should exist.
-    unsafe {
-        #[allow(static_mut_refs)]
-        AUXILIARY_EVENT_TX.get().unwrap()
-    }
+    // If we get here that means the LSP was initialised in `AuxiliaryState::new()`.
+    // The channel might be closed if the LSP was dropped, but it should exist
+    // (and in that case we expect the process to exit shortly afterwards anyways).
+    AUXILIARY_EVENT_TX.get().unwrap()
 }
 
 fn send_auxiliary(event: AuxiliaryEvent) {
@@ -471,8 +462,9 @@ fn send_auxiliary(event: AuxiliaryEvent) {
 /// Send a message to the LSP client. This is non-blocking and treated on a
 /// latency-sensitive task.
 pub(crate) fn log(level: lsp_types::MessageType, message: String) {
-    // We're not connected to an LSP client when running unit tests
-    if cfg!(test) {
+    // We don't want to send logs to the client when running integration tests,
+    // as they interfere with our ability to track sent/received requests.
+    if *TESTING.get().unwrap_or(&false) {
         return;
     }
 

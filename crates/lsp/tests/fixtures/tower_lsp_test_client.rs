@@ -1,7 +1,8 @@
 use lsp_test::lsp_client::TestClient;
 use tower_lsp::lsp_types;
 
-use crate::{documents::Document, from_proto};
+use lsp::documents::Document;
+use lsp::from_proto;
 
 pub(crate) trait TestClientExt {
     async fn open_document(&mut self, doc: &Document) -> lsp_types::TextDocumentItem;
