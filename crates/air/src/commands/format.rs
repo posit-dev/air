@@ -132,7 +132,6 @@ fn resolve_paths(paths: &[PathBuf]) -> Vec<Result<PathBuf, ignore::Error>> {
 }
 
 // Decide whether or not to accept an `entry` based on include/exclude rules.
-// Non-R files are filtered out later on, this blindly accepts those.
 fn judge_entry(entry: DirEntry) -> Option<PathBuf> {
     // Ignore directories
     if entry.file_type().map_or(true, |ft| ft.is_dir()) {
