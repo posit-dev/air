@@ -9,6 +9,9 @@
 
 pub(crate) use rust_analyzer::to_proto::text_edit_vec;
 
+#[cfg(test)]
+pub(crate) use biome_lsp_converters::to_proto::range;
+
 use crate::rust_analyzer::{self, line_index::LineIndex, text_edit::TextEdit};
 use biome_text_size::TextRange;
 use tower_lsp::lsp_types;
