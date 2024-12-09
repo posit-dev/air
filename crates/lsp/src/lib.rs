@@ -1,7 +1,9 @@
 // TODO: Remove this
 #![allow(dead_code)]
 
-pub use tower_lsp::start_lsp;
+use std::sync::OnceLock;
+
+pub use tower_lsp::start_server;
 
 pub mod config;
 pub mod documents;
@@ -17,8 +19,11 @@ pub mod state;
 pub mod to_proto;
 pub mod tower_lsp;
 
-#[cfg(test)]
-pub mod tower_lsp_test_client;
+/// Are we in a test LSP server?
+///
+/// `start_test_server()` sets this to `true`, which disables logging to the LSP client
+/// during tests, making it easier to track sent/received requests.
+pub static TESTING: OnceLock<bool> = OnceLock::new();
 
 // These send LSP messages in a non-async and non-blocking way.
 // The LOG level is not timestamped so we're not using it.

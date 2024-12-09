@@ -20,6 +20,7 @@ use crate::handlers_ext::ViewFileParams;
 use crate::main_loop::Event;
 use crate::main_loop::GlobalState;
 use crate::main_loop::TokioUnboundedSender;
+use crate::TESTING;
 
 // Based on https://stackoverflow.com/a/69324393/1725177
 macro_rules! cast_response {
@@ -174,12 +175,38 @@ impl LanguageServer for Backend {
     }
 }
 
-pub async fn start_lsp<I, O>(read: I, write: O)
+/// Entry point for the LSP server
+///
+/// Should be called exactly once per process
+pub async fn start_server<I, O>(read: I, write: O)
+where
+    I: AsyncRead + Unpin,
+    O: AsyncWrite,
+{
+    start_server_impl(read, write, false).await
+}
+
+/// Entry point for the test LSP server
+///
+/// Should be called exactly once per process
+pub async fn start_test_server<I, O>(read: I, write: O)
+where
+    I: AsyncRead + Unpin,
+    O: AsyncWrite,
+{
+    start_server_impl(read, write, true).await
+}
+
+async fn start_server_impl<I, O>(read: I, write: O, testing: bool)
 where
     I: AsyncRead + Unpin,
     O: AsyncWrite,
 {
     log::trace!("Starting LSP");
+
+    TESTING
+        .set(testing)
+        .expect("`TESTING` can only be set once.");
 
     let (service, socket) = new_lsp();
     let server = tower_lsp::Server::new(read, write, socket);
@@ -212,64 +239,5 @@ fn new_jsonrpc_error(message: String) -> jsonrpc::Error {
         code: jsonrpc::ErrorCode::ServerError(-1),
         message: message.into(),
         data: None,
-    }
-}
-
-#[cfg(test)]
-pub(crate) async fn start_test_client() -> lsp_test::lsp_client::TestClient {
-    lsp_test::lsp_client::TestClient::new(|server_rx, client_tx| async {
-        start_lsp(server_rx, client_tx).await
-    })
-}
-
-#[cfg(test)]
-pub(crate) async fn init_test_client() -> lsp_test::lsp_client::TestClient {
-    let mut client = start_test_client().await;
-
-    client.initialize().await;
-    client.recv_response().await;
-
-    client
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use assert_matches::assert_matches;
-    use tower_lsp::lsp_types;
-
-    #[tests_macros::lsp_test]
-    async fn test_init() {
-        let mut client = start_test_client().await;
-
-        client.initialize().await;
-
-        let value = client.recv_response().await;
-        let value: lsp_types::InitializeResult =
-            serde_json::from_value(value.result().unwrap().clone()).unwrap();
-
-        assert_matches!(
-            value,
-            lsp_types::InitializeResult {
-                capabilities,
-                server_info
-            } => {
-                assert_matches!(capabilities, ServerCapabilities {
-                    position_encoding,
-                    text_document_sync,
-                    ..
-                } => {
-                    assert_eq!(position_encoding, None);
-                    assert_eq!(text_document_sync, Some(TextDocumentSyncCapability::Kind(TextDocumentSyncKind::INCREMENTAL)));
-                });
-
-                assert_matches!(server_info, Some(ServerInfo { name, version }) => {
-                    assert!(name.contains("Air Language Server"));
-                    assert!(version.is_some());
-                });
-            }
-        );
-
-        client
     }
 }

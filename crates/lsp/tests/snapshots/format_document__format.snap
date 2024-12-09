@@ -1,5 +1,5 @@
 ---
-source: crates/lsp/src/handlers_format.rs
+source: crates/lsp/tests/format_document.rs
 expression: formatted
 ---
 1
