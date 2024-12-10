@@ -191,6 +191,12 @@ fn format_file(path: PathBuf, mode: FormatMode) -> Result<FormatFileAction, Form
     // LF, but apply CRLF on exit so `source` and `new` always have different
     // line endings). We probably need to compare pre-normalized against
     // post-formatted output?
+    //
+    // Ah, no, the right thing to do is for the cli to not care about normalizing
+    // line endings. This is mostly useful in the LSP for all the document manipulation
+    // we are going to do there. In the cli, we want to format a whole bunch of files
+    // so we really want this optimization, and since the formatter and parser can handle
+    // windows line endings just fine, we should not normalize here.
     match formatted {
         FormattedSource::Formatted(new) => {
             match mode {
