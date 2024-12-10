@@ -1274,6 +1274,7 @@ dependencies = [
  "biome_formatter",
  "biome_lsp_converters",
  "biome_parser",
+ "biome_rowan",
  "biome_text_size",
  "bytes",
  "crossbeam",

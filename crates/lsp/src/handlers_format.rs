@@ -6,7 +6,10 @@
 //
 
 use air_r_formatter::{context::RFormatOptions, format_node};
+use air_r_syntax::{RSyntaxKind, RSyntaxNode, WalkEvent};
 use biome_formatter::{IndentStyle, LineWidth};
+use biome_rowan::{Language, SyntaxElement};
+use biome_text_size::TextRange;
 use tower_lsp::lsp_types;
 
 use crate::state::WorldState;
@@ -57,21 +60,88 @@ pub(crate) fn document_range_formatting(
         .with_indent_style(IndentStyle::Space)
         .with_line_width(line_width);
 
-    let format_info = biome_formatter::format_range(
-        &doc.parse.syntax(),
-        range,
-        air_r_formatter::RFormatLanguage::new(options),
-    )?;
+    let Some(node) = find_deepest_enclosing_logical_line(doc.parse.syntax(), range) else {
+        return Ok(None);
+    };
 
-    let Some(format_range) = format_info.range() else {
+
+    let format_info =
+        biome_formatter::format_sub_tree(&node, air_r_formatter::RFormatLanguage::new(options))?;
+
+    let Some(_format_range) = format_info.range() else {
         // Happens in edge cases when biome returns a `Printed::new_empty()`
         return Ok(None);
     };
+
+    let format_range = text_non_whitespace_range(&node);
 
     let format_text = format_info.into_code();
     let edits = to_proto::replace_range_edit(&doc.line_index, format_range, format_text)?;
 
     Ok(Some(edits))
+}
+
+// From biome_formatter
+fn text_non_whitespace_range<E, L>(elem: &E) -> TextRange
+where
+    E: Into<SyntaxElement<L>> + Clone,
+    L: Language,
+{
+    let elem: SyntaxElement<L> = elem.clone().into();
+
+    let start = elem
+        .leading_trivia()
+        .into_iter()
+        .flat_map(|trivia| trivia.pieces())
+        .find_map(|piece| {
+            if piece.is_whitespace() || piece.is_newline() {
+                None
+            } else {
+                Some(piece.text_range().start())
+            }
+        })
+        .unwrap_or_else(|| elem.text_trimmed_range().start());
+
+    let end = elem
+        .trailing_trivia()
+        .into_iter()
+        .flat_map(|trivia| trivia.pieces().rev())
+        .find_map(|piece| {
+            if piece.is_whitespace() || piece.is_newline() {
+                None
+            } else {
+                Some(piece.text_range().end())
+            }
+        })
+        .unwrap_or_else(|| elem.text_trimmed_range().end());
+
+    TextRange::new(start, end)
+}
+
+fn find_deepest_enclosing_logical_line(node: RSyntaxNode, range: TextRange) -> Option<RSyntaxNode> {
+    let mut preorder = node.preorder();
+    let mut statement: Option<RSyntaxNode> = None;
+
+    while let Some(event) = preorder.next() {
+        match event {
+            WalkEvent::Enter(node) => {
+                if !node.text_range().contains_range(range) {
+                    preorder.skip_subtree();
+                    continue;
+                }
+
+                if let Some(parent) = node.parent() {
+                    if parent.kind() == RSyntaxKind::R_EXPRESSION_LIST {
+                        statement = Some(node.clone());
+                    }
+                }
+            }
+
+            WalkEvent::Leave(_) => {}
+        }
+    }
+
+    statement
 }
 
 #[cfg(test)]
@@ -161,9 +231,9 @@ mod tests {
 
     #[tests_macros::lsp_test]
     async fn test_format_range_minimal() {
-        // FIXME: This currently fails. Line 0 should not be affected by formatting line 1.
         let mut client = init_test_client().await;
 
+        // 2+2 is the logical line to format
         #[rustfmt::skip]
         let doc = Document::doodle(
 "1+1
@@ -171,12 +241,24 @@ mod tests {
 ",
         );
         let range = TextRange::new(TextSize::from(4), TextSize::from(7));
+        let output = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output);
+
+        // FIXME: With a leading comment this currently fails. Why is the
+        // addition broken up?
+        #[rustfmt::skip]
+        let doc = Document::doodle(
+"1+1
+#
+2+2
+",
+        );
+        let range = TextRange::new(TextSize::from(6), TextSize::from(9));
 
         let output = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output);
 
-        // This currently works because biome selects the curly brace expression
-        // as node to format, so `1+1` is left alone
+        // The whole braced expression is a logical line
         #[rustfmt::skip]
         let doc = Document::doodle(
 "1+1
