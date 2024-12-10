@@ -19,6 +19,7 @@ anyhow.workspace = true
 biome_formatter.workspace = true
 biome_lsp_converters.workspace = true
 biome_parser.workspace = true
+biome_rowan.workspace = true
 biome_text_size.workspace = true
 crossbeam.workspace = true
 dissimilar.workspace = true
