@@ -16,7 +16,7 @@ impl TestFormatLanguage for RTestFormatLanguage {
     type FormatLanguage = RFormatLanguage;
 
     fn parse(&self, text: &str) -> AnyParse {
-        air_r_parser::parse(text, RParserOptions::default())
+        air_r_parser::parse(text, RParserOptions::default()).into()
     }
 
     fn to_format_language(&self) -> Self::FormatLanguage {

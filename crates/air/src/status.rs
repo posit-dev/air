@@ -15,7 +15,7 @@ impl From<ExitStatus> for ExitCode {
         match status {
             ExitStatus::Success => ExitCode::from(0),
             ExitStatus::Failure => ExitCode::from(1),
-            ExitStatus::Error => ExitCode::from(2),
+            ExitStatus::Error => ExitCode::from(u8::MAX),
         }
     }
 }

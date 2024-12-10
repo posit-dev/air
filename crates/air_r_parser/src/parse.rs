@@ -1,8 +1,14 @@
+use std::marker::PhantomData;
+
+use air_r_syntax::RLanguage;
+use air_r_syntax::RRoot;
 use air_r_syntax::RSyntaxKind;
+use air_r_syntax::RSyntaxNode;
 use biome_parser::event::Event;
 use biome_parser::prelude::ParseDiagnostic;
 use biome_parser::prelude::Trivia;
 use biome_parser::AnyParse;
+use biome_rowan::AstNode;
 use biome_rowan::NodeCache;
 use biome_rowan::TextRange;
 use biome_rowan::TextSize;
@@ -13,30 +19,133 @@ use tree_sitter::Tree;
 use crate::treesitter::NodeTypeExt;
 use crate::treesitter::Preorder;
 use crate::treesitter::WalkEvent;
+use crate::ParseError;
 use crate::RLosslessTreeSink;
 use crate::RParserOptions;
 
-// TODO(r): These should really return an intermediate `Parse` type which
-// can `.into()` an `AnyParse`, see `biome_js_parser`'s `Parse` type
-pub fn parse(text: &str, options: RParserOptions) -> AnyParse {
+/// A utility struct for managing the result of a parser job
+#[derive(Debug, Clone)]
+pub struct Parse<T> {
+    root: RSyntaxNode,
+    errors: Vec<ParseError>,
+    _ty: PhantomData<T>,
+}
+
+impl<T> Parse<T> {
+    pub fn new(root: RSyntaxNode, errors: Vec<ParseError>) -> Parse<T> {
+        Parse {
+            root,
+            errors,
+            _ty: PhantomData,
+        }
+    }
+
+    pub fn cast<N: AstNode<Language = RLanguage>>(self) -> Option<Parse<N>> {
+        if N::can_cast(self.syntax().kind()) {
+            Some(Parse::new(self.root, self.errors))
+        } else {
+            None
+        }
+    }
+
+    /// The syntax node represented by this Parse result
+    pub fn syntax(&self) -> RSyntaxNode {
+        self.root.clone()
+    }
+
+    /// Get the errors which occurred when parsing
+    pub fn errors(&self) -> &[ParseError] {
+        self.errors.as_slice()
+    }
+
+    /// Get the errors which occurred when parsing
+    pub fn into_errors(self) -> Vec<ParseError> {
+        self.errors
+    }
+
+    /// Returns [true] if the parser encountered some errors during the parsing.
+    pub fn has_errors(&self) -> bool {
+        !self.errors.is_empty()
+    }
+}
+
+impl<T: AstNode<Language = RLanguage>> Parse<T> {
+    /// Convert this parse result into a typed AST node.
+    ///
+    /// # Panics
+    /// Panics if the node represented by this parse result mismatches.
+    pub fn tree(&self) -> T {
+        self.try_tree().unwrap_or_else(|| {
+            panic!(
+                "Expected tree to be a {} but root is:\n{:#?}",
+                std::any::type_name::<T>(),
+                self.syntax()
+            )
+        })
+    }
+
+    /// Try to convert this parse's untyped syntax node into an AST node.
+    pub fn try_tree(&self) -> Option<T> {
+        T::cast(self.syntax())
+    }
+
+    /// Convert this parse into a result
+    pub fn into_result(self) -> Result<T, Vec<ParseError>> {
+        if !self.has_errors() {
+            Ok(self.tree())
+        } else {
+            Err(self.errors)
+        }
+    }
+}
+
+impl<T> From<Parse<T>> for AnyParse {
+    fn from(parse: Parse<T>) -> Self {
+        let root = parse.syntax();
+        let errors = parse.into_errors();
+        let diagnostics = errors
+            .into_iter()
+            .map(ParseError::into_diagnostic)
+            .collect();
+        Self::new(
+            // SAFETY: the parser should always return a root node
+            root.as_send().unwrap(),
+            diagnostics,
+        )
+    }
+}
+
+pub fn parse(text: &str, options: RParserOptions) -> Parse<RRoot> {
     let mut cache = NodeCache::default();
     parse_r_with_cache(text, options, &mut cache)
 }
 
-pub fn parse_r_with_cache(text: &str, options: RParserOptions, cache: &mut NodeCache) -> AnyParse {
+pub fn parse_r_with_cache(
+    text: &str,
+    options: RParserOptions,
+    cache: &mut NodeCache,
+) -> Parse<RRoot> {
     tracing::debug_span!("parse").in_scope(move || {
         let (events, tokens, errors) = parse_text(text, options);
+
+        // We've determined that passing diagnostics through does nothing.
+        // They go into the tree-sink but come right back out. We think they
+        // are a holdover from rust-analyzer that can be removed now. The real
+        // errors are in `errors`.
+        let _diagnostics = vec![];
+
         let mut tree_sink = RLosslessTreeSink::with_cache(text, &tokens, cache);
-        biome_parser::event::process(&mut tree_sink, events, errors);
-        let (green, parse_errors) = tree_sink.finish();
-        AnyParse::new(green.as_send().unwrap(), parse_errors)
+        biome_parser::event::process(&mut tree_sink, events, _diagnostics);
+        let (green, _diagnostics) = tree_sink.finish();
+
+        Parse::new(green, errors)
     })
 }
 
 pub fn parse_text(
     text: &str,
     _options: RParserOptions,
-) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Vec<ParseDiagnostic>) {
+) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Vec<ParseError>) {
     let mut parser = tree_sitter::Parser::new();
     parser
         .set_language(&tree_sitter_r::LANGUAGE.into())
@@ -54,7 +163,7 @@ pub fn parse_text(
     parse_tree(ast, text)
 }
 
-fn parse_failure() -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Vec<ParseDiagnostic>) {
+fn parse_failure() -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Vec<ParseError>) {
     // Must provide a root node on failures, otherwise `tree_sink.finish()` fails
     let events = vec![
         Event::Start {
@@ -67,18 +176,16 @@ fn parse_failure() -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Vec<ParseDiagnostic
     // No trivia
     let trivia = vec![];
 
-    // Generate a single diagnostic
+    // Generate a single diagnostic, wrap it in our error type
     let span: Option<TextRange> = None;
-    let error = ParseDiagnostic::new("Tree-sitter failed", span);
+    let diagnostic = ParseDiagnostic::new("Failed to parse", span);
+    let error = ParseError::from(diagnostic);
     let errors = vec![error];
 
     (events, trivia, errors)
 }
 
-fn parse_tree(
-    ast: Tree,
-    text: &str,
-) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Vec<ParseDiagnostic>) {
+fn parse_tree(ast: Tree, text: &str) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Vec<ParseError>) {
     let mut walker = RWalk::new(text);
 
     let root = ast.root_node();
@@ -958,7 +1065,7 @@ impl<'src> RWalk<'src> {
 struct RParse {
     events: Vec<Event<RSyntaxKind>>,
     trivia: Vec<Trivia>,
-    errors: Vec<ParseDiagnostic>,
+    errors: Vec<ParseError>,
 }
 
 impl RParse {
@@ -993,7 +1100,7 @@ impl RParse {
         self.trivia.push(trivia);
     }
 
-    fn drain(self) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Vec<ParseDiagnostic>) {
+    fn drain(self) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Vec<ParseError>) {
         (self.events, self.trivia, self.errors)
     }
 
