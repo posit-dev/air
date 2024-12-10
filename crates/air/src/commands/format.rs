@@ -21,7 +21,7 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
     let mode = FormatMode::from_command(&command);
     let paths = resolve_paths(&command.paths);
 
-    let (results, errors): (Vec<_>, Vec<_>) = paths
+    let (actions, errors): (Vec<_>, Vec<_>) = paths
         .into_iter()
         .map(|path| match path {
             Ok(path) => format_file(path, mode),
@@ -40,7 +40,7 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
     match mode {
         FormatMode::Write => {}
         FormatMode::Check => {
-            write_changed(&results, &mut stdout().lock())?;
+            write_changed(&actions, &mut stdout().lock())?;
         }
     }
 
@@ -54,7 +54,7 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
         }
         FormatMode::Check => {
             if errors.is_empty() {
-                let any_changed = results.iter().any(FormatFileResult::is_changed);
+                let any_changed = actions.iter().any(FormatFileAction::is_changed);
 
                 if any_changed {
                     Ok(ExitStatus::Failure)
@@ -84,12 +84,12 @@ impl FormatMode {
     }
 }
 
-fn write_changed(results: &[FormatFileResult], f: &mut impl Write) -> io::Result<()> {
-    for path in results
+fn write_changed(actions: &[FormatFileAction], f: &mut impl Write) -> io::Result<()> {
+    for path in actions
         .iter()
         .filter_map(|result| match result {
-            FormatFileResult::Formatted(path) => Some(path),
-            FormatFileResult::Unchanged => None,
+            FormatFileAction::Formatted(path) => Some(path),
+            FormatFileAction::Unchanged => None,
         })
         .sorted_unstable()
     {
@@ -118,7 +118,7 @@ fn resolve_paths(paths: &[PathBuf]) -> Vec<Result<PathBuf, ignore::Error>> {
     for path in builder.build() {
         match path {
             Ok(entry) => {
-                if let Some(path) = judge_entry(entry) {
+                if let Some(path) = is_valid_path(entry) {
                     out.push(Ok(path));
                 }
             }
@@ -132,21 +132,16 @@ fn resolve_paths(paths: &[PathBuf]) -> Vec<Result<PathBuf, ignore::Error>> {
 }
 
 // Decide whether or not to accept an `entry` based on include/exclude rules.
-fn judge_entry(entry: DirEntry) -> Option<PathBuf> {
+fn is_valid_path(entry: DirEntry) -> Option<PathBuf> {
     // Ignore directories
     if entry.file_type().map_or(true, |ft| ft.is_dir()) {
         return None;
     }
 
-    // Accept all files that are passed-in directly as long as it is an R file
+    // Accept all files that are passed-in directly, even non-R files
     if entry.depth() == 0 {
         let path = entry.into_path();
-
-        if air_fs::has_r_extension(&path) {
-            return Some(path);
-        } else {
-            return None;
-        }
+        return Some(path);
     }
 
     // Otherwise check if we should accept this entry
@@ -160,21 +155,21 @@ fn judge_entry(entry: DirEntry) -> Option<PathBuf> {
     Some(path)
 }
 
-pub(crate) enum FormatFileResult {
+pub(crate) enum FormatFileAction {
     Formatted(PathBuf),
     Unchanged,
 }
 
-impl FormatFileResult {
+impl FormatFileAction {
     fn is_changed(&self) -> bool {
-        matches!(self, FormatFileResult::Formatted(_))
+        matches!(self, FormatFileAction::Formatted(_))
     }
 }
 
 // TODO: Take workspace `FormatOptions` that get resolved to `RFormatOptions`
 // for the formatter here. Respect user specified `LineEnding` option too, and
 // only use inferred endings when `FormatOptions::LineEnding::Auto` is used.
-fn format_file(path: PathBuf, mode: FormatMode) -> Result<FormatFileResult, FormatCommandError> {
+fn format_file(path: PathBuf, mode: FormatMode) -> Result<FormatFileAction, FormatCommandError> {
     let source = std::fs::read_to_string(&path)
         .map_err(|err| FormatCommandError::Read(path.clone(), err))?;
 
@@ -205,9 +200,9 @@ fn format_file(path: PathBuf, mode: FormatMode) -> Result<FormatFileResult, Form
                 }
                 FormatMode::Check => {}
             }
-            Ok(FormatFileResult::Formatted(path))
+            Ok(FormatFileAction::Formatted(path))
         }
-        FormattedSource::Unchanged => Ok(FormatFileResult::Unchanged),
+        FormattedSource::Unchanged => Ok(FormatFileAction::Unchanged),
     }
 }
 
