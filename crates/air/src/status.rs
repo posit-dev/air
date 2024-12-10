@@ -1,4 +1,4 @@
-use std::{process::ExitCode, u8};
+use std::process::ExitCode;
 
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum ExitStatus {
