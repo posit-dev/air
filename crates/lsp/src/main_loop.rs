@@ -14,6 +14,7 @@ use anyhow::anyhow;
 use biome_lsp_converters::PositionEncoding;
 use biome_lsp_converters::WideEncoding;
 use futures::StreamExt;
+use tokio::sync::mpsc::error::SendError;
 use tokio::sync::mpsc::unbounded_channel as tokio_unbounded_channel;
 use tokio::task::JoinHandle;
 use tower_lsp::lsp_types;
@@ -32,7 +33,6 @@ use crate::tower_lsp::LspMessage;
 use crate::tower_lsp::LspNotification;
 use crate::tower_lsp::LspRequest;
 use crate::tower_lsp::LspResponse;
-use crate::TESTING;
 
 pub(crate) type TokioUnboundedSender<T> = tokio::sync::mpsc::UnboundedSender<T>;
 pub(crate) type TokioUnboundedReceiver<T> = tokio::sync::mpsc::UnboundedReceiver<T>;
@@ -452,39 +452,8 @@ fn auxiliary_tx() -> &'static TokioUnboundedSender<AuxiliaryEvent> {
     AUXILIARY_EVENT_TX.get().unwrap()
 }
 
-fn send_auxiliary(event: AuxiliaryEvent) {
-    if let Err(err) = auxiliary_tx().send(event) {
-        // The error includes the event
-        log::warn!("LSP is shut down, can't send event:\n{err:?}");
-    }
-}
-
-/// Send a message to the LSP client. This is non-blocking and treated on a
-/// latency-sensitive task.
-pub(crate) fn log(level: lsp_types::MessageType, message: String) {
-    // We don't want to send logs to the client when running integration tests,
-    // as they interfere with our ability to track sent/received requests.
-    if *TESTING.get().unwrap_or(&false) {
-        return;
-    }
-
-    // Check that channel is still alive in case the LSP was closed.
-    // If closed, fallthrough.
-    if auxiliary_tx()
-        .send(AuxiliaryEvent::Log(level, message.clone()))
-        .is_ok()
-    {
-        return;
-    }
-
-    // Log to the kernel as fallback
-    log::warn!("LSP channel is closed, redirecting messages to Jupyter kernel");
-
-    match level {
-        MessageType::ERROR => log::error!("{message}"),
-        MessageType::WARNING => log::warn!("{message}"),
-        _ => log::info!("{message}"),
-    };
+pub(crate) fn send_auxiliary(event: AuxiliaryEvent) -> Result<(), SendError<AuxiliaryEvent>> {
+    auxiliary_tx().send(event)
 }
 
 /// Spawn a blocking task
@@ -503,5 +472,8 @@ where
 
     // Send the join handle to the auxiliary loop so it can log any errors
     // or panics
-    send_auxiliary(AuxiliaryEvent::SpawnedTask(handle));
+    if let Err(err) = send_auxiliary(AuxiliaryEvent::SpawnedTask(handle)) {
+        // The error includes the event
+        log::warn!("LSP is shut down, can't send task:\n{err:?}");
+    }
 }

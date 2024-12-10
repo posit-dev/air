@@ -17,10 +17,10 @@ use tower_lsp::LspService;
 use tower_lsp::{jsonrpc, ClientSocket};
 
 use crate::handlers_ext::ViewFileParams;
+use crate::logging;
 use crate::main_loop::Event;
 use crate::main_loop::GlobalState;
 use crate::main_loop::TokioUnboundedSender;
-use crate::TESTING;
 
 // Based on https://stackoverflow.com/a/69324393/1725177
 macro_rules! cast_response {
@@ -183,7 +183,7 @@ where
     I: AsyncRead + Unpin,
     O: AsyncWrite,
 {
-    start_server_impl(read, write, false).await
+    start_server_impl(read, write, true).await
 }
 
 /// Entry point for the test LSP server
@@ -194,19 +194,17 @@ where
     I: AsyncRead + Unpin,
     O: AsyncWrite,
 {
-    start_server_impl(read, write, true).await
+    start_server_impl(read, write, false).await
 }
 
-async fn start_server_impl<I, O>(read: I, write: O, testing: bool)
+async fn start_server_impl<I, O>(read: I, write: O, emit_logs: bool)
 where
     I: AsyncRead + Unpin,
     O: AsyncWrite,
 {
-    log::trace!("Starting LSP");
+    logging::init_logging(emit_logs);
 
-    TESTING
-        .set(testing)
-        .expect("`TESTING` can only be set once.");
+    log::trace!("Starting LSP");
 
     let (service, socket) = new_lsp();
     let server = tower_lsp::Server::new(read, write, socket);
