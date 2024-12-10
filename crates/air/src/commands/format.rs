@@ -5,9 +5,9 @@ use std::io::stdout;
 use std::io::Write;
 use std::path::PathBuf;
 
-use air_fs::relativize_path;
 use air_r_formatter::context::RFormatOptions;
 use air_r_parser::RParserOptions;
+use fs::relativize_path;
 use ignore::DirEntry;
 use itertools::Either;
 use itertools::Itertools;
@@ -100,7 +100,7 @@ fn write_changed(actions: &[FormatFileAction], f: &mut impl Write) -> io::Result
 }
 
 fn resolve_paths(paths: &[PathBuf]) -> Vec<Result<PathBuf, ignore::Error>> {
-    let paths: Vec<PathBuf> = paths.iter().map(air_fs::normalize_path).collect();
+    let paths: Vec<PathBuf> = paths.iter().map(fs::normalize_path).collect();
 
     let (first_path, paths) = paths
         .split_first()
@@ -148,7 +148,7 @@ fn is_valid_path(entry: DirEntry) -> Option<PathBuf> {
     // TODO: Many other checks based on user exclude/includes
     let path = entry.into_path();
 
-    if !air_fs::has_r_extension(&path) {
+    if !fs::has_r_extension(&path) {
         return None;
     }
 

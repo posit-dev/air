@@ -30,7 +30,6 @@ dependencies = [
 name = "air"
 version = "0.1.0"
 dependencies = [
- "air_fs",
  "air_r_formatter",
  "air_r_parser",
  "anyhow",
@@ -39,6 +38,7 @@ dependencies = [
  "biome_formatter",
  "biome_parser",
  "clap",
+ "fs",
  "ignore",
  "itertools",
  "line_ending",
@@ -63,13 +63,6 @@ dependencies = [
  "serde",
  "similar",
  "similar-asserts",
-]
-
-[[package]]
-name = "air_fs"
-version = "0.0.0"
-dependencies = [
- "path-absolutize",
 ]
 
 [[package]]
@@ -791,6 +784,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e13624c2627564efccf4934284bdd98cbaa14e79b0b5a141218e507b3a823456"
 dependencies = [
  "percent-encoding",
+]
+
+[[package]]
+name = "fs"
+version = "0.0.0"
+dependencies = [
+ "path-absolutize",
 ]
 
 [[package]]

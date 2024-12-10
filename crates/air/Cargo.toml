@@ -12,7 +12,6 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-air_fs = { workspace = true }
 air_r_formatter = { workspace = true }
 air_r_parser = { workspace = true }
 anyhow = { workspace = true }
@@ -21,6 +20,7 @@ biome_diagnostics = { workspace = true }
 biome_formatter = { workspace = true }
 biome_parser = { workspace = true }
 clap = { workspace = true, features = ["wrap_help"] }
+fs = { workspace = true }
 ignore = { workspace = true }
 itertools = { workspace = true }
 line_ending = { workspace = true }
