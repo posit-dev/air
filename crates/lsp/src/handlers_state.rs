@@ -65,8 +65,7 @@ pub(crate) fn initialize(
     state: &mut WorldState,
     log_tx: LogMessageSender,
 ) -> anyhow::Result<InitializeResult> {
-    // TODO: Get default log level from `params.initialization_options`
-    // and `AIR_LOG` env var.
+    // TODO: Get user specified log level from `params.initialization_options`
     let log_level = None;
 
     logging::init_logging(log_tx, log_level, params.client_info.as_ref());
