@@ -89,7 +89,7 @@ struct Backend {
 
 impl Backend {
     async fn request(&self, request: LspRequest) -> anyhow::Result<LspResponse> {
-        self.log_info(format!("Incoming: {request:#?}"));
+        tracing::info!("Incoming:\n{request:#?}");
 
         let (response_tx, mut response_rx) =
             tokio_unbounded_channel::<anyhow::Result<LspResponse>>();
@@ -102,12 +102,12 @@ impl Backend {
         // Wait for response from main loop
         let out = response_rx.recv().await.unwrap()?;
 
-        self.log_info(format!("Outgoing {out:#?}"));
+        tracing::info!("Outgoing\n{out:#?}");
         Ok(out)
     }
 
     fn notify(&self, notif: LspNotification) {
-        self.log_info(format!("Incoming: {notif:#?}"));
+        tracing::info!("Incoming:\n{notif:#?}");
 
         // Relay notification to main loop
         self.events_tx
@@ -120,10 +120,6 @@ impl Backend {
             self.request(LspRequest::AirViewFile(params)).await,
             LspResponse::AirViewFile
         )
-    }
-
-    fn log_info(&self, message: String) {
-        self.auxiliary_event_tx.log_info(message);
     }
 }
 
@@ -194,7 +190,7 @@ where
     let server = tower_lsp::Server::new(read, write, socket);
     server.serve(service).await;
 
-    log::trace!("LSP exiting gracefully.",);
+    log::trace!("LSP exiting gracefully.");
 }
 
 fn new_lsp() -> (LspService<Backend>, ClientSocket) {

@@ -85,42 +85,6 @@ impl AuxiliaryEventSender {
         self.inner.send(message)
     }
 
-    pub(crate) fn log_info(&self, message: String) {
-        self.log(MessageType::INFO, message);
-    }
-    pub(crate) fn log_warn(&self, message: String) {
-        self.log(MessageType::WARNING, message);
-    }
-    pub(crate) fn log_error(&self, message: String) {
-        self.log(MessageType::ERROR, message);
-    }
-
-    /// Send an `AuxiliaryEvent::Log` message in a non-blocking way
-    fn log(&self, level: lsp_types::MessageType, message: String) {
-        // We're not connected to an LSP client when running unit tests
-        if cfg!(test) {
-            return;
-        }
-
-        // Check that channel is still alive in case the LSP was closed.
-        // If closed, fallthrough.
-        if self
-            .send(AuxiliaryEvent::Log(level, message.clone()))
-            .is_ok()
-        {
-            return;
-        }
-
-        // Log to the kernel as fallback
-        log::warn!("LSP channel is closed, redirecting messages to Jupyter kernel");
-
-        match level {
-            MessageType::ERROR => log::error!("{message}"),
-            MessageType::WARNING => log::warn!("{message}"),
-            _ => log::info!("{message}"),
-        };
-    }
-
     /// Spawn a blocking task
     ///
     /// This runs tasks that do semantic analysis on a separate thread pool to avoid
@@ -246,7 +210,6 @@ impl GlobalState {
         // Transmission channel for the main loop events. Shared with the
         // tower-lsp backend and the Jupyter kernel.
         let (events_tx, events_rx) = tokio_unbounded_channel::<Event>();
-
         let (auxiliary_state, auxiliary_event_tx) = AuxiliaryState::new(client.clone());
 
         Self {
@@ -300,7 +263,7 @@ impl GlobalState {
         loop {
             let event = self.next_event().await;
             match self.handle_event(event).await {
-                Err(err) => self.log_error(format!("Failure while handling event:\n{err:?}")),
+                Err(err) => tracing::info!("Failure while handling event:\n{err:?}"),
                 Ok(LoopControl::Shutdown) => break,
                 _ => {}
             }
@@ -360,7 +323,7 @@ impl GlobalState {
                             // Currently ignored
                         },
                         LspNotification::DidCloseTextDocument(params) => {
-                            handlers_state::did_close(params, &mut self.world, &self.auxiliary_event_tx)?;
+                            handlers_state::did_close(params, &mut self.world)?;
                         },
                     }
                 },
@@ -368,7 +331,7 @@ impl GlobalState {
                 LspMessage::Request(request, tx) => {
                     match request {
                         LspRequest::Initialize(params) => {
-                            respond(tx, handlers_state::initialize(params, &mut self.lsp_state, &mut self.world), LspResponse::Initialize)?;
+                            respond(tx, handlers_state::initialize(params, &mut self.lsp_state, &mut self.world, &self.auxiliary_event_tx), LspResponse::Initialize)?;
                         },
                         LspRequest::Shutdown => {
                             out = LoopControl::Shutdown;
@@ -393,7 +356,7 @@ impl GlobalState {
 
         // TODO Make this threshold configurable by the client
         if loop_tick.elapsed() > std::time::Duration::from_millis(50) {
-            self.log_info(format!("Handler took {}ms", loop_tick.elapsed().as_millis()));
+            tracing::info!("Handler took {}ms", loop_tick.elapsed().as_millis());
         }
 
         Ok(out)
@@ -421,16 +384,6 @@ impl GlobalState {
         self.auxiliary_event_tx.spawn_blocking_task(move || {
             respond(response_tx, handler(), into_lsp_response).and(Ok(None))
         });
-    }
-
-    fn log_info(&self, message: String) {
-        self.auxiliary_event_tx.log_info(message);
-    }
-    fn log_warn(&self, message: String) {
-        self.auxiliary_event_tx.log_warn(message);
-    }
-    fn log_error(&self, message: String) {
-        self.auxiliary_event_tx.log_error(message);
     }
 }
 
@@ -529,8 +482,8 @@ impl AuxiliaryState {
                     Ok(Ok(Some(event))) => return event,
 
                     // Otherwise relay any errors and loop back into select
-                    Err(err) => self.log_error(format!("A task panicked:\n{err:?}")).await,
-                    Ok(Err(err)) => self.log_error(format!("A task failed:\n{err:?}")).await,
+                    Err(err) => self.log(MessageType::ERROR, format!("A task panicked:\n{err:?}")).await,
+                    Ok(Err(err)) => self.log(MessageType::ERROR, format!("A task failed:\n{err:?}")).await,
                     _ => (),
                 },
             }
@@ -539,8 +492,5 @@ impl AuxiliaryState {
 
     async fn log(&self, level: MessageType, message: String) {
         self.client.log_message(level, message).await
-    }
-    async fn log_error(&self, message: String) {
-        self.client.log_message(MessageType::ERROR, message).await
     }
 }
