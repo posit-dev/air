@@ -6,7 +6,7 @@
 
 //! The logging system for `air lsp`.
 //!
-//! Logs are controlled by the `air.server.log` setting in VS Code,
+//! Logs are controlled by the `air.logLevel` setting in VS Code,
 //! passed through `InitializeParams` in the arbitrary `initializationOptions` field.
 //!
 //! Logs are also controlled by the `AIR_LOG` environment variable. This is preferred
@@ -35,7 +35,7 @@ use tracing_subscriber::{
 };
 
 // TODO:
-// - Add `air.server.log` as a VS Code extension option that sets the log level,
+// - Add `air.logLevel` as a VS Code extension option that sets the log level,
 //   and pass it through the arbitrary `initializationOptions` field of `InitializeParams`.
 
 const LOG_ENV_KEY: &str = "AIR_LOG";
