@@ -60,12 +60,19 @@ pub(crate) fn document_range_formatting(
         .with_indent_style(IndentStyle::Space)
         .with_line_width(line_width);
 
-    let Some(node) = find_deepest_enclosing_logical_line(doc.parse.syntax(), range) else {
+    let logical_lines = find_deepest_enclosing_logical_lines(doc.parse.syntax(), range);
+    if logical_lines.is_empty() {
         tracing::warn!("Can't find logical line");
         return Ok(None);
     };
 
-    let format_range = text_non_whitespace_range(&node);
+    // Find the overall formatting range by concatenating the ranges of the logical lines.
+    // We use the "non-whitespace-range" as that corresponds to what Biome will format.
+    let format_range = logical_lines
+        .iter()
+        .map(|line| text_non_whitespace_range(line))
+        .reduce(|acc, new| acc.cover(new))
+        .expect("`logical_lines` is non-empty");
 
     // We need to wrap in an `RRoot` otherwise the comments get attached too
     // deep in the tree. See `CommentsBuilderVisitor` in biome_formatter and the
@@ -73,13 +80,17 @@ pub(crate) fn document_range_formatting(
     // other nodes in order to fix this problem, and here we have an `RRoot` and
     // `RExpressionList` that do the job.
     //
-    // Since we only format logical lines, it should be okay to wrap in an expression list.
-    let Some(expr) = air_r_syntax::AnyRExpression::cast(node) else {
+    // Since we only format logical lines, it is fine to wrap in an expression list.
+    let Some(exprs): Option<Vec<air_r_syntax::AnyRExpression>> = logical_lines
+        .into_iter()
+        .map(|node| air_r_syntax::AnyRExpression::cast(node))
+        .collect()
+    else {
         tracing::warn!("Can't cast to `AnyRExpression`");
         return Ok(None);
     };
-    let list = air_r_factory::r_expression_list(vec![expr]);
 
+    let list = air_r_factory::r_expression_list(exprs);
     let eof = air_r_syntax::RSyntaxToken::new_detached(RSyntaxKind::EOF, "", vec![], vec![]);
     let root = air_r_factory::r_root(list, eof).build();
 
@@ -139,22 +150,28 @@ where
     TextRange::new(start, end)
 }
 
-fn find_deepest_enclosing_logical_line(node: RSyntaxNode, range: TextRange) -> Option<RSyntaxNode> {
+/// Finds consecutive logical lines. Currently that's only expressions at
+/// top-level or in a braced list.
+fn find_deepest_enclosing_logical_lines(node: RSyntaxNode, range: TextRange) -> Vec<RSyntaxNode> {
     let mut preorder = node.preorder();
-    let mut statement: Option<RSyntaxNode> = None;
+    let mut logical_lines: Vec<RSyntaxNode> = vec![];
 
     while let Some(event) = preorder.next() {
         match event {
             WalkEvent::Enter(node) => {
-                if !node.text_range().contains_range(range) {
-                    preorder.skip_subtree();
+                let Some(parent) = node.parent() else {
+                    continue;
+                };
+
+                let node_range = node.text_trimmed_range();
+                if !range.contains_range(node_range) {
                     continue;
                 }
 
-                if let Some(parent) = node.parent() {
-                    if parent.kind() == RSyntaxKind::R_EXPRESSION_LIST {
-                        statement = Some(node.clone());
-                    }
+                if parent.kind() == RSyntaxKind::R_EXPRESSION_LIST {
+                    logical_lines.push(node.clone());
+                    preorder.skip_subtree();
+                    continue;
                 }
             }
 
@@ -162,7 +179,7 @@ fn find_deepest_enclosing_logical_line(node: RSyntaxNode, range: TextRange) -> O
         }
     }
 
-    statement
+    logical_lines
 }
 
 #[cfg(test)]
@@ -319,6 +336,31 @@ mod tests {
         let range_wide = TextRange::new(TextSize::from(2), TextSize::from(7));
         let output_wide = client.format_document_range(&doc, range_wide).await;
         assert_eq!(output, output_wide);
+
+        client
+    }
+
+    #[tests_macros::lsp_test]
+    async fn test_format_range_multiple_lines() {
+        let mut client = init_test_client().await;
+
+        #[rustfmt::skip]
+        let doc = Document::doodle(
+"1+1
+#
+2+2
+",
+        );
+
+        // Selecting the last two lines
+        let range = TextRange::new(TextSize::from(4), TextSize::from(9));
+        let output = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output);
+
+        // Selecting all three lines
+        let range = TextRange::new(TextSize::from(0), TextSize::from(9));
+        let output = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output);
 
         client
     }
