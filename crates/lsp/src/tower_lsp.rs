@@ -84,7 +84,7 @@ struct Backend {
 
 impl Backend {
     async fn request(&self, request: LspRequest) -> anyhow::Result<LspResponse> {
-        tracing::info!("Incoming:\n{request:#?}");
+        tracing::trace!("Incoming:\n{request:#?}");
 
         let (response_tx, mut response_rx) =
             tokio_unbounded_channel::<anyhow::Result<LspResponse>>();
@@ -97,12 +97,12 @@ impl Backend {
         // Wait for response from main loop
         let out = response_rx.recv().await.unwrap()?;
 
-        tracing::info!("Outgoing\n{out:#?}");
+        tracing::trace!("Outgoing\n{out:#?}");
         Ok(out)
     }
 
     fn notify(&self, notif: LspNotification) {
-        tracing::info!("Incoming:\n{notif:#?}");
+        tracing::trace!("Incoming:\n{notif:#?}");
 
         // Relay notification to main loop
         self.events_tx

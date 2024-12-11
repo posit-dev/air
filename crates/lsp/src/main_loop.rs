@@ -261,7 +261,7 @@ impl GlobalState {
         loop {
             let event = self.next_event().await;
             match self.handle_event(event).await {
-                Err(err) => tracing::info!("Failure while handling event:\n{err:?}"),
+                Err(err) => tracing::error!("Failure while handling event:\n{err:?}"),
                 Ok(LoopControl::Shutdown) => break,
                 _ => {}
             }
@@ -354,7 +354,7 @@ impl GlobalState {
 
         // TODO Make this threshold configurable by the client
         if loop_tick.elapsed() > std::time::Duration::from_millis(50) {
-            tracing::info!("Handler took {}ms", loop_tick.elapsed().as_millis());
+            tracing::trace!("Handler took {}ms", loop_tick.elapsed().as_millis());
         }
 
         Ok(out)
