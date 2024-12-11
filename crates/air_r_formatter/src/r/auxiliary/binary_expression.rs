@@ -117,6 +117,7 @@ fn fmt_binary(
     )
 }
 
+#[derive(Debug)]
 struct TailPiece {
     operator: SyntaxToken<RLanguage>,
     right: AnyRExpression,

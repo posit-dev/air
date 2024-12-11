@@ -1,7 +1,7 @@
 // --- source
 // authors = ["rust-analyzer team"]
 // license = "MIT OR Apache-2.0"
-// origin = "https://github.com/rust-lang/rust-analyzer/blob/master/crates/rust-analyzer/src/lsp/from_proto.rs"
+// origin = "https://github.com/rust-lang/rust-analyzer/blob/master/crates/rust-analyzer/src/lsp/to_proto.rs"
 // ---
 
 //! Conversion of rust-analyzer specific types to lsp_types equivalents.
