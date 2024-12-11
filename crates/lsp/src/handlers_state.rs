@@ -186,8 +186,6 @@ pub(crate) fn did_close(
         .remove(&uri)
         .ok_or(anyhow!("Failed to remove document for URI: {uri}"))?;
 
-    log::info!("did_close(): closed document with URI: '{uri}'.");
-
     Ok(())
 }
 
