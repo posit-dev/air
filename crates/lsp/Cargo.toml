@@ -12,6 +12,7 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+air_r_factory.workspace = true
 air_r_formatter.workspace = true
 air_r_parser.workspace = true
 air_r_syntax.workspace = true

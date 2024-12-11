@@ -8,7 +8,7 @@
 use air_r_formatter::{context::RFormatOptions, format_node};
 use air_r_syntax::{RSyntaxKind, RSyntaxNode, WalkEvent};
 use biome_formatter::{IndentStyle, LineWidth};
-use biome_rowan::{Language, SyntaxElement};
+use biome_rowan::{AstNode, Language, SyntaxElement};
 use biome_text_size::TextRange;
 use tower_lsp::lsp_types;
 
@@ -61,21 +61,42 @@ pub(crate) fn document_range_formatting(
         .with_line_width(line_width);
 
     let Some(node) = find_deepest_enclosing_logical_line(doc.parse.syntax(), range) else {
-        return Ok(None);
-    };
-
-
-    let format_info =
-        biome_formatter::format_sub_tree(&node, air_r_formatter::RFormatLanguage::new(options))?;
-
-    let Some(_format_range) = format_info.range() else {
-        // Happens in edge cases when biome returns a `Printed::new_empty()`
+        tracing::warn!("Can't find logical line");
         return Ok(None);
     };
 
     let format_range = text_non_whitespace_range(&node);
 
-    let format_text = format_info.into_code();
+    // We need to wrap in an `RRoot` otherwise the comments get attached too
+    // deep in the tree. See `CommentsBuilderVisitor` in biome_formatter and the
+    // `is_root` logic. Note that `node` needs to be wrapped in at least two
+    // other nodes in order to fix this problem, and here we have an `RRoot` and
+    // `RExpressionList` that do the job.
+    //
+    // Since we only format logical lines, it should be okay to wrap in an expression list.
+    let Some(expr) = air_r_syntax::AnyRExpression::cast(node) else {
+        tracing::warn!("Can't cast to `AnyRExpression`");
+        return Ok(None);
+    };
+    let list = air_r_factory::r_expression_list(vec![expr]);
+
+    let eof = air_r_syntax::RSyntaxToken::new_detached(RSyntaxKind::EOF, "", vec![], vec![]);
+    let root = air_r_factory::r_root(list, eof).build();
+
+    let format_info = biome_formatter::format_sub_tree(
+        root.syntax(),
+        air_r_formatter::RFormatLanguage::new(options),
+    )?;
+
+    if format_info.range().is_none() {
+        // Happens in edge cases when biome returns a `Printed::new_empty()`
+        return Ok(None);
+    };
+
+    let mut format_text = format_info.into_code();
+
+    // Remove last hard break line from our artifical expression list
+    format_text.pop();
     let edits = to_proto::replace_range_edit(&doc.line_index, format_range, format_text)?;
 
     Ok(Some(edits))
@@ -230,7 +251,7 @@ mod tests {
     }
 
     #[tests_macros::lsp_test]
-    async fn test_format_range_minimal() {
+    async fn test_format_range_logical_lines() {
         let mut client = init_test_client().await;
 
         // 2+2 is the logical line to format
@@ -244,8 +265,6 @@ mod tests {
         let output = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output);
 
-        // FIXME: With a leading comment this currently fails. Why is the
-        // addition broken up?
         #[rustfmt::skip]
         let doc = Document::doodle(
 "1+1
@@ -259,14 +278,19 @@ mod tests {
         insta::assert_snapshot!(output);
 
         // The whole braced expression is a logical line
+        // FIXME: Should this be the whole `{2+2}` instead?
         #[rustfmt::skip]
         let doc = Document::doodle(
 "1+1
 {2+2}
 ",
         );
-        let range = TextRange::new(TextSize::from(5), TextSize::from(8));
 
+        let range = TextRange::new(TextSize::from(5), TextSize::from(8));
+        let output = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output);
+
+        let range = TextRange::new(TextSize::from(4), TextSize::from(9));
         let output = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output);
 
