@@ -294,7 +294,7 @@ mod tests {
         let output = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output);
 
-        // The whole braced expression is a logical line
+        // The element in the braced expression is a logical line
         // FIXME: Should this be the whole `{2+2}` instead?
         #[rustfmt::skip]
         let doc = Document::doodle(
@@ -312,6 +312,22 @@ mod tests {
         let output = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output);
 
+        // The deepest element in the braced expression is our target
+        #[rustfmt::skip]
+        let doc = Document::doodle(
+"1+1
+{
+  2+2
+  {
+    3+3
+  }
+}
+",
+        );
+
+        let range = TextRange::new(TextSize::from(20), TextSize::from(23));
+        let output = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output);
         client
     }
 
