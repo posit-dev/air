@@ -62,12 +62,14 @@ proc-macro2 = "1.0.86"
 serde = { version = "1.0.215", features = ["derive"] }
 serde_json = "1.0.132"
 struct-field-names-as-array = "0.3.0"
+time = "0.3.37"
 thiserror = "2.0.5"
 tokio = { version = "1.41.1" }
 tokio-util = "0.7.12"
 # For https://github.com/ebkalderon/tower-lsp/pull/428
 tower-lsp = { git = "https://github.com/lionel-/tower-lsp", branch = "bugfix/patches" }
 tracing = { version = "0.1.40", default-features = false, features = ["std"] }
+tracing-subscriber = "0.3.19"
 tree-sitter = "0.23.0"
 tree-sitter-r = { git = "https://github.com/r-lib/tree-sitter-r", rev = "a0d3e3307489c3ca54da8c7b5b4e0c5f5fd6953a" }
 triomphe = "0.1.14"

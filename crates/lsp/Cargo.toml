@@ -30,9 +30,11 @@ memchr.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 struct-field-names-as-array.workspace = true
+time = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 tower-lsp.workspace = true
 tracing.workspace = true
+tracing-subscriber = { workspace = true, features = ["ansi", "local-time"] }
 tree-sitter.workspace = true
 tree-sitter-r.workspace = true
 triomphe.workspace = true
