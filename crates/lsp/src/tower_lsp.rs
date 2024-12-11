@@ -17,7 +17,6 @@ use tower_lsp::LspService;
 use tower_lsp::{jsonrpc, ClientSocket};
 
 use crate::handlers_ext::ViewFileParams;
-use crate::main_loop::AuxiliaryEventSender;
 use crate::main_loop::Event;
 use crate::main_loop::GlobalState;
 use crate::main_loop::TokioUnboundedSender;
@@ -78,10 +77,6 @@ struct Backend {
     /// Channel for communication with the main loop.
     events_tx: TokioUnboundedSender<Event>,
 
-    /// Channel for communication with the auxiliary loop.
-    /// Used for latency sensitive logging.
-    auxiliary_event_tx: AuxiliaryEventSender,
-
     /// Handle to main loop. Drop it to cancel the loop, all associated tasks,
     /// and drop all owned state.
     _main_loop: tokio::task::JoinSet<()>,
@@ -89,7 +84,7 @@ struct Backend {
 
 impl Backend {
     async fn request(&self, request: LspRequest) -> anyhow::Result<LspResponse> {
-        self.log_info(format!("Incoming: {request:#?}"));
+        tracing::trace!("Incoming:\n{request:#?}");
 
         let (response_tx, mut response_rx) =
             tokio_unbounded_channel::<anyhow::Result<LspResponse>>();
@@ -102,12 +97,12 @@ impl Backend {
         // Wait for response from main loop
         let out = response_rx.recv().await.unwrap()?;
 
-        self.log_info(format!("Outgoing {out:#?}"));
+        tracing::trace!("Outgoing\n{out:#?}");
         Ok(out)
     }
 
     fn notify(&self, notif: LspNotification) {
-        self.log_info(format!("Incoming: {notif:#?}"));
+        tracing::trace!("Incoming:\n{notif:#?}");
 
         // Relay notification to main loop
         self.events_tx
@@ -120,10 +115,6 @@ impl Backend {
             self.request(LspRequest::AirViewFile(params)).await,
             LspResponse::AirViewFile
         )
-    }
-
-    fn log_info(&self, message: String) {
-        self.auxiliary_event_tx.log_info(message);
     }
 }
 
@@ -188,27 +179,20 @@ where
     I: AsyncRead + Unpin,
     O: AsyncWrite,
 {
-    log::trace!("Starting LSP");
-
     let (service, socket) = new_lsp();
     let server = tower_lsp::Server::new(read, write, socket);
     server.serve(service).await;
-
-    log::trace!("LSP exiting gracefully.",);
 }
 
 fn new_lsp() -> (LspService<Backend>, ClientSocket) {
     let init = |client: Client| {
-        let state = GlobalState::new(client);
-        let events_tx = state.events_tx();
-        let auxiliary_event_tx = state.auxiliary_event_tx();
+        let (state, events_tx) = GlobalState::new(client);
 
         // Start main loop and hold onto the handle that keeps it alive
         let main_loop = state.start();
 
         Backend {
             events_tx,
-            auxiliary_event_tx,
             _main_loop: main_loop,
         }
     };

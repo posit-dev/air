@@ -15,9 +15,7 @@ use biome_lsp_converters::WideEncoding;
 use futures::StreamExt;
 use tokio::sync::mpsc::unbounded_channel as tokio_unbounded_channel;
 use tokio::task::JoinHandle;
-use tower_lsp::lsp_types;
 use tower_lsp::lsp_types::Diagnostic;
-use tower_lsp::lsp_types::MessageType;
 use tower_lsp::Client;
 use url::Url;
 
@@ -26,6 +24,8 @@ use crate::handlers_ext;
 use crate::handlers_format;
 use crate::handlers_state;
 use crate::handlers_state::ConsoleInputs;
+use crate::logging::LogMessageSender;
+use crate::logging::LogState;
 use crate::state::WorldState;
 use crate::tower_lsp::LspMessage;
 use crate::tower_lsp::LspNotification;
@@ -62,7 +62,6 @@ pub(crate) enum KernelNotification {
 
 #[derive(Debug)]
 pub(crate) enum AuxiliaryEvent {
-    Log(lsp_types::MessageType, String),
     PublishDiagnostics(Url, Vec<Diagnostic>, Option<i32>),
     SpawnedTask(JoinHandle<anyhow::Result<Option<AuxiliaryEvent>>>),
 }
@@ -85,49 +84,12 @@ impl AuxiliaryEventSender {
         self.inner.send(message)
     }
 
-    pub(crate) fn log_info(&self, message: String) {
-        self.log(MessageType::INFO, message);
-    }
-    pub(crate) fn log_warn(&self, message: String) {
-        self.log(MessageType::WARNING, message);
-    }
-    pub(crate) fn log_error(&self, message: String) {
-        self.log(MessageType::ERROR, message);
-    }
-
-    /// Send an `AuxiliaryEvent::Log` message in a non-blocking way
-    fn log(&self, level: lsp_types::MessageType, message: String) {
-        // We're not connected to an LSP client when running unit tests
-        if cfg!(test) {
-            return;
-        }
-
-        // Check that channel is still alive in case the LSP was closed.
-        // If closed, fallthrough.
-        if self
-            .send(AuxiliaryEvent::Log(level, message.clone()))
-            .is_ok()
-        {
-            return;
-        }
-
-        // Log to the kernel as fallback
-        log::warn!("LSP channel is closed, redirecting messages to Jupyter kernel");
-
-        match level {
-            MessageType::ERROR => log::error!("{message}"),
-            MessageType::WARNING => log::warn!("{message}"),
-            _ => log::info!("{message}"),
-        };
-    }
-
     /// Spawn a blocking task
     ///
     /// This runs tasks that do semantic analysis on a separate thread pool to avoid
     /// blocking the main loop.
     ///
-    /// Can optionally return an event for the auxiliary loop (i.e. a log message or
-    /// diagnostics publication).
+    /// Can optionally return an event for the auxiliary loop (i.e. diagnostics publication).
     pub(crate) fn spawn_blocking_task<Handler>(&self, handler: Handler)
     where
         Handler: FnOnce() -> anyhow::Result<Option<AuxiliaryEvent>>,
@@ -138,7 +100,7 @@ impl AuxiliaryEventSender {
         // Send the join handle to the auxiliary loop so it can log any errors
         // or panics
         if let Err(err) = self.send(AuxiliaryEvent::SpawnedTask(handle)) {
-            log::warn!("Failed to send task to auxiliary loop due to {err}");
+            tracing::warn!("Failed to send task to auxiliary loop due to {err}");
         }
     }
 }
@@ -164,22 +126,23 @@ pub(crate) struct GlobalState {
     /// LSP client shared with tower-lsp and the log loop
     client: Client,
 
-    /// Event channels for the main loop. The tower-lsp methods forward
+    /// Event receiver channel for the main loop. The tower-lsp methods forward
     /// notifications and requests here via `Event::Lsp`. We also receive
     /// messages from the kernel via `Event::Kernel`, and from ourselves via
     /// `Event::Task`.
-    events_tx: TokioUnboundedSender<Event>,
     events_rx: TokioUnboundedReceiver<Event>,
 
-    /// State of the internal auxiliary loop.
-    /// Fully managed by the `GlobalState`.
-    /// Initialized as `Some()`, and converted to `None` on `start()`.
+    /// Auxiliary state that gets moved to the auxiliary thread,
+    /// and our channel for communicating with that thread.
+    /// Used for sending latency sensitive events like tasks and diagnostics.
     auxiliary_state: Option<AuxiliaryState>,
-
-    /// Event channel for sending to the auxiliary loop.
-    /// Used for sending latency sensitive events like logs, tasks, and
-    /// diagnostics.
     auxiliary_event_tx: AuxiliaryEventSender,
+
+    /// Log state that gets moved to the log thread,
+    /// and a channel for communicating with that thread which we
+    /// pass on to `init_logging()` during `initialize()`.
+    log_state: Option<LogState>,
+    log_tx: Option<LogMessageSender>,
 }
 
 /// Unlike `WorldState`, `ParserState` cannot be cloned and is only accessed by
@@ -242,32 +205,26 @@ impl GlobalState {
     ///
     /// * `client`: The tower-lsp client shared with the tower-lsp backend
     ///   and auxiliary loop.
-    pub(crate) fn new(client: Client) -> Self {
+    pub(crate) fn new(client: Client) -> (Self, TokioUnboundedSender<Event>) {
         // Transmission channel for the main loop events. Shared with the
         // tower-lsp backend and the Jupyter kernel.
         let (events_tx, events_rx) = tokio_unbounded_channel::<Event>();
 
+        let (log_state, log_tx) = LogState::new(client.clone());
         let (auxiliary_state, auxiliary_event_tx) = AuxiliaryState::new(client.clone());
 
-        Self {
+        let state = Self {
             world: WorldState::default(),
             lsp_state: LspState::default(),
             client,
+            events_rx,
             auxiliary_state: Some(auxiliary_state),
             auxiliary_event_tx,
-            events_tx,
-            events_rx,
-        }
-    }
+            log_state: Some(log_state),
+            log_tx: Some(log_tx),
+        };
 
-    /// Get `Event` transmission channel
-    pub(crate) fn events_tx(&self) -> TokioUnboundedSender<Event> {
-        self.events_tx.clone()
-    }
-
-    /// Get `AuxiliaryEvent` transmission channel
-    pub(crate) fn auxiliary_event_tx(&self) -> AuxiliaryEventSender {
-        self.auxiliary_event_tx.clone()
+        (state, events_tx)
     }
 
     /// Start the main and auxiliary loops
@@ -288,28 +245,30 @@ impl GlobalState {
     /// This takes ownership of all global state and handles one by one LSP
     /// requests, notifications, and other internal events.
     async fn main_loop(mut self) {
-        // Spawn latency-sensitive auxiliary loop. Must be first to initialise
-        // global transmission channel.
+        // Spawn latency-sensitive auxiliary and log threads.
         let mut set = tokio::task::JoinSet::<()>::new();
 
-        // Move the `auxiliary_state` owned by the global state to its own thread.
-        // Unwrap: `start()` should only ever be called once.
+        // Take ownership over `log_state` and start the log thread.
+        // Unwrap: `start()` should only be called once.
+        let log_state = self.log_state.take().unwrap();
+        set.spawn(async move { log_state.start().await });
+
+        // Take ownership over `auxiliary_state` and start the auxiliary thread.
+        // Unwrap: `start()` should only be called once.
         let auxiliary_state = self.auxiliary_state.take().unwrap();
         set.spawn(async move { auxiliary_state.start().await });
 
         loop {
             let event = self.next_event().await;
             match self.handle_event(event).await {
-                Err(err) => self.log_error(format!("Failure while handling event:\n{err:?}")),
+                Err(err) => tracing::error!("Failure while handling event:\n{err:?}"),
                 Ok(LoopControl::Shutdown) => break,
                 _ => {}
             }
         }
 
-        log::trace!("Main loop closed. Shutting down auxiliary loop.");
+        tracing::trace!("Main loop closed. Shutting down auxiliary and log loop.");
         set.shutdown().await;
-
-        log::trace!("Main loop exited.");
     }
 
     async fn next_event(&mut self) -> Event {
@@ -360,7 +319,7 @@ impl GlobalState {
                             // Currently ignored
                         },
                         LspNotification::DidCloseTextDocument(params) => {
-                            handlers_state::did_close(params, &mut self.world, &self.auxiliary_event_tx)?;
+                            handlers_state::did_close(params, &mut self.world)?;
                         },
                     }
                 },
@@ -368,7 +327,9 @@ impl GlobalState {
                 LspMessage::Request(request, tx) => {
                     match request {
                         LspRequest::Initialize(params) => {
-                            respond(tx, handlers_state::initialize(params, &mut self.lsp_state, &mut self.world), LspResponse::Initialize)?;
+                            // Unwrap: `Initialize` method should only be called once.
+                            let log_tx = self.log_tx.take().unwrap();
+                            respond(tx, handlers_state::initialize(params, &mut self.lsp_state, &mut self.world, log_tx), LspResponse::Initialize)?;
                         },
                         LspRequest::Shutdown => {
                             out = LoopControl::Shutdown;
@@ -393,7 +354,7 @@ impl GlobalState {
 
         // TODO Make this threshold configurable by the client
         if loop_tick.elapsed() > std::time::Duration::from_millis(50) {
-            self.log_info(format!("Handler took {}ms", loop_tick.elapsed().as_millis()));
+            tracing::trace!("Handler took {}ms", loop_tick.elapsed().as_millis());
         }
 
         Ok(out)
@@ -421,16 +382,6 @@ impl GlobalState {
         self.auxiliary_event_tx.spawn_blocking_task(move || {
             respond(response_tx, handler(), into_lsp_response).and(Ok(None))
         });
-    }
-
-    fn log_info(&self, message: String) {
-        self.auxiliary_event_tx.log_info(message);
-    }
-    fn log_warn(&self, message: String) {
-        self.auxiliary_event_tx.log_warn(message);
-    }
-    fn log_error(&self, message: String) {
-        self.auxiliary_event_tx.log_error(message);
     }
 }
 
@@ -508,7 +459,6 @@ impl AuxiliaryState {
     async fn start(mut self) -> ! {
         loop {
             match self.next_event().await {
-                AuxiliaryEvent::Log(level, message) => self.log(level, message).await,
                 AuxiliaryEvent::SpawnedTask(handle) => self.tasks.push(Box::pin(handle)),
                 AuxiliaryEvent::PublishDiagnostics(uri, diagnostics, version) => {
                     self.client
@@ -529,18 +479,11 @@ impl AuxiliaryState {
                     Ok(Ok(Some(event))) => return event,
 
                     // Otherwise relay any errors and loop back into select
-                    Err(err) => self.log_error(format!("A task panicked:\n{err:?}")).await,
-                    Ok(Err(err)) => self.log_error(format!("A task failed:\n{err:?}")).await,
+                    Err(err) => tracing::error!("A task panicked:\n{err:?}"),
+                    Ok(Err(err)) => tracing::error!("A task failed:\n{err:?}"),
                     _ => (),
                 },
             }
         }
-    }
-
-    async fn log(&self, level: MessageType, message: String) {
-        self.client.log_message(level, message).await
-    }
-    async fn log_error(&self, message: String) {
-        self.client.log_message(MessageType::ERROR, message).await
     }
 }
