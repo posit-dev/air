@@ -22,6 +22,7 @@ use core::str;
 use serde::Deserialize;
 use std::io::{Error as IoError, ErrorKind, Write};
 use tokio::sync::mpsc::unbounded_channel;
+use tower_lsp::lsp_types::ClientInfo;
 use tower_lsp::lsp_types::MessageType;
 use tower_lsp::Client;
 use tracing::level_filters::LevelFilter;
@@ -126,10 +127,17 @@ impl<'a> MakeWriter<'a> for LogWriterMaker {
     }
 }
 
-pub(crate) fn init_logging(log_tx: Option<LogMessageSender>, log_level: LogLevel) {
-    let writer = match log_tx {
-        Some(log_tx) => BoxMakeWriter::new(LogWriterMaker::new(log_tx)),
-        None => BoxMakeWriter::new(std::io::stderr),
+pub(crate) fn init_logging(
+    log_tx: LogMessageSender,
+    log_level: LogLevel,
+    client_info: Option<&ClientInfo>,
+) {
+    let writer = if client_info.is_some_and(|client_info| {
+        client_info.name.starts_with("Zed") || client_info.name.starts_with("Visual Studio Code")
+    }) {
+        BoxMakeWriter::new(LogWriterMaker::new(log_tx))
+    } else {
+        BoxMakeWriter::new(std::io::stderr)
     };
 
     let layer = tracing_subscriber::fmt::layer()
@@ -154,8 +162,21 @@ pub(crate) fn init_logging(log_tx: Option<LogMessageSender>, log_level: LogLevel
 
     let subscriber = tracing_subscriber::Registry::default().with(layer);
 
-    tracing::subscriber::set_global_default(subscriber)
-        .expect("Should be able to set global default subscriber");
+    if !is_test_client(client_info) {
+        tracing::subscriber::set_global_default(subscriber)
+            .expect("Should be able to set the global subscriber.");
+    }
+}
+
+/// We never log during tests as tests run in parallel within a single process,
+/// but you can only have 1 global subscriber per process.
+///
+/// If you are debugging a single test, you can override this to emit messages to stderr.
+///
+/// Note that if you override this and run multiple tests in parallel, then the call
+/// to `set_global_default()` will error causing a panic.
+fn is_test_client(client_info: Option<&ClientInfo>) -> bool {
+    client_info.map_or(false, |client_info| client_info.name == "AirTestClient")
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Default, PartialEq, Eq, PartialOrd, Ord)]

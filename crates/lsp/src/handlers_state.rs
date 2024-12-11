@@ -65,21 +65,11 @@ pub(crate) fn initialize(
     state: &mut WorldState,
     log_tx: LogMessageSender,
 ) -> anyhow::Result<InitializeResult> {
-    let client_info = params.client_info.as_ref();
-
     // TODO: Get default log level from `params.initialization_options`
     // and `AIR_LOG` env var.
     let log_level = logging::LogLevel::Trace;
 
-    let log_tx = if client_info.is_some_and(|client_info| {
-        client_info.name.starts_with("Zed") || client_info.name.starts_with("Visual Studio Code")
-    }) {
-        Some(log_tx)
-    } else {
-        None
-    };
-
-    logging::init_logging(log_tx, log_level);
+    logging::init_logging(log_tx, log_level, params.client_info.as_ref());
 
     // Defaults to UTF-16
     let mut position_encoding = None;
