@@ -37,8 +37,8 @@ use tracing_subscriber::{
 // TODO:
 // - Add `air.server.log` as a VS Code extension option that sets the log level,
 //   and pass it through the arbitrary `initializationOptions` field of `InitializeParams`.
-// - Add `AIR_LOG` environment variable that sets the log level as well, and prefer this
-//   over the extension option as its the "harder" thing to set.
+
+const LOG_ENV_KEY: &str = "AIR_LOG";
 
 pub(crate) struct LogMessage {
     contents: String,
@@ -130,9 +130,11 @@ impl<'a> MakeWriter<'a> for LogWriterMaker {
 
 pub(crate) fn init_logging(
     log_tx: LogMessageSender,
-    log_level: LogLevel,
+    log_level: Option<LogLevel>,
     client_info: Option<&ClientInfo>,
 ) {
+    let log_level = resolve_log_level(log_level);
+
     let writer = if client_info.is_some_and(|client_info| {
         client_info.name.starts_with("Zed") || client_info.name.starts_with("Visual Studio Code")
     }) {
@@ -180,6 +182,24 @@ pub(crate) fn init_logging(
 /// to `set_global_default()` will error causing a panic.
 fn is_test_client(client_info: Option<&ClientInfo>) -> bool {
     client_info.map_or(false, |client_info| client_info.name == "AirTestClient")
+}
+
+fn resolve_log_level(log_level: Option<LogLevel>) -> LogLevel {
+    // Check log environment variable, this overrides any Client options
+    if let Some(log_level) = std::env::var(LOG_ENV_KEY)
+        .ok()
+        .and_then(|level| serde_json::from_value(serde_json::Value::String(level)).ok())
+    {
+        return log_level;
+    }
+
+    // Client specified log level through initialization parameters
+    if let Some(log_level) = log_level {
+        return log_level;
+    }
+
+    // Fallback
+    LogLevel::default()
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Default, PartialEq, Eq, PartialOrd, Ord)]
