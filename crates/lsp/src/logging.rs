@@ -20,6 +20,7 @@
 //! which should appear in the logs for most LSP clients.
 use core::str;
 use serde::Deserialize;
+use std::fmt::Display;
 use std::io::{Error as IoError, ErrorKind, Write};
 use tokio::sync::mpsc::unbounded_channel;
 use tower_lsp::lsp_types::ClientInfo;
@@ -166,6 +167,8 @@ pub(crate) fn init_logging(
         tracing::subscriber::set_global_default(subscriber)
             .expect("Should be able to set the global subscriber.");
     }
+
+    tracing::info!("Logging initialized with level: {log_level}");
 }
 
 /// We never log during tests as tests run in parallel within a single process,
@@ -198,6 +201,18 @@ impl LogLevel {
             Self::Info => tracing::Level::INFO,
             Self::Debug => tracing::Level::DEBUG,
             Self::Trace => tracing::Level::TRACE,
+        }
+    }
+}
+
+impl Display for LogLevel {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Error => f.write_str("Error"),
+            Self::Warn => f.write_str("Warn"),
+            Self::Info => f.write_str("Info"),
+            Self::Debug => f.write_str("Debug"),
+            Self::Trace => f.write_str("Trace"),
         }
     }
 }
