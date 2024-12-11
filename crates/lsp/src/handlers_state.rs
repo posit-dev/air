@@ -34,7 +34,7 @@ use crate::config::VscDiagnosticsConfig;
 use crate::config::VscDocumentConfig;
 use crate::documents::Document;
 use crate::logging;
-use crate::main_loop::AuxiliaryEventSender;
+use crate::logging::LogMessageSender;
 use crate::main_loop::LspState;
 use crate::state::workspace_uris;
 use crate::state::WorldState;
@@ -63,12 +63,23 @@ pub(crate) fn initialize(
     params: InitializeParams,
     lsp_state: &mut LspState,
     state: &mut WorldState,
-    auxiliary_event_tx: &AuxiliaryEventSender,
+    log_tx: LogMessageSender,
 ) -> anyhow::Result<InitializeResult> {
+    let client_info = params.client_info.as_ref();
+
     // TODO: Get default log level from `params.initialization_options`
     // and `AIR_LOG` env var.
     let log_level = logging::LogLevel::Trace;
-    logging::init_logging(auxiliary_event_tx.clone(), log_level, &params.client_info);
+
+    let log_tx = if client_info.is_some_and(|client_info| {
+        client_info.name.starts_with("Zed") || client_info.name.starts_with("Visual Studio Code")
+    }) {
+        Some(log_tx)
+    } else {
+        None
+    };
+
+    logging::init_logging(log_tx, log_level);
 
     // Defaults to UTF-16
     let mut position_encoding = None;

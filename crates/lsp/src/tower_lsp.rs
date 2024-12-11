@@ -17,7 +17,6 @@ use tower_lsp::LspService;
 use tower_lsp::{jsonrpc, ClientSocket};
 
 use crate::handlers_ext::ViewFileParams;
-use crate::main_loop::AuxiliaryEventSender;
 use crate::main_loop::Event;
 use crate::main_loop::GlobalState;
 use crate::main_loop::TokioUnboundedSender;
@@ -77,10 +76,6 @@ pub(crate) enum LspResponse {
 struct Backend {
     /// Channel for communication with the main loop.
     events_tx: TokioUnboundedSender<Event>,
-
-    /// Channel for communication with the auxiliary loop.
-    /// Used for latency sensitive logging.
-    auxiliary_event_tx: AuxiliaryEventSender,
 
     /// Handle to main loop. Drop it to cancel the loop, all associated tasks,
     /// and drop all owned state.
@@ -184,27 +179,20 @@ where
     I: AsyncRead + Unpin,
     O: AsyncWrite,
 {
-    log::trace!("Starting LSP");
-
     let (service, socket) = new_lsp();
     let server = tower_lsp::Server::new(read, write, socket);
     server.serve(service).await;
-
-    log::trace!("LSP exiting gracefully.");
 }
 
 fn new_lsp() -> (LspService<Backend>, ClientSocket) {
     let init = |client: Client| {
-        let state = GlobalState::new(client);
-        let events_tx = state.events_tx();
-        let auxiliary_event_tx = state.auxiliary_event_tx();
+        let (state, events_tx) = GlobalState::new(client);
 
         // Start main loop and hold onto the handle that keeps it alive
         let main_loop = state.start();
 
         Backend {
             events_tx,
-            auxiliary_event_tx,
             _main_loop: main_loop,
         }
     };

@@ -19,11 +19,11 @@
 //! emit a `window/logMessage` message. Otherwise, logging will write to `stderr`,
 //! which should appear in the logs for most LSP clients.
 use core::str;
-use lsp_types::ClientInfo;
 use serde::Deserialize;
 use std::io::{Error as IoError, ErrorKind, Write};
-use tower_lsp::lsp_types;
+use tokio::sync::mpsc::unbounded_channel;
 use tower_lsp::lsp_types::MessageType;
+use tower_lsp::Client;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::fmt::time::LocalTime;
 use tracing_subscriber::{
@@ -32,36 +32,72 @@ use tracing_subscriber::{
     Layer,
 };
 
-use crate::main_loop::AuxiliaryEventSender;
-
 // TODO:
 // - Add `air.server.log` as a VS Code extension option that sets the log level,
 //   and pass it through the arbitrary `initializationOptions` field of `InitializeParams`.
 // - Add `AIR_LOG` environment variable that sets the log level as well, and prefer this
 //   over the extension option as its the "harder" thing to set.
 
+pub(crate) struct LogMessage {
+    contents: String,
+}
+
+pub(crate) type LogMessageSender = tokio::sync::mpsc::UnboundedSender<LogMessage>;
+pub(crate) type LogMessageReceiver = tokio::sync::mpsc::UnboundedReceiver<LogMessage>;
+
+pub(crate) struct LogState {
+    client: Client,
+    log_rx: LogMessageReceiver,
+}
+
+// Needed for spawning the loop
+unsafe impl Sync for LogState {}
+
+impl LogState {
+    pub(crate) fn new(client: Client) -> (Self, LogMessageSender) {
+        let (log_tx, log_rx) = unbounded_channel::<LogMessage>();
+        let state = Self { client, log_rx };
+        (state, log_tx)
+    }
+
+    /// Start the log loop
+    ///
+    /// Takes ownership of log state and start the low-latency log loop.
+    ///
+    /// We use `MessageType::LOG` to prevent the middleware from adding its own
+    /// timestamp and log level labels. We add that ourselves through tracing.
+    pub(crate) async fn start(mut self) {
+        while let Some(message) = self.log_rx.recv().await {
+            self.client
+                .log_message(MessageType::LOG, message.contents)
+                .await
+        }
+
+        // Channel has been closed.
+        // All senders have been dropped or `close()` was called.
+    }
+}
+
 // A log writer that uses LSPs logMessage method.
 struct LogWriter<'a> {
-    auxiliary_event_tx: &'a AuxiliaryEventSender,
+    log_tx: &'a LogMessageSender,
 }
 
 impl<'a> LogWriter<'a> {
-    fn new(auxiliary_event_tx: &'a AuxiliaryEventSender) -> Self {
-        Self { auxiliary_event_tx }
+    fn new(log_tx: &'a LogMessageSender) -> Self {
+        Self { log_tx }
     }
 }
 
 impl Write for LogWriter<'_> {
-    // We use `MessageType::LOG` to prevent the middleware from adding its own
-    // timestamp and log level labels. We add that ourselves through tracing.
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        let message = str::from_utf8(buf).map_err(|e| IoError::new(ErrorKind::InvalidData, e))?;
+        let contents = str::from_utf8(buf).map_err(|e| IoError::new(ErrorKind::InvalidData, e))?;
+        let contents = contents.to_string();
 
-        self.auxiliary_event_tx
-            .send(crate::main_loop::AuxiliaryEvent::Log(
-                MessageType::LOG,
-                message.to_string(),
-            ))
+        // Forward the log message to the latency sensitive log thread,
+        // which is in charge of forwarding to the client in an async manner.
+        self.log_tx
+            .send(LogMessage { contents })
             .map_err(|e| IoError::new(ErrorKind::Other, e))?;
 
         Ok(buf.len())
@@ -73,12 +109,12 @@ impl Write for LogWriter<'_> {
 }
 
 struct LogWriterMaker {
-    auxiliary_event_tx: AuxiliaryEventSender,
+    log_tx: LogMessageSender,
 }
 
 impl LogWriterMaker {
-    fn new(auxiliary_event_tx: AuxiliaryEventSender) -> Self {
-        Self { auxiliary_event_tx }
+    fn new(log_tx: LogMessageSender) -> Self {
+        Self { log_tx }
     }
 }
 
@@ -86,22 +122,14 @@ impl<'a> MakeWriter<'a> for LogWriterMaker {
     type Writer = LogWriter<'a>;
 
     fn make_writer(&'a self) -> Self::Writer {
-        // We expect `make_writer_for()` to be called instead, but provide this just in case
-        LogWriter::new(&self.auxiliary_event_tx)
+        LogWriter::new(&self.log_tx)
     }
 }
 
-pub(crate) fn init_logging(
-    auxiliary_event_tx: AuxiliaryEventSender,
-    log_level: LogLevel,
-    client_info: &Option<ClientInfo>,
-) {
-    let writer = if client_info.as_ref().is_some_and(|client_info| {
-        client_info.name.starts_with("Zed") || client_info.name.starts_with("Visual Studio Code")
-    }) {
-        BoxMakeWriter::new(LogWriterMaker::new(auxiliary_event_tx))
-    } else {
-        BoxMakeWriter::new(std::io::stderr)
+pub(crate) fn init_logging(log_tx: Option<LogMessageSender>, log_level: LogLevel) {
+    let writer = match log_tx {
+        Some(log_tx) => BoxMakeWriter::new(LogWriterMaker::new(log_tx)),
+        None => BoxMakeWriter::new(std::io::stderr),
     };
 
     let layer = tracing_subscriber::fmt::layer()
