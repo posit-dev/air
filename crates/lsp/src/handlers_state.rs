@@ -67,7 +67,7 @@ pub(crate) fn initialize(
 ) -> anyhow::Result<InitializeResult> {
     // TODO: Get default log level from `params.initialization_options`
     // and `AIR_LOG` env var.
-    let log_level = logging::LogLevel::Trace;
+    let log_level = None;
 
     logging::init_logging(log_tx, log_level, params.client_info.as_ref());
 
