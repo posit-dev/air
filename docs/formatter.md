@@ -6,10 +6,10 @@ The Air formatter is guided by two competing principles:
 
 - Existing formatting (including both whitespace and newlines) is ignored as much as possible. In an ideal world, there would be exactly "one true way" to format an R file. This avoids style discussions between collaborators, and allows them to focus their attention on the meaningful parts of the code.
 
-- User preference of expanded or folded layouts should be respected. This is particularly noticeble with function calls:
+- User preference of expanded or flat layouts should be respected. This is particularly noticeble with function calls:
 
   ```r
-  # Folded onto one line
+  # Flattened onto one line
   list(a = 1, b = "two", c = 3)
 
   # Expanded over multiple lines
@@ -23,7 +23,7 @@ The Air formatter is guided by two competing principles:
   and with pipe chains:
 
   ```r
-  # Folded onto one line
+  # Flattened onto one line
   df |> mutate(x = y + z) |> summarise(mean = mean(x))
 
   # Expanded over multiple lines
@@ -32,9 +32,9 @@ The Air formatter is guided by two competing principles:
     summarise(mean = mean(x))
   ```
 
-  Expanded layouts can often be more readable, even when the folded layout fits on a single line.
+  Expanded layouts can often be more readable, even when the flattened layout fits on a single line.
 
-Note that if Air unconditionally follows the first principle, then it would aggressively fold these examples onto one line because they'd fit within the line length.
+Note that if Air unconditionally follows the first principle, then it would aggressively flatten these examples onto one line because they'd fit within the line length.
 
 For the most part, Air ignores existing formatting and makes formatting decisions based on whether or not a piece of code fits on a single line. However, there are important exceptions that allow Air to strike the right balance between these two competing principles.
 
@@ -182,7 +182,7 @@ for (x in xs) {
 }
 ```
 
-However, there are a few places where it is much tougher to decide how much Air can fold without destroying user intent. These cases are documented below.
+However, there are a few places where it is much tougher to decide how much Air can flatten without destroying user intent. These cases are documented below.
 
 ### Function calls
 
@@ -197,7 +197,7 @@ dictionary <- list(
 )
 ```
 
-This fits on one line! Shouldn't we fold it to this?
+This fits on one line! Shouldn't we flatten it to this?
 
 ```r
 # Theoretical output
@@ -210,7 +210,7 @@ In theory, yes. In practice, since this is a data dictionary it is typically per
 out <- fn(x = x, option1 = option1, option2 = option2)
 ```
 
-And in that case many people would prefer this folded output to stay as is. Because there is no syntactic information to help Air decide between the two different styles, Air instead falls back to a heuristic based on the existing formatting:
+And in that case many people would prefer this flat output to stay as is. Because there is no syntactic information to help Air decide between the two different styles, Air instead falls back to a heuristic based on the existing formatting:
 
 > For function calls, if there is a line break between the `(` and the first argument, then the function call will be fully expanded.
 
@@ -232,7 +232,7 @@ dictionary <- list(
 )
 ```
 
-To request that the dictionary be folded if possible, remove the leading line break, and run Air:
+To request that the dictionary be flattened if possible, remove the leading line break, and run Air:
 
 ```r
 # Input
@@ -260,7 +260,7 @@ dictionary <- list(
 )
 ```
 
-Alternatively, you can use [codegrip](https://github.com/lionel-/codegrip) to explicitly swap between expanded and folded forms, and Air will respect that as long as the function call fits within the line width.
+Alternatively, you can use [codegrip](https://github.com/lionel-/codegrip) to explicitly swap between expanded and flattened forms, and Air will respect that as long as the function call fits within the line width.
 
 ```r
 # Input (codegrip)
@@ -326,7 +326,7 @@ fn <- function(
 }
 ```
 
-To again request the folded form, remove the line break after the `(`:
+To again request the flattened form, remove the line break after the `(`:
 
 ```r
 # Input
@@ -342,7 +342,7 @@ fn <- function(x, y) {
 }
 ```
 
-Alternatively, you can use [codegrip](https://github.com/lionel-/codegrip) to explicitly swap between expanded and folded forms, and Air will respect that as long as the function signature fits within the line width.
+Alternatively, you can use [codegrip](https://github.com/lionel-/codegrip) to explicitly swap between expanded and flattened forms, and Air will respect that as long as the function signature fits within the line width.
 
 ```r
 # Input (codegrip)
@@ -377,7 +377,7 @@ df |>
   filter(x != y)
 ```
 
-Removing the line break after the first `|>` is a request to fold if possible:
+Removing the line break after the first `|>` is a request to flatten if possible:
 
 ```r
 # Input
@@ -468,7 +468,7 @@ object <- list(
 )
 ```
 
-We are now "stuck" with the expanded form even though it fits on one line, due to the explicit line break after the `list(`, which looks to Air like the user requested a line break (removing that line break recovers the folded form, but it requires an explicit action from the user). This is known as _irreversible_ formatting, something that is generally not a desirable trait of formatters seeking "one true way" to format a file.
+We are now "stuck" with the expanded form even though it fits on one line, due to the explicit line break after the `list(`, which looks to Air like the user requested a line break (removing that line break recovers the flattened form, but it requires an explicit action from the user). This is known as _irreversible_ formatting, something that is generally not a desirable trait of formatters seeking "one true way" to format a file.
 
 One downside of irreversible formatting is that if the addition and subtraction of `team` all happened within the span of 1 commit, then you could end up with an extraneous git diff even though nothing actually changed in the code:
 
@@ -493,7 +493,7 @@ object <- list(
 )
 ```
 
-which is a little easier to understand than if the list call was folded onto one line.
+which is a little easier to understand than if the list call was flattened onto one line.
 
 Note that while the above example demonstrates irreversibility with function calls, it also holds true for function definitions, pipe chains, and assignment as well - i.e. any place where existing formatting is respected.
 
@@ -615,7 +615,7 @@ IndentWidth = 2
 tab-width = 2
 ```
 
-One nice feature of Air is that when code exceeds the line width, it is automatically expanded over multiple lines. But when tabs are used as leading indentation, how many characters does a tab represent? To determine that, Air looks to the `IndentWidth`, which is otherwise only useful when `IndentStyle` is `Space`. The indent width of 2 plus the 46 characters in the call to `my_cool_function()` puts us at 48 characters - i.e. less than the line length, so it stays folded. Note that the `tab-width` setting of the IDE is also 2. This means that if you had added a vertical "ruler" in your IDE at 50 characters (here, represented by the `#` characters), then everything would look normal.
+One nice feature of Air is that when code exceeds the line width, it is automatically expanded over multiple lines. But when tabs are used as leading indentation, how many characters does a tab represent? To determine that, Air looks to the `IndentWidth`, which is otherwise only useful when `IndentStyle` is `Space`. The indent width of 2 plus the 46 characters in the call to `my_cool_function()` puts us at 48 characters - i.e. less than the line length, so it stays flattened. Note that the `tab-width` setting of the IDE is also 2. This means that if you had added a vertical "ruler" in your IDE at 50 characters (here, represented by the `#` characters), then everything would look normal.
 
 But imagine if your collaborator sets their `tab-width` to 8. In that case, it would visually look like the line takes up 54 (8 + 46) characters, but to Air it still only takes up 48 characters:
 
@@ -631,10 +631,10 @@ This usage of `IndentWidth` when using an `IndentStyle` of `Tab` is the one plac
 
 # Function definition styles
 
-In Air, there are two accepted forms for function definitions - folded and expanded.
+In Air, there are two accepted forms for function definitions - flattened and expanded.
 
 ```r
-# Folded
+# Flattened
 fn <- function(x, y, option = NULL, extra = c("a", "b")) {
   body
 }
@@ -650,6 +650,6 @@ fn <- function(
 }
 ```
 
-When you exceed the line width, Air will automatically switch from folded to expanded. You can also manually request the expanded form by inserting a line break after the opening `(` in `function(`. See [line breaks with function definitions](#function-definitions) for more examples of this.
+When you exceed the line width, Air will automatically switch from flattened to expanded. You can also manually request the expanded form by inserting a line break after the opening `(` in `function(`. See [line breaks with function definitions](#function-definitions) for more examples of this.
 
 See the section on [tabs vs spaces](#mixing-tabs-and-spaces) for why Air does not allow hanging indent function definitions.
