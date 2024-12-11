@@ -100,7 +100,7 @@ impl AuxiliaryEventSender {
         // Send the join handle to the auxiliary loop so it can log any errors
         // or panics
         if let Err(err) = self.send(AuxiliaryEvent::SpawnedTask(handle)) {
-            log::warn!("Failed to send task to auxiliary loop due to {err}");
+            tracing::warn!("Failed to send task to auxiliary loop due to {err}");
         }
     }
 }

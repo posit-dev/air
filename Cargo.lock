@@ -1293,7 +1293,6 @@ dependencies = [
  "insta",
  "itertools",
  "line_ending",
- "log",
  "lsp_test",
  "memchr",
  "serde",
