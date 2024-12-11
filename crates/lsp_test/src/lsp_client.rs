@@ -11,6 +11,7 @@ use std::future::Future;
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio::io::{ReadHalf, SimplexStream, WriteHalf};
 use tokio_util::codec::{FramedRead, FramedWrite};
+use tower_lsp::lsp_types::ClientInfo;
 use tower_lsp::{jsonrpc, lsp_types};
 
 use crate::tower_lsp::codec::LanguageServerCodec;
@@ -87,7 +88,20 @@ impl TestClient {
     pub async fn initialize(&mut self) -> i64 {
         let params: Option<lsp_types::InitializeParams> = std::mem::take(&mut self.init_params);
         let params = params.unwrap_or_default();
+        let params = Self::with_client_info(params);
         self.request::<lsp_types::request::Initialize>(params).await
+    }
+
+    // Regardless of how we got the params, ensure the client name is set to
+    // `AirTestClient` so we can recognize it when we set up global logging.
+    fn with_client_info(
+        mut init_params: lsp_types::InitializeParams,
+    ) -> lsp_types::InitializeParams {
+        init_params.client_info = Some(ClientInfo {
+            name: String::from("AirTestClient"),
+            version: None,
+        });
+        init_params
     }
 
     pub fn with_initialize_params(&mut self, init_params: lsp_types::InitializeParams) {
