@@ -290,9 +290,35 @@ mod tests {
         let output = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output);
 
+        // Including braces
         let range = TextRange::new(TextSize::from(4), TextSize::from(9));
         let output = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output);
+
+        client
+    }
+
+    #[tests_macros::lsp_test]
+    async fn test_format_range_mismatched_indent() {
+        let mut client = init_test_client().await;
+
+        #[rustfmt::skip]
+        let doc = Document::doodle(
+"1
+  2+2
+",
+        );
+
+        // We don't change indentation when `2+2` is formatted
+        let range = TextRange::new(TextSize::from(4), TextSize::from(7));
+        let output = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output);
+
+        // Debatable: Should we make an effort to remove unneeded indentation
+        // when it's part of the range?
+        let range_wide = TextRange::new(TextSize::from(2), TextSize::from(7));
+        let output_wide = client.format_document_range(&doc, range_wide).await;
+        assert_eq!(output, output_wide);
 
         client
     }
