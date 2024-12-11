@@ -25,7 +25,6 @@ dissimilar.workspace = true
 futures.workspace = true
 itertools.workspace = true
 line_ending.workspace = true
-log.workspace = true
 memchr.workspace = true
 serde.workspace = true
 serde_json.workspace = true
