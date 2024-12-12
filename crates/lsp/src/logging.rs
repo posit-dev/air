@@ -28,6 +28,7 @@ use tower_lsp::lsp_types::MessageType;
 use tower_lsp::Client;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::fmt::time::LocalTime;
+use tracing_subscriber::fmt::TestWriter;
 use tracing_subscriber::{
     fmt::{writer::BoxMakeWriter, MakeWriter},
     layer::SubscriberExt,
@@ -138,8 +139,13 @@ pub(crate) fn init_logging(
     let writer = if client_info.is_some_and(|client_info| {
         client_info.name.starts_with("Zed") || client_info.name.starts_with("Visual Studio Code")
     }) {
+        // These IDEs are known to support `window/logMessage` well
         BoxMakeWriter::new(LogWriterMaker::new(log_tx))
+    } else if is_test_client(client_info) {
+        // Ensures a standard `cargo test` captures output unless `-- --nocapture` is used
+        BoxMakeWriter::new(TestWriter::default())
     } else {
+        // Fallback for other editors / IDEs
         BoxMakeWriter::new(std::io::stderr)
     };
 
@@ -165,21 +171,26 @@ pub(crate) fn init_logging(
 
     let subscriber = tracing_subscriber::Registry::default().with(layer);
 
-    if !is_test_client(client_info) {
+    if is_test_client(client_info) {
+        // During parallel testing, `set_global_default()` gets called multiple times
+        // per process. That causes it to error, but we ignore this.
+        tracing::subscriber::set_global_default(subscriber).ok();
+    } else {
         tracing::subscriber::set_global_default(subscriber)
-            .expect("Should be able to set the global subscriber.");
+            .expect("Should be able to set the global subscriber exactly once.");
     }
 
     tracing::info!("Logging initialized with level: {log_level}");
 }
 
-/// We never log during tests as tests run in parallel within a single process,
-/// but you can only have 1 global subscriber per process.
+/// We use a special `TestWriter` during tests to be compatible with `cargo test`'s
+/// typical output capturing behavior.
 ///
-/// If you are debugging a single test, you can override this to emit messages to stderr.
+/// Important notes:
+/// - `cargo test` swallows all logs unless you use `-- --nocapture`.
+/// - Tests run in parallel, so logs can be interleaved unless you run `--test-threads 1`.
 ///
-/// Note that if you override this and run multiple tests in parallel, then the call
-/// to `set_global_default()` will error causing a panic.
+/// We use `cargo test -- --nocapture --test-threads 1` on CI because of all of this.
 fn is_test_client(client_info: Option<&ClientInfo>) -> bool {
     client_info.map_or(false, |client_info| client_info.name == "AirTestClient")
 }
@@ -253,7 +264,7 @@ impl<S> tracing_subscriber::layer::Filter<S> for LogLevelFilter {
         let filter = if meta.target().starts_with("air") || meta.target().starts_with("lsp") {
             self.filter.tracing_level()
         } else {
-            tracing::Level::INFO
+            tracing::Level::WARN
         };
 
         meta.level() <= &filter
