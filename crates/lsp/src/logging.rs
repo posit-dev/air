@@ -6,14 +6,37 @@
 
 //! The logging system for `air lsp`.
 //!
-//! Logs are controlled by the `air.logLevel` setting in VS Code,
-//! passed through `InitializeParams` in the arbitrary `initializationOptions` field.
+//! ## Air crate logs
 //!
-//! Logs are also controlled by the `AIR_LOG` environment variable. This is preferred
-//! over the extension setting, but it is unlikely to see them both be used together.
-//! This can be used by other LSP clients if there is no easy way to set `initializationOptions`.
+//! For air crates, a single log level is supplied as one of: error, warn, info, debug,
+//! or trace, which is applied to all air crates that log.
 //!
-//! By default, we fallback to `"info"`.
+//! Resolution strategy:
+//!
+//! - The environment variable `AIR_LOG_LEVEL` is consulted.
+//!
+//! - The LSP `InitializeParams.initializationOptions.logLevel` option is consulted. This
+//!   can be set in VS Code / Positron using `air.logLevel`, or in Zed by supplying
+//!   `initialization_options`.
+//!
+//! - If neither are supplied, we fallback to `"info"`.
+//!
+//! ## Dependency crate logs
+//!
+//! For dependency crates, either a single log level can be supplied, or comma separated
+//! `target=level` pairs can be supplied, like `tower_lsp=debug,tokio=info`.
+//!
+//! Resolution strategy:
+//!
+//! - The environment variable `AIR_DEPENDENCY_LOG_LEVELS` is consulted.
+//!
+//! - The LSP `InitializeParams.initializationOptions.dependencyLogLevels` option is
+//!   consulted. This can be set in VS Code / Positron using `air.dependencyLogLevel`, or
+//!   in Zed by supplying `initialization_options`.
+//!
+//! - If neither are supplied, we fallback to no logging for dependency crates.
+//!
+//! ## IDE support
 //!
 //! For VS Code and Zed, which are known to support `window/logMessage` well, logging will
 //! emit a `window/logMessage` message. Otherwise, logging will write to `stderr`,
@@ -22,11 +45,12 @@ use core::str;
 use serde::Deserialize;
 use std::fmt::Display;
 use std::io::{Error as IoError, ErrorKind, Write};
+use std::str::FromStr;
 use tokio::sync::mpsc::unbounded_channel;
 use tower_lsp::lsp_types::ClientInfo;
 use tower_lsp::lsp_types::MessageType;
 use tower_lsp::Client;
-use tracing::level_filters::LevelFilter;
+use tracing_subscriber::filter;
 use tracing_subscriber::fmt::time::LocalTime;
 use tracing_subscriber::fmt::TestWriter;
 use tracing_subscriber::{
@@ -36,10 +60,12 @@ use tracing_subscriber::{
 };
 
 // TODO:
-// - Add `air.logLevel` as a VS Code extension option that sets the log level,
-//   and pass it through the arbitrary `initializationOptions` field of `InitializeParams`.
+// - Add `air.logLevel` and `air.dependencyLogLevels` as VS Code extension options that set
+//   the log levels, and pass them through the arbitrary `initializationOptions` field of
+//   `InitializeParams`.
 
-const LOG_ENV_KEY: &str = "AIR_LOG";
+const AIR_LOG_LEVEL: &str = "AIR_LOG_LEVEL";
+const AIR_DEPENDENCY_LOG_LEVELS: &str = "AIR_DEPENDENCY_LOG_LEVELS";
 
 pub(crate) struct LogMessage {
     contents: String,
@@ -132,9 +158,11 @@ impl<'a> MakeWriter<'a> for LogWriterMaker {
 pub(crate) fn init_logging(
     log_tx: LogMessageSender,
     log_level: Option<LogLevel>,
+    dependency_log_levels: Option<String>,
     client_info: Option<&ClientInfo>,
 ) {
     let log_level = resolve_log_level(log_level);
+    let dependency_log_levels = resolve_dependency_log_levels(dependency_log_levels);
 
     let writer = if client_info.is_some_and(|client_info| {
         client_info.name.starts_with("Zed") || client_info.name.starts_with("Visual Studio Code")
@@ -167,7 +195,7 @@ pub(crate) fn init_logging(
         // Display the log level
         .with_level(true)
         .with_writer(writer)
-        .with_filter(LogLevelFilter { filter: log_level });
+        .with_filter(log_filter(log_level, dependency_log_levels));
 
     let subscriber = tracing_subscriber::Registry::default().with(layer);
 
@@ -195,9 +223,41 @@ fn is_test_client(client_info: Option<&ClientInfo>) -> bool {
     client_info.map_or(false, |client_info| client_info.name == "AirTestClient")
 }
 
+// TODO: Is there a way to generate this at compile time?
+const TARGETS: &[&str] = &[
+    "air_r_factory",
+    "air_r_formatter",
+    "air_r_parser",
+    "air_r_syntax",
+    "fs",
+    "line_ending",
+    "lsp",
+];
+
+fn log_filter(log_level: LogLevel, dependency_log_levels: Option<String>) -> filter::Targets {
+    // Initialize `filter` from dependency log levels.
+    // If nothing is supplied, dependency logs are completely off.
+    let mut filter = match dependency_log_levels {
+        Some(dependency_log_levels) => match filter::Targets::from_str(&dependency_log_levels) {
+            Ok(level) => level,
+            Err(_) => filter::Targets::new(),
+        },
+        None => filter::Targets::new(),
+    };
+
+    let log_level = log_level.tracing_level();
+
+    // Apply the air log level to each air crate that logs
+    for target in TARGETS {
+        filter = filter.with_target(*target, log_level);
+    }
+
+    filter
+}
+
 fn resolve_log_level(log_level: Option<LogLevel>) -> LogLevel {
     // Check log environment variable, this overrides any Client options
-    if let Some(log_level) = std::env::var(LOG_ENV_KEY)
+    if let Some(log_level) = std::env::var(AIR_LOG_LEVEL)
         .ok()
         .and_then(|level| serde_json::from_value(serde_json::Value::String(level)).ok())
     {
@@ -209,8 +269,23 @@ fn resolve_log_level(log_level: Option<LogLevel>) -> LogLevel {
         return log_level;
     }
 
-    // Fallback
-    LogLevel::default()
+    // Default to info logs for air crates
+    LogLevel::Info
+}
+
+fn resolve_dependency_log_levels(dependency_log_levels: Option<String>) -> Option<String> {
+    // Check dependency log environment variable, this overrides any Client options
+    if let Ok(dependency_log_levels) = std::env::var(AIR_DEPENDENCY_LOG_LEVELS) {
+        return Some(dependency_log_levels);
+    }
+
+    // Client specified log level through initialization parameters
+    if dependency_log_levels.is_some() {
+        return dependency_log_levels;
+    }
+
+    // Default to no logs for dependency crates
+    None
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Default, PartialEq, Eq, PartialOrd, Ord)]
@@ -245,32 +320,5 @@ impl Display for LogLevel {
             Self::Debug => f.write_str("Debug"),
             Self::Trace => f.write_str("Trace"),
         }
-    }
-}
-
-/// Filters out logs which have a log level lower than the level set by the client.
-struct LogLevelFilter {
-    filter: LogLevel,
-}
-
-impl<S> tracing_subscriber::layer::Filter<S> for LogLevelFilter {
-    fn enabled(
-        &self,
-        meta: &tracing::Metadata<'_>,
-        _: &tracing_subscriber::layer::Context<'_, S>,
-    ) -> bool {
-        // This is a potential reason to use `air_` as the crate prefix,
-        // it would make it easy to set the `tracing_level()` for only air related crates
-        let filter = if meta.target().starts_with("air") || meta.target().starts_with("lsp") {
-            self.filter.tracing_level()
-        } else {
-            tracing::Level::WARN
-        };
-
-        meta.level() <= &filter
-    }
-
-    fn max_level_hint(&self) -> Option<tracing::level_filters::LevelFilter> {
-        Some(LevelFilter::from_level(self.filter.tracing_level()))
     }
 }

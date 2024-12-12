@@ -65,10 +65,16 @@ pub(crate) fn initialize(
     state: &mut WorldState,
     log_tx: LogMessageSender,
 ) -> anyhow::Result<InitializeResult> {
-    // TODO: Get user specified log level from `params.initialization_options`
+    // TODO: Get user specified options from `params.initialization_options`
     let log_level = None;
+    let dependency_log_levels = None;
 
-    logging::init_logging(log_tx, log_level, params.client_info.as_ref());
+    logging::init_logging(
+        log_tx,
+        log_level,
+        dependency_log_levels,
+        params.client_info.as_ref(),
+    );
 
     // Defaults to UTF-16
     let mut position_encoding = None;
