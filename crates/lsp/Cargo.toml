@@ -29,6 +29,7 @@ memchr.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 struct-field-names-as-array.workspace = true
+strum = { workspace = true, features = ["derive"] }
 time = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 tower-lsp.workspace = true

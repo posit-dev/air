@@ -7,6 +7,8 @@
 
 #![allow(deprecated)]
 
+use strum::IntoStaticStr;
+
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio::sync::mpsc::unbounded_channel as tokio_unbounded_channel;
 use tower_lsp::jsonrpc::Result;
@@ -42,7 +44,7 @@ pub(crate) enum LspMessage {
     ),
 }
 
-#[derive(Debug)]
+#[derive(Debug, IntoStaticStr)]
 pub(crate) enum LspNotification {
     Initialized(InitializedParams),
     DidChangeWorkspaceFolders(DidChangeWorkspaceFoldersParams),
@@ -55,7 +57,7 @@ pub(crate) enum LspNotification {
 }
 
 #[allow(clippy::large_enum_variant)]
-#[derive(Debug)]
+#[derive(Debug, IntoStaticStr)]
 pub(crate) enum LspRequest {
     Initialize(InitializeParams),
     DocumentFormatting(DocumentFormattingParams),
@@ -64,12 +66,82 @@ pub(crate) enum LspRequest {
 }
 
 #[allow(clippy::large_enum_variant)]
-#[derive(Debug)]
+#[derive(Debug, IntoStaticStr)]
 pub(crate) enum LspResponse {
     Initialize(InitializeResult),
     DocumentFormatting(Option<Vec<TextEdit>>),
     Shutdown(()),
     AirViewFile(String),
+}
+
+impl std::fmt::Display for LspNotification {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.into())
+    }
+}
+impl std::fmt::Display for LspRequest {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.into())
+    }
+}
+impl std::fmt::Display for LspResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.into())
+    }
+}
+
+impl LspNotification {
+    fn trace(&self) -> TraceLspNotification {
+        TraceLspNotification { inner: self }
+    }
+}
+impl LspRequest {
+    fn trace(&self) -> TraceLspRequest {
+        TraceLspRequest { inner: self }
+    }
+}
+impl LspResponse {
+    fn trace(&self) -> TraceLspResponse {
+        TraceLspResponse { inner: self }
+    }
+}
+
+struct TraceLspNotification<'a> {
+    inner: &'a LspNotification,
+}
+struct TraceLspRequest<'a> {
+    inner: &'a LspRequest,
+}
+struct TraceLspResponse<'a> {
+    inner: &'a LspResponse,
+}
+
+impl std::fmt::Debug for TraceLspNotification<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.inner {
+            LspNotification::DidOpenTextDocument(params) => {
+                // Ignore the document itself in trace logs
+                f.debug_tuple(self.inner.into())
+                    .field(&params.text_document.uri)
+                    .field(&params.text_document.version)
+                    .field(&params.text_document.language_id)
+                    .finish()
+            }
+            _ => std::fmt::Debug::fmt(self.inner, f),
+        }
+    }
+}
+
+impl std::fmt::Debug for TraceLspRequest<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Debug::fmt(self.inner, f)
+    }
+}
+
+impl std::fmt::Debug for TraceLspResponse<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Debug::fmt(self.inner, f)
+    }
 }
 
 #[derive(Debug)]
@@ -84,7 +156,7 @@ struct Backend {
 
 impl Backend {
     async fn request(&self, request: LspRequest) -> anyhow::Result<LspResponse> {
-        tracing::trace!("Incoming:\n{request:#?}");
+        tracing::trace!("Incoming:\n{request:#?}", request = request.trace());
 
         let (response_tx, mut response_rx) =
             tokio_unbounded_channel::<anyhow::Result<LspResponse>>();
@@ -95,14 +167,14 @@ impl Backend {
             .unwrap();
 
         // Wait for response from main loop
-        let out = response_rx.recv().await.unwrap()?;
+        let response = response_rx.recv().await.unwrap()?;
 
-        tracing::trace!("Outgoing\n{out:#?}");
-        Ok(out)
+        tracing::trace!("Outgoing:\n{response:#?}", response = response.trace());
+        Ok(response)
     }
 
     fn notify(&self, notif: LspNotification) {
-        tracing::trace!("Incoming:\n{notif:#?}");
+        tracing::trace!("Incoming:\n{notif:#?}", notif = notif.trace());
 
         // Relay notification to main loop
         self.events_tx
