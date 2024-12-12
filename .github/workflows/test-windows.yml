@@ -29,4 +29,8 @@ jobs:
         run: cargo build
 
       - name: Run unit tests
-        run: cargo test
+        env:
+          AIR_LOG: trace
+        # `--nocapture` to see our own `tracing` logs
+        # `--test-threads 1` to ensure `tracing` logs aren't interleaved
+        run: cargo test -- --nocapture --test-threads 1
