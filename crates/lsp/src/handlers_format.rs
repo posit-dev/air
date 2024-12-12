@@ -6,10 +6,10 @@
 //
 
 use air_r_formatter::{context::RFormatOptions, format_node};
-use air_r_syntax::{RSyntaxKind, RSyntaxNode, WalkEvent};
+use air_r_syntax::{RExpressionList, RSyntaxKind, RSyntaxNode, WalkEvent};
 use biome_formatter::{IndentStyle, LineWidth};
 use biome_rowan::{AstNode, Language, SyntaxElement};
-use biome_text_size::TextRange;
+use biome_text_size::{TextRange, TextSize};
 use tower_lsp::lsp_types;
 
 use crate::state::WorldState;
@@ -153,8 +153,46 @@ where
 /// Finds consecutive logical lines. Currently that's only expressions at
 /// top-level or in a braced list.
 fn find_deepest_enclosing_logical_lines(node: RSyntaxNode, range: TextRange) -> Vec<RSyntaxNode> {
+    let start_lists = find_expression_lists(&node, range.start(), false);
+    let end_lists = find_expression_lists(&node, range.end(), true);
+
+    // Both vectors of lists should have a common prefix, starting from the
+    // program's expression list. As soon as the lists diverge we stop.
+    let Some(list) = start_lists
+        .into_iter()
+        .zip(end_lists.into_iter())
+        .take_while(|pair| pair.0 == pair.1)
+        .map(|pair| pair.0)
+        .last()
+    else {
+        // Should not happen as the range is always included in the program's expression list
+        tracing::warn!("Can't find common list parent");
+        return vec![];
+    };
+
+    let Some(list) = RExpressionList::cast(list) else {
+        tracing::warn!("Can't cast to expression list");
+        return vec![];
+    };
+
+    let iter = list.into_iter();
+
+    let logical_lines: Vec<RSyntaxNode> = iter
+        .map(|expr| expr.into_syntax())
+        .skip_while(|node| !node.text_range().contains(range.start()))
+        .take_while(|node| node.text_range().start() <= range.end())
+        .collect();
+
+    logical_lines
+}
+
+fn find_expression_lists(
+    node: &RSyntaxNode,
+    offset: TextSize,
+    inclusive: bool,
+) -> Vec<RSyntaxNode> {
     let mut preorder = node.preorder();
-    let mut logical_lines: Vec<RSyntaxNode> = vec![];
+    let mut nodes: Vec<RSyntaxNode> = vec![];
 
     while let Some(event) = preorder.next() {
         match event {
@@ -163,14 +201,21 @@ fn find_deepest_enclosing_logical_lines(node: RSyntaxNode, range: TextRange) -> 
                     continue;
                 };
 
-                let node_range = node.text_trimmed_range();
-                if !range.contains_range(node_range) {
+                let node_range = node.text_range();
+
+                let is_contained = if inclusive {
+                    node_range.contains_inclusive(offset)
+                } else {
+                    node_range.contains(offset)
+                };
+
+                if !is_contained {
+                    preorder.skip_subtree();
                     continue;
                 }
 
                 if parent.kind() == RSyntaxKind::R_EXPRESSION_LIST {
-                    logical_lines.push(node.clone());
-                    preorder.skip_subtree();
+                    nodes.push(parent.clone());
                     continue;
                 }
             }
@@ -179,7 +224,7 @@ fn find_deepest_enclosing_logical_lines(node: RSyntaxNode, range: TextRange) -> 
         }
     }
 
-    logical_lines
+    nodes
 }
 
 #[cfg(test)]
@@ -370,13 +415,51 @@ mod tests {
 
         // Selecting the last two lines
         let range = TextRange::new(TextSize::from(4), TextSize::from(9));
-        let output = client.format_document_range(&doc, range).await;
-        insta::assert_snapshot!(output);
+        let output1 = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output1);
 
         // Selecting all three lines
         let range = TextRange::new(TextSize::from(0), TextSize::from(9));
-        let output = client.format_document_range(&doc, range).await;
-        insta::assert_snapshot!(output);
+        let output2 = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output2);
+
+        client
+    }
+
+    #[tests_macros::lsp_test]
+    async fn test_format_range_unmatched_lists() {
+        let mut client = init_test_client().await;
+
+        #[rustfmt::skip]
+        let doc = Document::doodle(
+"0+0
+1+1
+{
+  2+2
+}
+3+3
+",
+        );
+
+        // Selecting lines 2-4
+        let range = TextRange::new(TextSize::from(4), TextSize::from(15));
+        let output1 = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output1);
+
+        // Selecting lines 2-4 with partial selection on line 4
+        let range = TextRange::new(TextSize::from(4), TextSize::from(10));
+        let output2 = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output2);
+
+        // Selecting lines 2-6
+        let range = TextRange::new(TextSize::from(4), TextSize::from(18));
+        let output3 = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output3);
+
+        // Selecting lines 4-6
+        let range = TextRange::new(TextSize::from(10), TextSize::from(18));
+        let output4 = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output4);
 
         client
     }
