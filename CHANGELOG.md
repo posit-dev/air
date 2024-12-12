@@ -1,6 +1,6 @@
 # Changelog
 
-# 0.1.9000
+# Development version
 
 - The LSP gains range formatting support (#63).
 
