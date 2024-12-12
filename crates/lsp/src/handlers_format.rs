@@ -70,7 +70,7 @@ pub(crate) fn document_range_formatting(
     // We use the "non-whitespace-range" as that corresponds to what Biome will format.
     let format_range = logical_lines
         .iter()
-        .map(|line| text_non_whitespace_range(line))
+        .map(text_non_whitespace_range)
         .reduce(|acc, new| acc.cover(new))
         .expect("`logical_lines` is non-empty");
 
@@ -83,7 +83,7 @@ pub(crate) fn document_range_formatting(
     // Since we only format logical lines, it is fine to wrap in an expression list.
     let Some(exprs): Option<Vec<air_r_syntax::AnyRExpression>> = logical_lines
         .into_iter()
-        .map(|node| air_r_syntax::AnyRExpression::cast(node))
+        .map(air_r_syntax::AnyRExpression::cast)
         .collect()
     else {
         tracing::warn!("Can't cast to `AnyRExpression`");
@@ -160,7 +160,7 @@ fn find_deepest_enclosing_logical_lines(node: RSyntaxNode, range: TextRange) -> 
     // program's expression list. As soon as the lists diverge we stop.
     let Some(list) = start_lists
         .into_iter()
-        .zip(end_lists.into_iter())
+        .zip(end_lists)
         .take_while(|pair| pair.0 == pair.1)
         .map(|pair| pair.0)
         .last()
