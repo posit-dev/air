@@ -178,6 +178,9 @@ pub(crate) fn init_logging(
     };
 
     let layer = tracing_subscriber::fmt::layer()
+        // Spend the effort cleaning up the logs before writing them.
+        // Particularly useful for instrumented logs with spans.
+        .pretty()
         // Disable ANSI escapes, those are not supported in Code
         .with_ansi(false)
         // Display source code file paths
