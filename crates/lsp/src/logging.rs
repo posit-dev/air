@@ -59,6 +59,8 @@ use tracing_subscriber::{
     Layer,
 };
 
+use crate::crates;
+
 // TODO:
 // - Add `air.logLevel` and `air.dependencyLogLevels` as VS Code extension options that set
 //   the log levels, and pass them through the arbitrary `initializationOptions` field of
@@ -226,17 +228,6 @@ fn is_test_client(client_info: Option<&ClientInfo>) -> bool {
     client_info.map_or(false, |client_info| client_info.name == "AirTestClient")
 }
 
-// TODO: Is there a way to generate this at compile time?
-const TARGETS: &[&str] = &[
-    "air_r_factory",
-    "air_r_formatter",
-    "air_r_parser",
-    "air_r_syntax",
-    "fs",
-    "line_ending",
-    "lsp",
-];
-
 fn log_filter(log_level: LogLevel, dependency_log_levels: Option<String>) -> filter::Targets {
     // Initialize `filter` from dependency log levels.
     // If nothing is supplied, dependency logs are completely off.
@@ -251,7 +242,7 @@ fn log_filter(log_level: LogLevel, dependency_log_levels: Option<String>) -> fil
     let log_level = log_level.tracing_level();
 
     // Apply the air log level to each air crate that logs
-    for target in TARGETS {
+    for target in crates::AIR_CRATE_NAMES {
         filter = filter.with_target(*target, log_level);
     }
 

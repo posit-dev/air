@@ -45,6 +45,7 @@ biome_string_case = { git = "https://github.com/biomejs/biome", rev = "2648fa420
 biome_text_size = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
 biome_unicode_table = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
 bytes = "1.8.0"
+cargo_metadata = "0.19.1"
 clap = { version = "4.5.20", features = ["derive"] }
 crossbeam = "0.8.4"
 dissimilar = "1.0.9"

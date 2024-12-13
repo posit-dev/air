@@ -41,9 +41,6 @@ triomphe.workspace = true
 url.workspace = true
 uuid = { workspace = true, features = ["v4"] }
 
-[lints]
-workspace = true
-
 [dev-dependencies]
 assert_matches.workspace = true
 bytes.workspace = true
@@ -54,3 +51,9 @@ lsp_test.workspace = true
 memchr.workspace = true
 tests_macros.workspace = true
 tokio-util.workspace = true
+
+[build-dependencies]
+cargo_metadata.workspace = true
+
+[lints]
+workspace = true
