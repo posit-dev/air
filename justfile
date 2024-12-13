@@ -6,13 +6,18 @@ gen-formatter:
 gen-grammar:
     cargo run -p xtask_codegen -- grammar r
 
-# Run the parser and formatter tests
+# Run the tests
 test:
-  cargo test -p air_r_parser
-  cargo test -p air_r_formatter
+  cargo test
+
+# Run the tests in verbose mode
+# `--nocapture` to see our own `tracing` logs
+# `--test-threads 1` to ensure `tracing` logs aren't interleaved
+test-verbose:
+  cargo test -- --nocapture --test-threads 1
 
 # Run the quick formatter test
-quick:
+test-quick:
   cargo test --package air_r_formatter --test quick_test -- quick_test --exact --show-output --ignored
 
 # Creates a new crate

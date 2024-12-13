@@ -34,7 +34,7 @@ fn convert_character_from_utf16_to_utf8(x: &str, character: usize) -> usize {
         }
     }
 
-    log::error!("Failed to locate UTF-16 offset of {character}. Line: '{x}'.");
+    tracing::error!("Failed to locate UTF-16 offset of {character}. Line: '{x}'.");
     0
 }
 
@@ -52,7 +52,7 @@ fn convert_character_from_utf8_to_utf16(x: &str, character: usize) -> usize {
         Some(x) => x.encode_utf16().count(),
         None => {
             let n = x.len();
-            log::error!(
+            tracing::error!(
                 "Tried to take UTF-8 character {character}, but only {n} characters exist. Line: '{x}'."
             );
             0

@@ -33,7 +33,8 @@ use crate::config::DocumentConfig;
 use crate::config::VscDiagnosticsConfig;
 use crate::config::VscDocumentConfig;
 use crate::documents::Document;
-use crate::main_loop::AuxiliaryEventSender;
+use crate::logging;
+use crate::logging::LogMessageSender;
 use crate::main_loop::LspState;
 use crate::state::workspace_uris;
 use crate::state::WorldState;
@@ -62,7 +63,19 @@ pub(crate) fn initialize(
     params: InitializeParams,
     lsp_state: &mut LspState,
     state: &mut WorldState,
+    log_tx: LogMessageSender,
 ) -> anyhow::Result<InitializeResult> {
+    // TODO: Get user specified options from `params.initialization_options`
+    let log_level = None;
+    let dependency_log_levels = None;
+
+    logging::init_logging(
+        log_tx,
+        log_level,
+        dependency_log_levels,
+        params.client_info.as_ref(),
+    );
+
     // Defaults to UTF-16
     let mut position_encoding = None;
 
@@ -157,7 +170,6 @@ pub(crate) fn did_change(
 pub(crate) fn did_close(
     params: DidCloseTextDocumentParams,
     state: &mut WorldState,
-    auxiliary_event_tx: &AuxiliaryEventSender,
 ) -> anyhow::Result<()> {
     let uri = params.text_document.uri;
 
@@ -168,8 +180,6 @@ pub(crate) fn did_close(
         .documents
         .remove(&uri)
         .ok_or(anyhow!("Failed to remove document for URI: {uri}"))?;
-
-    auxiliary_event_tx.log_info(format!("did_close(): closed document with URI: '{uri}'."));
 
     Ok(())
 }

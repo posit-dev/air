@@ -7,6 +7,8 @@
 
 #![allow(deprecated)]
 
+use strum::IntoStaticStr;
+
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio::sync::mpsc::unbounded_channel as tokio_unbounded_channel;
 use tower_lsp::jsonrpc::Result;
@@ -17,7 +19,6 @@ use tower_lsp::LspService;
 use tower_lsp::{jsonrpc, ClientSocket};
 
 use crate::handlers_ext::ViewFileParams;
-use crate::main_loop::AuxiliaryEventSender;
 use crate::main_loop::Event;
 use crate::main_loop::GlobalState;
 use crate::main_loop::TokioUnboundedSender;
@@ -43,7 +44,7 @@ pub(crate) enum LspMessage {
     ),
 }
 
-#[derive(Debug)]
+#[derive(Debug, IntoStaticStr)]
 pub(crate) enum LspNotification {
     Initialized(InitializedParams),
     DidChangeWorkspaceFolders(DidChangeWorkspaceFoldersParams),
@@ -56,7 +57,7 @@ pub(crate) enum LspNotification {
 }
 
 #[allow(clippy::large_enum_variant)]
-#[derive(Debug)]
+#[derive(Debug, IntoStaticStr)]
 pub(crate) enum LspRequest {
     Initialize(InitializeParams),
     DocumentFormatting(DocumentFormattingParams),
@@ -65,7 +66,7 @@ pub(crate) enum LspRequest {
 }
 
 #[allow(clippy::large_enum_variant)]
-#[derive(Debug)]
+#[derive(Debug, IntoStaticStr)]
 pub(crate) enum LspResponse {
     Initialize(InitializeResult),
     DocumentFormatting(Option<Vec<TextEdit>>),
@@ -73,14 +74,80 @@ pub(crate) enum LspResponse {
     AirViewFile(String),
 }
 
+impl std::fmt::Display for LspNotification {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.into())
+    }
+}
+impl std::fmt::Display for LspRequest {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.into())
+    }
+}
+impl std::fmt::Display for LspResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.into())
+    }
+}
+
+impl LspNotification {
+    fn trace(&self) -> TraceLspNotification {
+        TraceLspNotification { inner: self }
+    }
+}
+impl LspRequest {
+    fn trace(&self) -> TraceLspRequest {
+        TraceLspRequest { inner: self }
+    }
+}
+impl LspResponse {
+    fn trace(&self) -> TraceLspResponse {
+        TraceLspResponse { inner: self }
+    }
+}
+
+struct TraceLspNotification<'a> {
+    inner: &'a LspNotification,
+}
+struct TraceLspRequest<'a> {
+    inner: &'a LspRequest,
+}
+struct TraceLspResponse<'a> {
+    inner: &'a LspResponse,
+}
+
+impl std::fmt::Debug for TraceLspNotification<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.inner {
+            LspNotification::DidOpenTextDocument(params) => {
+                // Ignore the document itself in trace logs
+                f.debug_tuple(self.inner.into())
+                    .field(&params.text_document.uri)
+                    .field(&params.text_document.version)
+                    .field(&params.text_document.language_id)
+                    .finish()
+            }
+            _ => std::fmt::Debug::fmt(self.inner, f),
+        }
+    }
+}
+
+impl std::fmt::Debug for TraceLspRequest<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Debug::fmt(self.inner, f)
+    }
+}
+
+impl std::fmt::Debug for TraceLspResponse<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Debug::fmt(self.inner, f)
+    }
+}
+
 #[derive(Debug)]
 struct Backend {
     /// Channel for communication with the main loop.
     events_tx: TokioUnboundedSender<Event>,
-
-    /// Channel for communication with the auxiliary loop.
-    /// Used for latency sensitive logging.
-    auxiliary_event_tx: AuxiliaryEventSender,
 
     /// Handle to main loop. Drop it to cancel the loop, all associated tasks,
     /// and drop all owned state.
@@ -89,7 +156,8 @@ struct Backend {
 
 impl Backend {
     async fn request(&self, request: LspRequest) -> anyhow::Result<LspResponse> {
-        self.log_info(format!("Incoming: {request:#?}"));
+        tracing::info!("Incoming: {request}");
+        tracing::trace!("Incoming (debug):\n{request:#?}", request = request.trace());
 
         let (response_tx, mut response_rx) =
             tokio_unbounded_channel::<anyhow::Result<LspResponse>>();
@@ -100,14 +168,19 @@ impl Backend {
             .unwrap();
 
         // Wait for response from main loop
-        let out = response_rx.recv().await.unwrap()?;
+        let response = response_rx.recv().await.unwrap()?;
 
-        self.log_info(format!("Outgoing {out:#?}"));
-        Ok(out)
+        tracing::info!("Outgoing: {response}");
+        tracing::trace!(
+            "Outgoing (debug):\n{response:#?}",
+            response = response.trace()
+        );
+        Ok(response)
     }
 
     fn notify(&self, notif: LspNotification) {
-        self.log_info(format!("Incoming: {notif:#?}"));
+        tracing::info!("Incoming: {notif}");
+        tracing::trace!("Incoming (debug):\n{notif:#?}", notif = notif.trace());
 
         // Relay notification to main loop
         self.events_tx
@@ -120,10 +193,6 @@ impl Backend {
             self.request(LspRequest::AirViewFile(params)).await,
             LspResponse::AirViewFile
         )
-    }
-
-    fn log_info(&self, message: String) {
-        self.auxiliary_event_tx.log_info(message);
     }
 }
 
@@ -188,27 +257,20 @@ where
     I: AsyncRead + Unpin,
     O: AsyncWrite,
 {
-    log::trace!("Starting LSP");
-
     let (service, socket) = new_lsp();
     let server = tower_lsp::Server::new(read, write, socket);
     server.serve(service).await;
-
-    log::trace!("LSP exiting gracefully.",);
 }
 
 fn new_lsp() -> (LspService<Backend>, ClientSocket) {
     let init = |client: Client| {
-        let state = GlobalState::new(client);
-        let events_tx = state.events_tx();
-        let auxiliary_event_tx = state.auxiliary_event_tx();
+        let (state, events_tx) = GlobalState::new(client);
 
         // Start main loop and hold onto the handle that keeps it alive
         let main_loop = state.start();
 
         Backend {
             events_tx,
-            auxiliary_event_tx,
             _main_loop: main_loop,
         }
     };

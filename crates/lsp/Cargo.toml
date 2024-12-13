@@ -25,22 +25,21 @@ dissimilar.workspace = true
 futures.workspace = true
 itertools.workspace = true
 line_ending.workspace = true
-log.workspace = true
 memchr.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 struct-field-names-as-array.workspace = true
+strum = { workspace = true, features = ["derive"] }
+time = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 tower-lsp.workspace = true
 tracing.workspace = true
+tracing-subscriber = { workspace = true, features = ["ansi", "local-time"] }
 tree-sitter.workspace = true
 tree-sitter-r.workspace = true
 triomphe.workspace = true
 url.workspace = true
 uuid = { workspace = true, features = ["v4"] }
-
-[lints]
-workspace = true
 
 [dev-dependencies]
 assert_matches.workspace = true
@@ -52,3 +51,9 @@ lsp_test.workspace = true
 memchr.workspace = true
 tests_macros.workspace = true
 tokio-util.workspace = true
+
+[build-dependencies]
+cargo_metadata.workspace = true
+
+[lints]
+workspace = true
