@@ -177,6 +177,14 @@ fn find_deepest_enclosing_logical_lines(node: RSyntaxNode, range: TextRange) -> 
 
     let iter = list.into_iter();
 
+    // We've chosen to be liberal about user selections and always widen the
+    // range to include the selection bounds. If we wanted to be conservative
+    // instead, we could use this `filter()` instead of the `skip_while()` and
+    // `take_while()`:
+    //
+    // ```rust
+    // .filter(|node| range.contains_range(node.text_trimmed_range()))
+    // ```
     let logical_lines: Vec<RSyntaxNode> = iter
         .map(|expr| expr.into_syntax())
         .skip_while(|node| !node.text_range().contains(range.start()))
