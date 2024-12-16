@@ -20,4 +20,6 @@ pub mod to_proto;
 pub mod tower_lsp;
 
 #[cfg(test)]
+pub mod test_utils;
+#[cfg(test)]
 pub mod tower_lsp_test_client;

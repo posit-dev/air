@@ -1,12 +1,20 @@
+use biome_text_size::TextRange;
 use lsp_test::lsp_client::TestClient;
 use tower_lsp::lsp_types;
 
-use crate::{documents::Document, from_proto};
+use crate::{documents::Document, from_proto, to_proto};
 
 pub(crate) trait TestClientExt {
     async fn open_document(&mut self, doc: &Document) -> lsp_types::TextDocumentItem;
+
     async fn format_document(&mut self, doc: &Document) -> String;
+    async fn format_document_range(&mut self, doc: &Document, range: TextRange) -> String;
     async fn format_document_edits(&mut self, doc: &Document) -> Option<Vec<lsp_types::TextEdit>>;
+    async fn format_document_range_edits(
+        &mut self,
+        doc: &Document,
+        range: TextRange,
+    ) -> Option<Vec<lsp_types::TextEdit>>;
 }
 
 impl TestClientExt for TestClient {
@@ -34,6 +42,13 @@ impl TestClientExt for TestClient {
         from_proto::apply_text_edits(doc, edits).unwrap()
     }
 
+    async fn format_document_range(&mut self, doc: &Document, range: TextRange) -> String {
+        let Some(edits) = self.format_document_range_edits(doc, range).await else {
+            return doc.contents.clone();
+        };
+        from_proto::apply_text_edits(doc, edits).unwrap()
+    }
+
     async fn format_document_edits(&mut self, doc: &Document) -> Option<Vec<lsp_types::TextEdit>> {
         let lsp_doc = self.open_document(doc).await;
 
@@ -53,6 +68,49 @@ impl TestClientExt for TestClient {
         .await;
 
         let response = self.recv_response().await;
+
+        if let Some(err) = response.error() {
+            panic!("Unexpected error: {}", err.message);
+        };
+
+        let value: Option<Vec<lsp_types::TextEdit>> =
+            serde_json::from_value(response.result().unwrap().clone()).unwrap();
+
+        self.close_document(lsp_doc.uri).await;
+
+        value
+    }
+
+    async fn format_document_range_edits(
+        &mut self,
+        doc: &Document,
+        range: TextRange,
+    ) -> Option<Vec<lsp_types::TextEdit>> {
+        let lsp_doc = self.open_document(doc).await;
+
+        let options = lsp_types::FormattingOptions {
+            tab_size: 4,
+            insert_spaces: false,
+            ..Default::default()
+        };
+
+        let range = to_proto::range(&doc.line_index.index, range, doc.line_index.encoding).unwrap();
+
+        self.range_formatting(lsp_types::DocumentRangeFormattingParams {
+            text_document: lsp_types::TextDocumentIdentifier {
+                uri: lsp_doc.uri.clone(),
+            },
+            range,
+            options,
+            work_done_progress_params: Default::default(),
+        })
+        .await;
+
+        let response = self.recv_response().await;
+
+        if let Some(err) = response.error() {
+            panic!("Unexpected error: {}", err.message);
+        };
 
         let value: Option<Vec<lsp_types::TextEdit>> =
             serde_json::from_value(response.result().unwrap().clone()).unwrap();

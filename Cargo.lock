@@ -1307,6 +1307,7 @@ checksum = "a7a70ba024b9dc04c27ea2f0c0548feb474ec5c54bba33a7f72f873a39d07b24"
 name = "lsp"
 version = "0.0.0"
 dependencies = [
+ "air_r_factory",
  "air_r_formatter",
  "air_r_parser",
  "air_r_syntax",
@@ -1315,6 +1316,7 @@ dependencies = [
  "biome_formatter",
  "biome_lsp_converters",
  "biome_parser",
+ "biome_rowan",
  "biome_text_size",
  "bytes",
  "cargo_metadata",
