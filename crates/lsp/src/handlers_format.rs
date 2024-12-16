@@ -229,8 +229,6 @@ fn find_expression_lists(
 
 #[cfg(test)]
 mod tests {
-    use biome_text_size::{TextRange, TextSize};
-
     use crate::{
         documents::Document, tower_lsp::init_test_client, tower_lsp_test_client::TestClientExt,
     };
@@ -281,30 +279,27 @@ mod tests {
         let mut client = init_test_client().await;
 
         #[rustfmt::skip]
-        let doc = Document::doodle(
-"",
+        let (doc, range) = Document::doodle_and_range(
+"<<>>",
         );
-        let range = TextRange::new(TextSize::from(0), TextSize::from(0));
 
         let output = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output);
 
         #[rustfmt::skip]
-        let doc = Document::doodle(
-"
-",
+        let (doc, range) = Document::doodle_and_range(
+"<<
+>>",
         );
-        let range = TextRange::new(TextSize::from(0), TextSize::from(1));
 
         let output = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output);
 
         #[rustfmt::skip]
-        let doc = Document::doodle(
-"1
-",
+        let (doc, range) = Document::doodle_and_range(
+"<<1
+>>",
         );
-        let range = TextRange::new(TextSize::from(0), TextSize::from(1));
 
         let output = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output);
@@ -318,23 +313,21 @@ mod tests {
 
         // 2+2 is the logical line to format
         #[rustfmt::skip]
-        let doc = Document::doodle(
+        let (doc, range) = Document::doodle_and_range(
 "1+1
-2+2
+<<2+2>>
 ",
         );
-        let range = TextRange::new(TextSize::from(4), TextSize::from(7));
         let output = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output);
 
         #[rustfmt::skip]
-        let doc = Document::doodle(
+        let (doc, range) = Document::doodle_and_range(
 "1+1
 #
-2+2
+<<2+2>>
 ",
         );
-        let range = TextRange::new(TextSize::from(6), TextSize::from(9));
 
         let output = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output);
@@ -342,35 +335,37 @@ mod tests {
         // The element in the braced expression is a logical line
         // FIXME: Should this be the whole `{2+2}` instead?
         #[rustfmt::skip]
-        let doc = Document::doodle(
+        let (doc, range) = Document::doodle_and_range(
 "1+1
-{2+2}
+{<<2+2>>}
 ",
         );
 
-        let range = TextRange::new(TextSize::from(5), TextSize::from(8));
         let output = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output);
 
-        // Including braces
-        let range = TextRange::new(TextSize::from(4), TextSize::from(9));
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"1+1
+<<{2+2}>>
+",
+        );
         let output = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output);
 
         // The deepest element in the braced expression is our target
         #[rustfmt::skip]
-        let doc = Document::doodle(
+        let (doc, range) = Document::doodle_and_range(
 "1+1
 {
   2+2
   {
-    3+3
+    <<3+3>>
   }
 }
 ",
         );
 
-        let range = TextRange::new(TextSize::from(20), TextSize::from(23));
         let output = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output);
         client
@@ -381,21 +376,25 @@ mod tests {
         let mut client = init_test_client().await;
 
         #[rustfmt::skip]
-        let doc = Document::doodle(
+        let (doc, range) = Document::doodle_and_range(
 "1
-  2+2
+  <<2+2>>
 ",
         );
 
         // We don't change indentation when `2+2` is formatted
-        let range = TextRange::new(TextSize::from(4), TextSize::from(7));
         let output = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output);
 
         // Debatable: Should we make an effort to remove unneeded indentation
         // when it's part of the range?
-        let range_wide = TextRange::new(TextSize::from(2), TextSize::from(7));
-        let output_wide = client.format_document_range(&doc, range_wide).await;
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"1
+<<  2+2>>
+",
+        );
+        let output_wide = client.format_document_range(&doc, range).await;
         assert_eq!(output, output_wide);
 
         client
@@ -406,20 +405,23 @@ mod tests {
         let mut client = init_test_client().await;
 
         #[rustfmt::skip]
-        let doc = Document::doodle(
+        let (doc, range) = Document::doodle_and_range(
 "1+1
-#
-2+2
+<<#
+2+2>>
 ",
         );
 
-        // Selecting the last two lines
-        let range = TextRange::new(TextSize::from(4), TextSize::from(9));
         let output1 = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output1);
 
-        // Selecting all three lines
-        let range = TextRange::new(TextSize::from(0), TextSize::from(9));
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"<<1+1
+#
+2+2>>
+",
+        );
         let output2 = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output2);
 
@@ -431,33 +433,55 @@ mod tests {
         let mut client = init_test_client().await;
 
         #[rustfmt::skip]
-        let doc = Document::doodle(
+        let (doc, range) = Document::doodle_and_range(
 "0+0
-1+1
+<<1+1
 {
-  2+2
+  2+2>>
 }
 3+3
 ",
         );
 
-        // Selecting lines 2-4
-        let range = TextRange::new(TextSize::from(4), TextSize::from(15));
         let output1 = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output1);
 
-        // Selecting lines 2-4 with partial selection on line 4
-        let range = TextRange::new(TextSize::from(4), TextSize::from(10));
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"0+0
+<<1+1
+{
+>>  2+2
+}
+3+3
+",
+        );
         let output2 = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output2);
 
-        // Selecting lines 2-6
-        let range = TextRange::new(TextSize::from(4), TextSize::from(18));
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"0+0
+<<1+1
+{
+  2+2
+}
+>>3+3
+",
+        );
         let output3 = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output3);
 
-        // Selecting lines 4-6
-        let range = TextRange::new(TextSize::from(10), TextSize::from(18));
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"0+0
+1+1
+{
+<<  2+2
+}
+>>3+3
+",
+        );
         let output4 = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output4);
 

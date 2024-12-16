@@ -89,6 +89,13 @@ impl Document {
         Self::new(contents.into(), None, PositionEncoding::Utf8)
     }
 
+    #[cfg(test)]
+    pub fn doodle_and_range(contents: &str) -> (Self, biome_text_size::TextRange) {
+        let (contents, range) = crate::test_utils::extract_marked_range(contents);
+        let doc = Self::new(contents, None, PositionEncoding::Utf8);
+        (doc, range)
+    }
+
     pub fn on_did_change(&mut self, mut params: lsp_types::DidChangeTextDocumentParams) {
         let new_version = params.text_document.version;
 
