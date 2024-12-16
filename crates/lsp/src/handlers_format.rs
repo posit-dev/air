@@ -180,17 +180,13 @@ fn find_deepest_enclosing_logical_lines(node: RSyntaxNode, range: TextRange) -> 
     let logical_lines: Vec<RSyntaxNode> = iter
         .map(|expr| expr.into_syntax())
         .skip_while(|node| !node.text_range().contains(range.start()))
-        .take_while(|node| node.text_range().start() <= range.end())
+        .take_while(|node| node.text_trimmed_range().start() <= range.end())
         .collect();
 
     logical_lines
 }
 
-fn find_expression_lists(
-    node: &RSyntaxNode,
-    offset: TextSize,
-    inclusive: bool,
-) -> Vec<RSyntaxNode> {
+fn find_expression_lists(node: &RSyntaxNode, offset: TextSize, end: bool) -> Vec<RSyntaxNode> {
     let mut preorder = node.preorder();
     let mut nodes: Vec<RSyntaxNode> = vec![];
 
@@ -201,11 +197,11 @@ fn find_expression_lists(
                     continue;
                 };
 
-                let node_range = node.text_range();
-
-                let is_contained = if inclusive {
-                    node_range.contains_inclusive(offset)
+                let is_contained = if end {
+                    let trimmed_node_range = node.text_trimmed_range();
+                    trimmed_node_range.contains_inclusive(offset)
                 } else {
+                    let node_range = node.text_range();
                     node_range.contains(offset)
                 };
 
@@ -484,6 +480,26 @@ mod tests {
         );
         let output4 = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output4);
+
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"<<1+1>>
+2+2
+",
+        );
+
+        let output5 = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output5);
+
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"1+1
+<<2+2>>
+",
+        );
+
+        let output6 = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output6);
 
         client
     }
