@@ -74,7 +74,7 @@ function viewTreeSitter(ctx: Ctx): Cmd {
 }
 
 function viewSyntaxTree(ctx: Ctx): Cmd {
-	const uri = "air-syntax-tree://syntax/tree.rast";
+	const uri = "air-syntax-tree://syntax/rowan.rast";
 	const scheme = "air-syntax-tree";
 
 	return viewFileUsingTextDocumentContentProvider(
@@ -88,7 +88,7 @@ function viewSyntaxTree(ctx: Ctx): Cmd {
 }
 
 function viewFormatTree(ctx: Ctx): Cmd {
-	const uri = "air-format-tree://format/biome.ir";
+	const uri = "air-format-tree://format/biome";
 	const scheme = "air-format-tree";
 
 	return viewFileUsingTextDocumentContentProvider(
