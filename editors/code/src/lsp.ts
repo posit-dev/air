@@ -1,6 +1,14 @@
 import * as vscode from "vscode";
 import * as lc from "vscode-languageclient/node";
 import { default as PQueue } from "p-queue";
+import { IServerInfo, loadServerDefaults } from "./common/setup";
+import { registerLogger, traceLog } from "./common/log/logging";
+import {
+	getGlobalSettings,
+	getUserSettings,
+	getWorkspaceSettings,
+	IInitializationOptions,
+} from "./settings";
 
 // All session management operations are put on a queue. They can't run
 // concurrently and either result in a started or stopped state. Starting when
@@ -14,6 +22,8 @@ enum State {
 export class Lsp {
 	public client: lc.LanguageClient | null = null;
 
+	private serverInfo: IServerInfo;
+
 	// We use the same output channel for all LSP instances (e.g. a new instance
 	// after a restart) to avoid having multiple channels in the Output viewpane.
 	private channel: vscode.OutputChannel;
@@ -23,7 +33,8 @@ export class Lsp {
 
 	constructor(context: vscode.ExtensionContext) {
 		this.channel = vscode.window.createOutputChannel("Air Language Server");
-		context.subscriptions.push(this.channel);
+		context.subscriptions.push(this.channel, registerLogger(this.channel));
+		this.serverInfo = loadServerDefaults();
 		this.stateQueue = new PQueue({ concurrency: 1 });
 	}
 
@@ -52,7 +63,23 @@ export class Lsp {
 			return;
 		}
 
-		let options: lc.ServerOptions = {
+		// Log server information
+		traceLog(`Name: ${this.serverInfo.name}`);
+		traceLog(`Module: ${this.serverInfo.module}`);
+
+		const globalSettings = await getGlobalSettings(this.serverInfo.module);
+		const userSettings = await getUserSettings(this.serverInfo.module);
+		const workspaceSettings = await getWorkspaceSettings(
+			this.serverInfo.module
+		);
+
+		const initializationOptions: IInitializationOptions = {
+			globalSettings,
+			userSettings,
+			workspaceSettings,
+		};
+
+		let serverOptions: lc.ServerOptions = {
 			command: "air",
 			args: ["lsp"],
 		};
@@ -71,13 +98,14 @@ export class Lsp {
 					vscode.workspace.createFileSystemWatcher("**/*.[Rr]"),
 			},
 			outputChannel: this.channel,
+			initializationOptions: initializationOptions,
 		};
 
 		const client = new lc.LanguageClient(
 			"airLanguageServer",
 			"Air Language Server",
-			options,
-			clientOptions,
+			serverOptions,
+			clientOptions
 		);
 		await client.start();
 
