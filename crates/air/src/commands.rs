@@ -1,2 +1,2 @@
 pub(crate) mod format;
-pub(crate) mod lsp;
+pub(crate) mod language_server;
