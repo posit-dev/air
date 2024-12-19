@@ -54,7 +54,7 @@ export class Lsp {
 
 		let options: lc.ServerOptions = {
 			command: "air",
-			args: ["lsp"],
+			args: ["language-server"],
 		};
 
 		let clientOptions: lc.LanguageClientOptions = {
