@@ -17,15 +17,12 @@ pub struct Args {
 
 #[derive(Subcommand)]
 pub(crate) enum Command {
-    /// Start a language server
-    Lsp(LspCommand),
-
     /// Format a set of files or directories
     Format(FormatCommand),
-}
 
-#[derive(Clone, Debug, Parser)]
-pub(crate) struct LspCommand {}
+    /// Start a language server
+    LanguageServer(LanguageServerCommand),
+}
 
 #[derive(Clone, Debug, Parser)]
 #[command(arg_required_else_help(true))]
@@ -39,3 +36,6 @@ pub(crate) struct FormatCommand {
     #[arg(long)]
     pub check: bool,
 }
+
+#[derive(Clone, Debug, Parser)]
+pub(crate) struct LanguageServerCommand {}
