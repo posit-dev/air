@@ -4,6 +4,8 @@ The release process of the air cli has some manual steps. When you want to cut a
 
 - Create a release branch
 
+    - Polish `CHANGELOG.md`, bump the version and add a new `Development version` header.
+
     - In `crates/air/Cargo.toml`, bump the version.
 
     - Run `cargo check` to sync `Cargo.lock`.
