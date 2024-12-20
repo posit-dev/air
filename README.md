@@ -26,8 +26,8 @@ powershell -c "irm https://github.com/posit-dev/air/releases/latest/download/air
 For a specific version:
 
 ```shell
-curl -LsSf https://github.com/posit-dev/air/releases/download/0.1.0/air-installer.sh | sh
-powershell -c "irm https://github.com/posit-dev/air/releases/download/0.1.0/air-installer.ps1 | iex"
+curl -LsSf https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.sh | sh
+powershell -c "irm https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.ps1 | iex"
 ```
 
 The installer scripts will automatically add air to your `PATH`. The very first time you install air, for the `PATH` modifications to be applied:
