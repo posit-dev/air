@@ -1,0 +1,75 @@
+---
+source: crates/air_r_parser/tests/spec_test.rs
+expression: snapshot
+---
+## Input
+
+```R
+# Parses, but fails at runtime
+...
+
+{ ... }
+
+# An actual base R function
+...()
+
+```
+
+
+## AST
+
+```
+RRoot {
+    bom_token: missing (optional),
+    expressions: RExpressionList [
+        RDots {
+            value_token: DOTS@0..34 "..." [Comments("# Parses, but fails a ..."), Newline("\n")] [],
+        },
+        RBracedExpressions {
+            l_curly_token: L_CURLY@34..37 "{" [Newline("\n"), Newline("\n")] [],
+            expressions: RExpressionList [
+                RDots {
+                    value_token: DOTS@37..41 "..." [Whitespace(" ")] [],
+                },
+            ],
+            r_curly_token: R_CURLY@41..43 "}" [Whitespace(" ")] [],
+        },
+        RCall {
+            function: RDots {
+                value_token: DOTS@43..76 "..." [Newline("\n"), Newline("\n"), Comments("# An actual base R fu ..."), Newline("\n")] [],
+            },
+            arguments: RCallArguments {
+                l_paren_token: L_PAREN@76..77 "(" [] [],
+                items: RArgumentList [],
+                r_paren_token: R_PAREN@77..78 ")" [] [],
+            },
+        },
+    ],
+    eof_token: EOF@78..79 "" [Newline("\n")] [],
+}
+```
+
+## CST
+
+```
+0: R_ROOT@0..79
+  0: (empty)
+  1: R_EXPRESSION_LIST@0..78
+    0: R_DOTS@0..34
+      0: DOTS@0..34 "..." [Comments("# Parses, but fails a ..."), Newline("\n")] []
+    1: R_BRACED_EXPRESSIONS@34..43
+      0: L_CURLY@34..37 "{" [Newline("\n"), Newline("\n")] []
+      1: R_EXPRESSION_LIST@37..41
+        0: R_DOTS@37..41
+          0: DOTS@37..41 "..." [Whitespace(" ")] []
+      2: R_CURLY@41..43 "}" [Whitespace(" ")] []
+    2: R_CALL@43..78
+      0: R_DOTS@43..76
+        0: DOTS@43..76 "..." [Newline("\n"), Newline("\n"), Comments("# An actual base R fu ..."), Newline("\n")] []
+      1: R_CALL_ARGUMENTS@76..78
+        0: L_PAREN@76..77 "(" [] []
+        1: R_ARGUMENT_LIST@77..77
+        2: R_PAREN@77..78 ")" [] []
+  2: EOF@78..79 "" [Newline("\n")] []
+
+```

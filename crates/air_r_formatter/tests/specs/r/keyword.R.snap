@@ -1,0 +1,52 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/keyword.R
+---
+# Input
+
+```R
+return
+break
+next
+TRUE
+FALSE
+NULL
+Inf
+NaN
+NA
+NA_integer_
+NA_real_
+NA_complex_
+NA_character_
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Tab
+Indent width: 2
+Line ending: LF
+Line width: 80
+-----
+
+```R
+return
+break
+next
+TRUE
+FALSE
+NULL
+Inf
+NaN
+NA
+NA_integer_
+NA_real_
+NA_complex_
+NA_character_
+```

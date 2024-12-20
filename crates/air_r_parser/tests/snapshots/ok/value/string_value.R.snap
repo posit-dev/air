@@ -1,0 +1,75 @@
+---
+source: crates/air_r_parser/tests/spec_test.rs
+expression: snapshot
+---
+## Input
+
+```R
+"hi there!"
+"\""
+'hi there!'
+'\''
+"'"
+"multiline
+string"
+r"("some raw string
+business")"
+
+```
+
+
+## AST
+
+```
+RRoot {
+    bom_token: missing (optional),
+    expressions: RExpressionList [
+        RStringValue {
+            value_token: R_STRING_LITERAL@0..11 "\"hi there!\"" [] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@11..16 "\"\\\"\"" [Newline("\n")] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@16..28 "'hi there!'" [Newline("\n")] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@28..33 "'\\''" [Newline("\n")] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@33..37 "\"'\"" [Newline("\n")] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@37..56 "\"multiline\nstring\"" [Newline("\n")] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@56..88 "r\"(\"some raw string\nbusiness\")\"" [Newline("\n")] [],
+        },
+    ],
+    eof_token: EOF@88..89 "" [Newline("\n")] [],
+}
+```
+
+## CST
+
+```
+0: R_ROOT@0..89
+  0: (empty)
+  1: R_EXPRESSION_LIST@0..88
+    0: R_STRING_VALUE@0..11
+      0: R_STRING_LITERAL@0..11 "\"hi there!\"" [] []
+    1: R_STRING_VALUE@11..16
+      0: R_STRING_LITERAL@11..16 "\"\\\"\"" [Newline("\n")] []
+    2: R_STRING_VALUE@16..28
+      0: R_STRING_LITERAL@16..28 "'hi there!'" [Newline("\n")] []
+    3: R_STRING_VALUE@28..33
+      0: R_STRING_LITERAL@28..33 "'\\''" [Newline("\n")] []
+    4: R_STRING_VALUE@33..37
+      0: R_STRING_LITERAL@33..37 "\"'\"" [Newline("\n")] []
+    5: R_STRING_VALUE@37..56
+      0: R_STRING_LITERAL@37..56 "\"multiline\nstring\"" [Newline("\n")] []
+    6: R_STRING_VALUE@56..88
+      0: R_STRING_LITERAL@56..88 "r\"(\"some raw string\nbusiness\")\"" [Newline("\n")] []
+  2: EOF@88..89 "" [Newline("\n")] []
+
+```

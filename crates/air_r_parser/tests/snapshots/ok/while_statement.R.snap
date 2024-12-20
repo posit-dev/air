@@ -1,0 +1,142 @@
+---
+source: crates/air_r_parser/tests/spec_test.rs
+expression: snapshot
+---
+## Input
+
+```R
+while(TRUE) FALSE
+
+while(TRUE) {}
+
+while(a) {
+
+}
+
+while(fn()) {
+
+}
+
+```
+
+
+## AST
+
+```
+RRoot {
+    bom_token: missing (optional),
+    expressions: RExpressionList [
+        RWhileStatement {
+            while_token: WHILE_KW@0..5 "while" [] [],
+            l_paren_token: L_PAREN@5..6 "(" [] [],
+            condition: RTrueExpression {
+                true_token: TRUE_KW@6..10 "TRUE" [] [],
+            },
+            r_paren_token: R_PAREN@10..11 ")" [] [],
+            body: RFalseExpression {
+                false_token: FALSE_KW@11..17 "FALSE" [Whitespace(" ")] [],
+            },
+        },
+        RWhileStatement {
+            while_token: WHILE_KW@17..24 "while" [Newline("\n"), Newline("\n")] [],
+            l_paren_token: L_PAREN@24..25 "(" [] [],
+            condition: RTrueExpression {
+                true_token: TRUE_KW@25..29 "TRUE" [] [],
+            },
+            r_paren_token: R_PAREN@29..30 ")" [] [],
+            body: RBracedExpressions {
+                l_curly_token: L_CURLY@30..32 "{" [Whitespace(" ")] [],
+                expressions: RExpressionList [],
+                r_curly_token: R_CURLY@32..33 "}" [] [],
+            },
+        },
+        RWhileStatement {
+            while_token: WHILE_KW@33..40 "while" [Newline("\n"), Newline("\n")] [],
+            l_paren_token: L_PAREN@40..41 "(" [] [],
+            condition: RIdentifier {
+                name_token: IDENT@41..42 "a" [] [],
+            },
+            r_paren_token: R_PAREN@42..43 ")" [] [],
+            body: RBracedExpressions {
+                l_curly_token: L_CURLY@43..45 "{" [Whitespace(" ")] [],
+                expressions: RExpressionList [],
+                r_curly_token: R_CURLY@45..48 "}" [Newline("\n"), Newline("\n")] [],
+            },
+        },
+        RWhileStatement {
+            while_token: WHILE_KW@48..55 "while" [Newline("\n"), Newline("\n")] [],
+            l_paren_token: L_PAREN@55..56 "(" [] [],
+            condition: RCall {
+                function: RIdentifier {
+                    name_token: IDENT@56..58 "fn" [] [],
+                },
+                arguments: RCallArguments {
+                    l_paren_token: L_PAREN@58..59 "(" [] [],
+                    items: RArgumentList [],
+                    r_paren_token: R_PAREN@59..60 ")" [] [],
+                },
+            },
+            r_paren_token: R_PAREN@60..61 ")" [] [],
+            body: RBracedExpressions {
+                l_curly_token: L_CURLY@61..63 "{" [Whitespace(" ")] [],
+                expressions: RExpressionList [],
+                r_curly_token: R_CURLY@63..66 "}" [Newline("\n"), Newline("\n")] [],
+            },
+        },
+    ],
+    eof_token: EOF@66..67 "" [Newline("\n")] [],
+}
+```
+
+## CST
+
+```
+0: R_ROOT@0..67
+  0: (empty)
+  1: R_EXPRESSION_LIST@0..66
+    0: R_WHILE_STATEMENT@0..17
+      0: WHILE_KW@0..5 "while" [] []
+      1: L_PAREN@5..6 "(" [] []
+      2: R_TRUE_EXPRESSION@6..10
+        0: TRUE_KW@6..10 "TRUE" [] []
+      3: R_PAREN@10..11 ")" [] []
+      4: R_FALSE_EXPRESSION@11..17
+        0: FALSE_KW@11..17 "FALSE" [Whitespace(" ")] []
+    1: R_WHILE_STATEMENT@17..33
+      0: WHILE_KW@17..24 "while" [Newline("\n"), Newline("\n")] []
+      1: L_PAREN@24..25 "(" [] []
+      2: R_TRUE_EXPRESSION@25..29
+        0: TRUE_KW@25..29 "TRUE" [] []
+      3: R_PAREN@29..30 ")" [] []
+      4: R_BRACED_EXPRESSIONS@30..33
+        0: L_CURLY@30..32 "{" [Whitespace(" ")] []
+        1: R_EXPRESSION_LIST@32..32
+        2: R_CURLY@32..33 "}" [] []
+    2: R_WHILE_STATEMENT@33..48
+      0: WHILE_KW@33..40 "while" [Newline("\n"), Newline("\n")] []
+      1: L_PAREN@40..41 "(" [] []
+      2: R_IDENTIFIER@41..42
+        0: IDENT@41..42 "a" [] []
+      3: R_PAREN@42..43 ")" [] []
+      4: R_BRACED_EXPRESSIONS@43..48
+        0: L_CURLY@43..45 "{" [Whitespace(" ")] []
+        1: R_EXPRESSION_LIST@45..45
+        2: R_CURLY@45..48 "}" [Newline("\n"), Newline("\n")] []
+    3: R_WHILE_STATEMENT@48..66
+      0: WHILE_KW@48..55 "while" [Newline("\n"), Newline("\n")] []
+      1: L_PAREN@55..56 "(" [] []
+      2: R_CALL@56..60
+        0: R_IDENTIFIER@56..58
+          0: IDENT@56..58 "fn" [] []
+        1: R_CALL_ARGUMENTS@58..60
+          0: L_PAREN@58..59 "(" [] []
+          1: R_ARGUMENT_LIST@59..59
+          2: R_PAREN@59..60 ")" [] []
+      3: R_PAREN@60..61 ")" [] []
+      4: R_BRACED_EXPRESSIONS@61..66
+        0: L_CURLY@61..63 "{" [Whitespace(" ")] []
+        1: R_EXPRESSION_LIST@63..63
+        2: R_CURLY@63..66 "}" [Newline("\n"), Newline("\n")] []
+  2: EOF@66..67 "" [Newline("\n")] []
+
+```

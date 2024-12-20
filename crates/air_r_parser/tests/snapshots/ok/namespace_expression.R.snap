@@ -1,0 +1,461 @@
+---
+source: crates/air_r_parser/tests/spec_test.rs
+expression: snapshot
+---
+## Input
+
+```R
+a::b
+a:::b
+
+a::`b`
+a:::`b`
+
+a::"b"
+a:::"b"
+
+a::b()
+a:::b()
+
+a::b$c()
+a:::b@c()
+
+a::...
+a:::...
+
+...::a
+...:::a
+
+...::...
+...:::...
+
+a::..1
+a:::..1
+
+..1::a
+..1:::a
+
+..1::..1
+..1:::..1
+
+```
+
+
+## AST
+
+```
+RRoot {
+    bom_token: missing (optional),
+    expressions: RExpressionList [
+        RNamespaceExpression {
+            left: RIdentifier {
+                name_token: IDENT@0..1 "a" [] [],
+            },
+            operator: COLON2@1..3 "::" [] [],
+            right: RIdentifier {
+                name_token: IDENT@3..4 "b" [] [],
+            },
+        },
+        RNamespaceExpression {
+            left: RIdentifier {
+                name_token: IDENT@4..6 "a" [Newline("\n")] [],
+            },
+            operator: COLON3@6..9 ":::" [] [],
+            right: RIdentifier {
+                name_token: IDENT@9..10 "b" [] [],
+            },
+        },
+        RNamespaceExpression {
+            left: RIdentifier {
+                name_token: IDENT@10..13 "a" [Newline("\n"), Newline("\n")] [],
+            },
+            operator: COLON2@13..15 "::" [] [],
+            right: RIdentifier {
+                name_token: IDENT@15..18 "`b`" [] [],
+            },
+        },
+        RNamespaceExpression {
+            left: RIdentifier {
+                name_token: IDENT@18..20 "a" [Newline("\n")] [],
+            },
+            operator: COLON3@20..23 ":::" [] [],
+            right: RIdentifier {
+                name_token: IDENT@23..26 "`b`" [] [],
+            },
+        },
+        RNamespaceExpression {
+            left: RIdentifier {
+                name_token: IDENT@26..29 "a" [Newline("\n"), Newline("\n")] [],
+            },
+            operator: COLON2@29..31 "::" [] [],
+            right: RStringValue {
+                value_token: R_STRING_LITERAL@31..34 "\"b\"" [] [],
+            },
+        },
+        RNamespaceExpression {
+            left: RIdentifier {
+                name_token: IDENT@34..36 "a" [Newline("\n")] [],
+            },
+            operator: COLON3@36..39 ":::" [] [],
+            right: RStringValue {
+                value_token: R_STRING_LITERAL@39..42 "\"b\"" [] [],
+            },
+        },
+        RCall {
+            function: RNamespaceExpression {
+                left: RIdentifier {
+                    name_token: IDENT@42..45 "a" [Newline("\n"), Newline("\n")] [],
+                },
+                operator: COLON2@45..47 "::" [] [],
+                right: RIdentifier {
+                    name_token: IDENT@47..48 "b" [] [],
+                },
+            },
+            arguments: RCallArguments {
+                l_paren_token: L_PAREN@48..49 "(" [] [],
+                items: RArgumentList [],
+                r_paren_token: R_PAREN@49..50 ")" [] [],
+            },
+        },
+        RCall {
+            function: RNamespaceExpression {
+                left: RIdentifier {
+                    name_token: IDENT@50..52 "a" [Newline("\n")] [],
+                },
+                operator: COLON3@52..55 ":::" [] [],
+                right: RIdentifier {
+                    name_token: IDENT@55..56 "b" [] [],
+                },
+            },
+            arguments: RCallArguments {
+                l_paren_token: L_PAREN@56..57 "(" [] [],
+                items: RArgumentList [],
+                r_paren_token: R_PAREN@57..58 ")" [] [],
+            },
+        },
+        RCall {
+            function: RExtractExpression {
+                left: RNamespaceExpression {
+                    left: RIdentifier {
+                        name_token: IDENT@58..61 "a" [Newline("\n"), Newline("\n")] [],
+                    },
+                    operator: COLON2@61..63 "::" [] [],
+                    right: RIdentifier {
+                        name_token: IDENT@63..64 "b" [] [],
+                    },
+                },
+                operator: DOLLAR@64..65 "$" [] [],
+                right: RIdentifier {
+                    name_token: IDENT@65..66 "c" [] [],
+                },
+            },
+            arguments: RCallArguments {
+                l_paren_token: L_PAREN@66..67 "(" [] [],
+                items: RArgumentList [],
+                r_paren_token: R_PAREN@67..68 ")" [] [],
+            },
+        },
+        RCall {
+            function: RExtractExpression {
+                left: RNamespaceExpression {
+                    left: RIdentifier {
+                        name_token: IDENT@68..70 "a" [Newline("\n")] [],
+                    },
+                    operator: COLON3@70..73 ":::" [] [],
+                    right: RIdentifier {
+                        name_token: IDENT@73..74 "b" [] [],
+                    },
+                },
+                operator: AT@74..75 "@" [] [],
+                right: RIdentifier {
+                    name_token: IDENT@75..76 "c" [] [],
+                },
+            },
+            arguments: RCallArguments {
+                l_paren_token: L_PAREN@76..77 "(" [] [],
+                items: RArgumentList [],
+                r_paren_token: R_PAREN@77..78 ")" [] [],
+            },
+        },
+        RNamespaceExpression {
+            left: RIdentifier {
+                name_token: IDENT@78..81 "a" [Newline("\n"), Newline("\n")] [],
+            },
+            operator: COLON2@81..83 "::" [] [],
+            right: RDots {
+                value_token: DOTS@83..86 "..." [] [],
+            },
+        },
+        RNamespaceExpression {
+            left: RIdentifier {
+                name_token: IDENT@86..88 "a" [Newline("\n")] [],
+            },
+            operator: COLON3@88..91 ":::" [] [],
+            right: RDots {
+                value_token: DOTS@91..94 "..." [] [],
+            },
+        },
+        RNamespaceExpression {
+            left: RDots {
+                value_token: DOTS@94..99 "..." [Newline("\n"), Newline("\n")] [],
+            },
+            operator: COLON2@99..101 "::" [] [],
+            right: RIdentifier {
+                name_token: IDENT@101..102 "a" [] [],
+            },
+        },
+        RNamespaceExpression {
+            left: RDots {
+                value_token: DOTS@102..106 "..." [Newline("\n")] [],
+            },
+            operator: COLON3@106..109 ":::" [] [],
+            right: RIdentifier {
+                name_token: IDENT@109..110 "a" [] [],
+            },
+        },
+        RNamespaceExpression {
+            left: RDots {
+                value_token: DOTS@110..115 "..." [Newline("\n"), Newline("\n")] [],
+            },
+            operator: COLON2@115..117 "::" [] [],
+            right: RDots {
+                value_token: DOTS@117..120 "..." [] [],
+            },
+        },
+        RNamespaceExpression {
+            left: RDots {
+                value_token: DOTS@120..124 "..." [Newline("\n")] [],
+            },
+            operator: COLON3@124..127 ":::" [] [],
+            right: RDots {
+                value_token: DOTS@127..130 "..." [] [],
+            },
+        },
+        RNamespaceExpression {
+            left: RIdentifier {
+                name_token: IDENT@130..133 "a" [Newline("\n"), Newline("\n")] [],
+            },
+            operator: COLON2@133..135 "::" [] [],
+            right: RDotDotI {
+                value_token: DOTDOTI@135..138 "..1" [] [],
+            },
+        },
+        RNamespaceExpression {
+            left: RIdentifier {
+                name_token: IDENT@138..140 "a" [Newline("\n")] [],
+            },
+            operator: COLON3@140..143 ":::" [] [],
+            right: RDotDotI {
+                value_token: DOTDOTI@143..146 "..1" [] [],
+            },
+        },
+        RNamespaceExpression {
+            left: RDotDotI {
+                value_token: DOTDOTI@146..151 "..1" [Newline("\n"), Newline("\n")] [],
+            },
+            operator: COLON2@151..153 "::" [] [],
+            right: RIdentifier {
+                name_token: IDENT@153..154 "a" [] [],
+            },
+        },
+        RNamespaceExpression {
+            left: RDotDotI {
+                value_token: DOTDOTI@154..158 "..1" [Newline("\n")] [],
+            },
+            operator: COLON3@158..161 ":::" [] [],
+            right: RIdentifier {
+                name_token: IDENT@161..162 "a" [] [],
+            },
+        },
+        RNamespaceExpression {
+            left: RDotDotI {
+                value_token: DOTDOTI@162..167 "..1" [Newline("\n"), Newline("\n")] [],
+            },
+            operator: COLON2@167..169 "::" [] [],
+            right: RDotDotI {
+                value_token: DOTDOTI@169..172 "..1" [] [],
+            },
+        },
+        RNamespaceExpression {
+            left: RDotDotI {
+                value_token: DOTDOTI@172..176 "..1" [Newline("\n")] [],
+            },
+            operator: COLON3@176..179 ":::" [] [],
+            right: RDotDotI {
+                value_token: DOTDOTI@179..182 "..1" [] [],
+            },
+        },
+    ],
+    eof_token: EOF@182..183 "" [Newline("\n")] [],
+}
+```
+
+## CST
+
+```
+0: R_ROOT@0..183
+  0: (empty)
+  1: R_EXPRESSION_LIST@0..182
+    0: R_NAMESPACE_EXPRESSION@0..4
+      0: R_IDENTIFIER@0..1
+        0: IDENT@0..1 "a" [] []
+      1: COLON2@1..3 "::" [] []
+      2: R_IDENTIFIER@3..4
+        0: IDENT@3..4 "b" [] []
+    1: R_NAMESPACE_EXPRESSION@4..10
+      0: R_IDENTIFIER@4..6
+        0: IDENT@4..6 "a" [Newline("\n")] []
+      1: COLON3@6..9 ":::" [] []
+      2: R_IDENTIFIER@9..10
+        0: IDENT@9..10 "b" [] []
+    2: R_NAMESPACE_EXPRESSION@10..18
+      0: R_IDENTIFIER@10..13
+        0: IDENT@10..13 "a" [Newline("\n"), Newline("\n")] []
+      1: COLON2@13..15 "::" [] []
+      2: R_IDENTIFIER@15..18
+        0: IDENT@15..18 "`b`" [] []
+    3: R_NAMESPACE_EXPRESSION@18..26
+      0: R_IDENTIFIER@18..20
+        0: IDENT@18..20 "a" [Newline("\n")] []
+      1: COLON3@20..23 ":::" [] []
+      2: R_IDENTIFIER@23..26
+        0: IDENT@23..26 "`b`" [] []
+    4: R_NAMESPACE_EXPRESSION@26..34
+      0: R_IDENTIFIER@26..29
+        0: IDENT@26..29 "a" [Newline("\n"), Newline("\n")] []
+      1: COLON2@29..31 "::" [] []
+      2: R_STRING_VALUE@31..34
+        0: R_STRING_LITERAL@31..34 "\"b\"" [] []
+    5: R_NAMESPACE_EXPRESSION@34..42
+      0: R_IDENTIFIER@34..36
+        0: IDENT@34..36 "a" [Newline("\n")] []
+      1: COLON3@36..39 ":::" [] []
+      2: R_STRING_VALUE@39..42
+        0: R_STRING_LITERAL@39..42 "\"b\"" [] []
+    6: R_CALL@42..50
+      0: R_NAMESPACE_EXPRESSION@42..48
+        0: R_IDENTIFIER@42..45
+          0: IDENT@42..45 "a" [Newline("\n"), Newline("\n")] []
+        1: COLON2@45..47 "::" [] []
+        2: R_IDENTIFIER@47..48
+          0: IDENT@47..48 "b" [] []
+      1: R_CALL_ARGUMENTS@48..50
+        0: L_PAREN@48..49 "(" [] []
+        1: R_ARGUMENT_LIST@49..49
+        2: R_PAREN@49..50 ")" [] []
+    7: R_CALL@50..58
+      0: R_NAMESPACE_EXPRESSION@50..56
+        0: R_IDENTIFIER@50..52
+          0: IDENT@50..52 "a" [Newline("\n")] []
+        1: COLON3@52..55 ":::" [] []
+        2: R_IDENTIFIER@55..56
+          0: IDENT@55..56 "b" [] []
+      1: R_CALL_ARGUMENTS@56..58
+        0: L_PAREN@56..57 "(" [] []
+        1: R_ARGUMENT_LIST@57..57
+        2: R_PAREN@57..58 ")" [] []
+    8: R_CALL@58..68
+      0: R_EXTRACT_EXPRESSION@58..66
+        0: R_NAMESPACE_EXPRESSION@58..64
+          0: R_IDENTIFIER@58..61
+            0: IDENT@58..61 "a" [Newline("\n"), Newline("\n")] []
+          1: COLON2@61..63 "::" [] []
+          2: R_IDENTIFIER@63..64
+            0: IDENT@63..64 "b" [] []
+        1: DOLLAR@64..65 "$" [] []
+        2: R_IDENTIFIER@65..66
+          0: IDENT@65..66 "c" [] []
+      1: R_CALL_ARGUMENTS@66..68
+        0: L_PAREN@66..67 "(" [] []
+        1: R_ARGUMENT_LIST@67..67
+        2: R_PAREN@67..68 ")" [] []
+    9: R_CALL@68..78
+      0: R_EXTRACT_EXPRESSION@68..76
+        0: R_NAMESPACE_EXPRESSION@68..74
+          0: R_IDENTIFIER@68..70
+            0: IDENT@68..70 "a" [Newline("\n")] []
+          1: COLON3@70..73 ":::" [] []
+          2: R_IDENTIFIER@73..74
+            0: IDENT@73..74 "b" [] []
+        1: AT@74..75 "@" [] []
+        2: R_IDENTIFIER@75..76
+          0: IDENT@75..76 "c" [] []
+      1: R_CALL_ARGUMENTS@76..78
+        0: L_PAREN@76..77 "(" [] []
+        1: R_ARGUMENT_LIST@77..77
+        2: R_PAREN@77..78 ")" [] []
+    10: R_NAMESPACE_EXPRESSION@78..86
+      0: R_IDENTIFIER@78..81
+        0: IDENT@78..81 "a" [Newline("\n"), Newline("\n")] []
+      1: COLON2@81..83 "::" [] []
+      2: R_DOTS@83..86
+        0: DOTS@83..86 "..." [] []
+    11: R_NAMESPACE_EXPRESSION@86..94
+      0: R_IDENTIFIER@86..88
+        0: IDENT@86..88 "a" [Newline("\n")] []
+      1: COLON3@88..91 ":::" [] []
+      2: R_DOTS@91..94
+        0: DOTS@91..94 "..." [] []
+    12: R_NAMESPACE_EXPRESSION@94..102
+      0: R_DOTS@94..99
+        0: DOTS@94..99 "..." [Newline("\n"), Newline("\n")] []
+      1: COLON2@99..101 "::" [] []
+      2: R_IDENTIFIER@101..102
+        0: IDENT@101..102 "a" [] []
+    13: R_NAMESPACE_EXPRESSION@102..110
+      0: R_DOTS@102..106
+        0: DOTS@102..106 "..." [Newline("\n")] []
+      1: COLON3@106..109 ":::" [] []
+      2: R_IDENTIFIER@109..110
+        0: IDENT@109..110 "a" [] []
+    14: R_NAMESPACE_EXPRESSION@110..120
+      0: R_DOTS@110..115
+        0: DOTS@110..115 "..." [Newline("\n"), Newline("\n")] []
+      1: COLON2@115..117 "::" [] []
+      2: R_DOTS@117..120
+        0: DOTS@117..120 "..." [] []
+    15: R_NAMESPACE_EXPRESSION@120..130
+      0: R_DOTS@120..124
+        0: DOTS@120..124 "..." [Newline("\n")] []
+      1: COLON3@124..127 ":::" [] []
+      2: R_DOTS@127..130
+        0: DOTS@127..130 "..." [] []
+    16: R_NAMESPACE_EXPRESSION@130..138
+      0: R_IDENTIFIER@130..133
+        0: IDENT@130..133 "a" [Newline("\n"), Newline("\n")] []
+      1: COLON2@133..135 "::" [] []
+      2: R_DOT_DOT_I@135..138
+        0: DOTDOTI@135..138 "..1" [] []
+    17: R_NAMESPACE_EXPRESSION@138..146
+      0: R_IDENTIFIER@138..140
+        0: IDENT@138..140 "a" [Newline("\n")] []
+      1: COLON3@140..143 ":::" [] []
+      2: R_DOT_DOT_I@143..146
+        0: DOTDOTI@143..146 "..1" [] []
+    18: R_NAMESPACE_EXPRESSION@146..154
+      0: R_DOT_DOT_I@146..151
+        0: DOTDOTI@146..151 "..1" [Newline("\n"), Newline("\n")] []
+      1: COLON2@151..153 "::" [] []
+      2: R_IDENTIFIER@153..154
+        0: IDENT@153..154 "a" [] []
+    19: R_NAMESPACE_EXPRESSION@154..162
+      0: R_DOT_DOT_I@154..158
+        0: DOTDOTI@154..158 "..1" [Newline("\n")] []
+      1: COLON3@158..161 ":::" [] []
+      2: R_IDENTIFIER@161..162
+        0: IDENT@161..162 "a" [] []
+    20: R_NAMESPACE_EXPRESSION@162..172
+      0: R_DOT_DOT_I@162..167
+        0: DOTDOTI@162..167 "..1" [Newline("\n"), Newline("\n")] []
+      1: COLON2@167..169 "::" [] []
+      2: R_DOT_DOT_I@169..172
+        0: DOTDOTI@169..172 "..1" [] []
+    21: R_NAMESPACE_EXPRESSION@172..182
+      0: R_DOT_DOT_I@172..176
+        0: DOTDOTI@172..176 "..1" [Newline("\n")] []
+      1: COLON3@176..179 ":::" [] []
+      2: R_DOT_DOT_I@179..182
+        0: DOTDOTI@179..182 "..1" [] []
+  2: EOF@182..183 "" [Newline("\n")] []
+
+```

@@ -1,0 +1,52 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/for_statement.R
+---
+# Input
+
+```R
+for(x in y) x + y
+
+for(a_really_long_argument_name in but_we_dont_ever_break_inside_for_conditions_no_matter_how_long) 1
+
+# own-line comments get lifted up
+for (
+    # comment1
+    # comment2
+    a in 1
+  ) # comment3
+  a
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Tab
+Indent width: 2
+Line ending: LF
+Line width: 80
+-----
+
+```R
+for (x in y) x + y
+
+for (a_really_long_argument_name in but_we_dont_ever_break_inside_for_conditions_no_matter_how_long)
+	1
+
+# own-line comments get lifted up
+# comment1
+# comment2
+for (a in 1) # comment3
+	a
+```
+
+# Lines exceeding max width of 80 characters
+```
+    3: for (a_really_long_argument_name in but_we_dont_ever_break_inside_for_conditions_no_matter_how_long)
+```

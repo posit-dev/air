@@ -1,0 +1,81 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/unary_expression.R
+---
+# Input
+
+```R
++1
+-1
+~1
+?1
+!1
+
++
+1
+
+# FIXME: The following newlines are preserved at a weird place
+{
+  + # Comment
+  1
+
+  + # Comment
+
+  + # Comment
+
+  1
+}
+
+1 + ++1
+
+++argument_that_is_really_really_really_really_really_really_really_really_really_long
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Tab
+Indent width: 2
+Line ending: LF
+Line width: 80
+-----
+
+```R
++1
+-1
+~1
+?1
+!1
+
++1
+
+# FIXME: The following newlines are preserved at a weird place
+{
+	+
+		# Comment
+		1
+
+	+
+		# Comment
+
+		+
+			# Comment
+
+			1
+}
+
+1 + ++1
+
+++argument_that_is_really_really_really_really_really_really_really_really_really_long
+```
+
+# Lines exceeding max width of 80 characters
+```
+   26: ++argument_that_is_really_really_really_really_really_really_really_really_really_long
+```

@@ -1,0 +1,58 @@
+name: "Test - linux"
+
+on:
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      ssh:
+        description: 'Set up an SSH session before running `cargo test`?'
+        type: boolean
+        required: true
+        default: false
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    name: "Rust: ${{ matrix.config.rust }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - { rust: 'stable' }
+          - { rust: 'nightly' }
+    timeout-minutes: 30
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update build environment
+        run: |
+          sudo apt-get update
+
+      - name: Install nightly rust
+        uses: dtolnay/rust-toolchain@nightly
+        if: matrix.config.rust == 'nightly'
+
+      - name: Report rust toolchain
+        run: rustup show
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        # Cache isn't useful on nightly, it would be thrown away every day
+        if: matrix.config.rust != 'nightly'
+
+      - name: Setup SSH access
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ inputs.ssh }}
+        timeout-minutes: 30
+
+      - name: Build
+        run: cargo build
+
+      - name: Run unit tests
+        env:
+          AIR_LOG_LEVEL: trace
+        # `--nocapture` to see our own `tracing` logs
+        # `--test-threads 1` to ensure `tracing` logs aren't interleaved
+        run: cargo test -- --nocapture --test-threads 1

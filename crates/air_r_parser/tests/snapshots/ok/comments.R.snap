@@ -1,0 +1,49 @@
+---
+source: crates/air_r_parser/tests/spec_test.rs
+expression: snapshot
+---
+## Input
+
+```R
+# Leading
+1 + 1 # Trailing
+# Leading
+
+```
+
+
+## AST
+
+```
+RRoot {
+    bom_token: missing (optional),
+    expressions: RExpressionList [
+        RBinaryExpression {
+            left: RDoubleValue {
+                value_token: R_DOUBLE_LITERAL@0..11 "1" [Comments("# Leading"), Newline("\n")] [],
+            },
+            operator: PLUS@11..13 "+" [Whitespace(" ")] [],
+            right: RDoubleValue {
+                value_token: R_DOUBLE_LITERAL@13..26 "1" [Whitespace(" ")] [Whitespace(" "), Comments("# Trailing")],
+            },
+        },
+    ],
+    eof_token: EOF@26..37 "" [Newline("\n"), Comments("# Leading"), Newline("\n")] [],
+}
+```
+
+## CST
+
+```
+0: R_ROOT@0..37
+  0: (empty)
+  1: R_EXPRESSION_LIST@0..26
+    0: R_BINARY_EXPRESSION@0..26
+      0: R_DOUBLE_VALUE@0..11
+        0: R_DOUBLE_LITERAL@0..11 "1" [Comments("# Leading"), Newline("\n")] []
+      1: PLUS@11..13 "+" [Whitespace(" ")] []
+      2: R_DOUBLE_VALUE@13..26
+        0: R_DOUBLE_LITERAL@13..26 "1" [Whitespace(" ")] [Whitespace(" "), Comments("# Trailing")]
+  2: EOF@26..37 "" [Newline("\n"), Comments("# Leading"), Newline("\n")] []
+
+```

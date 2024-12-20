@@ -1,0 +1,140 @@
+[workspace]
+members = ["crates/*", "xtask/codegen"]
+resolver = "2"
+
+[workspace.package]
+authors = ["Posit Software, PBC"]
+categories = ["development-tools"]
+edition = "2021"
+homepage = "https://github.com/posit-dev/air"
+keywords = ["parser", "formatter"]
+license = "MIT"
+repository = "https://github.com/posit-dev/air"
+rust-version = "1.83"
+
+[profile.release-with-debug]
+debug = true
+inherits = "release"
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+
+[workspace.dependencies]
+air_formatter_test = { path = "./crates/air_formatter_test" }
+air_r_factory = { path = "./crates/air_r_factory" }
+air_r_formatter = { path = "./crates/air_r_formatter" }
+air_r_parser = { path = "./crates/air_r_parser" }
+air_r_syntax = { path = "./crates/air_r_syntax" }
+biome_ungrammar = { path = "./crates/biome_ungrammar" }
+fs = { path = "./crates/fs" }
+line_ending = { path = "./crates/line_ending" }
+lsp = { path = "./crates/lsp" }
+lsp_test = { path = "./crates/lsp_test" }
+tests_macros = { path = "./crates/tests_macros" }
+
+anyhow = "1.0.89"
+assert_matches = "1.5.0"
+biome_console = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
+biome_diagnostics = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
+biome_formatter = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
+biome_lsp_converters = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
+biome_parser = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
+biome_rowan = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
+biome_string_case = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
+biome_text_size = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
+biome_unicode_table = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
+bytes = "1.8.0"
+cargo_metadata = "0.19.1"
+clap = { version = "4.5.20", features = ["derive"] }
+crossbeam = "0.8.4"
+dissimilar = "1.0.9"
+futures = "0.3.31"
+futures-util = "0.3.31"
+httparse = "1.9.5"
+ignore = "0.4.23"
+insta = "1.40.0"
+itertools = "0.13.0"
+line-index = "0.1.2"
+memchr = "2.7.4"
+path-absolutize = "3.1.1"
+proc-macro2 = "1.0.86"
+serde = { version = "1.0.215", features = ["derive"] }
+serde_json = "1.0.132"
+struct-field-names-as-array = "0.3.0"
+strum = "0.26"
+time = "0.3.37"
+thiserror = "2.0.5"
+tokio = { version = "1.41.1" }
+tokio-util = "0.7.12"
+# For https://github.com/ebkalderon/tower-lsp/pull/428
+tower-lsp = { git = "https://github.com/lionel-/tower-lsp", branch = "bugfix/patches" }
+tracing = { version = "0.1.40", default-features = false, features = ["std"] }
+tracing-subscriber = "0.3.19"
+tree-sitter = "0.23.0"
+tree-sitter-r = { git = "https://github.com/r-lib/tree-sitter-r", rev = "a0d3e3307489c3ca54da8c7b5b4e0c5f5fd6953a" }
+triomphe = "0.1.14"
+url = "2.5.3"
+uuid = { version = "1.11.0", features = ["v4"] }
+
+[workspace.lints.clippy]
+# pedantic
+assigning_clones = "warn"
+checked_conversions = "warn"
+cloned_instead_of_copied = "warn"
+copy_iterator = "warn"
+dbg_macro = "warn"
+empty_enum = "warn"
+expl_impl_clone_on_copy = "warn"
+explicit_into_iter_loop = "warn"
+filter_map_next = "warn"
+flat_map_option = "warn"
+fn_params_excessive_bools = "warn"
+from_iter_instead_of_collect = "warn"
+implicit_clone = "warn"
+implicit_hasher = "warn"
+index_refutable_slice = "warn"
+inefficient_to_string = "warn"
+invalid_upcast_comparisons = "warn"
+iter_filter_is_ok = "warn"
+iter_not_returning_iterator = "warn"
+large_stack_arrays = "warn"
+large_types_passed_by_value = "warn"
+macro_use_imports = "warn"
+manual_is_variant_and = "warn"
+manual_ok_or = "warn"
+manual_string_new = "warn"
+map_flatten = "warn"
+map_unwrap_or = "warn"
+mismatching_type_param_order = "warn"
+mut_mut = "warn"
+naive_bytecount = "warn"
+needless_bitwise_bool = "warn"
+needless_continue = "warn"
+needless_for_each = "warn"
+no_effect_underscore_binding = "warn"
+option_as_ref_cloned = "warn"
+ref_binding_to_reference = "warn"
+ref_option_ref = "warn"
+single_char_pattern = "warn"
+stable_sort_primitive = "warn"
+str_split_at_newline = "warn"
+unnecessary_box_returns = "warn"
+unnecessary_join = "warn"
+unnested_or_patterns = "warn"
+unreadable_literal = "warn"
+verbose_bit_mask = "warn"
+zero_sized_map_values = "warn"
+
+# restriction
+cfg_not_test = "warn"
+empty_drop = "warn"
+empty_enum_variants_with_brackets = "warn"
+float_cmp_const = "warn"
+get_unwrap = "warn"
+lossy_float_literal = "warn"
+rc_buffer = "warn"
+rc_mutex = "warn"
+rest_pat_in_fully_bound_structs = "warn"
+string_lit_chars_any = "warn"
+verbose_file_reads = "warn"
