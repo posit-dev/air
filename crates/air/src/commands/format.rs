@@ -8,23 +8,32 @@ use std::path::PathBuf;
 use air_r_formatter::context::RFormatOptions;
 use air_r_parser::RParserOptions;
 use fs::relativize_path;
-use ignore::DirEntry;
 use itertools::Either;
 use itertools::Itertools;
-use line_ending::LineEnding;
 use thiserror::Error;
+use workspace::resolve::discover_r_file_paths;
+use workspace::resolve::SettingsResolver;
+use workspace::settings::FormatSettings;
+use workspace::settings::Settings;
 
 use crate::args::FormatCommand;
 use crate::ExitStatus;
 
 pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
     let mode = FormatMode::from_command(&command);
-    let paths = resolve_paths(&command.paths);
+
+    let paths = discover_r_file_paths(&command.paths);
+
+    let mut resolver = SettingsResolver::new(Settings::default());
+    resolver.load_from_paths(&command.paths)?;
 
     let (actions, errors): (Vec<_>, Vec<_>) = paths
         .into_iter()
         .map(|path| match path {
-            Ok(path) => format_file(path, mode),
+            Ok(path) => {
+                let settings = resolver.resolve_or_fallback(&path);
+                format_file(path, mode, &settings.format)
+            }
             Err(err) => Err(err.into()),
         })
         .partition_map(|result| match result {
@@ -99,62 +108,6 @@ fn write_changed(actions: &[FormatFileAction], f: &mut impl Write) -> io::Result
     Ok(())
 }
 
-fn resolve_paths(paths: &[PathBuf]) -> Vec<Result<PathBuf, ignore::Error>> {
-    let paths: Vec<PathBuf> = paths.iter().map(fs::normalize_path).collect();
-
-    let (first_path, paths) = paths
-        .split_first()
-        .expect("Clap should ensure at least 1 path is supplied.");
-
-    // TODO: Parallel directory visitor
-    let mut builder = ignore::WalkBuilder::new(first_path);
-
-    for path in paths {
-        builder.add(path);
-    }
-
-    let mut out = Vec::new();
-
-    for path in builder.build() {
-        match path {
-            Ok(entry) => {
-                if let Some(path) = is_valid_path(entry) {
-                    out.push(Ok(path));
-                }
-            }
-            Err(err) => {
-                out.push(Err(err));
-            }
-        }
-    }
-
-    out
-}
-
-// Decide whether or not to accept an `entry` based on include/exclude rules.
-fn is_valid_path(entry: DirEntry) -> Option<PathBuf> {
-    // Ignore directories
-    if entry.file_type().map_or(true, |ft| ft.is_dir()) {
-        return None;
-    }
-
-    // Accept all files that are passed-in directly, even non-R files
-    if entry.depth() == 0 {
-        let path = entry.into_path();
-        return Some(path);
-    }
-
-    // Otherwise check if we should accept this entry
-    // TODO: Many other checks based on user exclude/includes
-    let path = entry.into_path();
-
-    if !fs::has_r_extension(&path) {
-        return None;
-    }
-
-    Some(path)
-}
-
 pub(crate) enum FormatFileAction {
     Formatted(PathBuf),
     Unchanged,
@@ -166,18 +119,15 @@ impl FormatFileAction {
     }
 }
 
-// TODO: Take workspace `FormatOptions` that get resolved to `RFormatOptions`
-// for the formatter here. Respect user specified `LineEnding` option too, and
-// only use inferred endings when `FormatOptions::LineEnding::Auto` is used.
-fn format_file(path: PathBuf, mode: FormatMode) -> Result<FormatFileAction, FormatCommandError> {
+fn format_file(
+    path: PathBuf,
+    mode: FormatMode,
+    settings: &FormatSettings,
+) -> Result<FormatFileAction, FormatCommandError> {
     let source = std::fs::read_to_string(&path)
         .map_err(|err| FormatCommandError::Read(path.clone(), err))?;
 
-    let line_ending = match line_ending::infer(&source) {
-        LineEnding::Lf => biome_formatter::LineEnding::Lf,
-        LineEnding::Crlf => biome_formatter::LineEnding::Crlf,
-    };
-    let options = RFormatOptions::default().with_line_ending(line_ending);
+    let options = settings.to_format_options(&source);
 
     let formatted = match format_source(source.as_str(), options) {
         Ok(formatted) => formatted,

@@ -3,10 +3,12 @@
 
 pub use tower_lsp::start_lsp;
 
+pub mod capabilities;
 pub mod config;
 pub mod crates;
 pub mod documents;
 pub mod encoding;
+pub mod error;
 pub mod from_proto;
 pub mod handlers;
 pub mod handlers_ext;
@@ -19,6 +21,7 @@ pub mod settings;
 pub mod state;
 pub mod to_proto;
 pub mod tower_lsp;
+pub mod workspaces;
 
 #[cfg(test)]
 pub mod test_utils;
