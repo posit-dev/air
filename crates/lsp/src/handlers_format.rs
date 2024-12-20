@@ -27,7 +27,13 @@ pub(crate) fn document_formatting(
     let format_options = settings.format.to_format_options(&doc.contents);
 
     if doc.parse.has_errors() {
-        return Err(anyhow::anyhow!("Can't format when there are parse errors."));
+        // Refuse to format in the face of parse errors, but only log a warning
+        // rather than returning an LSP error, as toast notifications here are distracting.
+        tracing::warn!(
+            "Failed to format {uri}. Can't format when there are parse errors.",
+            uri = params.text_document.uri
+        );
+        return Ok(None);
     }
 
     let formatted = format_node(format_options, &doc.parse.syntax())?;
@@ -48,6 +54,16 @@ pub(crate) fn document_range_formatting(
     state: &WorldState,
 ) -> anyhow::Result<Option<Vec<lsp_types::TextEdit>>> {
     let doc = state.get_document(&params.text_document.uri)?;
+
+    if doc.parse.has_errors() {
+        // Refuse to format in the face of parse errors, but only log a warning
+        // rather than returning an LSP error, as toast notifications here are distracting.
+        tracing::warn!(
+            "Failed to format {uri}. Can't format when there are parse errors.",
+            uri = params.text_document.uri
+        );
+        return Ok(None);
+    }
 
     let range =
         from_proto::text_range(&doc.line_index.index, params.range, doc.line_index.encoding)?;
