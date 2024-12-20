@@ -1,7 +1,7 @@
 [package]
-name = "air"
-version = "0.1.1"
-publish = true
+name = "workspace"
+version = "0.1.0"
+publish = false
 authors.workspace = true
 categories.workspace = true
 edition.workspace = true
@@ -13,24 +13,18 @@ rust-version.workspace = true
 
 [dependencies]
 air_r_formatter = { workspace = true }
-air_r_parser = { workspace = true }
-anyhow = { workspace = true }
-biome_console = { workspace = true }
-biome_diagnostics = { workspace = true }
-biome_formatter = { workspace = true }
-biome_parser = { workspace = true }
-clap = { workspace = true, features = ["wrap_help"] }
+biome_formatter = { workspace = true, features = ["serde"] }
 fs = { workspace = true }
 ignore = { workspace = true }
-itertools = { workspace = true }
 line_ending = { workspace = true }
-lsp = { workspace = true }
+rustc-hash = { workspace = true }
 thiserror = { workspace = true }
-tokio = "1.41.1"
-tracing = { workspace = true }
-workspace = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+toml = { workspace = true }
 
 [dev-dependencies]
+anyhow = { workspace = true }
+insta = { workspace = true }
 tempfile = { workspace = true }
 
 [lints]

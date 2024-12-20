@@ -1,0 +1,9 @@
+---
+source: crates/workspace/src/settings/line_length.rs
+expression: error
+---
+TOML parse error at line 2, column 15
+  |
+2 | line-length = 400
+  |               ^^^
+The line length must be a value between 1 and 320, not 400.

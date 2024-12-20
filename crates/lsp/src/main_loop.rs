@@ -18,7 +18,10 @@ use tokio::task::JoinHandle;
 use tower_lsp::lsp_types::Diagnostic;
 use tower_lsp::Client;
 use url::Url;
+use workspace::resolve::SettingsResolver;
+use workspace::settings::Settings;
 
+use crate::capabilities::ResolvedClientCapabilities;
 use crate::handlers;
 use crate::handlers_ext;
 use crate::handlers_format;
@@ -31,6 +34,7 @@ use crate::tower_lsp::LspMessage;
 use crate::tower_lsp::LspNotification;
 use crate::tower_lsp::LspRequest;
 use crate::tower_lsp::LspResponse;
+use crate::workspaces::WorkspaceSettingsResolver;
 
 pub(crate) type TokioUnboundedSender<T> = tokio::sync::mpsc::UnboundedSender<T>;
 pub(crate) type TokioUnboundedReceiver<T> = tokio::sync::mpsc::UnboundedReceiver<T>;
@@ -148,6 +152,9 @@ pub(crate) struct GlobalState {
 /// Unlike `WorldState`, `ParserState` cannot be cloned and is only accessed by
 /// exclusive handlers.
 pub(crate) struct LspState {
+    /// Resolver to look up [`Settings`] given a document [`Url`]
+    pub(crate) workspace_settings_resolver: WorkspaceSettingsResolver,
+
     /// The negociated encoding for document positions. Note that documents are
     /// always stored as UTF-8 in Rust Strings. This encoding is only used to
     /// translate UTF-16 positions sent by the client to UTF-8 ones.
@@ -156,26 +163,42 @@ pub(crate) struct LspState {
     /// The set of tree-sitter document parsers managed by the `GlobalState`.
     pub(crate) parsers: HashMap<Url, tree_sitter::Parser>,
 
-    /// List of capabilities for which we need to send a registration request
-    /// when we get the `Initialized` notification.
-    pub(crate) needs_registration: ClientCaps,
-    // Add handle to aux loop here?
+    /// List of client capabilities that we care about
+    pub(crate) capabilities: ResolvedClientCapabilities,
 }
 
 impl Default for LspState {
     fn default() -> Self {
         Self {
+            workspace_settings_resolver: WorkspaceSettingsResolver::default(),
             // Default encoding specified in the LSP protocol
             position_encoding: PositionEncoding::Wide(WideEncoding::Utf16),
             parsers: Default::default(),
-            needs_registration: Default::default(),
+            capabilities: ResolvedClientCapabilities::default(),
         }
     }
 }
 
-#[derive(Debug, Default)]
-pub(crate) struct ClientCaps {
-    pub(crate) did_change_configuration: bool,
+impl LspState {
+    pub(crate) fn document_settings(&self, url: &Url) -> &Settings {
+        self.workspace_settings_resolver.settings_for_url(url)
+    }
+
+    pub(crate) fn open_workspace_folder(
+        &mut self,
+        url: &Url,
+        fallback: Settings,
+    ) -> anyhow::Result<()> {
+        self.workspace_settings_resolver
+            .open_workspace_folder(url, fallback)
+    }
+
+    pub(crate) fn close_workspace_folder(
+        &mut self,
+        url: &Url,
+    ) -> anyhow::Result<Option<SettingsResolver>> {
+        self.workspace_settings_resolver.close_workspace_folder(url)
+    }
 }
 
 enum LoopControl {
@@ -300,14 +323,14 @@ impl GlobalState {
                         LspNotification::Initialized(_params) => {
                             handlers::handle_initialized(&self.client, &self.lsp_state).await?;
                         },
-                        LspNotification::DidChangeWorkspaceFolders(_params) => {
-                            // TODO: Restart indexer with new folders.
+                        LspNotification::DidChangeWorkspaceFolders(params) => {
+                            handlers_state::did_change_workspace_folders(params, &mut self.lsp_state)?;
                         },
                         LspNotification::DidChangeConfiguration(params) => {
                             handlers_state::did_change_configuration(params, &self.client, &mut self.world).await?;
                         },
-                        LspNotification::DidChangeWatchedFiles(_params) => {
-                            // TODO: Re-index the changed files.
+                        LspNotification::DidChangeWatchedFiles(params) => {
+                            handlers_state::did_change_watched_files(params, &mut self.lsp_state)?;
                         },
                         LspNotification::DidOpenTextDocument(params) => {
                             handlers_state::did_open(params, &self.lsp_state, &mut self.world)?;
@@ -329,17 +352,17 @@ impl GlobalState {
                         LspRequest::Initialize(params) => {
                             // Unwrap: `Initialize` method should only be called once.
                             let log_tx = self.log_tx.take().unwrap();
-                            respond(tx, handlers_state::initialize(params, &mut self.lsp_state, &mut self.world, log_tx), LspResponse::Initialize)?;
+                            respond(tx, handlers_state::initialize(params, &mut self.lsp_state, log_tx), LspResponse::Initialize)?;
                         },
                         LspRequest::Shutdown => {
                             out = LoopControl::Shutdown;
                             respond(tx, Ok(()), LspResponse::Shutdown)?;
                         },
                         LspRequest::DocumentFormatting(params) => {
-                            respond(tx, handlers_format::document_formatting(params, &self.world), LspResponse::DocumentFormatting)?;
+                            respond(tx, handlers_format::document_formatting(params, &self.lsp_state, &self.world), LspResponse::DocumentFormatting)?;
                         },
                         LspRequest::DocumentRangeFormatting(params) => {
-                            respond(tx, handlers_format::document_range_formatting(params, &self.world), LspResponse::DocumentRangeFormatting)?;
+                            respond(tx, handlers_format::document_range_formatting(params, &self.lsp_state, &self.world), LspResponse::DocumentRangeFormatting)?;
                         },
                         LspRequest::AirViewFile(params) => {
                             respond(tx, handlers_ext::view_file(params, &self.world), LspResponse::AirViewFile)?;

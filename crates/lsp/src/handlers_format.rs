@@ -5,35 +5,32 @@
 //
 //
 
-use air_r_formatter::{context::RFormatOptions, format_node};
+use air_r_formatter::format_node;
 use air_r_syntax::{RExpressionList, RSyntaxKind, RSyntaxNode, WalkEvent};
-use biome_formatter::{IndentStyle, LineWidth};
 use biome_rowan::{AstNode, Language, SyntaxElement};
 use biome_text_size::{TextRange, TextSize};
 use tower_lsp::lsp_types;
 
+use crate::main_loop::LspState;
 use crate::state::WorldState;
 use crate::{from_proto, to_proto};
 
 #[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn document_formatting(
     params: lsp_types::DocumentFormattingParams,
+    lsp_state: &LspState,
     state: &WorldState,
 ) -> anyhow::Result<Option<Vec<lsp_types::TextEdit>>> {
     let doc = state.get_document(&params.text_document.uri)?;
 
-    let line_width = LineWidth::try_from(80).map_err(|err| anyhow::anyhow!("{err}"))?;
-
-    // TODO: Handle FormattingOptions
-    let options = RFormatOptions::default()
-        .with_indent_style(IndentStyle::Space)
-        .with_line_width(line_width);
+    let settings = lsp_state.document_settings(&params.text_document.uri);
+    let format_options = settings.format.to_format_options(&doc.contents);
 
     if doc.parse.has_errors() {
         return Err(anyhow::anyhow!("Can't format when there are parse errors."));
     }
 
-    let formatted = format_node(options.clone(), &doc.parse.syntax())?;
+    let formatted = format_node(format_options, &doc.parse.syntax())?;
     let output = formatted.print()?.into_code();
 
     // Do we need to check that `doc` is indeed an R file? What about special
@@ -47,18 +44,16 @@ pub(crate) fn document_formatting(
 #[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn document_range_formatting(
     params: lsp_types::DocumentRangeFormattingParams,
+    lsp_state: &LspState,
     state: &WorldState,
 ) -> anyhow::Result<Option<Vec<lsp_types::TextEdit>>> {
     let doc = state.get_document(&params.text_document.uri)?;
 
-    let line_width = LineWidth::try_from(80).map_err(|err| anyhow::anyhow!("{err}"))?;
     let range =
         from_proto::text_range(&doc.line_index.index, params.range, doc.line_index.encoding)?;
 
-    // TODO: Handle FormattingOptions
-    let options = RFormatOptions::default()
-        .with_indent_style(IndentStyle::Space)
-        .with_line_width(line_width);
+    let settings = lsp_state.document_settings(&params.text_document.uri);
+    let format_options = settings.format.to_format_options(&doc.contents);
 
     let logical_lines = find_deepest_enclosing_logical_lines(doc.parse.syntax(), range);
     if logical_lines.is_empty() {
@@ -96,7 +91,7 @@ pub(crate) fn document_range_formatting(
 
     let format_info = biome_formatter::format_sub_tree(
         root.syntax(),
-        air_r_formatter::RFormatLanguage::new(options),
+        air_r_formatter::RFormatLanguage::new(format_options),
     )?;
 
     if format_info.range().is_none() {

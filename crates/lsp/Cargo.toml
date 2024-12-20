@@ -42,6 +42,7 @@ tree-sitter-r.workspace = true
 triomphe.workspace = true
 url.workspace = true
 uuid = { workspace = true, features = ["v4"] }
+workspace = { workspace = true }
 
 [dev-dependencies]
 assert_matches.workspace = true

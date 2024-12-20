@@ -21,6 +21,7 @@ use crate::cst::FormatRSyntaxNode;
 pub mod comments;
 pub mod context;
 mod cst;
+pub mod options;
 mod prelude;
 mod r;
 pub(crate) mod separated;

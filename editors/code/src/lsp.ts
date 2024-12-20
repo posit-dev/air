@@ -65,11 +65,6 @@ export class Lsp {
 				{ language: "r", pattern: "**/*.{r,R}" },
 				{ language: "r", pattern: "**/*.{rprofile,Rprofile}" },
 			],
-			synchronize: {
-				// Notify the server about file changes to R files contained in the workspace
-				fileEvents:
-					vscode.workspace.createFileSystemWatcher("**/*.[Rr]"),
-			},
 			outputChannel: this.channel,
 		};
 
