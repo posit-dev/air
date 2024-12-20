@@ -22,16 +22,22 @@ pub(crate) fn document_formatting(
 ) -> anyhow::Result<Option<Vec<lsp_types::TextEdit>>> {
     let doc = state.get_document(&params.text_document.uri)?;
 
+    if doc.parse.has_errors() {
+        // Refuse to format in the face of parse errors, but only log a warning
+        // rather than returning an LSP error, as toast notifications here are distracting.
+        tracing::warn!(
+            "Failed to format {uri}. Can't format when there are parse errors.",
+            uri = params.text_document.uri
+        );
+        return Ok(None);
+    }
+
     let line_width = LineWidth::try_from(80).map_err(|err| anyhow::anyhow!("{err}"))?;
 
     // TODO: Handle FormattingOptions
     let options = RFormatOptions::default()
         .with_indent_style(IndentStyle::Space)
         .with_line_width(line_width);
-
-    if doc.parse.has_errors() {
-        return Err(anyhow::anyhow!("Can't format when there are parse errors."));
-    }
 
     let formatted = format_node(options.clone(), &doc.parse.syntax())?;
     let output = formatted.print()?.into_code();
@@ -50,6 +56,16 @@ pub(crate) fn document_range_formatting(
     state: &WorldState,
 ) -> anyhow::Result<Option<Vec<lsp_types::TextEdit>>> {
     let doc = state.get_document(&params.text_document.uri)?;
+
+    if doc.parse.has_errors() {
+        // Refuse to format in the face of parse errors, but only log a warning
+        // rather than returning an LSP error, as toast notifications here are distracting.
+        tracing::warn!(
+            "Failed to format {uri}. Can't format when there are parse errors.",
+            uri = params.text_document.uri
+        );
+        return Ok(None);
+    }
 
     let line_width = LineWidth::try_from(80).map_err(|err| anyhow::anyhow!("{err}"))?;
     let range =
