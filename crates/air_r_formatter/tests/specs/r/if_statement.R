@@ -36,3 +36,16 @@ if (a # becomes trailing on `a`
 ) {
   TRUE
 }
+
+# Breaks, but the `condition` itself fits and is not expanded
+if (this || this || this || this || this || this || this || this || this || this) {
+  1
+} else {
+  2
+}
+# Breaks, but the `condition` itself also doesn't fit and is also expanded
+if (this || this || this || this || this || this || this || this || this || this || this || this) {
+  1
+} else {
+  2
+}
