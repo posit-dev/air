@@ -46,21 +46,6 @@ argument_that_is_quite_long + argument_that_is_quite_long^argument_that_is_quite
 1 ^ 2
 1 : 2
 
-# The following assignments should start the LHS/RHS on the same
-# line as the operator
-fn = function(x) {
-  x
-}
-fn <- function(x) {
-  x
-}
-fn <<- function(x) {
-  x
-}
-
-identity(1) -> x
-identity(1) ->> x
-
 # -----------------------------------------------------------------------------
 # Help specific
 
@@ -452,3 +437,74 @@ ggplot() +
   geom_line() +
   geom_bar() %>%
     identity()
+
+# -----------------------------------------------------------------------------
+# Assignment
+
+# The following assignments should start the LHS/RHS on the same
+# line as the operator
+fn = function(x) {
+  x
+}
+fn <- function(x) {
+  x
+}
+fn <<- function(x) {
+  x
+}
+
+# Assignment comment tests
+fn <- function(x) # comment1
+  { # comment2
+    x # comment3
+  } # comment4
+
+identity(1) -> x
+identity(1) ->> x
+
+# -----------------------------------------------------------------------------
+# Assignment with magic line breaks
+
+# Magic line break after the left assignment
+fn =
+  value
+fn <-
+  value
+fn <<-
+  value
+
+# Important that comment3 trails `value` here!
+fn <- # comment1
+  # comment2
+  value # comment3
+
+# No magic line break after walrus operator
+fn :=
+  value
+
+# We want these to match, neither support magic line breaks
+call(fn :=
+  value)
+call(fn =
+  value)
+
+# No magic line break after right assignment
+fn ->
+  value
+fn ->>
+  value
+
+# https://github.com/posit-dev/air/issues/91
+is_condition_true <-
+  if (condition) {
+    "yes"
+  } else {
+    "no"
+  }
+
+# https://github.com/posit-dev/air/issues/91
+base_version <-
+  version %||%
+  b_get(brand, "defaults", "shiny", "theme", "version") %||%
+  b_get(brand, "defaults", "bootstrap", "version") %||%
+  version_default()

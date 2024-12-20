@@ -77,22 +77,111 @@ fn fmt_binary_sticky(
 }
 
 /// Assignment expressions keep LHS and RHS on the same line, separated by a single space
+///
+/// # Magic line breaks
+///
+/// The one exception to this is if a newline already exists between a left assignment
+/// operator and the rhs, which is a magic line break case, like:
+///
+/// ```r
+/// response <-
+///   if (condition) {
+///     "yes"
+///   } else {
+///     "no"
+///   }
+///
+/// resolved <-
+///   this %||%
+///     complex_that(a, b, c, d) %||%
+///     complex_that(e, f, g, h) %||%
+///     default()
+/// ```
+///
+/// Walrus assignment is not considered when looking for magic line breaks because we
+/// don't want the `:=` case below to look like a request for expansion. While `:=` is
+/// technically parsed as a binary operator, we format it more like a named argument with
+/// a simple `space()` between the operator and the right hand side.
+///
+/// ```r
+/// # `:=` here is technically a binary operator, `x := y` is technically an unnamed argument
+/// fn(
+///   x :=
+///     y
+/// )
+///
+/// # `=` here is not a binary operator, `x = y` is a named argument and `y` will be
+/// # forced onto the same line as `=`. We want to treat `:=` like this.
+/// fn(
+///   x =
+///     y
+/// )
+/// ```
+///
+/// Comment handling with magic line breaks here is a bit tricky. Consider this example:
+///
+/// ```r
+/// x <-
+///   y # comment
+/// ```
+///
+/// Note that `# comment` is actually attached to the whole binary expression node. When
+/// determining default comment placement, the [DecoratedComment::enclosing_node()] is the
+/// root node here, making the [DecoratedComment::preceding_node()] the binary expression
+/// node.
+///
+/// This means we can't use a simple [block_indent()] on `right`. The `block_indent()`
+/// would force a newline after the `y` but before the comment, moving the comment to the
+/// next line.
+///
+/// Instead, we do the same trick that we do in [fmt_binary_chain()] (and in Biome with
+/// binary chains) of using the "rarely needed" manual [indent()] and adding a leading
+/// [hard_line_break()] but not a trailing one. By avoiding a trailing hard line break,
+/// the trailing comment is allowed to be formatted on the same line as `y`.
 fn fmt_binary_assignment(
     left: AnyRExpression,
     operator: SyntaxToken<RLanguage>,
     right: AnyRExpression,
     f: &mut Formatter<RFormatContext>,
 ) -> FormatResult<()> {
+    let right = format_with(|f| {
+        if binary_assignment_needs_user_requested_expansion(&operator, &right) {
+            write!(
+                f,
+                [indent(&format_args![hard_line_break(), right.format()])]
+            )
+        } else {
+            write!(f, [space(), right.format()])
+        }
+    });
+
     write!(
         f,
         [group(&format_args![
             left.format(),
             space(),
             operator.format(),
-            space(),
-            right.format()
+            right
         ])]
     )
+}
+
+fn binary_assignment_needs_user_requested_expansion(
+    operator: &SyntaxToken<RLanguage>,
+    right: &AnyRExpression,
+) -> bool {
+    // TODO: This should be configurable by an option, since it is a case of
+    // irreversible formatting
+
+    // Only for these kinds of left assignment
+    if !matches!(
+        operator.kind(),
+        RSyntaxKind::EQUAL | RSyntaxKind::ASSIGN | RSyntaxKind::SUPER_ASSIGN
+    ) {
+        return false;
+    }
+
+    right.syntax().has_leading_newline()
 }
 
 /// Format a binary expression
