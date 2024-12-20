@@ -15,6 +15,7 @@ pub mod handlers_state;
 pub mod logging;
 pub mod main_loop;
 pub mod rust_analyzer;
+pub mod settings;
 pub mod state;
 pub mod to_proto;
 pub mod tower_lsp;

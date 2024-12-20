@@ -36,6 +36,7 @@ use crate::documents::Document;
 use crate::logging;
 use crate::logging::LogMessageSender;
 use crate::main_loop::LspState;
+use crate::settings::InitializationOptions;
 use crate::state::workspace_uris;
 use crate::state::WorldState;
 
@@ -65,16 +66,26 @@ pub(crate) fn initialize(
     state: &mut WorldState,
     log_tx: LogMessageSender,
 ) -> anyhow::Result<InitializeResult> {
-    // TODO: Get user specified options from `params.initialization_options`
-    let log_level = None;
-    let dependency_log_levels = None;
+    let InitializationOptions {
+        global_settings,
+        user_settings,
+        workspace_settings,
+    } = match params.initialization_options {
+        Some(initialization_options) => InitializationOptions::from_value(initialization_options),
+        None => InitializationOptions::default(),
+    };
 
     logging::init_logging(
         log_tx,
-        log_level,
-        dependency_log_levels,
+        global_settings.log_level,
+        global_settings.dependency_log_levels,
         params.client_info.as_ref(),
     );
+
+    // TODO: Should these be "pulled" using the LSP server->client `configuration()`
+    // request instead?
+    lsp_state.user_client_settings = user_settings;
+    lsp_state.workspace_client_settings = workspace_settings;
 
     // Defaults to UTF-16
     let mut position_encoding = None;

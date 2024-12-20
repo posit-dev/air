@@ -6,6 +6,10 @@
 	"publisher": "Posit",
 	"license": "MIT",
 	"repository": "https://github.com/posit-dev/air",
+	"serverInfo": {
+		"name": "Air",
+		"module": "air"
+	},
 	"engines": {
 		"vscode": "^1.90.0"
 	},
@@ -35,6 +39,29 @@
 				]
 			}
 		],
+		"configuration": {
+			"properties": {
+				"air.logLevel": {
+					"default": null,
+					"markdownDescription": "Controls the log level of the language server.\n\n**This setting requires a restart to take effect.**",
+					"enum": [
+					  "error",
+					  "warning",
+					  "info",
+					  "debug",
+					  "trace"
+					],
+					"scope": "application",
+					"type": "string"
+				},
+				"air.dependencyLogLevels": {
+					"default": null,
+					"markdownDescription": "Controls the log level of the Rust crates that the language server depends on.\n\n**This setting requires a restart to take effect.**",
+					"scope": "application",
+					"type": "string"
+				}
+			}
+		},
 		"configurationDefaults": {
 			"[r]": {
 				"editor.defaultFormatter": "Posit.air"
@@ -88,10 +115,12 @@
 		"@types/p-queue": "^3.1.0",
 		"p-queue": "npm:@esm2cjs/p-queue@^7.3.0",
 		"adm-zip": "^0.5.16",
+		"fs-extra": "^11.2.0",
 		"vscode-languageclient": "^9.0.1"
 	},
 	"devDependencies": {
 		"@types/adm-zip": "^0.5.6",
+		"@types/fs-extra": "^11.0.4",
 		"@types/mocha": "^10.0.9",
 		"@types/node": "20.x",
 		"@types/vscode": "^1.90.0",
