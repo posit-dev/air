@@ -3,3 +3,6 @@
 # From quarto preview
 README.html
 README_files
+
+# We often edit docs in RStudio
+.Rproj.user

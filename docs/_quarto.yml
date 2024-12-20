@@ -1,0 +1,33 @@
+project:
+  type: website
+
+website:
+  title: "Air"
+  navbar:
+    background: primary
+    search: true
+  sidebar:
+    style: "floating"
+    search: true
+    contents:
+      - text: "Overview"
+        href: index.qmd
+
+      - text: "Installation"
+        href: installation.qmd
+
+      - text: "Editors"
+        href: editors.qmd
+
+      - text: "Formatter"
+        href: formatter.qmd
+
+format:
+  html:
+    theme:
+      - cosmo
+      - custom.scss
+    css: styles.css
+    toc: true
+
+editor: visual

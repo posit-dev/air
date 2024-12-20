@@ -1,0 +1,9 @@
+---
+title: "Formatter"
+editor:
+  markdown:
+    wrap: sentence
+    canonical: true
+---
+
+TODO

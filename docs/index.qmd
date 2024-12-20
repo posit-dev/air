@@ -1,0 +1,29 @@
+---
+title: "Overview"
+editor:
+  markdown:
+    wrap: sentence
+    canonical: true
+---
+
+[![](https://github.com/posit-dev/air/actions/workflows/test.yml/badge.svg)](https://github.com/posit-dev/air/actions)
+
+Air is an R formatter and language server, written in Rust.
+
+-   Integrates with [your favorite editor](editors.qmd) with support for
+
+    -   Format on save
+
+    -   Format selection
+
+-   Usable from the [command line](formatter.qmd) with support for
+
+    -   Formatting individual files
+
+    -   Recursively formatting entire directories
+
+    -   `--check` mode, suitable for a git pre-commit hook or a GitHub Actions workflow
+
+If you'd like to use Air from the command line, read our [installation guide](installation.qmd).
+If you'd like to use Air inside a code editor, read our [editors guide](editors.qmd).
+
