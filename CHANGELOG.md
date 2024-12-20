@@ -2,6 +2,8 @@
 
 # Development version
 
+- Magic line breaks are now supported in left assignment (#118).
+
 
 # 0.1.1
 
