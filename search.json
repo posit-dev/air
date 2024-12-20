@@ -1,5 +1,25 @@
 [
   {
+    "objectID": "installation.html",
+    "href": "installation.html",
+    "title": "Installing Air",
+    "section": "",
+    "text": "If you’d like to use Air at the command line, you can use one of our standalone installers.\n\nTo install Air as a command line tool:\nOn macOS and Linux:\ncurl -LsSf https://github.com/posit-dev/air/releases/latest/download/air-installer.sh | sh\nOn Windows:\npowershell -c \"irm https://github.com/posit-dev/air/releases/latest/download/air-installer.ps1 | iex\"\nFor a specific version:\ncurl -LsSf https://github.com/posit-dev/air/releases/download/0.1.0/air-installer.sh | sh\npowershell -c \"irm https://github.com/posit-dev/air/releases/download/0.1.0/air-installer.ps1 | iex\"\nThe installer scripts will automatically add Air to your PATH. The very first time you install Air, for the PATH modifications to be applied you’ll need to restart your terminal.\nOn Windows, the first time you install Air it requires a full system restart for the PATH modification to take effect. We are working on improving this.",
+    "crumbs": [
+      "Installation"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Overview",
+    "section": "",
+    "text": "Air is an R formatter and language server, written in Rust.\n\nIntegrates with your favorite editor with support for\n\nFormat on save\nFormat selection\n\nUsable from the command line with support for\n\nFormatting individual files\nRecursively formatting entire directories\n--check mode, suitable for a git pre-commit hook or a GitHub Actions workflow\n\n\nIf you’d like to use Air from the command line, read our installation guide. If you’d like to use Air inside a code editor, read our editors guide.",
+    "crumbs": [
+      "Overview"
+    ]
+  },
+  {
     "objectID": "editors.html",
     "href": "editors.html",
     "title": "Editor setup",
@@ -60,33 +80,13 @@
     ]
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Overview",
-    "section": "",
-    "text": "Air is an R formatter and language server, written in Rust.\n\nIntegrates with your favorite editor with support for\n\nFormat on save\nFormat selection\n\nUsable from the command line with support for\n\nFormatting individual files\nRecursively formatting entire directories\n--check mode, suitable for a git pre-commit hook or a GitHub Actions workflow\n\n\nIf you’d like to use Air from the command line, read our installation guide. If you’d like to use Air inside a code editor, read our editors guide.",
-    "crumbs": [
-      "Overview"
-    ]
-  },
-  {
     "objectID": "formatter.html",
     "href": "formatter.html",
     "title": "Formatter",
     "section": "",
-    "text": "this is a formatter",
+    "text": "TODO",
     "crumbs": [
       "Formatter"
-    ]
-  },
-  {
-    "objectID": "installation.html",
-    "href": "installation.html",
-    "title": "Installing Air",
-    "section": "",
-    "text": "If you’d like to use Air at the command line, you can use one of our standalone installers.\n\nTo install Air as a command line tool:\nOn macOS and Linux:\ncurl -LsSf https://github.com/posit-dev/air/releases/latest/download/air-installer.sh | sh\nOn Windows:\npowershell -c \"irm https://github.com/posit-dev/air/releases/latest/download/air-installer.ps1 | iex\"\nFor a specific version:\ncurl -LsSf https://github.com/posit-dev/air/releases/download/0.1.0/air-installer.sh | sh\npowershell -c \"irm https://github.com/posit-dev/air/releases/download/0.1.0/air-installer.ps1 | iex\"\nThe installer scripts will automatically add Air to your PATH. The very first time you install Air, for the PATH modifications to be applied you’ll need to restart your terminal.\nOn Windows, the first time you install Air it requires a full system restart for the PATH modification to take effect. We are working on improving this.",
-    "crumbs": [
-      "Installation"
     ]
   }
 ]
