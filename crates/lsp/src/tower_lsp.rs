@@ -345,7 +345,7 @@ mod tests {
                     text_document_sync,
                     ..
                 } => {
-                    assert_eq!(position_encoding, None);
+                    assert_eq!(position_encoding, Some(PositionEncodingKind::UTF16));
                     assert_eq!(text_document_sync, Some(TextDocumentSyncCapability::Kind(TextDocumentSyncKind::INCREMENTAL)));
                 });
 

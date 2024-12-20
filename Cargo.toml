@@ -32,6 +32,7 @@ line_ending = { path = "./crates/line_ending" }
 lsp = { path = "./crates/lsp" }
 lsp_test = { path = "./crates/lsp_test" }
 tests_macros = { path = "./crates/tests_macros" }
+workspace = { path = "./crates/workspace" }
 
 anyhow = "1.0.89"
 assert_matches = "1.5.0"
@@ -59,14 +60,17 @@ line-index = "0.1.2"
 memchr = "2.7.4"
 path-absolutize = "3.1.1"
 proc-macro2 = "1.0.86"
-serde = { version = "1.0.215", features = ["derive"] }
+rustc-hash = "2.1.0"
+serde = "1.0.215"
 serde_json = "1.0.132"
 struct-field-names-as-array = "0.3.0"
 strum = "0.26"
+tempfile = "3.9.0"
 time = "0.3.37"
 thiserror = "2.0.5"
 tokio = { version = "1.41.1" }
 tokio-util = "0.7.12"
+toml = "0.8.19"
 # For https://github.com/ebkalderon/tower-lsp/pull/428
 tower-lsp = { git = "https://github.com/lionel-/tower-lsp", branch = "bugfix/patches" }
 tracing = { version = "0.1.40", default-features = false, features = ["std"] }
@@ -124,7 +128,6 @@ unnecessary_join = "warn"
 unnested_or_patterns = "warn"
 unreadable_literal = "warn"
 verbose_bit_mask = "warn"
-zero_sized_map_values = "warn"
 
 # restriction
 cfg_not_test = "warn"
