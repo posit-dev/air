@@ -1,0 +1,45 @@
+[package]
+name = "ruff_server"
+version = "0.1.1"
+publish = false
+authors = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
+homepage = { workspace = true }
+repository = { workspace = true }
+license = { workspace = true }
+
+[lib]
+
+[dependencies]
+air_r_formatter = { workspace = true }
+air_r_parser = { workspace = true }
+ruff_source_file = { workspace = true }
+ruff_text_size = { workspace = true }
+workspace = { workspace = true }
+
+anyhow = { workspace = true }
+crossbeam = { workspace = true }
+ignore = { workspace = true }
+jod-thread = { workspace = true }
+lsp-server = { workspace = true }
+lsp-types = { workspace = true }
+regex = { workspace = true }
+rustc-hash = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+[dev-dependencies]
+insta = { workspace = true }
+
+[target.'cfg(target_vendor = "apple")'.dependencies]
+libc = { workspace = true }
+
+[build-dependencies]
+cargo_metadata.workspace = true
+
+[lints]
+workspace = true

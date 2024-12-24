@@ -1,10 +1,18 @@
+use std::num::NonZeroUsize;
+
+use ruff_server::Server;
+
 use crate::args::LanguageServerCommand;
 use crate::ExitStatus;
 
-#[tokio::main]
-pub(crate) async fn language_server(_command: LanguageServerCommand) -> anyhow::Result<ExitStatus> {
-    // Returns after shutdown
-    lsp::start_lsp(tokio::io::stdin(), tokio::io::stdout()).await;
+pub(crate) fn language_server(_command: LanguageServerCommand) -> anyhow::Result<ExitStatus> {
+    let four = NonZeroUsize::new(4).unwrap();
 
-    Ok(ExitStatus::Success)
+    // by default, we set the number of worker threads to `num_cpus`, with a maximum of 4.
+    let worker_threads = std::thread::available_parallelism()
+        .unwrap_or(four)
+        .max(four);
+
+    let server = Server::new(worker_threads)?;
+    server.run().map(|()| ExitStatus::Success)
 }

@@ -32,6 +32,9 @@ line_ending = { path = "./crates/line_ending" }
 lsp = { path = "./crates/lsp" }
 lsp_test = { path = "./crates/lsp_test" }
 tests_macros = { path = "./crates/tests_macros" }
+ruff_server = { path = "./crates/ruff_server" }
+ruff_source_file = { path = "./crates/ruff_source_file" }
+ruff_text_size = { path = "./crates/ruff_text_size" }
 workspace = { path = "./crates/workspace" }
 
 anyhow = "1.0.89"
@@ -56,13 +59,21 @@ httparse = "1.9.5"
 ignore = "0.4.23"
 insta = "1.40.0"
 itertools = "0.13.0"
+jod-thread = "0.1.2"
+libc = "0.2.153"
 line-index = "0.1.2"
+lsp-server = "0.7.8"
+lsp-types = "0.95.1"
 memchr = "2.7.4"
 path-absolutize = "3.1.1"
 proc-macro2 = "1.0.86"
+regex = "1.11.1"
 rustc-hash = "2.1.0"
+schemars = "0.8.21"
 serde = "1.0.215"
 serde_json = "1.0.132"
+serde_test = "1.0.177"
+static_assertions = "1.1.0"
 struct-field-names-as-array = "0.3.0"
 strum = "0.26"
 tempfile = "3.9.0"
