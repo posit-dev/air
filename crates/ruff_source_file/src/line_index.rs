@@ -3,7 +3,7 @@ use std::fmt::{Debug, Formatter};
 use std::ops::Deref;
 use std::sync::Arc;
 
-use ruff_text_size::{TextLen, TextRange, TextSize};
+use biome_text_size::{TextLen, TextRange, TextSize};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -70,7 +70,7 @@ impl LineIndex {
     /// ## Examples
     ///
     /// ```
-    /// # use ruff_text_size::TextSize;
+    /// # use biome_text_size::TextSize;
     /// # use ruff_source_file::{LineIndex, OneIndexed, SourceLocation};
     /// let source = "def a():\n    pass";
     /// let index = LineIndex::from_source_text(source);
@@ -139,7 +139,7 @@ impl LineIndex {
     /// ## Examples
     ///
     /// ```
-    /// # use ruff_text_size::TextSize;
+    /// # use biome_text_size::TextSize;
     /// # use ruff_source_file::{LineIndex, OneIndexed, SourceLocation};
     /// let source = "def a():\n    pass";
     /// let index = LineIndex::from_source_text(source);
@@ -200,7 +200,7 @@ impl LineIndex {
         if row_index.saturating_add(1) >= starts.len() {
             contents.text_len()
         } else {
-            starts[row_index + 1] - TextSize::new(1)
+            starts[row_index + 1] - TextSize::from(1)
         }
     }
 
@@ -228,7 +228,7 @@ impl LineIndex {
     ///
     /// ```
     /// use ruff_source_file::{LineIndex, OneIndexed};
-    /// use ruff_text_size::TextSize;
+    /// use biome_text_size::TextSize;
     /// let source = r#"a = 4
     /// c = "some string"
     /// x = b"#;
@@ -252,7 +252,7 @@ impl LineIndex {
     ///
     /// ```
     /// use ruff_source_file::{LineIndex, OneIndexed};
-    /// use ruff_text_size::TextSize;
+    /// use biome_text_size::TextSize;
     /// let source = r#"a = 4
     /// c = "❤️"
     /// x = b"#;
@@ -285,14 +285,14 @@ impl LineIndex {
                 line_range.start()
                     + TextSize::try_from(column.to_zero_indexed())
                         .unwrap_or(line_range.len())
-                        .clamp(TextSize::new(0), line_range.len())
+                        .clamp(TextSize::from(0), line_range.len())
             }
             IndexKind::Utf8 => {
                 let rest = &contents[line_range];
                 let column_offset: TextSize = rest
                     .chars()
                     .take(column.to_zero_indexed())
-                    .map(ruff_text_size::TextLen::text_len)
+                    .map(biome_text_size::TextLen::text_len)
                     .sum();
                 line_range.start() + column_offset
             }
@@ -336,7 +336,7 @@ impl IndexKind {
 
 #[cfg(test)]
 mod tests {
-    use ruff_text_size::TextSize;
+    use biome_text_size::TextSize;
 
     use crate::line_index::LineIndex;
     use crate::{OneIndexed, SourceLocation};

@@ -5,10 +5,10 @@
 // +------------------------------------------------------------+
 
 use super::PositionEncoding;
+use biome_text_size::{TextRange, TextSize};
 use lsp_types as types;
 use ruff_source_file::OneIndexed;
 use ruff_source_file::{LineIndex, SourceLocation};
-use ruff_text_size::{TextRange, TextSize};
 
 pub(crate) trait RangeExt {
     fn to_text_range(&self, text: &str, index: &LineIndex, encoding: PositionEncoding)
@@ -41,16 +41,16 @@ impl RangeExt for lsp_types::Range {
 
         let (start_column_offset, end_column_offset) = match encoding {
             PositionEncoding::UTF8 => (
-                TextSize::new(self.start.character),
-                TextSize::new(self.end.character),
+                TextSize::from(self.start.character),
+                TextSize::from(self.end.character),
             ),
 
             PositionEncoding::UTF16 => {
                 // Fast path for ASCII only documents
                 if index.is_ascii() {
                     (
-                        TextSize::new(self.start.character),
-                        TextSize::new(self.end.character),
+                        TextSize::from(self.start.character),
+                        TextSize::from(self.end.character),
                     )
                 } else {
                     // UTF16 encodes characters either as one or two 16 bit words.
@@ -80,8 +80,8 @@ impl RangeExt for lsp_types::Range {
         };
 
         TextRange::new(
-            start_line.start() + start_column_offset.clamp(TextSize::new(0), start_line.end()),
-            end_line.start() + end_column_offset.clamp(TextSize::new(0), end_line.end()),
+            start_line.start() + start_column_offset.clamp(TextSize::from(0), start_line.end()),
+            end_line.start() + end_column_offset.clamp(TextSize::from(0), end_line.end()),
         )
     }
 }
@@ -107,7 +107,7 @@ impl ToRangeExt for TextRange {
 
 /// Converts a UTF-16 code unit offset for a given line into a UTF-8 column number.
 fn utf8_column_offset(utf16_code_unit_offset: u32, line: &str) -> TextSize {
-    let mut utf8_code_unit_offset = TextSize::new(0);
+    let mut utf8_code_unit_offset = TextSize::from(0);
 
     let mut i = 0u32;
 
@@ -119,7 +119,7 @@ fn utf8_column_offset(utf16_code_unit_offset: u32, line: &str) -> TextSize {
         // Count characters encoded as two 16 bit words as 2 characters.
         {
             utf8_code_unit_offset +=
-                TextSize::new(u32::try_from(c.len_utf8()).expect("utf8 len always <=4"));
+                TextSize::from(u32::try_from(c.len_utf8()).expect("utf8 len always <=4"));
             i += u32::try_from(c.len_utf16()).expect("utf16 len always <=2");
         }
     }
@@ -139,7 +139,7 @@ fn offset_to_source_location(
             let column = offset - index.line_start(row, text);
 
             SourceLocation {
-                column: OneIndexed::from_zero_indexed(column.to_usize()),
+                column: OneIndexed::from_zero_indexed(column.into()),
                 row,
             }
         }
@@ -147,7 +147,7 @@ fn offset_to_source_location(
             let row = index.line_index(offset);
 
             let column = if index.is_ascii() {
-                (offset - index.line_start(row, text)).to_usize()
+                (offset - index.line_start(row, text)).into()
             } else {
                 let up_to_line = &text[TextRange::new(index.line_start(row, text), offset)];
                 up_to_line.encode_utf16().count()

@@ -1,8 +1,8 @@
 use std::sync::LazyLock;
 
+use biome_text_size::TextSize;
 use memchr::memchr2;
 use memchr::memmem;
-use ruff_text_size::TextSize;
 
 static CRLF_FINDER: LazyLock<memmem::Finder> = LazyLock::new(|| memmem::Finder::new(b"\r\n"));
 
@@ -31,10 +31,10 @@ impl LineEnding {
         }
     }
 
-    pub const fn text_len(&self) -> TextSize {
+    pub fn text_len(&self) -> TextSize {
         match self {
-            LineEnding::Lf | LineEnding::Cr => TextSize::new(1),
-            LineEnding::Crlf => TextSize::new(2),
+            LineEnding::Lf | LineEnding::Cr => TextSize::from(1),
+            LineEnding::Crlf => TextSize::from(2),
         }
     }
 }

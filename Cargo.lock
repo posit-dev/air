@@ -1705,6 +1705,7 @@ dependencies = [
  "air_r_formatter",
  "air_r_parser",
  "anyhow",
+ "biome_text_size",
  "cargo_metadata",
  "crossbeam",
  "ignore",
@@ -1715,7 +1716,6 @@ dependencies = [
  "lsp-types 0.95.1",
  "regex",
  "ruff_source_file",
- "ruff_text_size",
  "rustc-hash",
  "serde",
  "serde_json",
@@ -1729,19 +1729,9 @@ dependencies = [
 name = "ruff_source_file"
 version = "0.0.0"
 dependencies = [
+ "biome_text_size",
  "memchr",
- "ruff_text_size",
  "serde",
-]
-
-[[package]]
-name = "ruff_text_size"
-version = "0.0.0"
-dependencies = [
- "schemars",
- "serde",
- "serde_test",
- "static_assertions",
 ]
 
 [[package]]
@@ -1939,15 +1929,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde_test"
-version = "1.0.177"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f901ee573cab6b3060453d2d5f0bae4e6d628c23c0a962ff9b5f1d7c8d4f1ed"
-dependencies = [
- "serde",
-]
-
-[[package]]
 name = "sharded-slab"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2033,12 +2014,6 @@ name = "stable_deref_trait"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a8f112729512f8e442d81f95a8a7ddf2b7c6b8a1a6f509a95864142b30cab2d3"
-
-[[package]]
-name = "static_assertions"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "strsim"

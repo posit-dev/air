@@ -14,8 +14,8 @@ license = { workspace = true }
 [dependencies]
 air_r_formatter = { workspace = true }
 air_r_parser = { workspace = true }
+biome_text_size = { workspace = true }
 ruff_source_file = { workspace = true }
-ruff_text_size = { workspace = true }
 workspace = { workspace = true }
 
 anyhow = { workspace = true }

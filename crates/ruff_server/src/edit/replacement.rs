@@ -4,7 +4,7 @@
 // | Commit: 5bc9d6d3aa694ab13f38dd5cf91b713fd3844380           |
 // +------------------------------------------------------------+
 
-use ruff_text_size::{TextLen, TextRange, TextSize};
+use biome_text_size::{TextLen, TextRange, TextSize};
 
 #[derive(Debug)]
 pub(crate) struct Replacement {
@@ -68,8 +68,10 @@ impl Replacement {
 
 #[cfg(test)]
 mod tests {
+    use std::ops::Range;
+
+    use biome_text_size::TextRange;
     use ruff_source_file::LineIndex;
-    use ruff_text_size::TextRange;
 
     use super::Replacement;
 
@@ -82,11 +84,9 @@ mod tests {
             modified,
             modified_index.line_starts(),
         );
+        let range: Range<usize> = replacement.source_range.into();
         let mut expected = source.to_string();
-        expected.replace_range(
-            replacement.source_range.start().to_usize()..replacement.source_range.end().to_usize(),
-            &modified[replacement.modified_range],
-        );
+        expected.replace_range(range, &modified[replacement.modified_range]);
         (replacement, expected)
     }
 
