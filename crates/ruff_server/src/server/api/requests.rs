@@ -1,5 +1,6 @@
 mod format;
 mod format_range;
+mod view_file;
 
 use super::{
     define_document_url,
@@ -7,5 +8,6 @@ use super::{
 };
 pub(super) use format::Format;
 pub(super) use format_range::FormatRange;
+pub(super) use view_file::ViewFile;
 
 type FormatResponse = Option<Vec<lsp_types::TextEdit>>;

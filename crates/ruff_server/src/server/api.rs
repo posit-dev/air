@@ -40,6 +40,9 @@ pub(super) fn request<'a>(req: server::Request) -> Task<'a> {
         request::FormatRange::METHOD => {
             background_request_task::<request::FormatRange>(req, BackgroundSchedule::Fmt)
         }
+        request::ViewFile::METHOD => {
+            background_request_task::<request::ViewFile>(req, BackgroundSchedule::Fmt)
+        }
         method => {
             tracing::warn!("Received request {method} which does not have a handler");
             return Task::nothing();

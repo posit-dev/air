@@ -1705,6 +1705,7 @@ dependencies = [
  "air_r_formatter",
  "air_r_parser",
  "anyhow",
+ "biome_formatter",
  "biome_text_size",
  "cargo_metadata",
  "crossbeam",
@@ -1722,6 +1723,8 @@ dependencies = [
  "thiserror 2.0.5",
  "tracing",
  "tracing-subscriber",
+ "tree-sitter",
+ "tree-sitter-r",
  "workspace",
 ]
 
