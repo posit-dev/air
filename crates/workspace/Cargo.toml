@@ -16,9 +16,9 @@ air_r_formatter = { workspace = true }
 biome_formatter = { workspace = true, features = ["serde"] }
 fs = { workspace = true }
 ignore = { workspace = true }
-line_ending = { workspace = true }
 rustc-hash = { workspace = true }
 thiserror = { workspace = true }
+ruff_source_file = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 toml = { workspace = true }
 

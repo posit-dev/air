@@ -1,19 +1,16 @@
 mod indent_style;
 mod indent_width;
-// TODO: Can we pick a better crate name for `line_ending` so these don't collide?
-#[path = "settings/line_ending.rs"]
-mod line_ending_setting;
+mod line_ending;
 mod line_length;
 mod magic_line_break;
 
 pub use indent_style::*;
 pub use indent_width::*;
-pub use line_ending_setting::*;
+pub use line_ending::*;
 pub use line_length::*;
 pub use magic_line_break::*;
 
 use air_r_formatter::context::RFormatOptions;
-use line_ending;
 
 /// Resolved configuration settings used within air
 ///
@@ -44,9 +41,11 @@ impl FormatSettings {
             LineEnding::Native => biome_formatter::LineEnding::Crlf,
             #[cfg(not(target_os = "windows"))]
             LineEnding::Native => biome_formatter::LineEnding::Lf,
-            LineEnding::Auto => match line_ending::infer(source) {
-                line_ending::LineEnding::Lf => biome_formatter::LineEnding::Lf,
-                line_ending::LineEnding::Crlf => biome_formatter::LineEnding::Crlf,
+            LineEnding::Auto => match ruff_source_file::find_newline(source) {
+                Some((_, ruff_source_file::LineEnding::Lf)) => biome_formatter::LineEnding::Lf,
+                Some((_, ruff_source_file::LineEnding::Crlf)) => biome_formatter::LineEnding::Crlf,
+                Some((_, ruff_source_file::LineEnding::Cr)) => biome_formatter::LineEnding::Cr,
+                None => biome_formatter::LineEnding::Lf,
             },
         };
 

@@ -21,7 +21,7 @@ biome_formatter = { workspace = true }
 biome_parser = { workspace = true }
 biome_rowan = { workspace = true }
 insta = { workspace = true, features = ["glob"] }
-line_ending = { workspace = true }
+ruff_source_file = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 similar = "2.6.0"
 similar-asserts = "1.6.0"

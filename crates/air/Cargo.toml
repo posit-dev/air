@@ -23,9 +23,8 @@ clap = { workspace = true, features = ["wrap_help"] }
 fs = { workspace = true }
 ignore = { workspace = true }
 itertools = { workspace = true }
-line_ending = { workspace = true }
-lsp = { workspace = true }
 ruff_server = { workspace = true }
+ruff_source_file = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }
 workspace = { workspace = true }

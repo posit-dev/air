@@ -129,7 +129,7 @@ fn format_file(
 
     let options = settings.to_format_options(&source);
 
-    let source = line_ending::normalize(source);
+    let source = ruff_source_file::normalize_crlf_newlines(source);
     let formatted = match format_source(source.as_str(), options) {
         Ok(formatted) => formatted,
         Err(err) => return Err(FormatCommandError::Format(path.clone(), err)),
