@@ -4,90 +4,26 @@
 // | Commit: 5bc9d6d3aa694ab13f38dd5cf91b713fd3844380           |
 // +------------------------------------------------------------+
 
-use super::PositionEncoding;
+use crate::edit::PositionEncoding;
 use biome_text_size::{TextRange, TextSize};
 use lsp_types as types;
 use ruff_source_file::OneIndexed;
 use ruff_source_file::{LineIndex, SourceLocation};
 
-pub(crate) trait RangeExt {
-    fn to_text_range(&self, text: &str, index: &LineIndex, encoding: PositionEncoding)
-        -> TextRange;
-}
+// We don't own this type so we need a helper trait
+pub(crate) trait TextRangeExt {
+    fn into_proto(self, text: &str, index: &LineIndex, encoding: PositionEncoding) -> types::Range;
 
-pub(crate) trait ToRangeExt {
-    fn to_range(&self, text: &str, index: &LineIndex, encoding: PositionEncoding) -> types::Range;
-}
-
-fn u32_index_to_usize(index: u32) -> usize {
-    usize::try_from(index).expect("u32 fits in usize")
-}
-
-impl RangeExt for lsp_types::Range {
-    fn to_text_range(
-        &self,
+    fn from_proto(
+        range: &lsp_types::Range,
         text: &str,
         index: &LineIndex,
         encoding: PositionEncoding,
-    ) -> TextRange {
-        let start_line = index.line_range(
-            OneIndexed::from_zero_indexed(u32_index_to_usize(self.start.line)),
-            text,
-        );
-        let end_line = index.line_range(
-            OneIndexed::from_zero_indexed(u32_index_to_usize(self.end.line)),
-            text,
-        );
-
-        let (start_column_offset, end_column_offset) = match encoding {
-            PositionEncoding::UTF8 => (
-                TextSize::from(self.start.character),
-                TextSize::from(self.end.character),
-            ),
-
-            PositionEncoding::UTF16 => {
-                // Fast path for ASCII only documents
-                if index.is_ascii() {
-                    (
-                        TextSize::from(self.start.character),
-                        TextSize::from(self.end.character),
-                    )
-                } else {
-                    // UTF16 encodes characters either as one or two 16 bit words.
-                    // The position in `range` is the 16-bit word offset from the start of the line (and not the character offset)
-                    // UTF-16 with a text that may use variable-length characters.
-                    (
-                        utf8_column_offset(self.start.character, &text[start_line]),
-                        utf8_column_offset(self.end.character, &text[end_line]),
-                    )
-                }
-            }
-            PositionEncoding::UTF32 => {
-                // UTF-32 uses 4 bytes for each character. Meaning, the position in range is a character offset.
-                return TextRange::new(
-                    index.offset(
-                        OneIndexed::from_zero_indexed(u32_index_to_usize(self.start.line)),
-                        OneIndexed::from_zero_indexed(u32_index_to_usize(self.start.character)),
-                        text,
-                    ),
-                    index.offset(
-                        OneIndexed::from_zero_indexed(u32_index_to_usize(self.end.line)),
-                        OneIndexed::from_zero_indexed(u32_index_to_usize(self.end.character)),
-                        text,
-                    ),
-                );
-            }
-        };
-
-        TextRange::new(
-            start_line.start() + start_column_offset.clamp(TextSize::from(0), start_line.end()),
-            end_line.start() + end_column_offset.clamp(TextSize::from(0), end_line.end()),
-        )
-    }
+    ) -> Self;
 }
 
-impl ToRangeExt for TextRange {
-    fn to_range(&self, text: &str, index: &LineIndex, encoding: PositionEncoding) -> types::Range {
+impl TextRangeExt for TextRange {
+    fn into_proto(self, text: &str, index: &LineIndex, encoding: PositionEncoding) -> types::Range {
         types::Range {
             start: source_location_to_position(&offset_to_source_location(
                 self.start(),
@@ -103,6 +39,71 @@ impl ToRangeExt for TextRange {
             )),
         }
     }
+
+    fn from_proto(
+        range: &lsp_types::Range,
+        text: &str,
+        index: &LineIndex,
+        encoding: PositionEncoding,
+    ) -> Self {
+        let start_line = index.line_range(
+            OneIndexed::from_zero_indexed(u32_index_to_usize(range.start.line)),
+            text,
+        );
+        let end_line = index.line_range(
+            OneIndexed::from_zero_indexed(u32_index_to_usize(range.end.line)),
+            text,
+        );
+
+        let (start_column_offset, end_column_offset) = match encoding {
+            PositionEncoding::UTF8 => (
+                TextSize::from(range.start.character),
+                TextSize::from(range.end.character),
+            ),
+
+            PositionEncoding::UTF16 => {
+                // Fast path for ASCII only documents
+                if index.is_ascii() {
+                    (
+                        TextSize::from(range.start.character),
+                        TextSize::from(range.end.character),
+                    )
+                } else {
+                    // UTF16 encodes characters either as one or two 16 bit words.
+                    // The position in `range` is the 16-bit word offset from the start of the line (and not the character offset)
+                    // UTF-16 with a text that may use variable-length characters.
+                    (
+                        utf8_column_offset(range.start.character, &text[start_line]),
+                        utf8_column_offset(range.end.character, &text[end_line]),
+                    )
+                }
+            }
+            PositionEncoding::UTF32 => {
+                // UTF-32 uses 4 bytes for each character. Meaning, the position in range is a character offset.
+                return TextRange::new(
+                    index.offset(
+                        OneIndexed::from_zero_indexed(u32_index_to_usize(range.start.line)),
+                        OneIndexed::from_zero_indexed(u32_index_to_usize(range.start.character)),
+                        text,
+                    ),
+                    index.offset(
+                        OneIndexed::from_zero_indexed(u32_index_to_usize(range.end.line)),
+                        OneIndexed::from_zero_indexed(u32_index_to_usize(range.end.character)),
+                        text,
+                    ),
+                );
+            }
+        };
+
+        TextRange::new(
+            start_line.start() + start_column_offset.clamp(TextSize::from(0), start_line.end()),
+            end_line.start() + end_column_offset.clamp(TextSize::from(0), end_line.end()),
+        )
+    }
+}
+
+fn u32_index_to_usize(index: u32) -> usize {
+    usize::try_from(index).expect("u32 fits in usize")
 }
 
 /// Converts a UTF-16 code unit offset for a given line into a UTF-8 column number.

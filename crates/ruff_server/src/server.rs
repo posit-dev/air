@@ -22,11 +22,12 @@ use types::TextDocumentSyncOptions;
 use types::WorkspaceFoldersServerCapabilities;
 
 use self::connection::Connection;
-use self::connection::ConnectionInitializer;
 use self::schedule::event_loop_thread;
 use self::schedule::Scheduler;
 use self::schedule::Task;
 use crate::edit::PositionEncoding;
+use crate::message::try_show_message;
+use crate::server::connection::ConnectionInitializer;
 use crate::session::ResolvedClientCapabilities;
 use crate::session::Session;
 
@@ -35,7 +36,6 @@ mod client;
 mod connection;
 mod schedule;
 
-use crate::message::try_show_message;
 pub(crate) use connection::ClientSender;
 
 pub(crate) type Result<T> = std::result::Result<T, api::Error>;
@@ -48,17 +48,21 @@ pub struct Server {
 }
 
 impl Server {
-    pub fn new(worker_threads: NonZeroUsize) -> crate::Result<Self> {
-        let connection = ConnectionInitializer::stdio();
+    pub fn new(
+        worker_threads: NonZeroUsize,
+        connection: lsp::Connection,
+        connection_threads: Option<lsp::IoThreads>,
+    ) -> crate::Result<Self> {
+        let initializer = ConnectionInitializer::new(connection, connection_threads);
 
-        let (id, initialize_params) = connection.initialize_start()?;
+        let (id, initialize_params) = initializer.initialize_start()?;
 
         let client_capabilities = initialize_params.capabilities;
         let client_capabilities = ResolvedClientCapabilities::new(client_capabilities);
         let position_encoding = Self::find_best_position_encoding(&client_capabilities);
         let server_capabilities = Self::server_capabilities(position_encoding);
 
-        let connection = connection.initialize_finish(
+        let connection = initializer.initialize_finish(
             id,
             &server_capabilities,
             crate::SERVER_NAME,
@@ -73,6 +77,14 @@ impl Server {
 
         let workspace_folders = workspace_folders.unwrap_or_default();
 
+        let client_name = client_info
+            .as_ref()
+            .map(|client_info| client_info.name.clone());
+
+        let is_test_client = client_name
+            .as_ref()
+            .map_or(false, |client_name| client_name == "AirTestClient");
+
         // TODO: Get user specified options from `initialization_options`
         let log_level = None;
         let dependency_log_levels = None;
@@ -81,10 +93,11 @@ impl Server {
             connection.make_sender(),
             log_level,
             dependency_log_levels,
-            client_info.as_ref(),
+            client_name,
+            is_test_client,
         );
 
-        crate::message::init_messenger(connection.make_sender());
+        crate::message::init_messenger(connection.make_sender(), is_test_client);
 
         Ok(Self {
             connection,

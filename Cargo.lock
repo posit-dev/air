@@ -41,6 +41,7 @@ dependencies = [
  "fs",
  "ignore",
  "itertools",
+ "lsp-server",
  "ruff_server",
  "ruff_source_file",
  "tempfile",
@@ -1702,15 +1703,21 @@ dependencies = [
 name = "ruff_server"
 version = "0.1.1"
 dependencies = [
+ "air_r_factory",
  "air_r_formatter",
  "air_r_parser",
+ "air_r_syntax",
  "anyhow",
+ "assert_matches",
  "biome_formatter",
+ "biome_rowan",
  "biome_text_size",
  "cargo_metadata",
  "crossbeam",
+ "dissimilar",
  "ignore",
  "insta",
+ "itertools",
  "jod-thread",
  "libc",
  "lsp-server",
@@ -1720,11 +1727,14 @@ dependencies = [
  "rustc-hash",
  "serde",
  "serde_json",
+ "server_test",
  "thiserror 2.0.5",
  "tracing",
  "tracing-subscriber",
  "tree-sitter",
  "tree-sitter-r",
+ "url",
+ "uuid",
  "workspace",
 ]
 
@@ -1929,6 +1939,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "87607cb1398ed59d48732e575a4c28a7a8ebf2454b964fe3f224f2afc07909e1"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "server_test"
+version = "0.0.0"
+dependencies = [
+ "lsp-server",
+ "lsp-types 0.95.1",
+ "url",
 ]
 
 [[package]]

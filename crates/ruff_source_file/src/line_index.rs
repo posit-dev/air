@@ -236,16 +236,16 @@ impl LineIndex {
     /// let index = LineIndex::from_source_text(source);
     ///
     /// // First line, first column
-    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(0), OneIndexed::from_zero_indexed(0), source), TextSize::new(0));
+    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(0), OneIndexed::from_zero_indexed(0), source), TextSize::from(0));
     ///
     /// // Second line, 4th column
-    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(1), OneIndexed::from_zero_indexed(4), source), TextSize::new(10));
+    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(1), OneIndexed::from_zero_indexed(4), source), TextSize::from(10));
     ///
     /// // Offset past the end of the first line
-    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(0), OneIndexed::from_zero_indexed(10), source), TextSize::new(6));
+    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(0), OneIndexed::from_zero_indexed(10), source), TextSize::from(6));
     ///
     /// // Offset past the end of the file
-    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(3), OneIndexed::from_zero_indexed(0), source), TextSize::new(29));
+    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(3), OneIndexed::from_zero_indexed(0), source), TextSize::from(29));
     /// ```
     ///
     /// ### UTF8
@@ -260,16 +260,16 @@ impl LineIndex {
     /// let index = LineIndex::from_source_text(source);
     ///
     /// // First line, first column
-    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(0), OneIndexed::from_zero_indexed(0), source), TextSize::new(0));
+    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(0), OneIndexed::from_zero_indexed(0), source), TextSize::from(0));
     ///
     /// // Third line, 2nd column, after emoji
-    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(2), OneIndexed::from_zero_indexed(1), source), TextSize::new(20));
+    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(2), OneIndexed::from_zero_indexed(1), source), TextSize::from(20));
     ///
     /// // Offset past the end of the second line
-    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(1), OneIndexed::from_zero_indexed(10), source), TextSize::new(19));
+    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(1), OneIndexed::from_zero_indexed(10), source), TextSize::from(19));
     ///
     /// // Offset past the end of the file
-    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(3), OneIndexed::from_zero_indexed(0), source), TextSize::new(24));
+    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(3), OneIndexed::from_zero_indexed(0), source), TextSize::from(24));
     /// ```
     ///
     pub fn offset(&self, line: OneIndexed, column: OneIndexed, contents: &str) -> TextSize {

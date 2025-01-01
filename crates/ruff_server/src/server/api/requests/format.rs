@@ -4,12 +4,13 @@
 // | Commit: 5bc9d6d3aa694ab13f38dd5cf91b713fd3844380           |
 // +------------------------------------------------------------+
 
+use air_r_parser::RParserOptions;
+use biome_formatter::LineEnding;
 use lsp_types::{self as types, request as req};
-use types::TextEdit;
+use workspace::settings::FormatSettings;
 
-use ruff_source_file::LineIndex;
-
-use crate::edit::{PositionEncoding, Replacement, TextDocument, ToRangeExt};
+use crate::edit::TextEdit;
+use crate::edit::{PositionEncoding, TextDocument};
 use crate::server::api::LSPResult;
 use crate::server::{client::Notifier, Result};
 use crate::session::{DocumentQuery, DocumentSnapshot};
@@ -31,8 +32,7 @@ impl super::BackgroundDocumentRequestHandler for Format {
     }
 }
 
-/// Formats either a full text document or an specific notebook cell. If the query within the snapshot is a notebook document
-/// with no selected cell, this will throw an error.
+/// Formats a full text document
 pub(super) fn format_document(snapshot: &DocumentSnapshot) -> Result<super::FormatResponse> {
     let text_document = snapshot.query().as_single_document();
     let query = snapshot.query();
@@ -47,29 +47,97 @@ fn format_text_document(
     let document_settings = query.settings();
     let formatter_settings = &document_settings.format;
 
-    let source = text_document.contents();
+    let text = text_document.contents();
+    let index = text_document.index();
+    let ending = text_document.ending();
 
-    let formatted = crate::format::format(source, formatter_settings)
+    let new_text = format_source(text, formatter_settings)
         .with_failure_code(lsp_server::ErrorCode::InternalError)?;
-    let Some(formatted) = formatted else {
+
+    let Some(new_text) = new_text else {
         return Ok(None);
     };
 
-    let unformatted_index = text_document.index();
-    let formatted_index: LineIndex = LineIndex::from_source_text(&formatted);
+    let text_edit = TextEdit::diff(text, &new_text);
 
-    let Replacement {
-        source_range,
-        modified_range: formatted_range,
-    } = Replacement::between(
-        source,
-        unformatted_index.line_starts(),
-        &formatted,
-        formatted_index.line_starts(),
-    );
+    let edits = text_edit
+        .into_proto(text, index, encoding, ending)
+        .with_failure_code(lsp_server::ErrorCode::InternalError)?;
 
-    Ok(Some(vec![TextEdit {
-        range: source_range.to_range(source, unformatted_index, encoding),
-        new_text: formatted[formatted_range].to_owned(),
-    }]))
+    Ok(Some(edits))
+}
+
+fn format_source(
+    source: &str,
+    formatter_settings: &FormatSettings,
+) -> crate::Result<Option<String>> {
+    let parse = air_r_parser::parse(source, RParserOptions::default());
+
+    if parse.has_errors() {
+        return Err(anyhow::anyhow!("Can't format when there are parse errors."));
+    }
+
+    // Do we need to check that `doc` is indeed an R file? What about special
+    // files that don't have extensions like `NAMESPACE`, do we hard-code a
+    // list? What about unnamed temporary files?
+
+    // Always use `Lf` line endings on the way out from the formatter since we
+    // internally store all LSP text documents with `Lf` endings
+    let format_options = formatter_settings
+        .to_format_options(source)
+        .with_line_ending(LineEnding::Lf);
+
+    let formatted = air_r_formatter::format_node(format_options, &parse.syntax())?;
+    let code = formatted.print()?.into_code();
+
+    Ok(Some(code))
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::edit::TextDocument;
+    use crate::{test::init_test_client, test::TestClientExt};
+
+    #[test]
+    fn test_format() {
+        let mut client = init_test_client();
+
+        #[rustfmt::skip]
+        let doc = TextDocument::doodle(
+"
+1
+2+2
+3 + 3 +
+3",
+        );
+
+        let formatted = client.format_document(&doc);
+        insta::assert_snapshot!(formatted);
+
+        client.shutdown();
+        client.exit();
+    }
+
+    // https://github.com/posit-dev/air/issues/61
+    #[test]
+    fn test_format_minimal_diff() {
+        let mut client = init_test_client();
+
+        #[rustfmt::skip]
+        let doc = TextDocument::doodle(
+"1
+2+2
+3
+",
+        );
+
+        let edits = client.format_document_edits(&doc).unwrap();
+        assert!(edits.len() == 1);
+
+        let edit = &edits[0];
+        assert_eq!(edit.new_text, " + ");
+
+        client.shutdown();
+        client.exit();
+    }
 }

@@ -6,15 +6,14 @@
 
 //! Types and utilities for working with text, modifying source files, and `Ruff <-> LSP` type conversion.
 
-mod range;
-mod replacement;
+mod text_diff;
 mod text_document;
+mod text_edit;
 
 use lsp_types::{PositionEncodingKind, Url};
-pub(crate) use range::{RangeExt, ToRangeExt};
-pub(crate) use replacement::Replacement;
-pub use text_document::TextDocument;
+pub(crate) use text_document::TextDocument;
 pub(crate) use text_document::{DocumentVersion, LanguageId};
+pub(crate) use text_edit::{Indel, TextEdit};
 
 /// A convenient enumeration for supported text encodings. Can be converted to [`lsp_types::PositionEncodingKind`].
 // Please maintain the order from least to greatest priority for the derived `Ord` impl.

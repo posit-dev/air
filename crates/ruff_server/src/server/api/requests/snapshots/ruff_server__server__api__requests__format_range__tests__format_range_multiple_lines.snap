@@ -1,0 +1,7 @@
+---
+source: crates/ruff_server/src/server/api/requests/format_range.rs
+expression: output1
+---
+1+1
+#
+2 + 2

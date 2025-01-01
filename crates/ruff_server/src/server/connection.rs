@@ -12,22 +12,20 @@ type ConnectionSender = crossbeam::channel::Sender<lsp::Message>;
 type ConnectionReceiver = crossbeam::channel::Receiver<lsp::Message>;
 
 /// A builder for `Connection` that handles LSP initialization.
-pub(crate) struct ConnectionInitializer {
+pub(super) struct ConnectionInitializer {
     connection: lsp::Connection,
-    threads: lsp::IoThreads,
+    threads: Option<lsp::IoThreads>,
 }
 
 /// Handles inbound and outbound messages with the client.
 pub(crate) struct Connection {
     sender: Arc<ConnectionSender>,
     receiver: ConnectionReceiver,
-    threads: lsp::IoThreads,
+    threads: Option<lsp::IoThreads>,
 }
 
 impl ConnectionInitializer {
-    /// Create a new LSP server connection over stdin/stdout.
-    pub(super) fn stdio() -> Self {
-        let (connection, threads) = lsp::Connection::stdio();
+    pub(super) fn new(connection: lsp::Connection, threads: Option<lsp::IoThreads>) -> Self {
         Self {
             connection,
             threads,
@@ -125,7 +123,9 @@ impl Connection {
                 .expect("the client sender shouldn't have more than one strong reference"),
         );
         std::mem::drop(self.receiver);
-        self.threads.join()?;
+        if let Some(threads) = self.threads {
+            threads.join()?;
+        };
         Ok(())
     }
 }

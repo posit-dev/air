@@ -13,6 +13,8 @@ pub(crate) fn language_server(_command: LanguageServerCommand) -> anyhow::Result
         .unwrap_or(four)
         .max(four);
 
-    let server = Server::new(worker_threads)?;
+    let (connection, connection_threads) = lsp_server::Connection::stdio();
+
+    let server = Server::new(worker_threads, connection, Some(connection_threads))?;
     server.run().map(|()| ExitStatus::Success)
 }

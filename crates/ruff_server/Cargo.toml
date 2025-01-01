@@ -12,16 +12,21 @@ license = { workspace = true }
 [lib]
 
 [dependencies]
+air_r_factory = { workspace = true }
 air_r_formatter = { workspace = true }
 air_r_parser = { workspace = true }
-biome_formatter = { workspace = true }
-biome_text_size = { workspace = true }
+air_r_syntax = { workspace = true }
 ruff_source_file = { workspace = true }
 workspace = { workspace = true }
 
 anyhow = { workspace = true }
+biome_formatter = { workspace = true }
+biome_rowan = { workspace = true }
+biome_text_size = { workspace = true }
 crossbeam = { workspace = true }
+dissimilar = { workspace = true }
 ignore = { workspace = true }
+itertools = { workspace = true }
 jod-thread = { workspace = true }
 lsp-server = { workspace = true }
 lsp-types = { workspace = true }
@@ -34,9 +39,13 @@ tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["ansi", "local-time"] }
 tree-sitter = { workspace = true }
 tree-sitter-r = { workspace = true }
+url = { workspace = true }
+uuid = { workspace = true, features = ["v4"] }
 
 [dev-dependencies]
+assert_matches = { workspace = true }
 insta = { workspace = true }
+server_test = { workspace = true }
 
 [target.'cfg(target_vendor = "apple")'.dependencies]
 libc = { workspace = true }

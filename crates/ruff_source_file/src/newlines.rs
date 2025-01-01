@@ -4,6 +4,7 @@ use biome_text_size::TextSize;
 use memchr::memchr2;
 use memchr::memmem;
 
+static CR_FINDER: LazyLock<memmem::Finder> = LazyLock::new(|| memmem::Finder::new(b"\r"));
 static CRLF_FINDER: LazyLock<memmem::Finder> = LazyLock::new(|| memmem::Finder::new(b"\r\n"));
 
 /// Line ending styles
@@ -36,6 +37,18 @@ impl LineEnding {
             LineEnding::Lf | LineEnding::Cr => TextSize::from(1),
             LineEnding::Crlf => TextSize::from(2),
         }
+    }
+}
+
+/// Infers the line endings of a document. Defaults to [LineEnding::Lf] when no line
+/// endings are detected.
+///
+/// If you need the position of the first newline detected, use [find_newline].
+#[inline]
+pub fn infer_line_ending(text: &str) -> LineEnding {
+    match find_newline(text) {
+        Some((_position, ending)) => ending,
+        None => LineEnding::Lf,
     }
 }
 
@@ -73,7 +86,16 @@ pub fn find_newline(text: &str) -> Option<(usize, LineEnding)> {
 /// license = "MIT OR Apache-2.0"
 /// origin = "https://github.com/rust-lang/rust-analyzer/blob/master/crates/rust-analyzer/src/line_index.rs"
 /// ---
-pub fn normalize_crlf_newlines(text: String) -> String {
+#[inline]
+pub fn normalize_newlines(text: String) -> (String, LineEnding) {
+    match infer_line_ending(&text) {
+        LineEnding::Lf => (text, LineEnding::Lf),
+        LineEnding::Cr => (normalize_cr_newlines(text), LineEnding::Cr),
+        LineEnding::Crlf => (normalize_crlf_newlines(text), LineEnding::Crlf),
+    }
+}
+
+fn normalize_crlf_newlines(text: String) -> String {
     let mut buf = text.into_bytes();
     let mut gap_len = 0;
     let mut tail = buf.as_mut_slice();
@@ -106,6 +128,21 @@ pub fn normalize_crlf_newlines(text: String) -> String {
     }
 }
 
+fn normalize_cr_newlines(text: String) -> String {
+    let mut buf = text.into_bytes();
+
+    if CR_FINDER.find(&buf).is_some() {
+        // 1:1 byte replacement, total length does not change
+        for byte in buf.iter_mut() {
+            if byte == &b'\r' {
+                *byte = b'\n';
+            }
+        }
+    }
+
+    unsafe { String::from_utf8_unchecked(buf) }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -114,7 +151,10 @@ mod tests {
     fn unix() {
         let src = "a\nb\nc\n\n\n\n";
         assert_eq!(find_newline(src), Some((1, LineEnding::Lf)));
-        assert_eq!(normalize_crlf_newlines(src.to_string()), src);
+        assert_eq!(
+            normalize_newlines(src.to_string()),
+            (src.to_string(), LineEnding::Lf)
+        );
     }
 
     #[test]
@@ -122,8 +162,8 @@ mod tests {
         let src = "\r\na\r\n\r\nb\r\nc\r\n\r\n\r\n\r\n";
         assert_eq!(find_newline(src), Some((0, LineEnding::Crlf)));
         assert_eq!(
-            normalize_crlf_newlines(src.to_string()),
-            "\na\n\nb\nc\n\n\n\n"
+            normalize_newlines(src.to_string()),
+            (String::from("\na\n\nb\nc\n\n\n\n"), LineEnding::Crlf)
         );
     }
 
@@ -131,13 +171,19 @@ mod tests {
     fn mixed() {
         let src = "a\r\nb\r\nc\r\n\n\r\n\n";
         assert_eq!(find_newline(src), Some((1, LineEnding::Crlf)));
-        assert_eq!(normalize_crlf_newlines(src.to_string()), "a\nb\nc\n\n\n\n");
+        assert_eq!(
+            normalize_newlines(src.to_string()),
+            (String::from("a\nb\nc\n\n\n\n"), LineEnding::Crlf)
+        );
     }
 
     #[test]
     fn none() {
         let src = "abc";
         assert_eq!(find_newline(src), None);
-        assert_eq!(normalize_crlf_newlines(src.to_string()), src);
+        assert_eq!(
+            normalize_newlines(src.to_string()),
+            (src.to_string(), LineEnding::Lf)
+        );
     }
 }

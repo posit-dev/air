@@ -45,7 +45,6 @@ use core::str;
 use lsp_server::Message;
 use lsp_types::notification::LogMessage;
 use lsp_types::notification::Notification;
-use lsp_types::ClientInfo;
 use lsp_types::LogMessageParams;
 use lsp_types::MessageType;
 use serde::Deserialize;
@@ -127,21 +126,30 @@ impl<'a> MakeWriter<'a> for LogWriterMaker {
     }
 }
 
+/// We use a special `TestWriter` during tests to be compatible with `cargo test`'s
+/// typical output capturing behavior.
+///
+/// Important notes:
+/// - `cargo test` swallows all logs unless you use `-- --nocapture`.
+/// - Tests run in parallel, so logs can be interleaved unless you run `--test-threads 1`.
+///
+/// We use `cargo test -- --nocapture --test-threads 1` on CI because of all of this.
 pub(crate) fn init_logging(
     client_tx: ClientSender,
     log_level: Option<LogLevel>,
     dependency_log_levels: Option<String>,
-    client_info: Option<&ClientInfo>,
+    client_name: Option<String>,
+    is_test_client: bool,
 ) {
     let log_level = resolve_log_level(log_level);
     let dependency_log_levels = resolve_dependency_log_levels(dependency_log_levels);
 
-    let writer = if client_info.is_some_and(|client_info| {
-        client_info.name.starts_with("Zed") || client_info.name.starts_with("Visual Studio Code")
+    let writer = if client_name.is_some_and(|client_name| {
+        client_name.starts_with("Zed") || client_name.starts_with("Visual Studio Code")
     }) {
         // These IDEs are known to support `window/logMessage` well
         BoxMakeWriter::new(LogWriterMaker::new(client_tx))
-    } else if is_test_client(client_info) {
+    } else if is_test_client {
         // Ensures a standard `cargo test` captures output unless `-- --nocapture` is used
         BoxMakeWriter::new(TestWriter::default())
     } else {
@@ -174,7 +182,7 @@ pub(crate) fn init_logging(
 
     let subscriber = tracing_subscriber::Registry::default().with(layer);
 
-    if is_test_client(client_info) {
+    if is_test_client {
         // During parallel testing, `set_global_default()` gets called multiple times
         // per process. That causes it to error, but we ignore this.
         tracing::subscriber::set_global_default(subscriber).ok();
@@ -184,18 +192,6 @@ pub(crate) fn init_logging(
     }
 
     tracing::info!("Logging initialized with level: {log_level}");
-}
-
-/// We use a special `TestWriter` during tests to be compatible with `cargo test`'s
-/// typical output capturing behavior.
-///
-/// Important notes:
-/// - `cargo test` swallows all logs unless you use `-- --nocapture`.
-/// - Tests run in parallel, so logs can be interleaved unless you run `--test-threads 1`.
-///
-/// We use `cargo test -- --nocapture --test-threads 1` on CI because of all of this.
-fn is_test_client(client_info: Option<&ClientInfo>) -> bool {
-    client_info.map_or(false, |client_info| client_info.name == "AirTestClient")
 }
 
 fn log_filter(log_level: LogLevel, dependency_log_levels: Option<String>) -> filter::Targets {

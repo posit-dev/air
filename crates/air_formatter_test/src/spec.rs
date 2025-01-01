@@ -29,7 +29,7 @@ impl<'a> SpecTestFile<'a> {
         let input_code = std::fs::read_to_string(input_file).unwrap();
 
         // Normalize to Unix line endings
-        let input_code = ruff_source_file::normalize_crlf_newlines(input_code);
+        let (input_code, _) = ruff_source_file::normalize_newlines(input_code);
 
         // For the whole file, not a specific range right now
         let range_start_index = None;
