@@ -28,7 +28,7 @@ tree-sitter-r = { workspace = true }
 biome_console = { workspace = true }
 biome_diagnostics = { workspace = true }
 insta = { workspace = true }
-ruff_source_file = { workspace = true }
+source_file = { workspace = true }
 tests_macros = { workspace = true }
 
 # cargo-workspaces metadata

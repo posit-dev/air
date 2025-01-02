@@ -6,8 +6,8 @@
 
 use biome_rowan::TextRange;
 use lsp_types::TextDocumentContentChangeEvent;
-use ruff_source_file::LineEnding;
-use ruff_source_file::LineIndex;
+use source_file::LineEnding;
+use source_file::LineIndex;
 
 use crate::edit::PositionEncoding;
 use crate::proto::TextRangeExt;
@@ -51,7 +51,7 @@ impl From<&str> for LanguageId {
 impl TextDocument {
     pub fn new(contents: String, version: DocumentVersion) -> Self {
         // Normalize to Unix line endings
-        let (contents, ending) = ruff_source_file::normalize_newlines(contents);
+        let (contents, ending) = source_file::normalize_newlines(contents);
         let index = LineIndex::from_source_text(&contents);
         Self {
             contents,
@@ -117,7 +117,7 @@ impl TextDocument {
         // col] coordinates.
         for change in &mut changes.iter_mut() {
             let text = std::mem::take(&mut change.text);
-            (change.text, _) = ruff_source_file::normalize_newlines(text);
+            (change.text, _) = source_file::normalize_newlines(text);
         }
 
         if let [lsp_types::TextDocumentContentChangeEvent {

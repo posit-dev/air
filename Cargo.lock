@@ -43,7 +43,7 @@ dependencies = [
  "itertools",
  "lsp-server",
  "ruff_server",
- "ruff_source_file",
+ "source_file",
  "tempfile",
  "thiserror 2.0.5",
  "tracing",
@@ -60,10 +60,10 @@ dependencies = [
  "biome_parser",
  "biome_rowan",
  "insta",
- "ruff_source_file",
  "serde",
  "similar",
  "similar-asserts",
+ "source_file",
 ]
 
 [[package]]
@@ -101,8 +101,8 @@ dependencies = [
  "biome_rowan",
  "biome_unicode_table",
  "insta",
- "ruff_source_file",
  "serde",
+ "source_file",
  "tests_macros",
  "tracing",
  "tree-sitter",
@@ -1438,11 +1438,11 @@ dependencies = [
  "lsp-server",
  "lsp-types",
  "regex",
- "ruff_source_file",
  "rustc-hash",
  "serde",
  "serde_json",
  "server_test",
+ "source_file",
  "thiserror 2.0.5",
  "tracing",
  "tracing-subscriber",
@@ -1451,15 +1451,6 @@ dependencies = [
  "url",
  "uuid",
  "workspace",
-]
-
-[[package]]
-name = "ruff_source_file"
-version = "0.0.0"
-dependencies = [
- "biome_text_size",
- "memchr",
- "serde",
 ]
 
 [[package]]
@@ -1705,6 +1696,15 @@ name = "smallvec"
 version = "1.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
+
+[[package]]
+name = "source_file"
+version = "0.0.0"
+dependencies = [
+ "biome_text_size",
+ "memchr",
+ "serde",
+]
 
 [[package]]
 name = "spin"
@@ -2286,9 +2286,9 @@ dependencies = [
  "fs",
  "ignore",
  "insta",
- "ruff_source_file",
  "rustc-hash",
  "serde",
+ "source_file",
  "tempfile",
  "thiserror 2.0.5",
  "toml",

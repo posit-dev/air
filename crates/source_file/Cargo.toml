@@ -1,5 +1,5 @@
 [package]
-name = "ruff_source_file"
+name = "source_file"
 version = "0.0.0"
 publish = false
 authors = { workspace = true }

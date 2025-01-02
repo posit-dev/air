@@ -25,7 +25,7 @@ ignore = { workspace = true }
 itertools = { workspace = true }
 lsp-server = { workspace = true }
 ruff_server = { workspace = true }
-ruff_source_file = { workspace = true }
+source_file = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }
 workspace = { workspace = true }

@@ -30,8 +30,8 @@ biome_ungrammar = { path = "./crates/biome_ungrammar" }
 fs = { path = "./crates/fs" }
 tests_macros = { path = "./crates/tests_macros" }
 ruff_server = { path = "./crates/ruff_server" }
-ruff_source_file = { path = "./crates/ruff_source_file" }
 server_test = { path = "./crates/server_test" }
+source_file = { path = "./crates/source_file" }
 workspace = { path = "./crates/workspace" }
 
 anyhow = "1.0.89"

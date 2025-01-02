@@ -71,7 +71,7 @@ impl LineIndex {
     ///
     /// ```
     /// # use biome_text_size::TextSize;
-    /// # use ruff_source_file::{LineIndex, OneIndexed, SourceLocation};
+    /// # use source_file::{LineIndex, OneIndexed, SourceLocation};
     /// let source = "def a():\n    pass";
     /// let index = LineIndex::from_source_text(source);
     ///
@@ -140,7 +140,7 @@ impl LineIndex {
     ///
     /// ```
     /// # use biome_text_size::TextSize;
-    /// # use ruff_source_file::{LineIndex, OneIndexed, SourceLocation};
+    /// # use source_file::{LineIndex, OneIndexed, SourceLocation};
     /// let source = "def a():\n    pass";
     /// let index = LineIndex::from_source_text(source);
     ///
@@ -227,7 +227,7 @@ impl LineIndex {
     /// ### ASCII
     ///
     /// ```
-    /// use ruff_source_file::{LineIndex, OneIndexed};
+    /// use source_file::{LineIndex, OneIndexed};
     /// use biome_text_size::TextSize;
     /// let source = r#"a = 4
     /// c = "some string"
@@ -251,7 +251,7 @@ impl LineIndex {
     /// ### UTF8
     ///
     /// ```
-    /// use ruff_source_file::{LineIndex, OneIndexed};
+    /// use source_file::{LineIndex, OneIndexed};
     /// use biome_text_size::TextSize;
     /// let source = r#"a = 4
     /// c = "❤️"

@@ -1,5 +1,5 @@
-use ruff_source_file::LineEnding;
-use ruff_source_file::LineIndex;
+use source_file::LineEnding;
+use source_file::LineIndex;
 
 use crate::edit::Indel;
 use crate::edit::PositionEncoding;

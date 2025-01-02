@@ -2,8 +2,8 @@ use crate::edit::PositionEncoding;
 use biome_rowan::TextRange;
 use biome_text_size::TextSize;
 use lsp_types as types;
-use ruff_source_file::OneIndexed;
-use ruff_source_file::{LineIndex, SourceLocation};
+use source_file::OneIndexed;
+use source_file::{LineIndex, SourceLocation};
 
 // We don't own this type so we need a helper trait
 pub(crate) trait TextSizeExt {

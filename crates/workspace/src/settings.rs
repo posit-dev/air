@@ -41,10 +41,10 @@ impl FormatSettings {
             LineEnding::Native => biome_formatter::LineEnding::Crlf,
             #[cfg(not(target_os = "windows"))]
             LineEnding::Native => biome_formatter::LineEnding::Lf,
-            LineEnding::Auto => match ruff_source_file::find_newline(source) {
-                Some((_, ruff_source_file::LineEnding::Lf)) => biome_formatter::LineEnding::Lf,
-                Some((_, ruff_source_file::LineEnding::Crlf)) => biome_formatter::LineEnding::Crlf,
-                Some((_, ruff_source_file::LineEnding::Cr)) => biome_formatter::LineEnding::Cr,
+            LineEnding::Auto => match source_file::find_newline(source) {
+                Some((_, source_file::LineEnding::Lf)) => biome_formatter::LineEnding::Lf,
+                Some((_, source_file::LineEnding::Crlf)) => biome_formatter::LineEnding::Crlf,
+                Some((_, source_file::LineEnding::Cr)) => biome_formatter::LineEnding::Cr,
                 None => biome_formatter::LineEnding::Lf,
             },
         };

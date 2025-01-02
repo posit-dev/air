@@ -8,7 +8,7 @@ use crate::edit::PositionEncoding;
 use crate::proto::TextSizeExt;
 use biome_text_size::{TextRange, TextSize};
 use lsp_types as types;
-use ruff_source_file::LineIndex;
+use source_file::LineIndex;
 
 // We don't own this type so we need a helper trait
 pub(crate) trait TextRangeExt {

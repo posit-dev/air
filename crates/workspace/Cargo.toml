@@ -18,8 +18,8 @@ fs = { workspace = true }
 ignore = { workspace = true }
 rustc-hash = { workspace = true }
 thiserror = { workspace = true }
-ruff_source_file = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
+source_file = { workspace = true }
 toml = { workspace = true }
 
 [dev-dependencies]
