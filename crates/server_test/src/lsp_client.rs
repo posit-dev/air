@@ -146,8 +146,8 @@ impl TestClient {
 
     pub fn shutdown(&mut self) {
         self.check_no_incoming();
-        self.request::<lsp_types::request::Shutdown>(());
-        self.recv_response();
+        let id = self.request::<lsp_types::request::Shutdown>(());
+        assert_eq!(id, self.recv_response().id);
     }
 
     fn check_no_incoming(&self) {
