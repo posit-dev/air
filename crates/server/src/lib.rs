@@ -1,4 +1,4 @@
-//! ## The Ruff Language Server
+//! ## The Air Language Server
 
 pub use server::Server;
 

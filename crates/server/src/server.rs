@@ -134,14 +134,14 @@ impl Server {
             let backtrace = std::backtrace::Backtrace::force_capture();
             tracing::error!("{panic_info}\n{backtrace}");
 
-            // we also need to print to stderr directly for when using `$logTrace` because
+            // we also need to print to stderr directly for when using `window/logMessage` because
             // the message won't be sent to the client.
             // But don't use `eprintln` because `eprintln` itself may panic if the pipe is broken.
             let mut stderr = std::io::stderr().lock();
             writeln!(stderr, "{panic_info}\n{backtrace}").ok();
 
             try_show_message(
-                "The Ruff language server exited with a panic. See the logs for more details."
+                "The Air language server exited with a panic. See the logs for more details."
                     .to_string(),
                 lsp_types::MessageType::ERROR,
             )

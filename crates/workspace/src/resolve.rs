@@ -1,9 +1,3 @@
-// --- source
-// authors = ["Charlie Marsh"]
-// license = "MIT"
-// origin = "https://github.com/astral-sh/ruff/tree/main/crates/ruff_workspace"
-// ---
-
 use std::collections::btree_map::Keys;
 use std::collections::btree_map::Range;
 use std::collections::btree_map::RangeMut;
