@@ -28,8 +28,6 @@ air_r_parser = { path = "./crates/air_r_parser" }
 air_r_syntax = { path = "./crates/air_r_syntax" }
 biome_ungrammar = { path = "./crates/biome_ungrammar" }
 fs = { path = "./crates/fs" }
-line_ending = { path = "./crates/line_ending" }
-lsp_test = { path = "./crates/lsp_test" }
 tests_macros = { path = "./crates/tests_macros" }
 ruff_server = { path = "./crates/ruff_server" }
 ruff_source_file = { path = "./crates/ruff_source_file" }

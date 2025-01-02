@@ -193,7 +193,6 @@ impl Server {
         Ok(())
     }
 
-    // TODO: Add in other dynamic configuration
     fn try_register_capabilities(
         resolved_client_capabilities: &ResolvedClientCapabilities,
         scheduler: &mut Scheduler,

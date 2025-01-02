@@ -1,7 +1,0 @@
----
-source: crates/lsp/src/handlers_format.rs
-expression: output1
----
-1+1
-#
-2 + 2
