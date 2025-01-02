@@ -1,5 +1,5 @@
 [package]
-name = "ruff_server"
+name = "server"
 version = "0.1.1"
 publish = false
 authors = { workspace = true }

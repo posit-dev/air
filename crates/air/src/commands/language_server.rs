@@ -1,6 +1,6 @@
 use std::num::NonZeroUsize;
 
-use ruff_server::Server;
+use server::Server;
 
 use crate::args::LanguageServerCommand;
 use crate::ExitStatus;

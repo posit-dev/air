@@ -29,7 +29,7 @@ air_r_syntax = { path = "./crates/air_r_syntax" }
 biome_ungrammar = { path = "./crates/biome_ungrammar" }
 fs = { path = "./crates/fs" }
 tests_macros = { path = "./crates/tests_macros" }
-ruff_server = { path = "./crates/ruff_server" }
+server = { path = "./crates/server" }
 server_test = { path = "./crates/server_test" }
 source_file = { path = "./crates/source_file" }
 workspace = { path = "./crates/workspace" }
