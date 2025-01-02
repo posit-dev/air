@@ -7,6 +7,7 @@ mod message;
 
 mod crates;
 mod edit;
+mod error;
 mod logging;
 mod proto;
 mod server;

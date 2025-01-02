@@ -87,8 +87,8 @@ impl Index {
         DocumentKey::Text(url)
     }
 
-    pub(super) fn open_workspace_folder(&mut self, url: Url) -> crate::Result<()> {
-        self.settings.open_workspace_folder(&url)
+    pub(super) fn open_workspace_folder(&mut self, url: &Url) -> crate::Result<()> {
+        self.settings.open_workspace_folder(url)
     }
 
     #[allow(dead_code)]

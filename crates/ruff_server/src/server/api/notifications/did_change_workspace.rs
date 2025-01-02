@@ -4,6 +4,7 @@
 // | Commit: 5bc9d6d3aa694ab13f38dd5cf91b713fd3844380           |
 // +------------------------------------------------------------+
 
+use crate::error::ErrorVec;
 use crate::server::api::LSPResult;
 use crate::server::client::{Notifier, Requester};
 use crate::server::Result;
@@ -24,16 +25,18 @@ impl super::SyncNotificationHandler for DidChangeWorkspace {
         _requester: &mut Requester,
         params: types::DidChangeWorkspaceFoldersParams,
     ) -> Result<()> {
+        // Collect all `errors` to ensure we don't drop any events if we encounter an error
+        let mut errors = ErrorVec::new();
+
         for types::WorkspaceFolder { uri, .. } in params.event.added {
-            session
-                .open_workspace_folder(uri)
-                .with_failure_code(lsp_server::ErrorCode::InvalidParams)?;
+            errors.push_err(session.open_workspace_folder(&uri));
         }
         for types::WorkspaceFolder { uri, .. } in params.event.removed {
-            session
-                .close_workspace_folder(&uri)
-                .with_failure_code(lsp_server::ErrorCode::InvalidParams)?;
+            errors.push_err(session.close_workspace_folder(&uri));
         }
-        Ok(())
+
+        errors
+            .into_result()
+            .with_failure_code(lsp_server::ErrorCode::InvalidParams)
     }
 }
