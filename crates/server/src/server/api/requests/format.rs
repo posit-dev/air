@@ -96,48 +96,41 @@ fn format_source(
 #[cfg(test)]
 mod tests {
     use crate::document::TextDocument;
-    use crate::{test::init_test_client, test::TestClientExt};
+    use crate::{test::with_client, test::TestClientExt};
 
     #[test]
     fn test_format() {
-        let mut client = init_test_client();
-
-        #[rustfmt::skip]
-        let doc = TextDocument::doodle(
-"
-1
+        with_client(|client| {
+            #[rustfmt::skip]
+            let doc = TextDocument::doodle(
+"1
 2+2
 3 + 3 +
 3",
-        );
+            );
 
-        let formatted = client.format_document(&doc);
-        insta::assert_snapshot!(formatted);
-
-        client.shutdown();
-        client.exit();
+            let formatted = client.format_document(&doc);
+            insta::assert_snapshot!(formatted);
+        });
     }
 
     // https://github.com/posit-dev/air/issues/61
     #[test]
     fn test_format_minimal_diff() {
-        let mut client = init_test_client();
-
-        #[rustfmt::skip]
-        let doc = TextDocument::doodle(
+        with_client(|client| {
+            #[rustfmt::skip]
+            let doc = TextDocument::doodle(
 "1
 2+2
 3
 ",
-        );
+            );
 
-        let edits = client.format_document_edits(&doc).unwrap();
-        assert!(edits.len() == 1);
+            let edits = client.format_document_edits(&doc).unwrap();
+            assert_eq!(edits.len(), 1);
 
-        let edit = &edits[0];
-        assert_eq!(edit.new_text, " + ");
-
-        client.shutdown();
-        client.exit();
+            let edit = &edits[0];
+            assert_eq!(edit.new_text, " + ");
+        });
     }
 }

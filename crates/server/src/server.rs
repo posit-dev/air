@@ -71,14 +71,6 @@ impl Server {
 
         let workspace_folders = workspace_folders.unwrap_or_default();
 
-        let client_name = client_info
-            .as_ref()
-            .map(|client_info| client_info.name.clone());
-
-        let is_test_client = client_name
-            .as_ref()
-            .map_or(false, |client_name| client_name == "AirTestClient");
-
         // TODO: Get user specified options from `initialization_options`
         let log_level = None;
         let dependency_log_levels = None;
@@ -87,11 +79,10 @@ impl Server {
             connection.make_sender(),
             log_level,
             dependency_log_levels,
-            client_name,
-            is_test_client,
+            client_info,
         );
 
-        crate::message::init_messenger(connection.make_sender(), is_test_client);
+        crate::message::init_messenger(connection.make_sender());
 
         Ok(Self {
             connection,

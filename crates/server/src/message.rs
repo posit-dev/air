@@ -6,16 +6,10 @@ use crate::server::ClientSender;
 
 static MESSENGER: OnceLock<ClientSender> = OnceLock::new();
 
-pub(crate) fn init_messenger(client_sender: ClientSender, is_test_client: bool) {
-    let result = MESSENGER.set(client_sender);
-
-    // During testing, `init_messenger()` will be called multiple times
-    // within the same process, potentially at the same time across threads.
-    // This probably isn't great, because if we call `show_err_msg!()` from a
-    // test thread where the `ClientSender` has been shutdown, then we will panic.
-    if !is_test_client {
-        result.expect("Messenger should only be initialized once");
-    }
+pub(crate) fn init_messenger(client_sender: ClientSender) {
+    MESSENGER
+        .set(client_sender)
+        .expect("Messenger should only be initialized once");
 }
 
 pub(crate) fn show_message(message: String, message_type: lsp_types::MessageType) {
