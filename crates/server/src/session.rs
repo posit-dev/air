@@ -1,7 +1,5 @@
 //! Data model, state management, and configuration resolution.
 
-use std::sync::Arc;
-
 use lsp_types::Url;
 use lsp_types::WorkspaceFolder;
 
@@ -21,14 +19,12 @@ pub(crate) struct Session {
     /// The global position encoding, negotiated during LSP initialization.
     position_encoding: PositionEncoding,
     /// Tracks what LSP features the client supports and doesn't support.
-    resolved_client_capabilities: Arc<ResolvedClientCapabilities>,
+    resolved_client_capabilities: ResolvedClientCapabilities,
 }
 
 /// An immutable snapshot of `Session` that references
 /// a specific document.
 pub(crate) struct DocumentSnapshot {
-    #[allow(dead_code)]
-    resolved_client_capabilities: Arc<ResolvedClientCapabilities>,
     document_ref: index::DocumentQuery,
     position_encoding: PositionEncoding,
 }
@@ -42,7 +38,7 @@ impl Session {
         Ok(Self {
             position_encoding,
             index: index::Index::new(workspace_folders)?,
-            resolved_client_capabilities: Arc::new(resolved_client_capabilities),
+            resolved_client_capabilities,
         })
     }
 
@@ -54,7 +50,6 @@ impl Session {
     pub(crate) fn take_snapshot(&self, url: Url) -> Option<DocumentSnapshot> {
         let key = self.key_from_url(url);
         Some(DocumentSnapshot {
-            resolved_client_capabilities: self.resolved_client_capabilities.clone(),
             document_ref: self.index.make_document_ref(key)?,
             position_encoding: self.position_encoding,
         })
@@ -131,11 +126,6 @@ impl Session {
 }
 
 impl DocumentSnapshot {
-    #[allow(dead_code)]
-    pub(crate) fn resolved_client_capabilities(&self) -> &ResolvedClientCapabilities {
-        &self.resolved_client_capabilities
-    }
-
     pub fn query(&self) -> &index::DocumentQuery {
         &self.document_ref
     }
