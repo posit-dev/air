@@ -17,7 +17,7 @@ impl super::SyncNotificationHandler for Cancel {
         _requester: &mut Requester,
         _params: types::CancelParams,
     ) -> Result<()> {
-        // TODO(jane): Handle this once we have task cancellation in the scheduler.
+        // TODO: Handle this once we have task cancellation in the scheduler.
         Ok(())
     }
 }

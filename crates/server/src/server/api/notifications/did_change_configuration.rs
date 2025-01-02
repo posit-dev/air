@@ -17,7 +17,7 @@ impl super::SyncNotificationHandler for DidChangeConfiguration {
         _requester: &mut Requester,
         _params: types::DidChangeConfigurationParams,
     ) -> Result<()> {
-        // TODO(jane): get this wired up after the pre-release
+        // TODO: get this wired up as a "signal" to pull new configuration
         Ok(())
     }
 }
