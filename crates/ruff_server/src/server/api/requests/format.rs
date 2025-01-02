@@ -15,6 +15,8 @@ use crate::server::api::LSPResult;
 use crate::server::{client::Notifier, Result};
 use crate::session::{DocumentQuery, DocumentSnapshot};
 
+type FormatResponse = Option<Vec<lsp_types::TextEdit>>;
+
 pub(crate) struct Format;
 
 impl super::RequestHandler for Format {
@@ -27,14 +29,14 @@ impl super::BackgroundDocumentRequestHandler for Format {
         snapshot: DocumentSnapshot,
         _notifier: Notifier,
         _params: types::DocumentFormattingParams,
-    ) -> Result<super::FormatResponse> {
+    ) -> Result<FormatResponse> {
         format_document(&snapshot)
     }
 }
 
 /// Formats a full text document
 #[tracing::instrument(level = "info", skip_all)]
-pub(super) fn format_document(snapshot: &DocumentSnapshot) -> Result<super::FormatResponse> {
+pub(super) fn format_document(snapshot: &DocumentSnapshot) -> Result<FormatResponse> {
     let text_document = snapshot.query().as_single_document();
     let query = snapshot.query();
     format_text_document(text_document, query, snapshot.encoding())
@@ -44,7 +46,7 @@ fn format_text_document(
     text_document: &TextDocument,
     query: &DocumentQuery,
     encoding: PositionEncoding,
-) -> Result<super::FormatResponse> {
+) -> Result<FormatResponse> {
     let document_settings = query.settings();
     let formatter_settings = &document_settings.format;
 

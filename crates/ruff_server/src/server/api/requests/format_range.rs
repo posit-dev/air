@@ -24,6 +24,8 @@ use crate::server::api::LSPResult;
 use crate::server::{client::Notifier, Result};
 use crate::session::{DocumentQuery, DocumentSnapshot};
 
+type FormatRangeResponse = Option<Vec<lsp_types::TextEdit>>;
+
 pub(crate) struct FormatRange;
 
 impl super::RequestHandler for FormatRange {
@@ -36,17 +38,14 @@ impl super::BackgroundDocumentRequestHandler for FormatRange {
         snapshot: DocumentSnapshot,
         _notifier: Notifier,
         params: types::DocumentRangeFormattingParams,
-    ) -> Result<super::FormatResponse> {
+    ) -> Result<FormatRangeResponse> {
         format_document_range(&snapshot, params.range)
     }
 }
 
 /// Formats the specified [`Range`] in the [`DocumentSnapshot`].
 #[tracing::instrument(level = "info", skip_all)]
-fn format_document_range(
-    snapshot: &DocumentSnapshot,
-    range: Range,
-) -> Result<super::FormatResponse> {
+fn format_document_range(snapshot: &DocumentSnapshot, range: Range) -> Result<FormatRangeResponse> {
     let text_document = snapshot.query().as_single_document();
     let query = snapshot.query();
     format_text_document_range(text_document, range, query, snapshot.encoding())
@@ -58,7 +57,7 @@ fn format_text_document_range(
     range: Range,
     query: &DocumentQuery,
     encoding: PositionEncoding,
-) -> Result<super::FormatResponse> {
+) -> Result<FormatRangeResponse> {
     let document_settings = query.settings();
     let formatter_settings = &document_settings.format;
 

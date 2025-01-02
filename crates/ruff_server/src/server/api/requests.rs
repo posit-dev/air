@@ -9,5 +9,3 @@ use super::{
 pub(super) use format::Format;
 pub(super) use format_range::FormatRange;
 pub(super) use view_file::ViewFile;
-
-type FormatResponse = Option<Vec<lsp_types::TextEdit>>;
