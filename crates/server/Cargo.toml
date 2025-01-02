@@ -25,16 +25,13 @@ biome_rowan = { workspace = true }
 biome_text_size = { workspace = true }
 crossbeam = { workspace = true }
 dissimilar = { workspace = true }
-ignore = { workspace = true }
 itertools = { workspace = true }
 jod-thread = { workspace = true }
 lsp-server = { workspace = true }
 lsp-types = { workspace = true }
-regex = { workspace = true }
 rustc-hash = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-thiserror = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["ansi", "local-time"] }
 tree-sitter = { workspace = true }
