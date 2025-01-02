@@ -96,7 +96,7 @@ impl TestClientExt for TestClient {
             ..Default::default()
         };
 
-        let range = range.into_proto(doc.contents(), doc.index(), self.position_encoding());
+        let range = range.into_proto(doc.source_file(), self.position_encoding());
 
         self.range_formatting(lsp_types::DocumentRangeFormattingParams {
             text_document: lsp_types::TextDocumentIdentifier {
@@ -133,10 +133,9 @@ fn apply_text_edits(
 ) -> anyhow::Result<String> {
     use std::ops::Range;
 
-    let text = doc.contents();
-    let mut new_text = text.to_string();
+    let mut new_text = doc.contents().to_string();
 
-    let index = doc.index();
+    let source = doc.source_file();
 
     // Apply edits from bottom to top to avoid inserted newlines to invalidate
     // positions in earlier parts of the doc (they are sent in reading order
@@ -144,7 +143,7 @@ fn apply_text_edits(
     edits.reverse();
 
     for edit in edits {
-        let range: Range<usize> = TextRange::from_proto(edit.range, text, index, encoding).into();
+        let range: Range<usize> = TextRange::from_proto(edit.range, source, encoding).into();
         new_text.replace_range(range, &edit.new_text);
     }
 

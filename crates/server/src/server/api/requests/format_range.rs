@@ -60,10 +60,10 @@ fn format_text_document_range(
     let document_settings = query.settings();
     let formatter_settings = &document_settings.format;
 
-    let text = text_document.contents();
     let ending = text_document.ending();
-    let index = text_document.index();
-    let range = TextRange::from_proto(range, text, index, encoding);
+    let source = text_document.source_file();
+    let text = source.contents();
+    let range = TextRange::from_proto(range, source, encoding);
 
     let Some((new_text, new_range)) = format_source_range(text, formatter_settings, range)
         .with_failure_code(lsp_server::ErrorCode::InternalError)?
@@ -74,7 +74,7 @@ fn format_text_document_range(
     let text_edit = TextEdit::replace(new_range, new_text);
 
     let edits = text_edit
-        .into_proto(text, index, encoding, ending)
+        .into_proto(source, encoding, ending)
         .with_failure_code(lsp_server::ErrorCode::InternalError)?;
 
     Ok(Some(edits))

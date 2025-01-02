@@ -3,66 +3,52 @@ use biome_rowan::TextRange;
 use biome_text_size::TextSize;
 use lsp_types as types;
 use source_file::OneIndexed;
-use source_file::{LineIndex, SourceLocation};
+use source_file::{SourceFile, SourceLocation};
 
 // We don't own this type so we need a helper trait
 pub(crate) trait TextSizeExt {
-    fn into_proto(
-        self,
-        text: &str,
-        index: &LineIndex,
-        encoding: PositionEncoding,
-    ) -> types::Position;
+    fn into_proto(self, source: &SourceFile, encoding: PositionEncoding) -> types::Position;
 
     fn from_proto(
         position: types::Position,
-        text: &str,
-        index: &LineIndex,
+        source: &SourceFile,
         encoding: PositionEncoding,
     ) -> Self;
 }
 
 impl TextSizeExt for TextSize {
-    fn into_proto(
-        self,
-        text: &str,
-        index: &LineIndex,
-        encoding: PositionEncoding,
-    ) -> types::Position {
-        source_location_to_position(&offset_to_source_location(self, text, index, encoding))
+    fn into_proto(self, source: &SourceFile, encoding: PositionEncoding) -> types::Position {
+        source_location_to_position(&offset_to_source_location(self, source, encoding))
     }
 
     fn from_proto(
         position: types::Position,
-        text: &str,
-        index: &LineIndex,
+        source: &SourceFile,
         encoding: PositionEncoding,
     ) -> Self {
-        let line = index.line_range(
-            OneIndexed::from_zero_indexed(u32_index_to_usize(position.line)),
-            text,
-        );
+        let line = source.line_range(OneIndexed::from_zero_indexed(u32_index_to_usize(
+            position.line,
+        )));
 
         let column_offset = match encoding {
             PositionEncoding::UTF8 => TextSize::from(position.character),
 
             PositionEncoding::UTF16 => {
                 // Fast path for ASCII only documents
-                if index.is_ascii() {
+                if source.is_ascii() {
                     TextSize::from(position.character)
                 } else {
                     // UTF-16 encodes characters either as one or two 16 bit words.
                     // The `position` is the 16-bit word offset from the start of the line (and not the character offset)
-                    utf8_column_offset(position.character, &text[line])
+                    utf8_column_offset(position.character, &source.contents()[line])
                 }
             }
 
             PositionEncoding::UTF32 => {
                 // UTF-32 uses 4 bytes for each character. Meaning, the position is a character offset.
-                return index.offset(
+                return source.offset(
                     OneIndexed::from_zero_indexed(u32_index_to_usize(position.line)),
                     OneIndexed::from_zero_indexed(u32_index_to_usize(position.character)),
-                    text,
                 );
             }
         };
@@ -99,14 +85,13 @@ fn utf8_column_offset(utf16_code_unit_offset: u32, line: &str) -> TextSize {
 
 fn offset_to_source_location(
     offset: TextSize,
-    text: &str,
-    index: &LineIndex,
+    source: &SourceFile,
     encoding: PositionEncoding,
 ) -> SourceLocation {
     match encoding {
         PositionEncoding::UTF8 => {
-            let row = index.line_index(offset);
-            let column = offset - index.line_start(row, text);
+            let row = source.line_index(offset);
+            let column = offset - source.line_start(row);
 
             SourceLocation {
                 column: OneIndexed::from_zero_indexed(column.into()),
@@ -114,12 +99,12 @@ fn offset_to_source_location(
             }
         }
         PositionEncoding::UTF16 => {
-            let row = index.line_index(offset);
+            let row = source.line_index(offset);
 
-            let column = if index.is_ascii() {
-                (offset - index.line_start(row, text)).into()
+            let column = if source.is_ascii() {
+                (offset - source.line_start(row)).into()
             } else {
-                let up_to_line = &text[TextRange::new(index.line_start(row, text), offset)];
+                let up_to_line = &source.contents()[TextRange::new(source.line_start(row), offset)];
                 up_to_line.encode_utf16().count()
             };
 
@@ -128,7 +113,7 @@ fn offset_to_source_location(
                 row,
             }
         }
-        PositionEncoding::UTF32 => index.source_location(offset, text),
+        PositionEncoding::UTF32 => source.source_location(offset),
     }
 }
 

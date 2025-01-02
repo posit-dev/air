@@ -14,7 +14,7 @@ use crate::SourceLocation;
 ///
 /// Cloning a [`LineIndex`] is cheap because it only requires bumping a reference count.
 #[derive(Clone, Eq, PartialEq)]
-pub struct LineIndex {
+pub(crate) struct LineIndex {
     inner: Arc<LineIndexInner>,
 }
 
@@ -26,7 +26,7 @@ struct LineIndexInner {
 
 impl LineIndex {
     /// Builds the [`LineIndex`] from the source text of a file.
-    pub fn from_source_text(text: &str) -> Self {
+    pub(crate) fn from_source_text(text: &str) -> Self {
         let mut line_starts: Vec<TextSize> = Vec::with_capacity(text.len() / 88);
         line_starts.push(TextSize::default());
 
@@ -66,34 +66,7 @@ impl LineIndex {
     }
 
     /// Returns the row and column index for an offset.
-    ///
-    /// ## Examples
-    ///
-    /// ```
-    /// # use biome_text_size::TextSize;
-    /// # use source_file::{LineIndex, OneIndexed, SourceLocation};
-    /// let source = "def a():\n    pass";
-    /// let index = LineIndex::from_source_text(source);
-    ///
-    /// assert_eq!(
-    ///     index.source_location(TextSize::from(0), source),
-    ///     SourceLocation { row: OneIndexed::from_zero_indexed(0), column: OneIndexed::from_zero_indexed(0) }
-    /// );
-    ///
-    /// assert_eq!(
-    ///     index.source_location(TextSize::from(4), source),
-    ///     SourceLocation { row: OneIndexed::from_zero_indexed(0), column: OneIndexed::from_zero_indexed(4) }
-    /// );
-    /// assert_eq!(
-    ///     index.source_location(TextSize::from(13), source),
-    ///     SourceLocation { row: OneIndexed::from_zero_indexed(1), column: OneIndexed::from_zero_indexed(4) }
-    /// );
-    /// ```
-    ///
-    /// ## Panics
-    ///
-    /// If the offset is out of bounds.
-    pub fn source_location(&self, offset: TextSize, content: &str) -> SourceLocation {
+    pub(crate) fn source_location(&self, offset: TextSize, content: &str) -> SourceLocation {
         match self.line_starts().binary_search(&offset) {
             // Offset is at the start of a line
             Ok(row) => SourceLocation {
@@ -125,34 +98,21 @@ impl LineIndex {
     }
 
     /// Return the number of lines in the source code.
-    pub fn line_count(&self) -> usize {
+    pub(crate) fn line_count(&self) -> usize {
         self.line_starts().len()
     }
 
     /// Returns `true` if the text only consists of ASCII characters
-    pub fn is_ascii(&self) -> bool {
+    pub(crate) fn is_ascii(&self) -> bool {
         self.kind().is_ascii()
     }
 
     /// Returns the row number for a given offset.
     ///
-    /// ## Examples
-    ///
-    /// ```
-    /// # use biome_text_size::TextSize;
-    /// # use source_file::{LineIndex, OneIndexed, SourceLocation};
-    /// let source = "def a():\n    pass";
-    /// let index = LineIndex::from_source_text(source);
-    ///
-    /// assert_eq!(index.line_index(TextSize::from(0)), OneIndexed::from_zero_indexed(0));
-    /// assert_eq!(index.line_index(TextSize::from(4)), OneIndexed::from_zero_indexed(0));
-    /// assert_eq!(index.line_index(TextSize::from(13)), OneIndexed::from_zero_indexed(1));
-    /// ```
-    ///
     /// ## Panics
     ///
     /// If the offset is out of bounds.
-    pub fn line_index(&self, offset: TextSize) -> OneIndexed {
+    pub(crate) fn line_index(&self, offset: TextSize) -> OneIndexed {
         match self.line_starts().binary_search(&offset) {
             // Offset is at the start of a line
             Ok(row) => OneIndexed::from_zero_indexed(row),
@@ -164,7 +124,7 @@ impl LineIndex {
     }
 
     /// Returns the [byte offset](TextSize) for the `line` with the given index.
-    pub fn line_start(&self, line: OneIndexed, contents: &str) -> TextSize {
+    pub(crate) fn line_start(&self, line: OneIndexed, contents: &str) -> TextSize {
         let row_index = line.to_zero_indexed();
         let starts = self.line_starts();
 
@@ -178,7 +138,7 @@ impl LineIndex {
 
     /// Returns the [byte offset](TextSize) of the `line`'s end.
     /// The offset is the end of the line, up to and including the newline character ending the line (if any).
-    pub fn line_end(&self, line: OneIndexed, contents: &str) -> TextSize {
+    pub(crate) fn line_end(&self, line: OneIndexed, contents: &str) -> TextSize {
         let row_index = line.to_zero_indexed();
         let starts = self.line_starts();
 
@@ -192,7 +152,7 @@ impl LineIndex {
 
     /// Returns the [byte offset](TextSize) of the `line`'s end.
     /// The offset is the end of the line, excluding the newline character ending the line (if any).
-    pub fn line_end_exclusive(&self, line: OneIndexed, contents: &str) -> TextSize {
+    pub(crate) fn line_end_exclusive(&self, line: OneIndexed, contents: &str) -> TextSize {
         let row_index = line.to_zero_indexed();
         let starts = self.line_starts();
 
@@ -207,7 +167,7 @@ impl LineIndex {
     /// Returns the [`TextRange`] of the `line` with the given index.
     /// The start points to the first character's [byte offset](TextSize), the end up to, and including
     /// the newline character ending the line (if any).
-    pub fn line_range(&self, line: OneIndexed, contents: &str) -> TextRange {
+    pub(crate) fn line_range(&self, line: OneIndexed, contents: &str) -> TextRange {
         let starts = self.line_starts();
 
         if starts.len() == line.to_zero_indexed() {
@@ -221,58 +181,7 @@ impl LineIndex {
     }
 
     /// Returns the [byte offset](TextSize) at `line` and `column`.
-    ///
-    /// ## Examples
-    ///
-    /// ### ASCII
-    ///
-    /// ```
-    /// use source_file::{LineIndex, OneIndexed};
-    /// use biome_text_size::TextSize;
-    /// let source = r#"a = 4
-    /// c = "some string"
-    /// x = b"#;
-    ///
-    /// let index = LineIndex::from_source_text(source);
-    ///
-    /// // First line, first column
-    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(0), OneIndexed::from_zero_indexed(0), source), TextSize::from(0));
-    ///
-    /// // Second line, 4th column
-    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(1), OneIndexed::from_zero_indexed(4), source), TextSize::from(10));
-    ///
-    /// // Offset past the end of the first line
-    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(0), OneIndexed::from_zero_indexed(10), source), TextSize::from(6));
-    ///
-    /// // Offset past the end of the file
-    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(3), OneIndexed::from_zero_indexed(0), source), TextSize::from(29));
-    /// ```
-    ///
-    /// ### UTF8
-    ///
-    /// ```
-    /// use source_file::{LineIndex, OneIndexed};
-    /// use biome_text_size::TextSize;
-    /// let source = r#"a = 4
-    /// c = "❤️"
-    /// x = b"#;
-    ///
-    /// let index = LineIndex::from_source_text(source);
-    ///
-    /// // First line, first column
-    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(0), OneIndexed::from_zero_indexed(0), source), TextSize::from(0));
-    ///
-    /// // Third line, 2nd column, after emoji
-    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(2), OneIndexed::from_zero_indexed(1), source), TextSize::from(20));
-    ///
-    /// // Offset past the end of the second line
-    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(1), OneIndexed::from_zero_indexed(10), source), TextSize::from(19));
-    ///
-    /// // Offset past the end of the file
-    /// assert_eq!(index.offset(OneIndexed::from_zero_indexed(3), OneIndexed::from_zero_indexed(0), source), TextSize::from(24));
-    /// ```
-    ///
-    pub fn offset(&self, line: OneIndexed, column: OneIndexed, contents: &str) -> TextSize {
+    pub(crate) fn offset(&self, line: OneIndexed, column: OneIndexed, contents: &str) -> TextSize {
         // If start-of-line position after last line
         if line.to_zero_indexed() > self.line_starts().len() {
             return contents.text_len();

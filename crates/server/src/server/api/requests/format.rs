@@ -47,8 +47,8 @@ fn format_text_document(
     let document_settings = query.settings();
     let formatter_settings = &document_settings.format;
 
-    let text = text_document.contents();
-    let index = text_document.index();
+    let source = text_document.source_file();
+    let text = source.contents();
     let ending = text_document.ending();
 
     let new_text = format_source(text, formatter_settings)
@@ -61,7 +61,7 @@ fn format_text_document(
     let text_edit = TextEdit::diff(text, &new_text);
 
     let edits = text_edit
-        .into_proto(text, index, encoding, ending)
+        .into_proto(source, encoding, ending)
         .with_failure_code(lsp_server::ErrorCode::InternalError)?;
 
     Ok(Some(edits))

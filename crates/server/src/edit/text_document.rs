@@ -1,7 +1,7 @@
 use biome_rowan::TextRange;
 use lsp_types::TextDocumentContentChangeEvent;
 use source_file::LineEnding;
-use source_file::LineIndex;
+use source_file::SourceFile;
 
 use crate::edit::PositionEncoding;
 use crate::proto::TextRangeExt;
@@ -12,14 +12,12 @@ pub(crate) type DocumentVersion = i32;
 /// with changes made by the user, including unsaved changes.
 #[derive(Debug, Clone)]
 pub struct TextDocument {
-    /// The string contents of the document, normalized to unix line endings.
-    contents: String,
-    /// The original line endings of the document.
+    /// The source file containing the contents and line index for the document.
+    /// Line endings have been normalized to unix line endings here.
+    source: SourceFile,
+    /// The original line endings of the document. Used when sending changes back to the
+    /// LSP client.
     ending: LineEnding,
-    /// A computed line index for the document. This should always reflect
-    /// the current version of `contents`. Using a function like [`Self::modify`]
-    /// will re-calculate the line index automatically when the `contents` value is updated.
-    index: LineIndex,
     /// The latest version of the document, set by the LSP client. The server will panic in
     /// debug mode if we attempt to update the document with an 'older' version.
     version: DocumentVersion,
@@ -27,13 +25,12 @@ pub struct TextDocument {
 
 impl TextDocument {
     pub fn new(contents: String, version: DocumentVersion) -> Self {
-        // Normalize to Unix line endings
+        // Normalize to Unix line endings on the way in
         let (contents, ending) = source_file::normalize_newlines(contents);
-        let index = LineIndex::from_source_text(&contents);
+        let source = SourceFile::new(contents);
         Self {
-            contents,
+            source,
             ending,
-            index,
             version,
         }
     }
@@ -51,15 +48,15 @@ impl TextDocument {
     }
 
     pub fn contents(&self) -> &str {
-        &self.contents
+        self.source.contents()
     }
 
     pub fn ending(&self) -> LineEnding {
         self.ending
     }
 
-    pub fn index(&self) -> &LineIndex {
-        &self.index
+    pub fn source_file(&self) -> &SourceFile {
+        &self.source
     }
 
     pub fn version(&self) -> DocumentVersion {
@@ -81,20 +78,15 @@ impl TextDocument {
             (change.text, _) = source_file::normalize_newlines(text);
         }
 
-        if let [lsp_types::TextDocumentContentChangeEvent {
-            range: None, text, ..
-        }] = changes.as_slice()
+        if let [lsp_types::TextDocumentContentChangeEvent { range: None, .. }] = changes.as_slice()
         {
             tracing::trace!("Fast path - replacing entire document");
-            self.modify(|contents, version| {
-                contents.clone_from(text);
-                *version = new_version;
-            });
+            // Unwrap: If-let ensures there is exactly 1 change event
+            let change = changes.pop().unwrap();
+            self.source = SourceFile::new(change.text);
+            self.update_version(new_version);
             return;
         }
-
-        let mut new_contents = self.contents().to_string();
-        let mut active_index = self.index().clone();
 
         for TextDocumentContentChangeEvent {
             range,
@@ -103,47 +95,24 @@ impl TextDocument {
         } in changes
         {
             if let Some(range) = range {
-                let range = TextRange::from_proto(range, &new_contents, &active_index, encoding);
-
-                new_contents.replace_range(
+                // Replace a range and rebuild the line index
+                let range = TextRange::from_proto(range, &self.source, encoding);
+                self.source.replace_range(
                     usize::from(range.start())..usize::from(range.end()),
                     &change,
                 );
             } else {
-                new_contents = change;
+                // Replace the whole file
+                self.source = SourceFile::new(change);
             }
-
-            active_index = LineIndex::from_source_text(&new_contents);
         }
 
-        self.modify_with_manual_index(|contents, version, index| {
-            *index = active_index;
-            *contents = new_contents;
-            *version = new_version;
-        });
+        self.update_version(new_version);
     }
 
     pub fn update_version(&mut self, new_version: DocumentVersion) {
-        self.modify_with_manual_index(|_, version, _| {
-            *version = new_version;
-        });
-    }
-
-    // A private function for modifying the document's internal state
-    fn modify(&mut self, func: impl FnOnce(&mut String, &mut DocumentVersion)) {
-        self.modify_with_manual_index(|c, v, i| {
-            func(c, v);
-            *i = LineIndex::from_source_text(c);
-        });
-    }
-
-    // A private function for overriding how we update the line index by default.
-    fn modify_with_manual_index(
-        &mut self,
-        func: impl FnOnce(&mut String, &mut DocumentVersion, &mut LineIndex),
-    ) {
         let old_version = self.version;
-        func(&mut self.contents, &mut self.version, &mut self.index);
+        self.version = new_version;
         debug_assert!(self.version >= old_version);
     }
 }
@@ -204,7 +173,7 @@ def interface():
         );
 
         assert_eq!(
-            &document.contents,
+            document.contents(),
             r#""""
 测试comment
 一些测试内容
@@ -270,6 +239,6 @@ def interface():
             document.version + 1,
             PositionEncoding::UTF16,
         );
-        assert_eq!(document.contents, "a𐐀bar");
+        assert_eq!(document.contents(), "a𐐀bar");
     }
 }

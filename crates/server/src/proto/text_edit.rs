@@ -1,5 +1,5 @@
 use source_file::LineEnding;
-use source_file::LineIndex;
+use source_file::SourceFile;
 
 use crate::edit::Indel;
 use crate::edit::PositionEncoding;
@@ -9,13 +9,12 @@ use crate::proto::TextRangeExt;
 impl TextEdit {
     pub(crate) fn into_proto(
         self,
-        text: &str,
-        index: &LineIndex,
+        source: &SourceFile,
         encoding: PositionEncoding,
         ending: LineEnding,
     ) -> anyhow::Result<Vec<lsp_types::TextEdit>> {
         self.into_iter()
-            .map(|indel| indel.into_proto(text, index, encoding, ending))
+            .map(|indel| indel.into_proto(source, encoding, ending))
             .collect()
     }
 }
@@ -23,12 +22,11 @@ impl TextEdit {
 impl Indel {
     fn into_proto(
         self,
-        text: &str,
-        index: &LineIndex,
+        source: &SourceFile,
         encoding: PositionEncoding,
         ending: LineEnding,
     ) -> anyhow::Result<lsp_types::TextEdit> {
-        let range = self.delete.into_proto(text, index, encoding);
+        let range = self.delete.into_proto(source, encoding);
         let new_text = match ending {
             LineEnding::Lf => self.insert,
             LineEnding::Crlf => self.insert.replace('\n', "\r\n"),
