@@ -24,7 +24,10 @@ impl super::RequestHandler for Format {
 }
 
 impl super::BackgroundDocumentRequestHandler for Format {
-    super::define_document_url!(params: &types::DocumentFormattingParams);
+    fn document_url(params: &types::DocumentFormattingParams) -> std::borrow::Cow<lsp_types::Url> {
+        std::borrow::Cow::Borrowed(&params.text_document.uri)
+    }
+
     fn run_with_snapshot(
         snapshot: DocumentSnapshot,
         _notifier: Notifier,

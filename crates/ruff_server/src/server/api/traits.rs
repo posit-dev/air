@@ -33,9 +33,6 @@ pub(super) trait SyncRequestHandler: RequestHandler {
 
 /// A request handler that can be run on a background thread.
 pub(super) trait BackgroundDocumentRequestHandler: RequestHandler {
-    /// `document_url` can be implemented automatically with
-    /// `define_document_url!(params: &<YourParameterType>)` in the trait
-    /// implementation.
     fn document_url(
         params: &<<Self as RequestHandler>::RequestType as Request>::Params,
     ) -> std::borrow::Cow<lsp_types::Url>;
@@ -69,9 +66,6 @@ pub(super) trait SyncNotificationHandler: NotificationHandler {
 
 /// A notification handler that can be run on a background thread.
 pub(super) trait BackgroundDocumentNotificationHandler: NotificationHandler {
-    /// `document_url` can be implemented automatically with
-    /// `define_document_url!(params: &<YourParameterType>)` in the trait
-    /// implementation.
     fn document_url(
         params: &<<Self as NotificationHandler>::NotificationType as LSPNotification>::Params,
     ) -> std::borrow::Cow<lsp_types::Url>;

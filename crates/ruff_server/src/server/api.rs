@@ -18,18 +18,6 @@ use self::traits::{NotificationHandler, RequestHandler};
 
 use super::{client::Responder, schedule::BackgroundSchedule, Result};
 
-/// Defines the `document_url` method for implementers of [`traits::Notification`] and [`traits::Request`],
-/// given the parameter type used by the implementer.
-macro_rules! define_document_url {
-    ($params:ident: &$p:ty) => {
-        fn document_url($params: &$p) -> std::borrow::Cow<lsp_types::Url> {
-            std::borrow::Cow::Borrowed(&$params.text_document.uri)
-        }
-    };
-}
-
-use define_document_url;
-
 pub(super) fn request<'a>(req: server::Request) -> Task<'a> {
     let id = req.id.clone();
 

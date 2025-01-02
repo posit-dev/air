@@ -33,7 +33,12 @@ impl super::RequestHandler for FormatRange {
 }
 
 impl super::BackgroundDocumentRequestHandler for FormatRange {
-    super::define_document_url!(params: &types::DocumentRangeFormattingParams);
+    fn document_url(
+        params: &types::DocumentRangeFormattingParams,
+    ) -> std::borrow::Cow<lsp_types::Url> {
+        std::borrow::Cow::Borrowed(&params.text_document.uri)
+    }
+
     fn run_with_snapshot(
         snapshot: DocumentSnapshot,
         _notifier: Notifier,

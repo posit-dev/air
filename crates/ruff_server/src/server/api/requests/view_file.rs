@@ -41,7 +41,10 @@ impl super::RequestHandler for ViewFile {
 }
 
 impl super::BackgroundDocumentRequestHandler for ViewFile {
-    super::define_document_url!(params: &ViewFileParams);
+    fn document_url(params: &ViewFileParams) -> std::borrow::Cow<lsp_types::Url> {
+        std::borrow::Cow::Borrowed(&params.text_document.uri)
+    }
+
     fn run_with_snapshot(
         snapshot: DocumentSnapshot,
         _notifier: Notifier,
