@@ -11,8 +11,8 @@ mod error;
 mod logging;
 mod proto;
 mod server;
-
 mod session;
+
 #[cfg(test)]
 mod test;
 
