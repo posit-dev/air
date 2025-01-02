@@ -33,6 +33,7 @@ impl super::BackgroundDocumentRequestHandler for Format {
 }
 
 /// Formats a full text document
+#[tracing::instrument(level = "info", skip_all)]
 pub(super) fn format_document(snapshot: &DocumentSnapshot) -> Result<super::FormatResponse> {
     let text_document = snapshot.query().as_single_document();
     let query = snapshot.query();
