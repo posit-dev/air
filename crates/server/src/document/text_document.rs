@@ -3,7 +3,7 @@ use lsp_types::TextDocumentContentChangeEvent;
 use source_file::LineEnding;
 use source_file::SourceFile;
 
-use crate::edit::PositionEncoding;
+use crate::document::PositionEncoding;
 use crate::proto::TextRangeExt;
 
 pub(crate) type DocumentVersion = i32;
@@ -119,7 +119,7 @@ impl TextDocument {
 
 #[cfg(test)]
 mod tests {
-    use crate::edit::{PositionEncoding, TextDocument};
+    use crate::document::{PositionEncoding, TextDocument};
     use lsp_types::{Position, TextDocumentContentChangeEvent};
 
     #[test]

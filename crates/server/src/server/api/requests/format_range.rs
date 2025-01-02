@@ -11,8 +11,8 @@ use biome_text_size::{TextRange, TextSize};
 use lsp_types::{self as types, request as req, Range};
 use workspace::settings::FormatSettings;
 
-use crate::edit::TextEdit;
-use crate::edit::{PositionEncoding, TextDocument};
+use crate::document::TextEdit;
+use crate::document::{PositionEncoding, TextDocument};
 use crate::proto::TextRangeExt;
 use crate::server::api::LSPResult;
 use crate::server::{client::Notifier, Result};
@@ -269,7 +269,7 @@ fn find_expression_lists(node: &RSyntaxNode, offset: TextSize, end: bool) -> Vec
 
 #[cfg(test)]
 mod tests {
-    use crate::edit::TextDocument;
+    use crate::document::TextDocument;
     use crate::{test::init_test_client, test::TestClientExt};
 
     #[test]

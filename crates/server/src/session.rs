@@ -3,7 +3,7 @@
 use lsp_types::Url;
 use lsp_types::WorkspaceFolder;
 
-use crate::edit::{DocumentKey, DocumentVersion, PositionEncoding, TextDocument};
+use crate::document::{DocumentKey, DocumentVersion, PositionEncoding, TextDocument};
 
 pub(crate) use self::capabilities::ResolvedClientCapabilities;
 pub use self::index::DocumentQuery;

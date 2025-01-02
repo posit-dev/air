@@ -8,7 +8,7 @@ use rustc_hash::FxHashMap;
 
 use workspace::settings::Settings;
 
-use crate::edit::{DocumentKey, DocumentVersion, PositionEncoding, TextDocument};
+use crate::document::{DocumentKey, DocumentVersion, PositionEncoding, TextDocument};
 use crate::session::workspaces::WorkspaceSettingsResolver;
 
 /// Stores and tracks all open documents in a session, along with their associated settings.

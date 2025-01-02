@@ -1,4 +1,4 @@
-use crate::edit::TextDocument;
+use crate::document::TextDocument;
 use crate::server::client::{Notifier, Requester};
 use crate::server::Result;
 use crate::session::Session;

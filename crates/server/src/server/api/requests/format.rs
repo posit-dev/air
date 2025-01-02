@@ -3,8 +3,8 @@ use biome_formatter::LineEnding;
 use lsp_types::{self as types, request as req};
 use workspace::settings::FormatSettings;
 
-use crate::edit::TextEdit;
-use crate::edit::{PositionEncoding, TextDocument};
+use crate::document::TextEdit;
+use crate::document::{PositionEncoding, TextDocument};
 use crate::server::api::LSPResult;
 use crate::server::{client::Notifier, Result};
 use crate::session::{DocumentQuery, DocumentSnapshot};
@@ -95,7 +95,7 @@ fn format_source(
 
 #[cfg(test)]
 mod tests {
-    use crate::edit::TextDocument;
+    use crate::document::TextDocument;
     use crate::{test::init_test_client, test::TestClientExt};
 
     #[test]

@@ -6,7 +6,7 @@ pub use server::Server;
 mod message;
 
 mod crates;
-mod edit;
+mod document;
 mod error;
 mod logging;
 mod proto;

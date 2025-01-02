@@ -1,18 +1,9 @@
-//! Types and utilities for working with text and modifying source files
+use lsp_types::PositionEncodingKind;
 
-mod text_diff;
-mod text_document;
-mod text_edit;
-
-use lsp_types::{PositionEncodingKind, Url};
-pub(crate) use text_document::DocumentVersion;
-pub(crate) use text_document::TextDocument;
-pub(crate) use text_edit::{Indel, TextEdit};
-
-/// A convenient enumeration for supported text encodings. Can be converted to [`lsp_types::PositionEncodingKind`].
+/// A convenient enumeration for supported [lsp_types::Position] encodings. Can be converted to [`lsp_types::PositionEncodingKind`].
 // Please maintain the order from least to greatest priority for the derived `Ord` impl.
 #[derive(Default, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub enum PositionEncoding {
+pub(crate) enum PositionEncoding {
     /// UTF 16 is the encoding supported by all LSP clients.
     #[default]
     UTF16,
@@ -22,21 +13,6 @@ pub enum PositionEncoding {
 
     /// Air's preferred encoding
     UTF8,
-}
-
-/// A unique document ID, derived from a URL passed as part of an LSP request.
-/// This document ID can point to either be a standalone Python file, a full notebook, or a cell within a notebook.
-#[derive(Clone, Debug)]
-pub enum DocumentKey {
-    Text(Url),
-}
-
-impl std::fmt::Display for DocumentKey {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Text(url) => url.fmt(f),
-        }
-    }
 }
 
 impl From<PositionEncoding> for lsp_types::PositionEncodingKind {

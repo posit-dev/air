@@ -1,9 +1,9 @@
 use source_file::LineEnding;
 use source_file::SourceFile;
 
-use crate::edit::Indel;
-use crate::edit::PositionEncoding;
-use crate::edit::TextEdit;
+use crate::document::Indel;
+use crate::document::PositionEncoding;
+use crate::document::TextEdit;
 use crate::proto::TextRangeExt;
 
 impl TextEdit {

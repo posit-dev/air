@@ -1,4 +1,4 @@
-use crate::edit::PositionEncoding;
+use crate::document::PositionEncoding;
 use crate::proto::TextSizeExt;
 use biome_text_size::{TextRange, TextSize};
 use lsp_types as types;

@@ -19,7 +19,7 @@ use self::connection::Connection;
 use self::schedule::event_loop_thread;
 use self::schedule::Scheduler;
 use self::schedule::Task;
-use crate::edit::PositionEncoding;
+use crate::document::PositionEncoding;
 use crate::message::try_show_message;
 use crate::server::connection::ConnectionInitializer;
 use crate::session::ResolvedClientCapabilities;

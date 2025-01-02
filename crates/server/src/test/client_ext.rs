@@ -1,8 +1,8 @@
 use biome_text_size::TextRange;
 use server_test::TestClient;
 
-use crate::edit::PositionEncoding;
-use crate::edit::TextDocument;
+use crate::document::PositionEncoding;
+use crate::document::TextDocument;
 use crate::proto::TextRangeExt;
 
 pub(crate) trait TestClientExt {
@@ -128,8 +128,8 @@ impl TestClientExt for TestClient {
 
 fn apply_text_edits(
     mut edits: Vec<lsp_types::TextEdit>,
-    doc: &crate::edit::TextDocument,
-    encoding: crate::edit::PositionEncoding,
+    doc: &crate::document::TextDocument,
+    encoding: crate::document::PositionEncoding,
 ) -> anyhow::Result<String> {
     use std::ops::Range;
 
