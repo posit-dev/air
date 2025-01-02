@@ -65,7 +65,7 @@ fn format_text_document_range(
     let text = text_document.contents();
     let ending = text_document.ending();
     let index = text_document.index();
-    let range = TextRange::from_proto(&range, text, index, encoding);
+    let range = TextRange::from_proto(range, text, index, encoding);
 
     let Some((new_text, new_range)) = format_source_range(text, formatter_settings, range)
         .with_failure_code(lsp_server::ErrorCode::InternalError)?

@@ -144,7 +144,7 @@ fn apply_text_edits(
     edits.reverse();
 
     for edit in edits {
-        let range: Range<usize> = TextRange::from_proto(&edit.range, text, index, encoding).into();
+        let range: Range<usize> = TextRange::from_proto(edit.range, text, index, encoding).into();
         new_text.replace_range(range, &edit.new_text);
     }
 

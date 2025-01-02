@@ -142,7 +142,7 @@ impl TextDocument {
         } in changes
         {
             if let Some(range) = range {
-                let range = TextRange::from_proto(&range, &new_contents, &active_index, encoding);
+                let range = TextRange::from_proto(range, &new_contents, &active_index, encoding);
 
                 new_contents.replace_range(
                     usize::from(range.start())..usize::from(range.end()),
