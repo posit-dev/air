@@ -5,8 +5,8 @@ mod text_document;
 mod text_edit;
 
 use lsp_types::{PositionEncodingKind, Url};
+pub(crate) use text_document::DocumentVersion;
 pub(crate) use text_document::TextDocument;
-pub(crate) use text_document::{DocumentVersion, LanguageId};
 pub(crate) use text_edit::{Indel, TextEdit};
 
 /// A convenient enumeration for supported text encodings. Can be converted to [`lsp_types::PositionEncodingKind`].
@@ -29,16 +29,6 @@ pub enum PositionEncoding {
 #[derive(Clone, Debug)]
 pub enum DocumentKey {
     Text(Url),
-}
-
-impl DocumentKey {
-    /// Converts the key back into its original URL.
-    #[allow(dead_code)]
-    pub(crate) fn into_url(self) -> Url {
-        match self {
-            DocumentKey::Text(url) => url,
-        }
-    }
 }
 
 impl std::fmt::Display for DocumentKey {

@@ -23,23 +23,6 @@ pub struct TextDocument {
     /// The latest version of the document, set by the LSP client. The server will panic in
     /// debug mode if we attempt to update the document with an 'older' version.
     version: DocumentVersion,
-    /// The language ID of the document as provided by the client.
-    language_id: Option<LanguageId>,
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum LanguageId {
-    R,
-    Other,
-}
-
-impl From<&str> for LanguageId {
-    fn from(language_id: &str) -> Self {
-        match language_id {
-            "r" => Self::R,
-            _ => Self::Other,
-        }
-    }
 }
 
 impl TextDocument {
@@ -52,7 +35,6 @@ impl TextDocument {
             ending,
             index,
             version,
-            language_id: None,
         }
     }
 
@@ -66,17 +48,6 @@ impl TextDocument {
         let (contents, range) = crate::test::extract_marked_range(contents);
         let doc = Self::new(contents, 0);
         (doc, range)
-    }
-
-    #[must_use]
-    pub fn with_language_id(mut self, language_id: &str) -> Self {
-        self.language_id = Some(LanguageId::from(language_id));
-        self
-    }
-
-    #[allow(dead_code)]
-    pub fn into_contents(self) -> String {
-        self.contents
     }
 
     pub fn contents(&self) -> &str {
@@ -93,10 +64,6 @@ impl TextDocument {
 
     pub fn version(&self) -> DocumentVersion {
         self.version
-    }
-
-    pub fn language_id(&self) -> Option<LanguageId> {
-        self.language_id
     }
 
     pub fn apply_changes(

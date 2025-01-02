@@ -48,7 +48,7 @@ impl Client<'_> {
     }
 }
 
-#[allow(dead_code)] // we'll need to use `Notifier` in the future
+#[allow(dead_code)] // we'll need to use `Notifier` in the future to send notifs to the client
 impl Notifier {
     pub(crate) fn notify<N>(&self, params: N::Params) -> crate::Result<()>
     where

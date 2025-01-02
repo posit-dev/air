@@ -8,7 +8,6 @@ use rustc_hash::FxHashMap;
 
 use workspace::settings::Settings;
 
-use crate::edit::LanguageId;
 use crate::edit::{DocumentKey, DocumentVersion, PositionEncoding, TextDocument};
 use crate::session::workspaces::WorkspaceSettingsResolver;
 
@@ -29,7 +28,8 @@ enum DocumentController {
 }
 
 /// A read-only query to an open document.
-/// This query can 'select' a text document, full notebook, or a specific notebook cell.
+/// This query can 'select' a text document, but eventually could gain support for
+/// selecting notebooks or individual notebook cells.
 /// It also includes document settings.
 #[derive(Clone)]
 pub enum DocumentQuery {
@@ -85,12 +85,10 @@ impl Index {
         self.settings.open_workspace_folder(url)
     }
 
-    #[allow(dead_code)]
     pub(super) fn num_documents(&self) -> usize {
         self.documents.len()
     }
 
-    #[allow(dead_code)]
     pub(super) fn num_workspaces(&self) -> usize {
         self.settings.len()
     }
@@ -201,14 +199,6 @@ impl DocumentController {
 }
 
 impl DocumentQuery {
-    /// Retrieve the original key that describes this document query.
-    #[allow(dead_code)]
-    pub(crate) fn make_key(&self) -> DocumentKey {
-        match self {
-            Self::Text { file_url, .. } => DocumentKey::Text(file_url.clone()),
-        }
-    }
-
     /// Get the document settings associated with this query.
     pub(crate) fn settings(&self) -> &Settings {
         match self {
@@ -258,12 +248,5 @@ impl DocumentQuery {
         match self {
             Self::Text { document, .. } => document,
         }
-    }
-
-    #[allow(dead_code)]
-    pub(crate) fn text_document_language_id(&self) -> Option<LanguageId> {
-        // Optional because notebooks don't have a document language id
-        let DocumentQuery::Text { document, .. } = self;
-        document.language_id()
     }
 }
