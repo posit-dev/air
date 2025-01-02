@@ -70,7 +70,7 @@ fn format_text_document(
 fn format_source(
     source: &str,
     formatter_settings: &FormatSettings,
-) -> crate::Result<Option<String>> {
+) -> anyhow::Result<Option<String>> {
     let parse = air_r_parser::parse(source, RParserOptions::default());
 
     if parse.has_errors() {

@@ -25,7 +25,7 @@ pub(crate) fn show_message(message: String, message_type: lsp_types::MessageType
 pub(super) fn try_show_message(
     message: String,
     message_type: lsp_types::MessageType,
-) -> crate::Result<()> {
+) -> anyhow::Result<()> {
     MESSENGER
         .get()
         .ok_or_else(|| anyhow::anyhow!("Messenger not initialized"))?

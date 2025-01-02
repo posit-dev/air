@@ -46,7 +46,7 @@ impl Server {
         worker_threads: NonZeroUsize,
         connection: lsp::Connection,
         connection_threads: Option<lsp::IoThreads>,
-    ) -> crate::Result<Self> {
+    ) -> anyhow::Result<Self> {
         let initializer = ConnectionInitializer::new(connection, connection_threads);
 
         let (id, initialize_params) = initializer.initialize_start()?;
@@ -105,7 +105,7 @@ impl Server {
         })
     }
 
-    pub fn run(self) -> crate::Result<()> {
+    pub fn run(self) -> anyhow::Result<()> {
         // The new PanicInfoHook name requires MSRV >= 1.82
         #[allow(deprecated)]
         type PanicHook = Box<dyn Fn(&PanicInfo<'_>) + 'static + Sync + Send>;
@@ -167,7 +167,7 @@ impl Server {
         resolved_client_capabilities: &ResolvedClientCapabilities,
         mut session: Session,
         worker_threads: NonZeroUsize,
-    ) -> crate::Result<()> {
+    ) -> anyhow::Result<()> {
         let mut scheduler =
             schedule::Scheduler::new(&mut session, worker_threads, connection.make_sender());
 

@@ -84,7 +84,7 @@ fn format_source_range(
     source: &str,
     formatter_settings: &FormatSettings,
     range: TextRange,
-) -> crate::Result<Option<(String, TextRange)>> {
+) -> anyhow::Result<Option<(String, TextRange)>> {
     let parse = air_r_parser::parse(source, RParserOptions::default());
 
     if parse.has_errors() {

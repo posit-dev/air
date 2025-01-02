@@ -34,7 +34,7 @@ impl Session {
         resolved_client_capabilities: ResolvedClientCapabilities,
         position_encoding: PositionEncoding,
         workspace_folders: Vec<WorkspaceFolder>,
-    ) -> crate::Result<Self> {
+    ) -> anyhow::Result<Self> {
         Ok(Self {
             position_encoding,
             index: index::Index::new(workspace_folders)?,
@@ -69,7 +69,7 @@ impl Session {
         key: &DocumentKey,
         content_changes: Vec<lsp_types::TextDocumentContentChangeEvent>,
         new_version: DocumentVersion,
-    ) -> crate::Result<()> {
+    ) -> anyhow::Result<()> {
         let encoding = self.encoding();
 
         self.index
@@ -84,7 +84,7 @@ impl Session {
 
     /// De-registers a document, specified by its key.
     /// Calling this multiple times for the same document is a logic error.
-    pub(crate) fn close_document(&mut self, key: &DocumentKey) -> crate::Result<()> {
+    pub(crate) fn close_document(&mut self, key: &DocumentKey) -> anyhow::Result<()> {
         self.index.close_document(key)?;
         Ok(())
     }
@@ -95,12 +95,12 @@ impl Session {
     }
 
     /// Open a workspace folder at the given `url`.
-    pub(crate) fn open_workspace_folder(&mut self, url: &Url) -> crate::Result<()> {
+    pub(crate) fn open_workspace_folder(&mut self, url: &Url) -> anyhow::Result<()> {
         self.index.open_workspace_folder(url)
     }
 
     /// Close a workspace folder at the given `url`.
-    pub(crate) fn close_workspace_folder(&mut self, url: &Url) -> crate::Result<()> {
+    pub(crate) fn close_workspace_folder(&mut self, url: &Url) -> anyhow::Result<()> {
         self.index.close_workspace_folder(url)?;
         Ok(())
     }

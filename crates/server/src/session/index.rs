@@ -42,7 +42,7 @@ pub enum DocumentQuery {
 }
 
 impl Index {
-    pub(super) fn new(workspace_folders: Vec<WorkspaceFolder>) -> crate::Result<Self> {
+    pub(super) fn new(workspace_folders: Vec<WorkspaceFolder>) -> anyhow::Result<Self> {
         Ok(Self {
             documents: FxHashMap::default(),
             settings: WorkspaceSettingsResolver::from_workspace_folders(workspace_folders),
@@ -62,7 +62,7 @@ impl Index {
         content_changes: Vec<lsp_types::TextDocumentContentChangeEvent>,
         new_version: DocumentVersion,
         encoding: PositionEncoding,
-    ) -> crate::Result<()> {
+    ) -> anyhow::Result<()> {
         let controller = self.document_controller_for_key(key)?;
         let Some(document) = controller.as_text_mut() else {
             anyhow::bail!("Text document URI does not point to a text document");
@@ -81,7 +81,7 @@ impl Index {
         DocumentKey::Text(url)
     }
 
-    pub(super) fn open_workspace_folder(&mut self, url: &Url) -> crate::Result<()> {
+    pub(super) fn open_workspace_folder(&mut self, url: &Url) -> anyhow::Result<()> {
         self.settings.open_workspace_folder(url)
     }
 
@@ -93,7 +93,7 @@ impl Index {
         self.settings.len()
     }
 
-    pub(super) fn close_workspace_folder(&mut self, url: &Url) -> crate::Result<()> {
+    pub(super) fn close_workspace_folder(&mut self, url: &Url) -> anyhow::Result<()> {
         self.settings.close_workspace_folder(url)?;
         Ok(())
     }
@@ -117,7 +117,7 @@ impl Index {
             .insert(url, DocumentController::new_text(document));
     }
 
-    pub(super) fn close_document(&mut self, key: &DocumentKey) -> crate::Result<()> {
+    pub(super) fn close_document(&mut self, key: &DocumentKey) -> anyhow::Result<()> {
         let Some(url) = self.url_for_key(key).cloned() else {
             anyhow::bail!("Tried to close unavailable document `{key}`");
         };
@@ -149,7 +149,7 @@ impl Index {
     fn document_controller_for_key(
         &mut self,
         key: &DocumentKey,
-    ) -> crate::Result<&mut DocumentController> {
+    ) -> anyhow::Result<&mut DocumentController> {
         let Some(url) = self.url_for_key(key).cloned() else {
             anyhow::bail!("Tried to open unavailable document `{key}`");
         };

@@ -19,8 +19,8 @@ use super::{client::Client, ClientSender};
 /// than some OS defaults (Windows, for example) and is also designated as
 /// high-priority.
 pub(crate) fn event_loop_thread(
-    func: impl FnOnce() -> crate::Result<()> + Send + 'static,
-) -> crate::Result<thread::JoinHandle<crate::Result<()>>> {
+    func: impl FnOnce() -> anyhow::Result<()> + Send + 'static,
+) -> anyhow::Result<thread::JoinHandle<anyhow::Result<()>>> {
     // Override OS defaults to avoid stack overflows on platforms with low stack size defaults.
     const MAIN_THREAD_STACK_SIZE: usize = 2 * 1024 * 1024;
     const MAIN_THREAD_NAME: &str = "air:main";
@@ -61,7 +61,7 @@ impl<'s> Scheduler<'s> {
         &mut self,
         params: R::Params,
         response_handler: impl Fn(R::Result) -> Task<'s> + 'static,
-    ) -> crate::Result<()>
+    ) -> anyhow::Result<()>
     where
         R: lsp_types::request::Request,
     {

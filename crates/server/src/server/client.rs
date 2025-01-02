@@ -50,7 +50,7 @@ impl Client<'_> {
 
 #[allow(dead_code)] // we'll need to use `Notifier` in the future to send notifs to the client
 impl Notifier {
-    pub(crate) fn notify<N>(&self, params: N::Params) -> crate::Result<()>
+    pub(crate) fn notify<N>(&self, params: N::Params) -> anyhow::Result<()>
     where
         N: lsp_types::notification::Notification,
     {
@@ -61,7 +61,7 @@ impl Notifier {
         self.0.send(message)
     }
 
-    pub(crate) fn notify_method(&self, method: String) -> crate::Result<()> {
+    pub(crate) fn notify_method(&self, method: String) -> anyhow::Result<()> {
         self.0
             .send(lsp_server::Message::Notification(Notification::new(
                 method,
@@ -75,7 +75,7 @@ impl Responder {
         &self,
         id: RequestId,
         result: crate::server::Result<R>,
-    ) -> crate::Result<()>
+    ) -> anyhow::Result<()>
     where
         R: serde::Serialize,
     {
@@ -99,7 +99,7 @@ impl<'s> Requester<'s> {
         &mut self,
         params: R::Params,
         response_handler: impl Fn(R::Result) -> Task<'s> + 'static,
-    ) -> crate::Result<()>
+    ) -> anyhow::Result<()>
     where
         R: lsp_types::request::Request,
     {
