@@ -145,9 +145,21 @@ impl TestClient {
     }
 
     pub fn shutdown(&mut self) {
-        // TODO: Check that no messages are incoming
+        self.check_no_incoming();
         self.request::<lsp_types::request::Shutdown>(());
         self.recv_response();
+    }
+
+    fn check_no_incoming(&self) {
+        let mut messages = Vec::new();
+
+        while let Ok(message) = self.client.receiver.try_recv() {
+            messages.push(message);
+        }
+
+        if !messages.is_empty() {
+            panic!("Must handle all messages before shutdown. Found the following unhandled incoming messages:\n{messages:?}");
+        }
     }
 
     pub fn exit(&mut self) {
