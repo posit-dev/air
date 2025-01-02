@@ -1,9 +1,3 @@
-// +------------------------------------------------------------+
-// | Code adopted from:                                         |
-// | Repository: https://github.com/astral-sh/ruff.git          |
-// | Commit: 5bc9d6d3aa694ab13f38dd5cf91b713fd3844380           |
-// +------------------------------------------------------------+
-
 use biome_rowan::TextRange;
 use lsp_types::TextDocumentContentChangeEvent;
 use source_file::LineEnding;

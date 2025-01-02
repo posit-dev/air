@@ -1,9 +1,3 @@
-// +------------------------------------------------------------+
-// | Code adopted from:                                         |
-// | Repository: https://github.com/astral-sh/ruff.git          |
-// | Commit: 5bc9d6d3aa694ab13f38dd5cf91b713fd3844380           |
-// +------------------------------------------------------------+
-
 use air_r_parser::RParserOptions;
 use biome_formatter::LineEnding;
 use lsp_types::{self as types, request as req};

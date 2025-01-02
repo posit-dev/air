@@ -1,9 +1,3 @@
-// +------------------------------------------------------------+
-// | Code adopted from:                                         |
-// | Repository: https://github.com/astral-sh/ruff.git          |
-// | Commit: 5bc9d6d3aa694ab13f38dd5cf91b713fd3844380           |
-// +------------------------------------------------------------+
-
 use crate::edit::PositionEncoding;
 use crate::proto::TextSizeExt;
 use biome_text_size::{TextRange, TextSize};
