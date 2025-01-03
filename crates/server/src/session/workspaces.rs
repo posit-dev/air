@@ -3,9 +3,12 @@ use std::path::PathBuf;
 
 use lsp_types::Url;
 use lsp_types::WorkspaceFolder;
+use workspace::discovery::discover_settings;
+use workspace::discovery::DiscoveredSettings;
 use workspace::resolve::PathResolver;
-use workspace::resolve::SettingsResolver;
 use workspace::settings::Settings;
+
+type SettingsResolver = PathResolver<Settings>;
 
 /// Resolver for retrieving [`Settings`] associated with a workspace specific [`Path`]
 #[derive(Debug, Default)]
@@ -61,7 +64,14 @@ impl WorkspaceSettingsResolver {
         let fallback = Settings::default();
 
         let mut settings_resolver = SettingsResolver::new(fallback);
-        settings_resolver.load_from_paths(&[&path])?;
+
+        for DiscoveredSettings {
+            directory,
+            settings,
+        } in discover_settings(&[&path])?
+        {
+            settings_resolver.add(&directory, settings);
+        }
 
         tracing::trace!("Adding workspace settings: {}", path.display());
         self.path_to_settings_resolver.add(&path, settings_resolver);
@@ -139,12 +149,24 @@ impl WorkspaceSettingsResolver {
 
             settings_resolver.clear();
 
-            if let Err(error) = settings_resolver.load_from_paths(&[workspace_path]) {
-                tracing::error!(
-                    "Failed to reload workspace settings for {path}:\n{error}",
-                    path = workspace_path.display(),
-                    error = error
-                );
+            let discovered_settings = match discover_settings(&[workspace_path]) {
+                Ok(discovered_settings) => discovered_settings,
+                Err(error) => {
+                    tracing::error!(
+                        "Failed to reload workspace settings for {path}:\n{error}",
+                        path = workspace_path.display(),
+                        error = error
+                    );
+                    continue;
+                }
+            };
+
+            for DiscoveredSettings {
+                directory,
+                settings,
+            } in discovered_settings
+            {
+                settings_resolver.add(&directory, settings);
             }
         }
     }

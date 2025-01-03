@@ -1,3 +1,4 @@
+pub mod discovery;
 pub mod resolve;
 pub mod settings;
 pub mod toml;
