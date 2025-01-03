@@ -1,5 +1,6 @@
 use std::path::Path;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use lsp_types::Url;
 use lsp_types::WorkspaceFolder;
@@ -8,7 +9,11 @@ use workspace::discovery::DiscoveredSettings;
 use workspace::resolve::PathResolver;
 use workspace::settings::Settings;
 
-type SettingsResolver = PathResolver<Settings>;
+/// Convenience type for the inner resolver of path -> [`Settings`]
+///
+/// We store [`Settings`] in an [`Arc`] so we can easily share them across threads in a
+/// `DocumentQuery` without needing to clone.
+type SettingsResolver = PathResolver<Arc<Settings>>;
 
 /// Resolver for retrieving [`Settings`] associated with a workspace specific [`Path`]
 #[derive(Debug, Default)]
@@ -22,7 +27,7 @@ impl WorkspaceSettingsResolver {
     /// Construct a new workspace settings resolver from an initial set of workspace folders
     pub(crate) fn from_workspace_folders(workspace_folders: Vec<WorkspaceFolder>) -> Self {
         // How to do better here?
-        let fallback = Settings::default();
+        let fallback = Arc::new(Settings::default());
 
         let settings_resolver_fallback = SettingsResolver::new(fallback);
         let path_to_settings_resolver = PathResolver::new(settings_resolver_fallback);
@@ -61,7 +66,7 @@ impl WorkspaceSettingsResolver {
         };
 
         // How to do better here?
-        let fallback = Settings::default();
+        let fallback = Arc::new(Settings::default());
 
         let mut settings_resolver = SettingsResolver::new(fallback);
 
@@ -70,7 +75,7 @@ impl WorkspaceSettingsResolver {
             settings,
         } in discover_settings(&[&path])?
         {
-            settings_resolver.add(&directory, settings);
+            settings_resolver.add(&directory, Arc::new(settings));
         }
 
         tracing::trace!("Adding workspace settings: {}", path.display());
@@ -100,7 +105,7 @@ impl WorkspaceSettingsResolver {
     }
 
     /// Return the appropriate [`Settings`] for a given document [`Url`].
-    pub(crate) fn settings_for_url(&self, url: &Url) -> &Settings {
+    pub(crate) fn settings_for_url(&self, url: &Url) -> Arc<Settings> {
         if let Ok(Some(path)) = Self::url_to_path(url) {
             return self.settings_for_path(&path);
         }
@@ -116,7 +121,7 @@ impl WorkspaceSettingsResolver {
         }
 
         tracing::trace!("Using default settings for non-file URL: {url}");
-        self.path_to_settings_resolver.fallback().fallback()
+        self.path_to_settings_resolver.fallback().fallback().clone()
     }
 
     /// Reloads all workspaces matched by the [`Url`]
@@ -166,7 +171,7 @@ impl WorkspaceSettingsResolver {
                 settings,
             } in discovered_settings
             {
-                settings_resolver.add(&directory, settings);
+                settings_resolver.add(&directory, Arc::new(settings));
             }
         }
     }
@@ -178,9 +183,9 @@ impl WorkspaceSettingsResolver {
     /// resolver to actually resolve the `Settings` for this path. We do it this way
     /// to ensure we can easily add and remove workspaces (including all of their
     /// hierarchical paths).
-    fn settings_for_path(&self, path: &Path) -> &Settings {
+    fn settings_for_path(&self, path: &Path) -> Arc<Settings> {
         let settings_resolver = self.path_to_settings_resolver.resolve_or_fallback(path);
-        settings_resolver.resolve_or_fallback(path)
+        settings_resolver.resolve_or_fallback(path).clone()
     }
 
     fn url_to_path(url: &Url) -> anyhow::Result<Option<PathBuf>> {

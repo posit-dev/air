@@ -36,8 +36,7 @@ pub enum DocumentQuery {
     Text {
         file_url: Url,
         document: Arc<TextDocument>,
-        // TODO: This should be `Arc<Settings>`
-        settings: Settings,
+        settings: Arc<Settings>,
     },
 }
 
@@ -101,10 +100,10 @@ impl Index {
     pub(super) fn make_document_ref(&self, key: DocumentKey) -> Option<DocumentQuery> {
         let url = self.url_for_key(&key)?.clone();
 
-        let document_settings = self.settings_for_url(&url).clone();
+        let settings = self.settings_for_url(&url);
 
         let controller = self.documents.get(&url)?;
-        Some(controller.make_ref(url, document_settings))
+        Some(controller.make_ref(url, settings))
     }
 
     /// Reloads relevant existing settings files based on a changed settings file path.
@@ -165,7 +164,7 @@ impl Index {
         }
     }
 
-    fn settings_for_url(&self, url: &Url) -> &Settings {
+    fn settings_for_url(&self, url: &Url) -> Arc<Settings> {
         self.settings.settings_for_url(url)
     }
 }
@@ -175,7 +174,7 @@ impl DocumentController {
         Self::Text(Arc::new(document))
     }
 
-    fn make_ref(&self, file_url: Url, settings: Settings) -> DocumentQuery {
+    fn make_ref(&self, file_url: Url, settings: Arc<Settings>) -> DocumentQuery {
         match &self {
             Self::Text(document) => DocumentQuery::Text {
                 file_url,
@@ -201,6 +200,7 @@ impl DocumentController {
 impl DocumentQuery {
     /// Get the document settings associated with this query.
     pub(crate) fn settings(&self) -> &Settings {
+        // Note that `&Arc<Settings>` nicely derefs to `&Settings` here automatically
         match self {
             Self::Text { settings, .. } => settings,
         }
