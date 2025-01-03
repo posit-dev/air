@@ -4,9 +4,7 @@ use lsp_server as lsp;
 use lsp_types as types;
 use lsp_types::InitializeParams;
 use std::num::NonZeroUsize;
-// The new PanicInfoHook name requires MSRV >= 1.82
-#[allow(deprecated)]
-use std::panic::PanicInfo;
+use std::panic::PanicHookInfo;
 use types::DidChangeWatchedFilesRegistrationOptions;
 use types::FileSystemWatcher;
 use types::OneOf;
@@ -97,13 +95,12 @@ impl Server {
     }
 
     pub fn run(self) -> anyhow::Result<()> {
-        // The new PanicInfoHook name requires MSRV >= 1.82
-        #[allow(deprecated)]
-        type PanicHook = Box<dyn Fn(&PanicInfo<'_>) + 'static + Sync + Send>;
+        // Unregister any previously registered panic hook.
+        // The hook will be restored when this function exits.
+        type PanicHook = Box<dyn Fn(&PanicHookInfo<'_>) + 'static + Sync + Send>;
         struct RestorePanicHook {
             hook: Option<PanicHook>,
         }
-
         impl Drop for RestorePanicHook {
             fn drop(&mut self) {
                 if let Some(hook) = self.hook.take() {
@@ -111,9 +108,6 @@ impl Server {
                 }
             }
         }
-
-        // unregister any previously registered panic hook
-        // The hook will be restored when this function exits.
         let _ = RestorePanicHook {
             hook: Some(std::panic::take_hook()),
         };
