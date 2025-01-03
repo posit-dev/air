@@ -1,0 +1,38 @@
+---
+source: crates/air_r_parser/tests/spec_test.rs
+expression: snapshot
+---
+## Input
+
+```R
+"multiline
+string"
+
+```
+
+
+## AST
+
+```
+RRoot {
+    bom_token: missing (optional),
+    expressions: RExpressionList [
+        RStringValue {
+            value_token: R_STRING_LITERAL@0..19 "\"multiline\r\nstring\"" [] [],
+        },
+    ],
+    eof_token: EOF@19..21 "" [Newline("\r\n")] [],
+}
+```
+
+## CST
+
+```
+0: R_ROOT@0..21
+  0: (empty)
+  1: R_EXPRESSION_LIST@0..19
+    0: R_STRING_VALUE@0..19
+      0: R_STRING_LITERAL@0..19 "\"multiline\r\nstring\"" [] []
+  2: EOF@19..21 "" [Newline("\r\n")] []
+
+```
