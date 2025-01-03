@@ -1,0 +1,7 @@
+---
+source: crates/server/src/server/api/requests/format_range.rs
+expression: output2
+---
+1 + 1
+#
+2 + 2

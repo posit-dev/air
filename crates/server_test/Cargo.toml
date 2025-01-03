@@ -1,0 +1,20 @@
+[package]
+name = "server_test"
+version = "0.0.0"
+publish = false
+authors.workspace = true
+categories.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+lsp-types.workspace = true
+lsp-server.workspace = true
+url.workspace = true
+
+[lints]
+workspace = true

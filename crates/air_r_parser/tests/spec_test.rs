@@ -53,7 +53,7 @@ pub fn run(test_case: &str, _snapshot_name: &str, test_directory: &str, outcome_
         .expect("Expected test path to be a readable file in UTF8 encoding");
 
     // Normalize to Unix line endings
-    let content = line_ending::normalize(content);
+    let (content, _) = source_file::normalize_newlines(content);
 
     let options = RParserOptions::default();
     let parsed = parse(&content, options);

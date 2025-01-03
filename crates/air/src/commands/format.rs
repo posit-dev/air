@@ -11,8 +11,10 @@ use fs::relativize_path;
 use itertools::Either;
 use itertools::Itertools;
 use thiserror::Error;
-use workspace::resolve::discover_r_file_paths;
-use workspace::resolve::SettingsResolver;
+use workspace::discovery::discover_r_file_paths;
+use workspace::discovery::discover_settings;
+use workspace::discovery::DiscoveredSettings;
+use workspace::resolve::PathResolver;
 use workspace::settings::FormatSettings;
 use workspace::settings::Settings;
 
@@ -24,8 +26,15 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
 
     let paths = discover_r_file_paths(&command.paths);
 
-    let mut resolver = SettingsResolver::new(Settings::default());
-    resolver.load_from_paths(&command.paths)?;
+    let mut resolver = PathResolver::new(Settings::default());
+
+    for DiscoveredSettings {
+        directory,
+        settings,
+    } in discover_settings(&command.paths)?
+    {
+        resolver.add(&directory, settings);
+    }
 
     let (actions, errors): (Vec<_>, Vec<_>) = paths
         .into_iter()
@@ -129,7 +138,7 @@ fn format_file(
 
     let options = settings.to_format_options(&source);
 
-    let source = line_ending::normalize(source);
+    let (source, _) = source_file::normalize_newlines(source);
     let formatted = match format_source(source.as_str(), options) {
         Ok(formatted) => formatted,
         Err(err) => return Err(FormatCommandError::Format(path.clone(), err)),
