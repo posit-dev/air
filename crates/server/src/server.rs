@@ -152,7 +152,6 @@ impl Server {
         .join()
     }
 
-    #[allow(clippy::needless_pass_by_value)] // this is because we aren't using `next_request_id` yet.
     fn event_loop(
         connection: &Connection,
         resolved_client_capabilities: &ResolvedClientCapabilities,
