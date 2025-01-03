@@ -110,7 +110,7 @@ impl TextDocument {
         self.update_version(new_version);
     }
 
-    pub fn update_version(&mut self, new_version: DocumentVersion) {
+    fn update_version(&mut self, new_version: DocumentVersion) {
         let old_version = self.version;
         self.version = new_version;
         debug_assert!(self.version >= old_version);

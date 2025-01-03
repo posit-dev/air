@@ -66,12 +66,6 @@ impl Index {
         let Some(document) = controller.as_text_mut() else {
             anyhow::bail!("Text document URI does not point to a text document");
         };
-
-        if content_changes.is_empty() {
-            document.update_version(new_version);
-            return Ok(());
-        }
-
         document.apply_changes(content_changes, new_version, encoding);
         Ok(())
     }
