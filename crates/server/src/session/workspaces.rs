@@ -37,31 +37,45 @@ impl WorkspaceSettingsResolver {
         };
 
         // Add each workspace folder's settings into the resolver.
-        // If we fail for any reason (i.e. parse failure of an `air.toml`) then
-        // we log an error and try to resolve the remaining workspace folders. We don't want
-        // to propagate an error here because we don't want to prevent the server from
-        // starting up entirely.
-        // TODO: This is one place it would be nice to show a toast notification back
-        // to the user, but we probably need to add support to the Aux thread for that?
         for workspace_folder in workspace_folders {
-            if let Err(error) = resolver.open_workspace_folder(&workspace_folder.uri) {
-                tracing::error!(
-                    "Failed to load workspace settings for '{uri}':\n{error}",
-                    uri = workspace_folder.uri.as_str(),
-                    error = error
-                );
-            }
+            resolver.open_workspace_folder(&workspace_folder.uri)
         }
 
         resolver
     }
 
-    pub(crate) fn open_workspace_folder(&mut self, url: &Url) -> anyhow::Result<()> {
-        let path = match Self::url_to_path(url)? {
-            Some(path) => path,
-            None => {
-                tracing::warn!("Ignoring non-file workspace URL: {url}");
-                return Ok(());
+    /// Open a workspace folder
+    ///
+    /// If we fail for any reason (i.e. parse failure of an `air.toml`), we handle the
+    /// failure internally. This allows us to:
+    /// - Avoid preventing the server from starting up at all (which would happen if we
+    ///   propagated an error up)
+    /// - Control the toast notification sent to the user
+    pub(crate) fn open_workspace_folder(&mut self, url: &Url) {
+        let failed_to_open_workspace_folder = |url, error| {
+            show_err_msg!(
+                "Failed to open workspace folder for '{url}'. Check the logs for more information."
+            );
+            tracing::error!("Failed to open workspace folder for '{url}':\n{error}");
+        };
+
+        let path = match Self::url_to_path(url) {
+            Ok(Some(path)) => path,
+            Ok(None) => {
+                tracing::warn!("Ignoring non-file workspace URL '{url}'");
+                return;
+            }
+            Err(error) => {
+                failed_to_open_workspace_folder(url, error);
+                return;
+            }
+        };
+
+        let discovered_settings = match discover_settings(&[&path]) {
+            Ok(discovered_settings) => discovered_settings,
+            Err(error) => {
+                failed_to_open_workspace_folder(url, error.into());
+                return;
             }
         };
 
@@ -73,29 +87,29 @@ impl WorkspaceSettingsResolver {
         for DiscoveredSettings {
             directory,
             settings,
-        } in discover_settings(&[&path])?
+        } in discovered_settings
         {
             settings_resolver.add(&directory, Arc::new(settings));
         }
 
         tracing::trace!("Adding workspace settings: {}", path.display());
         self.path_to_settings_resolver.add(&path, settings_resolver);
-
-        Ok(())
     }
 
-    pub(crate) fn close_workspace_folder(
-        &mut self,
-        url: &Url,
-    ) -> anyhow::Result<Option<SettingsResolver>> {
-        match Self::url_to_path(url)? {
-            Some(path) => {
+    pub(crate) fn close_workspace_folder(&mut self, url: &Url) {
+        match Self::url_to_path(url) {
+            Ok(Some(path)) => {
                 tracing::trace!("Removing workspace settings: {}", path.display());
-                Ok(self.path_to_settings_resolver.remove(&path))
+                self.path_to_settings_resolver.remove(&path);
             }
-            None => {
+            Ok(None) => {
                 tracing::warn!("Ignoring non-file workspace URL: {url}");
-                Ok(None)
+            }
+            Err(error) => {
+                show_err_msg!(
+                    "Failed to close workspace folder for '{url}'. Check the logs for more information."
+                );
+                tracing::error!("Failed to close workspace folder for '{url}':\n{error}");
             }
         }
     }
@@ -136,7 +150,10 @@ impl WorkspaceSettingsResolver {
                 return;
             }
             Err(error) => {
-                tracing::error!("Failed to reload workspaces associated with {url}:\n{error}");
+                show_err_msg!(
+                    "Failed to reload workspaces associated with '{url}'. Check the logs for more information."
+                );
+                tracing::error!("Failed to reload workspaces associated with '{url}':\n{error}");
                 return;
             }
         };
@@ -157,11 +174,11 @@ impl WorkspaceSettingsResolver {
             let discovered_settings = match discover_settings(&[workspace_path]) {
                 Ok(discovered_settings) => discovered_settings,
                 Err(error) => {
-                    tracing::error!(
-                        "Failed to reload workspace settings for {path}:\n{error}",
-                        path = workspace_path.display(),
-                        error = error
+                    let workspace_path = workspace_path.display();
+                    show_err_msg!(
+                        "Failed to reload workspace for '{workspace_path}'. Check the logs for more information."
                     );
+                    tracing::error!("Failed to reload workspace for '{workspace_path}':\n{error}");
                     continue;
                 }
             };

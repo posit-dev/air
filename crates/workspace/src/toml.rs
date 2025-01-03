@@ -26,19 +26,13 @@ impl std::error::Error for ParseTomlError {}
 impl Display for ParseTomlError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
+            // It's nicer if we don't make these paths relative, so we can quickly
+            // jump to the TOML file to see what is wrong
             Self::Read(path, err) => {
-                write!(
-                    f,
-                    "Failed to read {path}:\n{err}",
-                    path = fs::relativize_path(path),
-                )
+                write!(f, "Failed to read {path}:\n{err}", path = path.display())
             }
             Self::Deserialize(path, err) => {
-                write!(
-                    f,
-                    "Failed to parse {path}:\n{err}",
-                    path = fs::relativize_path(path),
-                )
+                write!(f, "Failed to parse {path}:\n{err}", path = path.display())
             }
         }
     }

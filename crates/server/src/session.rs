@@ -95,14 +95,13 @@ impl Session {
     }
 
     /// Open a workspace folder at the given `url`.
-    pub(crate) fn open_workspace_folder(&mut self, url: &Url) -> anyhow::Result<()> {
+    pub(crate) fn open_workspace_folder(&mut self, url: &Url) {
         self.index.open_workspace_folder(url)
     }
 
     /// Close a workspace folder at the given `url`.
-    pub(crate) fn close_workspace_folder(&mut self, url: &Url) -> anyhow::Result<()> {
-        self.index.close_workspace_folder(url)?;
-        Ok(())
+    pub(crate) fn close_workspace_folder(&mut self, url: &Url) {
+        self.index.close_workspace_folder(url);
     }
 
     #[allow(dead_code)]

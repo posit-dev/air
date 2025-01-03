@@ -80,8 +80,12 @@ impl Index {
         DocumentKey::Text(url)
     }
 
-    pub(super) fn open_workspace_folder(&mut self, url: &Url) -> anyhow::Result<()> {
+    pub(super) fn open_workspace_folder(&mut self, url: &Url) {
         self.settings.open_workspace_folder(url)
+    }
+
+    pub(super) fn close_workspace_folder(&mut self, url: &Url) {
+        self.settings.close_workspace_folder(url)
     }
 
     pub(super) fn num_documents(&self) -> usize {
@@ -90,11 +94,6 @@ impl Index {
 
     pub(super) fn num_workspaces(&self) -> usize {
         self.settings.len()
-    }
-
-    pub(super) fn close_workspace_folder(&mut self, url: &Url) -> anyhow::Result<()> {
-        self.settings.close_workspace_folder(url)?;
-        Ok(())
     }
 
     pub(super) fn make_document_ref(&self, key: DocumentKey) -> Option<DocumentQuery> {
