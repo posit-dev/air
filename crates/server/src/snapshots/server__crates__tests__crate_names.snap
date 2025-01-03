@@ -1,0 +1,21 @@
+---
+source: crates/server/src/crates.rs
+expression: AIR_CRATE_NAMES
+---
+[
+    "air",
+    "air_r_formatter",
+    "air_r_syntax",
+    "air_formatter_test",
+    "source_file",
+    "air_r_parser",
+    "air_r_factory",
+    "tests_macros",
+    "fs",
+    "server",
+    "workspace",
+    "server_test",
+    "biome_ungrammar",
+    "xtask_codegen",
+    "xtask",
+]
