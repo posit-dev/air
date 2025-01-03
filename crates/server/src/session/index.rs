@@ -183,6 +183,17 @@ impl DocumentController {
         }
     }
 
+    /// Request mutable access to the [`TextDocument`] managed by this controller
+    ///
+    /// [`Arc::make_mut`] is the key to this:
+    /// - If `document` is not being referenced by anyone else, this just returns the
+    ///   `document` directly.
+    /// - If `document` is also referenced by someone else, this clones the `document`
+    ///   that lives inside the `Arc` and updates the `Arc` in place, then provides access
+    ///   to that. This allows any background tasks to continue working with their version
+    ///   of the document, while we are free to modify the "source of truth" document.
+    ///
+    /// This effectively implements "copy on modify" semantics for `TextDocument`.
     pub(crate) fn as_text_mut(&mut self) -> Option<&mut TextDocument> {
         Some(match self {
             Self::Text(document) => Arc::make_mut(document),
