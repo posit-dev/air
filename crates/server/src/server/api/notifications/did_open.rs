@@ -25,7 +25,7 @@ impl super::SyncNotificationHandler for DidOpen {
     ) -> Result<()> {
         let document = TextDocument::new(text, version);
 
-        session.open_text_document(uri.clone(), document);
+        session.open_text_document(uri, document);
 
         Ok(())
     }
