@@ -7,7 +7,6 @@ use serde_json::Value;
 /// "pulled" dynamically by the server after startup and whenever we receive a
 /// configuration change notification (#121).
 #[derive(Debug, Deserialize, Default)]
-#[cfg_attr(test, derive(PartialEq, Eq))]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct InitializationOptions {
     pub(crate) log_level: Option<crate::logging::LogLevel>,
