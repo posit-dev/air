@@ -67,9 +67,8 @@ pub(crate) fn initialize(
     log_tx: LogMessageSender,
 ) -> anyhow::Result<InitializeResult> {
     let InitializationOptions {
-        global_settings,
-        user_settings,
-        workspace_settings,
+        log_level,
+        dependency_log_levels,
     } = match params.initialization_options {
         Some(initialization_options) => InitializationOptions::from_value(initialization_options),
         None => InitializationOptions::default(),
@@ -77,15 +76,10 @@ pub(crate) fn initialize(
 
     logging::init_logging(
         log_tx,
-        global_settings.log_level,
-        global_settings.dependency_log_levels,
+        log_level,
+        dependency_log_levels,
         params.client_info.as_ref(),
     );
-
-    // TODO: Should these be "pulled" using the LSP server->client `configuration()`
-    // request instead?
-    lsp_state.user_client_settings = user_settings;
-    lsp_state.workspace_client_settings = workspace_settings;
 
     // Defaults to UTF-16
     let mut position_encoding = None;

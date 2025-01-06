@@ -26,8 +26,6 @@ use crate::handlers_state;
 use crate::handlers_state::ConsoleInputs;
 use crate::logging::LogMessageSender;
 use crate::logging::LogState;
-use crate::settings::ClientSettings;
-use crate::settings::ClientWorkspaceSettings;
 use crate::state::WorldState;
 use crate::tower_lsp::LspMessage;
 use crate::tower_lsp::LspNotification;
@@ -150,12 +148,6 @@ pub(crate) struct GlobalState {
 /// Unlike `WorldState`, `LspState` cannot be cloned and is only accessed by
 /// exclusive handlers.
 pub(crate) struct LspState {
-    /// User level [`ClientSettings`] sent over from the client
-    pub(crate) user_client_settings: ClientSettings,
-
-    /// Workspace level [`ClientSettings`] sent over from the client
-    pub(crate) workspace_client_settings: Vec<ClientWorkspaceSettings>,
-
     /// The negociated encoding for document positions. Note that documents are
     /// always stored as UTF-8 in Rust Strings. This encoding is only used to
     /// translate UTF-16 positions sent by the client to UTF-8 ones.
@@ -173,8 +165,6 @@ pub(crate) struct LspState {
 impl Default for LspState {
     fn default() -> Self {
         Self {
-            user_client_settings: ClientSettings::default(),
-            workspace_client_settings: Vec::new(),
             // Default encoding specified in the LSP protocol
             position_encoding: PositionEncoding::Wide(WideEncoding::Utf16),
             parsers: Default::default(),
