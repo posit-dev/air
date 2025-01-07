@@ -179,24 +179,11 @@ fn format_file(path: PathBuf, mode: FormatMode) -> Result<FormatFileAction, Form
     };
     let options = RFormatOptions::default().with_line_ending(line_ending);
 
-    let source = line_ending::normalize(source);
     let formatted = match format_source(source.as_str(), options) {
         Ok(formatted) => formatted,
         Err(err) => return Err(FormatCommandError::Format(path.clone(), err)),
     };
 
-    // TODO: We rarely ever take advantage of this optimization on Windows right
-    // now. We always normalize on entry but we apply the requested line ending
-    // on exit (so on Windows we often infer CRLF on entry and normalize to
-    // LF, but apply CRLF on exit so `source` and `new` always have different
-    // line endings). We probably need to compare pre-normalized against
-    // post-formatted output?
-    //
-    // Ah, no, the right thing to do is for the cli to not care about normalizing
-    // line endings. This is mostly useful in the LSP for all the document manipulation
-    // we are going to do there. In the cli, we want to format a whole bunch of files
-    // so we really want this optimization, and since the formatter and parser can handle
-    // windows line endings just fine, we should not normalize here.
     match formatted {
         FormattedSource::Formatted(new) => {
             match mode {
@@ -231,8 +218,6 @@ pub(crate) enum FormatSourceError {
 }
 
 /// Formats a vector of `source` code
-///
-/// Safety: `source` should already be normalized to Unix line endings
 pub(crate) fn format_source(
     source: &str,
     options: RFormatOptions,

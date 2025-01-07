@@ -2,6 +2,10 @@
 
 # Development version
 
+- `air format` is now faster on Windows when nothing changes (#90).
+
+- `air format --check` now works correctly with Windows line endings (#123).
+
 - Magic line breaks are now supported in left assignment (#118).
 
 
