@@ -57,7 +57,7 @@ pub(crate) async fn handle_initialized(
     {
         // Watch for changes in `air.toml` files so we can react dynamically
         let watch_air_toml_registration = lsp_types::Registration {
-            id: uuid::Uuid::new_v4().to_string(),
+            id: String::from("air-toml-watcher"),
             method: "workspace/didChangeWatchedFiles".into(),
             register_options: Some(
                 serde_json::to_value(DidChangeWatchedFilesRegistrationOptions {
