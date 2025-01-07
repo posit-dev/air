@@ -6,7 +6,6 @@ use biome_formatter::trivia::format_replaced;
 use biome_formatter::Format;
 use biome_formatter::FormatResult;
 use std::borrow::Cow;
-use std::cell::Cell;
 
 use crate::context::RFormatContext;
 use crate::RFormatter;
@@ -36,7 +35,6 @@ impl<'token> FormatStringLiteralToken<'token> {
 
         let text = token.text_trimmed();
         let text = normalize_string(text);
-        let text = Cell::new(text);
 
         FormatNormalizedStringLiteralToken { token, text }
     }
@@ -53,8 +51,7 @@ struct FormatNormalizedStringLiteralToken<'token> {
     token: &'token RSyntaxToken,
 
     /// The normalized text
-    /// Wrapped in a [`Cell`] to avoid having to clone when passing to [`syntax_token_cow_slice`]
-    text: Cell<Cow<'token, str>>,
+    text: Cow<'token, str>,
 }
 
 impl Format<RFormatContext> for FormatNormalizedStringLiteralToken<'_> {
@@ -62,7 +59,10 @@ impl Format<RFormatContext> for FormatNormalizedStringLiteralToken<'_> {
         format_replaced(
             self.token,
             &syntax_token_cow_slice(
-                self.text.take(),
+                // Cloning the `Cow<str>` is cheap since 99% of the time it will be the
+                // `Borrowed` variant. Only with multiline strings on Windows will it
+                // ever actually clone the underlying string.
+                self.text.clone(),
                 self.token,
                 self.token.text_trimmed_range().start(),
             ),
