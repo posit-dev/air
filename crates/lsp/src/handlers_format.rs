@@ -244,9 +244,7 @@ fn find_expression_lists(node: &RSyntaxNode, offset: TextSize, end: bool) -> Vec
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        documents::Document, tower_lsp::init_test_client, tower_lsp_test_client::TestClientExt,
-    };
+    use crate::{documents::Document, test::TestClientExt, tower_lsp::init_test_client};
 
     #[tests_macros::lsp_test]
     async fn test_format() {

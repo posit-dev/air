@@ -23,6 +23,4 @@ pub mod tower_lsp;
 pub mod workspaces;
 
 #[cfg(test)]
-pub mod test_utils;
-#[cfg(test)]
-pub mod tower_lsp_test_client;
+pub mod test;
