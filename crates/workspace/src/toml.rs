@@ -72,7 +72,6 @@ mod tests {
     use crate::toml_options::TomlOptions;
 
     #[test]
-
     fn deserialize_empty() -> Result<()> {
         let options: TomlOptions = toml::from_str(r"")?;
         assert_eq!(options.global.indent_width, None);
