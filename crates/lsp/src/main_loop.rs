@@ -145,7 +145,7 @@ pub(crate) struct GlobalState {
     log_tx: Option<LogMessageSender>,
 }
 
-/// Unlike `WorldState`, `ParserState` cannot be cloned and is only accessed by
+/// Unlike `WorldState`, `LspState` cannot be cloned and is only accessed by
 /// exclusive handlers.
 pub(crate) struct LspState {
     /// The negociated encoding for document positions. Note that documents are

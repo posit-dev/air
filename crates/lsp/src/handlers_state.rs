@@ -36,6 +36,7 @@ use crate::documents::Document;
 use crate::logging;
 use crate::logging::LogMessageSender;
 use crate::main_loop::LspState;
+use crate::settings::InitializationOptions;
 use crate::state::workspace_uris;
 use crate::state::WorldState;
 
@@ -65,9 +66,13 @@ pub(crate) fn initialize(
     state: &mut WorldState,
     log_tx: LogMessageSender,
 ) -> anyhow::Result<InitializeResult> {
-    // TODO: Get user specified options from `params.initialization_options`
-    let log_level = None;
-    let dependency_log_levels = None;
+    let InitializationOptions {
+        log_level,
+        dependency_log_levels,
+    } = params.initialization_options.map_or_else(
+        InitializationOptions::default,
+        InitializationOptions::from_value,
+    );
 
     logging::init_logging(
         log_tx,

@@ -35,6 +35,29 @@
 				]
 			}
 		],
+		"configuration": {
+			"properties": {
+				"air.logLevel": {
+					"default": null,
+					"markdownDescription": "Controls the log level of the language server.\n\n**This setting requires a restart to take effect.**",
+					"enum": [
+					  "error",
+					  "warning",
+					  "info",
+					  "debug",
+					  "trace"
+					],
+					"scope": "application",
+					"type": "string"
+				},
+				"air.dependencyLogLevels": {
+					"default": null,
+					"markdownDescription": "Controls the log level of the Rust crates that the language server depends on.\n\n**This setting requires a restart to take effect.**",
+					"scope": "application",
+					"type": "string"
+				}
+			}
+		},
 		"configurationDefaults": {
 			"[r]": {
 				"editor.defaultFormatter": "Posit.air"

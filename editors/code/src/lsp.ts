@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import * as lc from "vscode-languageclient/node";
 import { default as PQueue } from "p-queue";
+import { getInitializationOptions } from "./settings";
 
 // All session management operations are put on a queue. They can't run
 // concurrently and either result in a started or stopped state. Starting when
@@ -52,7 +53,9 @@ export class Lsp {
 			return;
 		}
 
-		let options: lc.ServerOptions = {
+		const initializationOptions = getInitializationOptions("air");
+
+		let serverOptions: lc.ServerOptions = {
 			command: "air",
 			args: ["language-server"],
 		};
@@ -71,13 +74,14 @@ export class Lsp {
 					vscode.workspace.createFileSystemWatcher("**/*.[Rr]"),
 			},
 			outputChannel: this.channel,
+			initializationOptions: initializationOptions,
 		};
 
 		const client = new lc.LanguageClient(
 			"airLanguageServer",
 			"Air Language Server",
-			options,
-			clientOptions,
+			serverOptions,
+			clientOptions
 		);
 		await client.start();
 

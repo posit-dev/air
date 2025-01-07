@@ -4,6 +4,10 @@
         "editor.formatOnSaveMode": "file",
         "editor.defaultFormatter": "rust-lang.rust-analyzer"
     },
+    "[typescript]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
     "rust-analyzer.check.command": "clippy",
     "rust-analyzer.imports.prefix": "crate",
     "rust-analyzer.imports.granularity.group": "item",
