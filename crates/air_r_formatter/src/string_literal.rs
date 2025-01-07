@@ -76,7 +76,8 @@ impl Format<RFormatContext> for FormatNormalizedStringLiteralToken<'_> {
 /// This function:
 /// - Normalizes all line endings to `\n`
 ///
-/// We may perform more normalization in the future.
+/// We may perform more normalization in the future. We don't use utilities from the
+/// `line_ending` crate because we don't own the string.
 ///
 /// This function is particularly useful for multiline strings, which capture the existing
 /// line ending inside the string token itself. We must normalize those line endings to
