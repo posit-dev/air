@@ -300,20 +300,3 @@ fn new_jsonrpc_error(message: String) -> jsonrpc::Error {
         data: None,
     }
 }
-
-#[cfg(test)]
-pub(crate) async fn start_test_client() -> lsp_test::lsp_client::TestClient {
-    lsp_test::lsp_client::TestClient::new(|server_rx, client_tx| async {
-        start_lsp(server_rx, client_tx).await
-    })
-}
-
-#[cfg(test)]
-pub(crate) async fn init_test_client() -> lsp_test::lsp_client::TestClient {
-    let mut client = start_test_client().await;
-
-    client.initialize().await;
-    client.recv_response().await;
-
-    client
-}

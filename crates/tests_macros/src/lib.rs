@@ -252,24 +252,3 @@ pub fn gen_tests(input: TokenStream) -> TokenStream {
         Err(e) => abort!(e, "{}", e),
     }
 }
-
-// We can't effectively interact with the server task and shut it down from `Drop`
-// so we do it on teardown in this procedural macro. Users must return their client.
-#[proc_macro_attribute]
-pub fn lsp_test(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    let input = syn::parse_macro_input!(item as syn::ItemFn);
-
-    let name = &input.sig.ident;
-    let block = &input.block;
-
-    let expanded = quote! {
-        #[tokio::test]
-        async fn #name() {
-            let mut client = #block;
-            client.shutdown().await;
-            client.exit().await;
-        }
-    };
-
-    TokenStream::from(expanded)
-}
