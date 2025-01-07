@@ -69,10 +69,10 @@ pub(crate) fn initialize(
     let InitializationOptions {
         log_level,
         dependency_log_levels,
-    } = match params.initialization_options {
-        Some(initialization_options) => InitializationOptions::from_value(initialization_options),
-        None => InitializationOptions::default(),
-    };
+    } = params.initialization_options.map_or_else(
+        InitializationOptions::default,
+        InitializationOptions::from_value,
+    );
 
     logging::init_logging(
         log_tx,
