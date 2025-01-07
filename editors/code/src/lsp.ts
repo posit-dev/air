@@ -53,7 +53,7 @@ export class Lsp {
 			return;
 		}
 
-		const initializationOptions = await getInitializationOptions("air");
+		const initializationOptions = getInitializationOptions("air");
 
 		let serverOptions: lc.ServerOptions = {
 			command: "air",

@@ -6,14 +6,14 @@ type LogLevel = "error" | "warn" | "info" | "debug" | "trace";
 // `initializationOptions` field of `InitializeParams`. These are only pulled at the
 // user level since they are global settings on the server side (and are scoped to
 // `"scope": "application"` in `package.json` so they can't even be set at workspace level).
-export type IInitializationOptions = {
+export type InitializationOptions = {
 	logLevel?: LogLevel;
 	dependencyLogLevels?: string;
 };
 
-export async function getInitializationOptions(
+export function getInitializationOptions(
 	namespace: string
-): Promise<IInitializationOptions> {
+): InitializationOptions {
 	const config = getConfiguration(namespace);
 
 	return {
