@@ -82,7 +82,7 @@ pub struct FormatTomlOptions {
     ///
     /// * `auto`: The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to `\n` for files that contain no line endings.
     /// * `lf`: Line endings will be converted to `\n`. The default line ending on Unix.
-    /// * `cr-lf`: Line endings will be converted to `\r\n`. The default line ending on Windows.
+    /// * `crlf`: Line endings will be converted to `\r\n`. The default line ending on Windows.
     /// * `native`: Line endings will be converted to `\n` on Unix and `\r\n` on Windows.
     pub line_ending: Option<LineEnding>,
 
