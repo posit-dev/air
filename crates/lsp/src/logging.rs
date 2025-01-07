@@ -204,26 +204,18 @@ pub(crate) fn init_logging(
 
     let subscriber = tracing_subscriber::Registry::default().with(layer);
 
-    if is_test_client(client_info) {
-        // During parallel testing, `set_global_default()` gets called multiple times
-        // per process. That causes it to error, but we ignore this.
-        tracing::subscriber::set_global_default(subscriber).ok();
-    } else {
-        tracing::subscriber::set_global_default(subscriber)
-            .expect("Should be able to set the global subscriber exactly once.");
-    }
+    tracing::subscriber::set_global_default(subscriber)
+        .expect("Should be able to set the global subscriber exactly once.");
 
     tracing::info!("Logging initialized with level: {log_level}");
 }
 
 /// We use a special `TestWriter` during tests to be compatible with `cargo test`'s
-/// typical output capturing behavior.
+/// typical output capturing behavior (even during integration tests!).
 ///
-/// Important notes:
-/// - `cargo test` swallows all logs unless you use `-- --nocapture`.
-/// - Tests run in parallel, so logs can be interleaved unless you run `--test-threads 1`.
-///
-/// We use `cargo test -- --nocapture --test-threads 1` on CI because of all of this.
+/// Importantly, note that `cargo test` swallows all logs unless you use `-- --nocapture`,
+/// which is the correct expected behavior. We use `cargo test -- --nocapture` on CI
+/// because of this.
 fn is_test_client(client_info: Option<&ClientInfo>) -> bool {
     client_info.map_or(false, |client_info| client_info.name == "AirTestClient")
 }
