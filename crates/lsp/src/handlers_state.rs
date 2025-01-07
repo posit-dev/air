@@ -30,7 +30,6 @@ use tower_lsp::lsp_types::WorkspaceFoldersServerCapabilities;
 use tower_lsp::lsp_types::WorkspaceServerCapabilities;
 use tracing::Instrument;
 use url::Url;
-use workspace::settings::Settings;
 
 use crate::capabilities::ResolvedClientCapabilities;
 use crate::config::indent_style_from_lsp;
@@ -38,7 +37,6 @@ use crate::config::DocumentConfig;
 use crate::config::VscDiagnosticsConfig;
 use crate::config::VscDocumentConfig;
 use crate::documents::Document;
-use crate::error::ErrorVec;
 use crate::logging;
 use crate::logging::LogMessageSender;
 use crate::main_loop::LspState;
@@ -90,7 +88,6 @@ pub(crate) fn initialize(
     // Initialize the workspace settings resolver using the initial set of client provided `workspace_folders`
     lsp_state.workspace_settings_resolver = WorkspaceSettingsResolver::from_workspace_folders(
         params.workspace_folders.unwrap_or_default(),
-        Settings::default(),
     );
 
     lsp_state.capabilities = ResolvedClientCapabilities::new(params.capabilities);
@@ -200,17 +197,13 @@ pub(crate) fn did_change_workspace_folders(
     params: DidChangeWorkspaceFoldersParams,
     lsp_state: &mut LspState,
 ) -> anyhow::Result<()> {
-    // Collect all `errors` to ensure we don't drop events after a first error
-    let mut errors = ErrorVec::new();
-
     for lsp_types::WorkspaceFolder { uri, .. } in params.event.added {
-        errors.push_err(lsp_state.open_workspace_folder(&uri, Settings::default()));
+        lsp_state.open_workspace_folder(&uri);
     }
     for lsp_types::WorkspaceFolder { uri, .. } in params.event.removed {
-        errors.push_err(lsp_state.close_workspace_folder(&uri));
+        lsp_state.close_workspace_folder(&uri);
     }
-
-    errors.into_result()
+    Ok(())
 }
 
 pub(crate) fn did_change_watched_files(

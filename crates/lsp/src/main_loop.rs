@@ -18,7 +18,6 @@ use tokio::task::JoinHandle;
 use tower_lsp::lsp_types::Diagnostic;
 use tower_lsp::Client;
 use url::Url;
-use workspace::resolve::SettingsResolver;
 use workspace::settings::Settings;
 
 use crate::capabilities::ResolvedClientCapabilities;
@@ -184,19 +183,11 @@ impl LspState {
         self.workspace_settings_resolver.settings_for_url(url)
     }
 
-    pub(crate) fn open_workspace_folder(
-        &mut self,
-        url: &Url,
-        fallback: Settings,
-    ) -> anyhow::Result<()> {
-        self.workspace_settings_resolver
-            .open_workspace_folder(url, fallback)
+    pub(crate) fn open_workspace_folder(&mut self, url: &Url) {
+        self.workspace_settings_resolver.open_workspace_folder(url)
     }
 
-    pub(crate) fn close_workspace_folder(
-        &mut self,
-        url: &Url,
-    ) -> anyhow::Result<Option<SettingsResolver>> {
+    pub(crate) fn close_workspace_folder(&mut self, url: &Url) {
         self.workspace_settings_resolver.close_workspace_folder(url)
     }
 }
