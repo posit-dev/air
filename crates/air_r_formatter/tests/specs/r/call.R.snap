@@ -659,8 +659,8 @@ fn(
 ## Output 1
 
 -----
-Indent style: Tab
-Indent width: 4
+Indent style: Space
+Indent width: 2
 Line ending: LF
 Line width: 80
 -----
@@ -683,10 +683,10 @@ fn(, a, , )
 fn(a, , b, , )
 
 fn(
-	a_really_long_argument_here,
-	,
-	another_really_really_long_argument_to_test_this_feature,
-	,
+  a_really_long_argument_here,
+  ,
+  another_really_really_long_argument_to_test_this_feature,
+  ,
 )
 
 # ------------------------------------------------------------------------
@@ -696,10 +696,10 @@ fn(...)
 fn(..., a = 1)
 fn(a = 1, ... = 2)
 fn(
-	a = 1,
-	another_really_really_long_argument_to_test_this_feature,
-	a_really_long_argument_here,
-	...
+  a = 1,
+  another_really_really_long_argument_to_test_this_feature,
+  a_really_long_argument_here,
+  ...
 )
 
 # ------------------------------------------------------------------------
@@ -715,8 +715,8 @@ fn(..1 = 1, ..2 = 2)
 
 # So this data dictionary stays expanded even though it fits on one line
 dictionary <- list(
-	a = 1,
-	b = 2
+  a = 1,
+  b = 2
 )
 
 # This flattens to one line
@@ -727,29 +727,29 @@ dictionary <- list(a = 1, b = 2)
 
 # Expanding the inner list forces expansion of the outer list
 list(
-	a = 1,
-	b = list(
-		foo = "a",
-		bar = "b"
-	)
+  a = 1,
+  b = list(
+    foo = "a",
+    bar = "b"
+  )
 )
 
 # Expansion of `bar()` forces expansion of the whole pipeline
 # (But note `foo(a = 1)` is not expanded)
 df |>
-	foo(a = 1) |>
-	bar(
-		b = 2,
-		c = 3
-	)
+  foo(a = 1) |>
+  bar(
+    b = 2,
+    c = 3
+  )
 
 # Expansion of `foo()` forces expansion of the whole pipeline
 # (But note `bar(b = 2, c = 3)` is not expanded)
 df |>
-	foo(
-		a = 1
-	) |>
-	bar(b = 2, c = 3)
+  foo(
+    a = 1
+  ) |>
+  bar(b = 2, c = 3)
 
 # Test-like call overrides user requested line break
 # (test-like check comes first and seems more relevant)
@@ -762,144 +762,144 @@ test_that("description", {
 # Leading holes are "invisible" when determining user requested expansion
 # These all expand
 fn(,
-	x = 1
+  x = 1
 )
 
 fn(,
-	x = 1
+  x = 1
 )
 
 fn(,
-	x = 1
+  x = 1
 )
 
 fn(,,
-	x = 1
+  x = 1
 )
 
 # A comment connected to a hole prevents it from being a "leading hole",
 # instead it just becomes part of the typical arguments list and expands
 fn(
-	# comment
-	,
-	x = 1
+  # comment
+  ,
+  x = 1
 )
 
 fn(,
-	# comment
-	,
-	x = 1
+  # comment
+  ,
+  x = 1
 )
 
 # ------------------------------------------------------------------------
 # Comments "inside" holes
 
 fn(
-	# comment
-	,
+  # comment
+  ,
 )
 
 fn(,
-	# comment
+  # comment
 )
 fn(,
-	# comment
+  # comment
 )
 fn(,
-	# comment
+  # comment
 )
 fn(,
-	# comment
+  # comment
 )
 
 fn(,
-	# comment
-	,
+  # comment
+  ,
 )
 fn(,
-	# comment
-	,
+  # comment
+  ,
 )
 fn(,
-	# comment
-	,
+  # comment
+  ,
 )
 fn(,
-	# comment
-	,
+  # comment
+  ,
 )
 
 fn(,,
-	# comment1
-	# comment2
-	,
-	x
+  # comment1
+  # comment2
+  ,
+  x
 )
 
 # Trails `a`
 fn(
-	a, # comment
-	,
-	b
+  a, # comment
+  ,
+  b
 )
 # Trails `a` technically, but should stay on own line
 fn(
-	a,
-	# comment
-	,
-	b
+  a,
+  # comment
+  ,
+  b
 )
 # Trails `a`
 fn(
-	a, # comment
-	# comment2
-	,
-	b
+  a, # comment
+  # comment2
+  ,
+  b
 )
 
 # Special test - ensure this leads `b` rather than trails `a`
 fn(,
-	a,
-	,
-	# comment
-	b
+  a,
+  ,
+  # comment
+  b
 )
 
 # Both comments lead the hole
 fn(
-	# comment1
-	# comment2
-	,
-	x
+  # comment1
+  # comment2
+  ,
+  x
 )
 
 # Comment leads hole
 # Following token is `,`, preceding before hole is another hole
 fn(
-	a,
-	,
-	# comment
-	,
-	b
+  a,
+  ,
+  # comment
+  ,
+  b
 )
 fn(,
-	# comment
-	,
-	x
+  # comment
+  ,
+  x
 )
 
 # Comment leads `{` but doesn't move inside it
 fn(,,
-	# comment
-	{
-		1 + 1
-	}
+  # comment
+  {
+    1 + 1
+  }
 )
 
 # A particular motivating case. Want trailing `,` commentB to stay on `b`.
 list2(
-	a, # commentA
-	b, # commentB
+  a, # commentA
+  b, # commentB
 )
 
 # ------------------------------------------------------------------------
@@ -909,124 +909,124 @@ list2(
 # Following token isn't `,`, `)`, `]`, or `]]`, and following node is non-hole,
 # so we attach to it
 fn(,,
-	# comment
-	x
+  # comment
+  x
 )
 fn(,,
-	# comment1
-	# comment2
-	x
+  # comment1
+  # comment2
+  x
 )
 
 # ------------------------------------------------------------------------
 # Trailing braced expression
 
 with(data, {
-	col
+  col
 })
 
 with(data, {
-	col
+  col
 })
 
 # User requested line break before `data` is respected
 with(
-	data,
-	{
-		col
-	}
+  data,
+  {
+    col
+  }
 )
 
 # User requested line break before `data` is respected
 with(
-	data,
-	# A comment
-	{
-		col
-	}
+  data,
+  # A comment
+  {
+    col
+  }
 )
 
 with(
-	data, # Prevents flattening
-	{
-		col
-	}
+  data, # Prevents flattening
+  {
+    col
+  }
 )
 
 with(data, expr = {
-	col
+  col
 })
 
 with(data, foo = "bar", {
-	col
+  col
 })
 
 # Not trailing, stays expanded
 with(
-	data,
-	{
-		col
-	},
-	foo = "bar"
+  data,
+  {
+    col
+  },
+  foo = "bar"
 )
 
 # Breaks and fully expands due to line length
 with(
-	my_long_list_my_long_list_my_long_list_my_long_list_long_long_long_long_long_list,
-	{
-		col
-	}
+  my_long_list_my_long_list_my_long_list_my_long_list_long_long_long_long_long_list,
+  {
+    col
+  }
 )
 
 with(data, {
 })
 
 with(data, {
-	# dangling
+  # dangling
 })
 
 fn({
 })
 
 fn({
-	# dangling
+  # dangling
 })
 
 fn({
-	1 + 1
+  1 + 1
 })
 
 fn(a = {
-	1 + 1
+  1 + 1
 })
 
 # The first argument here breaks, causing everything to fully expand
 fn(
-	{
-		1 + 1
-	},
-	{
-		1 + 1
-	}
+  {
+    1 + 1
+  },
+  {
+    1 + 1
+  }
 )
 
 # Hole prevents `{` from looking like the last expression, so everything expands
 fn(
-	x,
-	{
-		1 + 1
-	},
+  x,
+  {
+    1 + 1
+  },
 )
 
 # ------------------------------------------------------------------------
 # Trailing inline function
 
 map(xs, \(x) {
-	x + 1
+  x + 1
 })
 
 map(xs, function(x) {
-	x + 1
+  x + 1
 })
 
 # Braces expand over multiple lines
@@ -1038,10 +1038,10 @@ map(xs, function(x) x)
 
 # This form is too wide, so it fully expands
 map(
-	my_long_list_my_long_list_my_long_list_my_long_list,
-	function(my_long_argument) {
-		my_long_body_my_long_body_my_long_body_my_long_body_my_long_body
-	}
+  my_long_list_my_long_list_my_long_list_my_long_list,
+  function(my_long_argument) {
+    my_long_body_my_long_body_my_long_body_my_long_body_my_long_body
+  }
 )
 
 # Parameter names are very long, so it fully expands
@@ -1050,49 +1050,49 @@ map(
 # soft-indents allowed in the `parameters` and the fully expanded form, the
 # fully expanded form wins)
 map(
-	x,
-	function(
-		a,
-		a_really_really_long_parameter,
-		and_another_one_here_too_wow_this_is_long
-	) {
-		1
-	}
+  x,
+  function(
+    a,
+    a_really_really_long_parameter,
+    and_another_one_here_too_wow_this_is_long
+  ) {
+    1
+  }
 )
 
 # The `{ 1 }` parameter would force a hard line break. We detect this and don't
 # use best-fitting. Instead we fall back to the most expanded form.
 map(
-	x,
-	function(
-		a = {
-			1
-		}
-	) {
-		1
-	}
+  x,
+  function(
+    a = {
+      1
+    }
+  ) {
+    1
+  }
 )
 
 # Since there is only 1 argument, we want these to hug the function call even
 # though the `parameters` cause a break and would typically force full expansion
 fn(function(
-	a = {
-		1
-	}
+  a = {
+    1
+  }
 ) {
-	1
+  1
 })
 fn(function(
-	a,
-	a_really_really_long_parameter,
-	and_another_one_here_too_wow_this_is_long
+  a,
+  a_really_really_long_parameter,
+  and_another_one_here_too_wow_this_is_long
 ) {
-	1
+  1
 })
 
 # Named argument keeps name (#42)
 map(xs, .f = function(x) {
-	x + 1
+  x + 1
 })
 
 # ------------------------------------------------------------------------
@@ -1108,65 +1108,65 @@ map(xs, .f = function(x) {
 # - Comments on the `value` node of a `AnyRArgument::NamedRArgument` node
 
 with(
-	xs, # end-of-line
-	expr = {
-		x + 1
-	}
+  xs, # end-of-line
+  expr = {
+    x + 1
+  }
 )
 
 with(
-	xs,
-	# own-line
-	expr = {
-		x + 1
-	}
+  xs,
+  # own-line
+  expr = {
+    x + 1
+  }
 )
 
 with(
-	xs,
-	# end-of-line
-	expr = {
-		x + 1
-	}
+  xs,
+  # end-of-line
+  expr = {
+    x + 1
+  }
 )
 
 with(
-	xs,
-	# own-line
-	expr = {
-		x + 1
-	}
+  xs,
+  # own-line
+  expr = {
+    x + 1
+  }
 )
 
 with(
-	xs,
-	# end-of-line
-	expr = {
-		x + 1
-	}
+  xs,
+  # end-of-line
+  expr = {
+    x + 1
+  }
 )
 
 with(
-	xs,
-	# own-line
-	expr = {
-		x + 1
-	}
+  xs,
+  # own-line
+  expr = {
+    x + 1
+  }
 )
 
 with(
-	xs,
-	expr = {
-		x + 1
-	} # end-of-line
+  xs,
+  expr = {
+    x + 1
+  } # end-of-line
 )
 
 with(
-	xs,
-	expr = {
-		x + 1
-	}
-	# own-line
+  xs,
+  expr = {
+    x + 1
+  }
+  # own-line
 )
 
 # ------------------------------------------------------------------------
@@ -1181,99 +1181,99 @@ with(
 # - Comments on the `value` node of a `AnyRArgument::NamedRArgument` node
 
 fn(
-	xs, # end-of-line
-	f = function(x) {
-		x + 1
-	}
+  xs, # end-of-line
+  f = function(x) {
+    x + 1
+  }
 )
 
 fn(
-	xs,
-	# own-line
-	f = function(x) {
-		x + 1
-	}
+  xs,
+  # own-line
+  f = function(x) {
+    x + 1
+  }
 )
 
 fn(
-	xs,
-	# end-of-line
-	f = function(x) {
-		x + 1
-	}
+  xs,
+  # end-of-line
+  f = function(x) {
+    x + 1
+  }
 )
 
 fn(
-	xs,
-	# own-line
-	f = function(x) {
-		x + 1
-	}
+  xs,
+  # own-line
+  f = function(x) {
+    x + 1
+  }
 )
 
 fn(
-	xs,
-	# end-of-line
-	f = function(x) {
-		x + 1
-	}
+  xs,
+  # end-of-line
+  f = function(x) {
+    x + 1
+  }
 )
 
 fn(
-	xs,
-	# own-line
-	f = function(x) {
-		x + 1
-	}
+  xs,
+  # own-line
+  f = function(x) {
+    x + 1
+  }
 )
 
 fn(
-	xs,
-	f = function(x) {
-		x + 1
-	} # end-of-line
+  xs,
+  f = function(x) {
+    x + 1
+  } # end-of-line
 )
 
 fn(
-	xs,
-	f = function(x) {
-		x + 1
-	}
-	# own-line
+  xs,
+  f = function(x) {
+    x + 1
+  }
+  # own-line
 )
 
 # ------------------------------------------------------------------------
 # Comments: Named arguments without a RHS
 
 switch(
-	name,
-	one = , # Trailing, stays beside `one`
-	two = , # Trailing, stays beside `two`
-	three = 1,
-	stop("oh no")
+  name,
+  one = , # Trailing, stays beside `one`
+  two = , # Trailing, stays beside `two`
+  three = 1,
+  stop("oh no")
 )
 
 # This is enclosed by the `RNamedArgument` node, so it moves on top
 fn(
-	x,
-	# Moves above `one`
-	one = ,
-	two = 2
+  x,
+  # Moves above `one`
+  one = ,
+  two = 2
 )
 
 # This is not enclosed by the `RNamedArgument` node because it only contains
 # `one =` and stops at the end of the `=`. So it is considered trailing.
 fn(
-	x,
-	one = , # Trailing, stays beside `one`
-	two = 2
+  x,
+  one = , # Trailing, stays beside `one`
+  two = 2
 )
 
 # This is not enclosed by the `RNamedArgument` node because it only contains
 # `one =` and stops at the end of the `=`. So it is considered trailing.
 fn(
-	x,
-	one = # Trailing, stays beside `one`
+  x,
+  one = # Trailing, stays beside `one`
 )
 
 # ------------------------------------------------------------------------
@@ -1290,60 +1290,60 @@ fn(x, {{ var }})
 # (like with top level expressions), but empty lines right after `(`
 # and right before `)` are removed.
 fn(
-	a,
+  a,
 
-	b,
+  b,
 
-	c
+  c
 )
 
 fn(
-	a,
+  a,
 
-	# comment1
-	b,
+  # comment1
+  b,
 
-	# comment2
-	c
+  # comment2
+  c
 )
 
 # Due to holes not having tokens, we collapse full empty lines in them
 fn(
-	# comment1
-	,
-	# comment2
-	,
+  # comment1
+  ,
+  # comment2
+  ,
 
-	b
+  b
 )
 
 fn(,
-	# comment2
-	,
+  # comment2
+  ,
 
-	b
+  b
 )
 
 # ------------------------------------------------------------------------
 # Comments
 
 fn(
-	# dangling special case
+  # dangling special case
 )
 
 fn(
-	a, # on line of `a`
-	b
+  a, # on line of `a`
+  b
 )
 
 fn(
-	# top of `a`
-	a,
-	b
+  # top of `a`
+  a,
+  b
 )
 ```
 
 # Lines exceeding max width of 80 characters
 ```
-  307: 	my_long_list_my_long_list_my_long_list_my_long_list_long_long_long_long_long_list,
+  307:   my_long_list_my_long_list_my_long_list_my_long_list_long_long_long_long_long_list,
 ```
