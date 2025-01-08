@@ -17,6 +17,7 @@ use biome_formatter::TransformSourceMap;
 use crate::comments::FormatRLeadingComment;
 use crate::comments::RCommentStyle;
 use crate::comments::RComments;
+use crate::options::MagicLineBreak;
 
 pub struct RFormatContext {
     options: RFormatOptions,
@@ -77,6 +78,10 @@ pub struct RFormatOptions {
 
     /// The max width of a line. Defaults to 80.
     line_width: LineWidth,
+
+    // TODO: Actually use this internally!
+    /// The behavior of magic line breaks.
+    magic_line_break: MagicLineBreak,
 }
 
 impl RFormatOptions {
@@ -106,6 +111,11 @@ impl RFormatOptions {
         self
     }
 
+    pub fn with_magic_line_break(mut self, magic_line_break: MagicLineBreak) -> Self {
+        self.magic_line_break = magic_line_break;
+        self
+    }
+
     pub fn set_indent_style(&mut self, indent_style: IndentStyle) {
         self.indent_style = indent_style;
     }
@@ -120,6 +130,10 @@ impl RFormatOptions {
 
     pub fn set_line_width(&mut self, line_width: LineWidth) {
         self.line_width = line_width;
+    }
+
+    pub fn set_magic_line_break(&mut self, magic_line_break: MagicLineBreak) {
+        self.magic_line_break = magic_line_break;
     }
 }
 

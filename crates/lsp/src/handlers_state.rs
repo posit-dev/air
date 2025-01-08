@@ -7,12 +7,15 @@
 
 use anyhow::anyhow;
 use biome_lsp_converters::PositionEncoding;
+use biome_lsp_converters::WideEncoding;
 use serde_json::Value;
 use struct_field_names_as_array::FieldNamesAsArray;
 use tower_lsp::lsp_types;
 use tower_lsp::lsp_types::ConfigurationItem;
 use tower_lsp::lsp_types::DidChangeConfigurationParams;
 use tower_lsp::lsp_types::DidChangeTextDocumentParams;
+use tower_lsp::lsp_types::DidChangeWatchedFilesParams;
+use tower_lsp::lsp_types::DidChangeWorkspaceFoldersParams;
 use tower_lsp::lsp_types::DidCloseTextDocumentParams;
 use tower_lsp::lsp_types::DidOpenTextDocumentParams;
 use tower_lsp::lsp_types::FormattingOptions;
@@ -28,6 +31,7 @@ use tower_lsp::lsp_types::WorkspaceServerCapabilities;
 use tracing::Instrument;
 use url::Url;
 
+use crate::capabilities::ResolvedClientCapabilities;
 use crate::config::indent_style_from_lsp;
 use crate::config::DocumentConfig;
 use crate::config::VscDiagnosticsConfig;
@@ -39,6 +43,7 @@ use crate::main_loop::LspState;
 use crate::settings::InitializationOptions;
 use crate::state::workspace_uris;
 use crate::state::WorldState;
+use crate::workspaces::WorkspaceSettingsResolver;
 
 // Handlers that mutate the world state
 
@@ -63,7 +68,6 @@ pub struct ConsoleInputs {
 pub(crate) fn initialize(
     params: InitializeParams,
     lsp_state: &mut LspState,
-    state: &mut WorldState,
     log_tx: LogMessageSender,
 ) -> anyhow::Result<InitializeResult> {
     let InitializationOptions {
@@ -81,44 +85,29 @@ pub(crate) fn initialize(
         params.client_info.as_ref(),
     );
 
-    // Defaults to UTF-16
-    let mut position_encoding = None;
+    // Initialize the workspace settings resolver using the initial set of client provided `workspace_folders`
+    lsp_state.workspace_settings_resolver = WorkspaceSettingsResolver::from_workspace_folders(
+        params.workspace_folders.unwrap_or_default(),
+    );
 
-    if let Some(caps) = params.capabilities.general {
-        // If the client supports UTF-8 we use that, even if it's not its
-        // preferred encoding (at position 0). Otherwise we use the mandatory
-        // UTF-16 encoding that all clients and servers must support, even if
-        // the client would have preferred UTF-32. Note that VSCode and Positron
-        // only support UTF-16.
-        if let Some(caps) = caps.position_encodings {
-            if caps.contains(&lsp_types::PositionEncodingKind::UTF8) {
-                lsp_state.position_encoding = PositionEncoding::Utf8;
-                position_encoding = Some(lsp_types::PositionEncodingKind::UTF8);
-            }
-        }
-    }
+    lsp_state.capabilities = ResolvedClientCapabilities::new(params.capabilities);
 
-    // Take note of supported capabilities so we can register them in the
-    // `Initialized` handler
-    if let Some(ws_caps) = params.capabilities.workspace {
-        if matches!(ws_caps.did_change_configuration, Some(caps) if matches!(caps.dynamic_registration, Some(true)))
-        {
-            lsp_state.needs_registration.did_change_configuration = true;
-        }
-    }
-
-    // Initialize the workspace folders
-    let mut folders: Vec<String> = Vec::new();
-    if let Some(workspace_folders) = params.workspace_folders {
-        for folder in workspace_folders.iter() {
-            state.workspace.folders.push(folder.uri.clone());
-            if let Ok(path) = folder.uri.to_file_path() {
-                if let Some(path) = path.to_str() {
-                    folders.push(path.to_string());
-                }
-            }
-        }
-    }
+    // If the client supports UTF-8 we use that, even if it's not its
+    // preferred encoding (at position 0). Otherwise we use the mandatory
+    // UTF-16 encoding that all clients and servers must support, even if
+    // the client would have preferred UTF-32. Note that VSCode and Positron
+    // only support UTF-16.
+    let position_encoding = if lsp_state
+        .capabilities
+        .position_encodings
+        .contains(&lsp_types::PositionEncodingKind::UTF8)
+    {
+        lsp_state.position_encoding = PositionEncoding::Utf8;
+        Some(lsp_types::PositionEncodingKind::UTF8)
+    } else {
+        lsp_state.position_encoding = PositionEncoding::Wide(WideEncoding::Utf16);
+        Some(lsp_types::PositionEncodingKind::UTF16)
+    };
 
     Ok(InitializeResult {
         server_info: Some(ServerInfo {
@@ -202,6 +191,32 @@ pub(crate) async fn did_change_configuration(
     update_config(workspace_uris(state), client, state)
         .instrument(tracing::info_span!("did_change_configuration"))
         .await
+}
+
+pub(crate) fn did_change_workspace_folders(
+    params: DidChangeWorkspaceFoldersParams,
+    lsp_state: &mut LspState,
+) -> anyhow::Result<()> {
+    for lsp_types::WorkspaceFolder { uri, .. } in params.event.added {
+        lsp_state.open_workspace_folder(&uri);
+    }
+    for lsp_types::WorkspaceFolder { uri, .. } in params.event.removed {
+        lsp_state.close_workspace_folder(&uri);
+    }
+    Ok(())
+}
+
+pub(crate) fn did_change_watched_files(
+    params: DidChangeWatchedFilesParams,
+    lsp_state: &mut LspState,
+) -> anyhow::Result<()> {
+    for change in &params.changes {
+        lsp_state
+            .workspace_settings_resolver
+            .reload_workspaces_matched_by_url(&change.uri);
+    }
+
+    Ok(())
 }
 
 #[tracing::instrument(level = "info", skip_all)]
