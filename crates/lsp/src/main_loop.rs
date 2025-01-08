@@ -183,11 +183,11 @@ impl LspState {
     pub(crate) fn document_settings(&self, url: &Url) -> &Settings {
         let workspace_settings = self.workspace_settings_resolver.settings_for_url(url);
 
-        // TODO: In the `NotFound` case, layer in client provided document specific
-        // settings on top of the `fallback_settings`
+        // TODO: In the `Fallback` case, layer in client provided document specific
+        // settings on top of the fallback `settings`
         match workspace_settings {
-            WorkspaceSettings::Found(settings) => settings,
-            WorkspaceSettings::NotFound(fallback_settings) => fallback_settings,
+            WorkspaceSettings::Toml(settings) => settings,
+            WorkspaceSettings::Fallback(settings) => settings,
         }
     }
 

@@ -21,11 +21,8 @@ pub(crate) struct WorkspaceSettingsResolver {
 
 /// Resolved [`WorkspaceSettings`] for a workspace specific [`Path`]
 pub(crate) enum WorkspaceSettings<'resolver> {
-    /// Contains the [`Settings`] associated with a given [`Path`]
-    Found(&'resolver Settings),
-
-    /// Contains fallback [`Settings`]
-    NotFound(&'resolver Settings),
+    Toml(&'resolver Settings),
+    Fallback(&'resolver Settings),
 }
 
 impl WorkspaceSettingsResolver {
@@ -137,7 +134,7 @@ impl WorkspaceSettingsResolver {
         }
 
         tracing::trace!("Using default settings for non-file URL: {url}");
-        WorkspaceSettings::NotFound(self.path_to_settings_resolver.fallback().fallback())
+        WorkspaceSettings::Fallback(self.path_to_settings_resolver.fallback().fallback())
     }
 
     /// Reloads all workspaces matched by the [`Url`]
@@ -202,11 +199,11 @@ impl WorkspaceSettingsResolver {
             .and_then(|resolution| resolution.value().resolve(path))
             .map_or_else(
                 || {
-                    WorkspaceSettings::NotFound(
+                    WorkspaceSettings::Fallback(
                         self.path_to_settings_resolver.fallback().fallback(),
                     )
                 },
-                |resolution| WorkspaceSettings::Found(resolution.value()),
+                |resolution| WorkspaceSettings::Toml(resolution.value()),
             )
     }
 
