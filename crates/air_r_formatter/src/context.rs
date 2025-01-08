@@ -8,16 +8,16 @@ use biome_formatter::BracketSpacing;
 use biome_formatter::CstFormatContext;
 use biome_formatter::FormatContext;
 use biome_formatter::FormatOptions;
-use biome_formatter::IndentStyle;
-use biome_formatter::IndentWidth;
-use biome_formatter::LineEnding;
-use biome_formatter::LineWidth;
 use biome_formatter::TransformSourceMap;
+use settings::IndentStyle;
+use settings::IndentWidth;
+use settings::LineEnding;
+use settings::LineWidth;
+use settings::MagicLineBreak;
 
 use crate::comments::FormatRLeadingComment;
 use crate::comments::RCommentStyle;
 use crate::comments::RComments;
-use crate::options::MagicLineBreak;
 
 pub struct RFormatContext {
     options: RFormatOptions,
@@ -138,20 +138,20 @@ impl RFormatOptions {
 }
 
 impl FormatOptions for RFormatOptions {
-    fn indent_style(&self) -> IndentStyle {
-        self.indent_style
+    fn indent_style(&self) -> biome_formatter::IndentStyle {
+        self.indent_style.into()
     }
 
-    fn indent_width(&self) -> IndentWidth {
-        self.indent_width
+    fn indent_width(&self) -> biome_formatter::IndentWidth {
+        self.indent_width.into()
     }
 
-    fn line_width(&self) -> LineWidth {
-        self.line_width
+    fn line_width(&self) -> biome_formatter::LineWidth {
+        self.line_width.into()
     }
 
-    fn line_ending(&self) -> LineEnding {
-        self.line_ending
+    fn line_ending(&self) -> biome_formatter::LineEnding {
+        self.line_ending.into()
     }
 
     fn attribute_position(&self) -> AttributePosition {

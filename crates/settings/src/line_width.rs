@@ -15,6 +15,9 @@ use std::num::NonZeroU16;
 pub struct LineWidth(NonZeroU16);
 
 impl LineWidth {
+    /// Default value for [LineWidth]
+    const DEFAULT: u16 = 80;
+
     /// Maximum allowed value for a valid [LineWidth]
     const MAX: u16 = 320;
 
@@ -26,7 +29,7 @@ impl LineWidth {
 
 impl Default for LineWidth {
     fn default() -> Self {
-        Self(NonZeroU16::new(80).unwrap())
+        Self(NonZeroU16::new(Self::DEFAULT).unwrap())
     }
 }
 
@@ -42,6 +45,7 @@ impl fmt::Display for LineWidth {
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'de> serde::Deserialize<'de> for LineWidth {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -105,10 +109,19 @@ impl From<LineWidth> for NonZeroU16 {
     }
 }
 
+#[cfg(feature = "biome")]
 impl From<LineWidth> for biome_formatter::LineWidth {
     fn from(value: LineWidth) -> Self {
         // Unwrap: We assert that we match biome's `LineWidth` perfectly
         biome_formatter::LineWidth::try_from(value.value()).unwrap()
+    }
+}
+
+#[cfg(feature = "biome")]
+impl From<biome_formatter::LineWidth> for LineWidth {
+    fn from(value: biome_formatter::LineWidth) -> Self {
+        // Unwrap: We assert that we match biome's `LineWidth` perfectly
+        LineWidth::try_from(value.value()).unwrap()
     }
 }
 
@@ -117,7 +130,23 @@ mod tests {
     use anyhow::Context;
     use anyhow::Result;
 
-    use crate::settings::LineWidth;
+    use crate::LineWidth;
+
+    #[test]
+    fn to_biome_conversion() {
+        assert_eq!(
+            biome_formatter::LineWidth::from(LineWidth::try_from(LineWidth::MAX).unwrap()),
+            biome_formatter::LineWidth::try_from(LineWidth::MAX).unwrap()
+        );
+    }
+
+    #[test]
+    fn from_biome_conversion() {
+        assert_eq!(
+            LineWidth::from(biome_formatter::LineWidth::try_from(LineWidth::MAX).unwrap()),
+            LineWidth::try_from(LineWidth::MAX).unwrap()
+        )
+    }
 
     #[derive(serde::Deserialize)]
     #[serde(deny_unknown_fields, rename_all = "kebab-case")]

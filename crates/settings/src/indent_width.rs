@@ -15,6 +15,9 @@ use std::num::NonZeroU8;
 pub struct IndentWidth(NonZeroU8);
 
 impl IndentWidth {
+    /// Default value for [IndentWidth]
+    const DEFAULT: u8 = 4;
+
     /// Maximum allowed value for a valid [IndentWidth]
     const MAX: u8 = 24;
 
@@ -26,7 +29,7 @@ impl IndentWidth {
 
 impl Default for IndentWidth {
     fn default() -> Self {
-        Self(NonZeroU8::new(4).unwrap())
+        Self(NonZeroU8::new(Self::DEFAULT).unwrap())
     }
 }
 
@@ -42,6 +45,7 @@ impl std::fmt::Display for IndentWidth {
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'de> serde::Deserialize<'de> for IndentWidth {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -105,10 +109,19 @@ impl From<IndentWidth> for NonZeroU8 {
     }
 }
 
+#[cfg(feature = "biome")]
 impl From<IndentWidth> for biome_formatter::IndentWidth {
     fn from(value: IndentWidth) -> Self {
         // Unwrap: We assert that we match biome's `IndentWidth` perfectly
         biome_formatter::IndentWidth::try_from(value.value()).unwrap()
+    }
+}
+
+#[cfg(feature = "biome")]
+impl From<biome_formatter::IndentWidth> for IndentWidth {
+    fn from(value: biome_formatter::IndentWidth) -> Self {
+        // Unwrap: We assert that we match biome's `IndentWidth` perfectly
+        IndentWidth::try_from(value.value()).unwrap()
     }
 }
 
@@ -117,7 +130,23 @@ mod tests {
     use anyhow::Context;
     use anyhow::Result;
 
-    use crate::settings::IndentWidth;
+    use crate::IndentWidth;
+
+    #[test]
+    fn to_biome_conversion() {
+        assert_eq!(
+            biome_formatter::IndentWidth::from(IndentWidth::try_from(IndentWidth::MAX).unwrap()),
+            biome_formatter::IndentWidth::try_from(IndentWidth::MAX).unwrap()
+        );
+    }
+
+    #[test]
+    fn from_biome_conversion() {
+        assert_eq!(
+            IndentWidth::from(biome_formatter::IndentWidth::try_from(IndentWidth::MAX).unwrap()),
+            IndentWidth::try_from(IndentWidth::MAX).unwrap()
+        )
+    }
 
     #[derive(serde::Deserialize)]
     #[serde(deny_unknown_fields, rename_all = "kebab-case")]

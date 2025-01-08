@@ -13,6 +13,7 @@ repository.workspace = true
 
 [dependencies]
 memchr.workspace = true
+settings.workspace = true
 
 [dev-dependencies]
 

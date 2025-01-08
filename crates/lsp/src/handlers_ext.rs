@@ -1,5 +1,5 @@
 use air_r_formatter::{context::RFormatOptions, format_node};
-use biome_formatter::{IndentStyle, LineWidth};
+use settings::{IndentStyle, LineWidth};
 use tower_lsp::lsp_types;
 
 use crate::state::WorldState;

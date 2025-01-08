@@ -6,7 +6,7 @@
 //
 
 use biome_lsp_converters::{line_index, PositionEncoding};
-use line_ending::LineEnding;
+use settings::LineEnding;
 use tower_lsp::lsp_types;
 
 use crate::config::DocumentConfig;

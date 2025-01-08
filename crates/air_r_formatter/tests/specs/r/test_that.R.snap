@@ -51,7 +51,7 @@ test_that(identity("description that is super long and actually exceeds the line
 
 -----
 Indent style: Tab
-Indent width: 2
+Indent width: 4
 Line ending: LF
 Line width: 80
 -----

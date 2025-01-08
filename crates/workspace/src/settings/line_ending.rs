@@ -29,10 +29,24 @@ pub enum LineEnding {
 impl fmt::Display for LineEnding {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Auto => write!(f, "auto"),
-            Self::Lf => write!(f, "lf"),
-            Self::Crlf => write!(f, "crlf"),
-            Self::Native => write!(f, "native"),
+            Self::Auto => write!(f, "Auto"),
+            Self::Lf => write!(f, "LF"),
+            Self::Crlf => write!(f, "CRLF"),
+            Self::Native => write!(f, "Native"),
+        }
+    }
+}
+
+impl LineEnding {
+    pub(crate) fn finalize(&self, source: &str) -> settings::LineEnding {
+        match self {
+            LineEnding::Lf => settings::LineEnding::Lf,
+            LineEnding::Crlf => settings::LineEnding::Crlf,
+            #[cfg(target_os = "windows")]
+            LineEnding::Native => settings::LineEnding::Crlf,
+            #[cfg(not(target_os = "windows"))]
+            LineEnding::Native => settings::LineEnding::Lf,
+            LineEnding::Auto => line_ending::infer(source),
         }
     }
 }

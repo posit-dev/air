@@ -6,12 +6,12 @@
 //
 
 use crate::settings::FormatSettings;
-use crate::settings::IndentStyle;
-use crate::settings::IndentWidth;
 use crate::settings::LineEnding;
-use crate::settings::LineWidth;
-use crate::settings::MagicLineBreak;
 use crate::settings::Settings;
+use settings::IndentStyle;
+use settings::IndentWidth;
+use settings::LineWidth;
+use settings::MagicLineBreak;
 
 /// The Rust representation of `air.toml`
 ///

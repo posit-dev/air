@@ -1,0 +1,32 @@
+[package]
+name = "settings"
+description = "Source of truth for Air settings"
+version = "0.0.0"
+publish = false
+authors.workspace = true
+categories.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[features]
+biome = ["dep:biome_formatter"]
+serde = ["dep:serde"]
+
+[dependencies]
+biome_formatter = { workspace = true, optional = true }
+serde = { workspace = true, optional = true }
+
+[dev-dependencies]
+anyhow = { workspace = true }
+biome_formatter = { workspace = true }
+insta = { workspace = true }
+serde = { workspace = true }
+# Self dependency to activate optional features for tests
+settings = { path = "./", features = ["biome", "serde"] }
+toml = { workspace = true }
+
+[lints]
+workspace = true

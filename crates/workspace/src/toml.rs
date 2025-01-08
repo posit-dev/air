@@ -74,11 +74,11 @@ mod tests {
     use tempfile::TempDir;
 
     use crate::settings::LineEnding;
-    use crate::settings::LineWidth;
     use crate::toml::find_air_toml;
     use crate::toml::parse_air_toml;
     use crate::toml_options::GlobalTomlOptions;
     use crate::toml_options::TomlOptions;
+    use settings::LineWidth;
 
     #[test]
     fn deserialize_empty() -> Result<()> {
