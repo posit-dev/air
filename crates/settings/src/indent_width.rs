@@ -16,7 +16,7 @@ pub struct IndentWidth(NonZeroU8);
 
 impl IndentWidth {
     /// Default value for [IndentWidth]
-    const DEFAULT: u8 = 4;
+    const DEFAULT: u8 = 2;
 
     /// Maximum allowed value for a valid [IndentWidth]
     const MAX: u8 = 24;
@@ -158,13 +158,13 @@ mod tests {
     fn deserialize_indent_width() -> Result<()> {
         let options: Options = toml::from_str(
             r"
-indent-width = 2
+indent-width = 6
 ",
         )?;
 
         assert_eq!(
             options.indent_width,
-            Some(IndentWidth::try_from(2).unwrap())
+            Some(IndentWidth::try_from(6).unwrap())
         );
 
         Ok(())
