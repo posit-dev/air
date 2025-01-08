@@ -10,13 +10,13 @@ mod indent_width;
 // TODO: Can we pick a better crate name for `line_ending` so these don't collide?
 #[path = "settings/line_ending.rs"]
 mod line_ending_setting;
-mod line_length;
+mod line_width;
 mod magic_line_break;
 
 pub use indent_style::*;
 pub use indent_width::*;
 pub use line_ending_setting::*;
-pub use line_length::*;
+pub use line_width::*;
 pub use magic_line_break::*;
 
 use air_r_formatter::context::RFormatOptions;
@@ -37,7 +37,7 @@ pub struct FormatSettings {
     pub indent_style: IndentStyle,
     pub indent_width: IndentWidth,
     pub line_ending: LineEnding,
-    pub line_length: LineLength,
+    pub line_width: LineWidth,
     pub magic_line_break: MagicLineBreak,
 }
 
@@ -61,7 +61,7 @@ impl FormatSettings {
             .with_indent_style(self.indent_style.into())
             .with_indent_width(self.indent_width.into())
             .with_line_ending(line_ending)
-            .with_line_width(self.line_length.into())
+            .with_line_width(self.line_width.into())
             .with_magic_line_break(self.magic_line_break.into())
     }
 }

@@ -82,7 +82,7 @@ mod tests {
     fn deserialize_empty() -> Result<()> {
         let options: TomlOptions = toml::from_str(r"")?;
         assert_eq!(options.global.indent_width, None);
-        assert_eq!(options.global.line_length, None);
+        assert_eq!(options.global.line_width, None);
         assert_eq!(options.format, None);
         Ok(())
     }
@@ -94,7 +94,7 @@ mod tests {
         fs::write(
             toml,
             r#"
-line-length = 88
+line-width = 88
 
 [format]
 line-ending = "auto"

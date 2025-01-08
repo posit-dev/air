@@ -9,7 +9,7 @@ use crate::settings::FormatSettings;
 use crate::settings::IndentStyle;
 use crate::settings::IndentWidth;
 use crate::settings::LineEnding;
-use crate::settings::LineLength;
+use crate::settings::LineWidth;
 use crate::settings::MagicLineBreak;
 use crate::settings::Settings;
 
@@ -37,14 +37,14 @@ pub struct TomlOptions {
 #[derive(Clone, Debug, PartialEq, Eq, Default, serde::Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct GlobalTomlOptions {
-    /// The line length at which the formatter prefers to wrap lines.
+    /// The line width at which the formatter prefers to wrap lines.
     ///
     /// The value must be greater than or equal to `1` and less than or equal to `320`.
     ///
     /// Note: While the formatter will attempt to format lines such that they remain
-    /// within the `line-length`, it isn't a hard upper bound, and formatted lines may
-    /// exceed the `line-length`.
-    pub line_length: Option<LineLength>,
+    /// within the `line-width`, it isn't a hard upper bound, and formatted lines may
+    /// exceed the `line-width`.
+    pub line_width: Option<LineWidth>,
 
     /// The number of spaces per indentation level (tab).
     ///
@@ -54,7 +54,7 @@ pub struct GlobalTomlOptions {
     ///
     /// This option changes the number of spaces the formatter inserts when
     /// using `indent-style = "space"`. It also represents the width of a tab when
-    /// `indent-style = "tab"` for the purposes of computing the `line-length`.
+    /// `indent-style = "tab"` for the purposes of computing the `line-width`.
     pub indent_width: Option<IndentWidth>,
 }
 
@@ -97,7 +97,7 @@ pub struct FormatTomlOptions {
     /// function calls or function signatures should be left expanded. If this option
     /// is set to `true`, magic line breaks are ignored.
     ///
-    /// It may be preferable to ignore magic line breaks if you prefer that `line-length`
+    /// It may be preferable to ignore magic line breaks if you prefer that `line-width`
     /// should be the only value that influences line breaks.
     pub ignore_magic_line_break: Option<bool>,
 }
@@ -110,7 +110,7 @@ impl TomlOptions {
             indent_style: format.indent_style.unwrap_or_default(),
             indent_width: self.global.indent_width.unwrap_or_default(),
             line_ending: format.line_ending.unwrap_or_default(),
-            line_length: self.global.line_length.unwrap_or_default(),
+            line_width: self.global.line_width.unwrap_or_default(),
             magic_line_break: match format.ignore_magic_line_break {
                 Some(ignore_magic_line_break) => {
                     if ignore_magic_line_break {
