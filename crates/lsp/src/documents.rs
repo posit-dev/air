@@ -91,7 +91,7 @@ impl Document {
 
     #[cfg(test)]
     pub fn doodle_and_range(contents: &str) -> (Self, biome_text_size::TextRange) {
-        let (contents, range) = crate::test_utils::extract_marked_range(contents);
+        let (contents, range) = crate::test::extract_marked_range(contents);
         let doc = Self::new(contents, None, PositionEncoding::Utf8);
         (doc, range)
     }

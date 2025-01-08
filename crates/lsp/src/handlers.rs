@@ -73,10 +73,13 @@ pub(crate) async fn handle_initialized(
         registrations.push(watch_air_toml_registration);
     }
 
-    client
-        .register_capability(registrations)
-        .instrument(span.exit())
-        .await?;
+    if !registrations.is_empty() {
+        client
+            .register_capability(registrations)
+            .instrument(span.exit())
+            .await?;
+    }
+
     Ok(())
 }
 
