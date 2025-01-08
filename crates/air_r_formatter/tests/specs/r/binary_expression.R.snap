@@ -526,8 +526,8 @@ base_version <-
 ## Output 1
 
 -----
-Indent style: Tab
-Indent width: 4
+Indent style: Space
+Indent width: 2
 Line ending: LF
 Line width: 80
 -----
@@ -536,24 +536,24 @@ Line width: 80
 1 + 2 + 3 + 4
 
 argument_that_is_quite_long +
-	argument_that_is_quite_long +
-	argument_that_is_quite_long +
-	argument_that_is_quite_long
+  argument_that_is_quite_long +
+  argument_that_is_quite_long +
+  argument_that_is_quite_long
 
 1 + 2^3 + 4
 
 argument_that_is_quite_long +
-	argument_that_is_quite_long^argument_that_is_quite_long +
-	argument_that_is_quite_long
+  argument_that_is_quite_long^argument_that_is_quite_long +
+  argument_that_is_quite_long
 
 1 + # comment
-	2
+  2
 
 1 +
 
-	# comment1
+  # comment1
 
-	2 # comment2
+  2 # comment2
 
 # The following expressions should have spaces
 1 ~ 2
@@ -600,88 +600,88 @@ alias????"^try"
 
 # Soft line breaks kick in for long expressions
 a_really_really_really_really_really_really_long_thing_here ~
-	a_really_really_really_really_really_really_long_thing_here2
+  a_really_really_really_really_really_really_long_thing_here2
 a_really_really_really_really_really_really_long_thing_here >
-	a_really_really_really_really_really_really_long_thing_here2
+  a_really_really_really_really_really_really_long_thing_here2
 a_really_really_really_really_really_really_long_thing_here >=
-	a_really_really_really_really_really_really_long_thing_here2
+  a_really_really_really_really_really_really_long_thing_here2
 a_really_really_really_really_really_really_long_thing_here <
-	a_really_really_really_really_really_really_long_thing_here2
+  a_really_really_really_really_really_really_long_thing_here2
 a_really_really_really_really_really_really_long_thing_here <=
-	a_really_really_really_really_really_really_long_thing_here2
+  a_really_really_really_really_really_really_long_thing_here2
 a_really_really_really_really_really_really_long_thing_here ==
-	a_really_really_really_really_really_really_long_thing_here2
+  a_really_really_really_really_really_really_long_thing_here2
 a_really_really_really_really_really_really_long_thing_here !=
-	a_really_really_really_really_really_really_long_thing_here2
+  a_really_really_really_really_really_really_long_thing_here2
 
 # Chaining does not occur
 a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2 ~
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here3
 
 # Chaining occurs by chance due to how precedence naturally groups these
 # along with having extremely long names
 a_really_really_long_thing_here1 ~
-	a_really_really_really_really_really_really_long_thing_here2 ~
-	a_really_really_long_thing_here3
+  a_really_really_really_really_really_really_long_thing_here2 ~
+  a_really_really_long_thing_here3
 
 # Forced groups
 (a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2) ~
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 ~
-	(a_really_really_long_thing_here2 ~ a_really_really_long_thing_here3)
+  (a_really_really_long_thing_here2 ~ a_really_really_long_thing_here3)
 
 # Mixing with a chaining operator
 a_really_really_long_thing_here1 ~
-	a_really_really_long_thing_here2 +
-		a_really_really_long_thing_here3 +
-		a_really_really_long_thing_here4
+  a_really_really_long_thing_here2 +
+    a_really_really_long_thing_here3 +
+    a_really_really_long_thing_here4
 a_really_really_long_thing_here1 +
-	a_really_really_long_thing_here2 +
-	a_really_really_long_thing_here3 ~
-	a_really_really_long_thing_here4
+  a_really_really_long_thing_here2 +
+  a_really_really_long_thing_here3 ~
+  a_really_really_long_thing_here4
 
 # Chaining operator with high precedence forces non-chaining operator to expand
 # (to convey a reading order that actually matches execution order)
 df |>
-	fn() ~
-	x
+  fn() ~
+  x
 df |>
-	fn() >
-	x
+  fn() >
+  x
 df |>
-	fn() >=
-	x
+  fn() >=
+  x
 df |>
-	fn() <
-	x
+  fn() <
+  x
 df |>
-	fn() <=
-	x
+  fn() <=
+  x
 df |>
-	fn() ==
-	x
+  fn() ==
+  x
 df |>
-	fn() !=
-	x
+  fn() !=
+  x
 # Note that `~` is lower precedence than `&`, so it belongs in this section!
 df &
-	fn() ~
-	x
+  fn() ~
+  x
 
 # Chaining operator with low precedence does not force non-chaining operator to
 # expand (because non-chaining operator does happen first!)
 df &
-	fn() > x
+  fn() > x
 df &
-	fn() >= x
+  fn() >= x
 df &
-	fn() < x
+  fn() < x
 df &
-	fn() <= x
+  fn() <= x
 df &
-	fn() == x
+  fn() == x
 df &
-	fn() != x
+  fn() != x
 
 # User requested line break not respected for non-chainable items
 # (This is debatable, but I see no need to enable it right now)
@@ -696,215 +696,215 @@ a == b
 
 # Chaining same operator
 a_really_really_long_thing_here1 +
-	a_really_really_long_thing_here2 +
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 +
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 -
-	a_really_really_long_thing_here2 -
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 -
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 *
-	a_really_really_long_thing_here2 *
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 *
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 /
-	a_really_really_long_thing_here2 /
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 /
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 &
-	a_really_really_long_thing_here2 &
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 &
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 |
-	a_really_really_long_thing_here2 |
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 |
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 &&
-	a_really_really_long_thing_here2 &&
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 &&
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 ||
-	a_really_really_long_thing_here2 ||
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 ||
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 |>
-	a_really_really_long_thing_here2 |>
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 |>
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 %>%
-	a_really_really_long_thing_here2 %>%
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 %>%
+  a_really_really_long_thing_here3
 
 # Chaining mixed operator, same precedence group
 a_really_really_long_thing_here1 +
-	a_really_really_long_thing_here2 -
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 -
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 -
-	a_really_really_long_thing_here2 +
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 +
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 *
-	a_really_really_long_thing_here2 /
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 /
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 /
-	a_really_really_long_thing_here2 *
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 *
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 |>
-	a_really_really_long_thing_here2 %>%
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 %>%
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 %>%
-	a_really_really_long_thing_here2 |>
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 |>
+  a_really_really_long_thing_here3
 
 # TODO: Do we really want these chained? It seems like no good can come of that even though they have same precedence
 a_really_really_long_thing_here1 &
-	a_really_really_long_thing_here2 &&
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 &&
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 |
-	a_really_really_long_thing_here2 ||
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 ||
+  a_really_really_long_thing_here3
 
 # Continuous chaining as long as precedence is high -> low from left -> right
 # (e.g. `*` > `+` in terms of precedence, so keep chaining)
 a_really_really_long_thing_here1 *
-	a_really_really_long_thing_here2 +
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 +
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 &
-	a_really_really_long_thing_here2 |
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 |
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 &&
-	a_really_really_long_thing_here2 ||
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 ||
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 %>%
-	a_really_really_long_thing_here2 +
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 +
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 %>%
-	a_really_really_long_thing_here2 *
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 *
+  a_really_really_long_thing_here3
 
 # Chaining breaks when precedence goes from low -> high at any point from
 # left -> right (e.g. `+` < `*` in terms of precedence, so we break)
 a_really_really_long_thing_here1 +
-	a_really_really_long_thing_here2 * a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 * a_really_really_long_thing_here3
 a_really_really_long_thing_here1 |
-	a_really_really_long_thing_here2 & a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 & a_really_really_long_thing_here3
 a_really_really_long_thing_here1 ||
-	a_really_really_long_thing_here2 && a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 && a_really_really_long_thing_here3
 a_really_really_long_thing_here1 +
-	a_really_really_long_thing_here2 %>% a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 %>% a_really_really_long_thing_here3
 a_really_really_long_thing_here1 *
-	a_really_really_long_thing_here2 %>% a_really_really_long_thing_here3
+  a_really_really_long_thing_here2 %>% a_really_really_long_thing_here3
 
 # Chaining breaks when precedence goes from low -> high at any point from
 # left -> right (e.g. `+` < `*` in terms of precedence, so we break)
 # AND we get a second indent if the sub group also breaks
 a_really_really_long_thing_here1 +
-	a_really_really_long_thing_here2 *
-		a_really_really_really_really_really_really_really_really_long_thing_here3
+  a_really_really_long_thing_here2 *
+    a_really_really_really_really_really_really_really_really_long_thing_here3
 a_really_really_long_thing_here1 |
-	a_really_really_long_thing_here2 &
-		a_really_really_really_really_really_really_really_really_long_thing_here3
+  a_really_really_long_thing_here2 &
+    a_really_really_really_really_really_really_really_really_long_thing_here3
 a_really_really_long_thing_here1 ||
-	a_really_really_long_thing_here2 &&
-		a_really_really_really_really_really_really_really_really_long_thing_here3
+  a_really_really_long_thing_here2 &&
+    a_really_really_really_really_really_really_really_really_long_thing_here3
 a_really_really_long_thing_here1 +
-	a_really_really_long_thing_here2 %>%
-		a_really_really_really_really_really_really_really_really_long_thing_here3
+  a_really_really_long_thing_here2 %>%
+    a_really_really_really_really_really_really_really_really_long_thing_here3
 a_really_really_long_thing_here1 *
-	a_really_really_long_thing_here2 %>%
-		a_really_really_really_really_really_really_really_really_long_thing_here3
+  a_really_really_long_thing_here2 %>%
+    a_really_really_really_really_really_really_really_really_long_thing_here3
 
 # Chaining fully expands when there is a user requested line break
 # in the higher precedence subgroup
 a +
-	b *
-		c
+  b *
+    c
 a |
-	b &
-		c
+  b &
+    c
 a ||
-	b &&
-		c
+  b &&
+    c
 a +
-	b %>%
-		c
+  b %>%
+    c
 a *
-	b %>%
-		c
+  b %>%
+    c
 
 # Chaining doesn't fully expand when there is a user requested line break
 # in the lower precedence subgroup
 a +
-	b * c
+  b * c
 a |
-	b & c
+  b & c
 a ||
-	b && c
+  b && c
 a +
-	b %>% c
+  b %>% c
 a *
-	b %>% c
+  b %>% c
 
 # With sticky operators
 a_really_really_long_thing_here1 +
-	a_really_really_long_thing_here2**a_really_really_long_thing_here3
+  a_really_really_long_thing_here2**a_really_really_long_thing_here3
 a_really_really_long_thing_here1**a_really_really_long_thing_here2 +
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 *
-	a_really_really_long_thing_here2**a_really_really_long_thing_here3
+  a_really_really_long_thing_here2**a_really_really_long_thing_here3
 a_really_really_long_thing_here1**a_really_really_long_thing_here2 *
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 +
-	a_really_really_long_thing_here2:a_really_really_long_thing_here3
+  a_really_really_long_thing_here2:a_really_really_long_thing_here3
 a_really_really_long_thing_here1:a_really_really_long_thing_here2 +
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here3
 a_really_really_long_thing_here1 *
-	a_really_really_long_thing_here2:a_really_really_long_thing_here3
+  a_really_really_long_thing_here2:a_really_really_long_thing_here3
 a_really_really_long_thing_here1:a_really_really_long_thing_here2 *
-	a_really_really_long_thing_here3
+  a_really_really_long_thing_here3
 
 # The `*` in the middle splits the `+` chain
 a_really_really_long_thing_here1 +
-	a_really_really_long_thing_here2 * a_really_really_long_thing_here3 +
-	a_really_really_long_thing_here1
+  a_really_really_long_thing_here2 * a_really_really_long_thing_here3 +
+  a_really_really_long_thing_here1
 
 # The user line break after the `*` is respected
 # Note how we use indents to show how the LHS/RHS of `*`
 # are grouped even with the user line break, and then dedent
 # before printing `a_really_really_long_thing_here4`
 a_really_really_long_thing_here1 +
-	a_really_really_long_thing_here2 *
-		a_really_really_long_thing_here3 +
-	a_really_really_long_thing_here4
+  a_really_really_long_thing_here2 *
+    a_really_really_long_thing_here3 +
+  a_really_really_long_thing_here4
 
 # -----------------------------------------------------------------------------
 # Binary expression conditionals in if statements
 
 # It fits, nothing to do
 if (long_conditional1 && long_conditional2) {
-	1 + 1
+  1 + 1
 }
 
 # User requested break
 if (
-	long_conditional1 &&
-		long_conditional2
+  long_conditional1 &&
+    long_conditional2
 ) {
-	1 + 1
+  1 + 1
 }
 
 # User requested break, parentheses prevent further splitting
 if (
-	long_conditional1 &&
-		(long_conditional2 || long_conditional3)
+  long_conditional1 &&
+    (long_conditional2 || long_conditional3)
 ) {
-	1 + 1
+  1 + 1
 }
 
 # Not a user respected break because it comes before the `&&`,
 # and we require it to come after
 if (long_conditional1 && long_conditional2) {
-	1 + 1
+  1 + 1
 }
 
 if (
-	long_conditional1 &&
-		long_conditional2 &&
-		long_conditional3 &&
-		long_conditional4 &&
-		long_conditional5
+  long_conditional1 &&
+    long_conditional2 &&
+    long_conditional3 &&
+    long_conditional4 &&
+    long_conditional5
 ) {
-	1 + 1
+  1 + 1
 }
 
 # -----------------------------------------------------------------------------
@@ -915,9 +915,9 @@ if (
 df |> foo() |> bar() |> baz()
 
 df |>
-	foo() |>
-	bar() |>
-	baz()
+  foo() |>
+  bar() |>
+  baz()
 
 df |> foo() |> bar() |> baz()
 
@@ -931,18 +931,18 @@ df |> foo() |> bar() |> baz()
 
 # Works with mixed binary operator types
 df |>
-	foo() %>%
-	bar() |>
-	baz()
+  foo() %>%
+  bar() |>
+  baz()
 
 # One line
 df |> ggplot() + geom_line() + geom_bar()
 
 # Expansion requested
 df |>
-	ggplot() +
-	geom_line() +
-	geom_bar()
+  ggplot() +
+  geom_line() +
+  geom_bar()
 
 # Flattened, this is one big chain due to monotonically decreasing
 # precedence, so user requested expansion only applies to 1st operator
@@ -954,40 +954,40 @@ df |> ggplot() + geom_line() + geom_bar()
 
 # Non-binary operators break the expansion propagation
 (df |> foo()) |>
-	bar() |>
-	baz() |>
-	{
-		. |> and() |> this()
-	}
+  bar() |>
+  baz() |>
+  {
+    . |> and() |> this()
+  }
 
 (df |> foo()) |>
-	bar() |>
-	baz() |>
-	{
-		. |>
-			and() |>
-			this()
-	}
+  bar() |>
+  baz() |>
+  {
+    . |>
+      and() |>
+      this()
+  }
 
 (1 + 2 * 3) +
-	(4 + 5 * 6) +
-	(7 + 8)
+  (4 + 5 * 6) +
+  (7 + 8)
 
 # Sticky binary operators break the expansion propagation
 # (`2:3` stays together, `6^7` stays together)
 1 +
-	2:3 +
-	4 +
-	5 +
-	6^7 +
-	8 +
-	9
+  2:3 +
+  4 +
+  5 +
+  6^7 +
+  8 +
+  9
 
 # Precedence is taken into account correctly
 1:2 + 3
 
 1:2 +
-	3
+  3
 
 # Inside parentheses, subset, or, subset2, you can put a newline before
 # the `|>`, which isn't valid R code at top level. This doesn't result
@@ -1001,18 +1001,18 @@ x[[df |> foo()]]
 
 # This does retain the break, because it comes after the pipe
 (
-	df |>
-		foo()
+  df |>
+    foo()
 )
 
 x[
-	df |>
-		foo()
+  df |>
+    foo()
 ]
 
 x[[
-	df |>
-		foo()
+  df |>
+    foo()
 ]]
 
 # -----------------------------------------------------------------------------
@@ -1023,14 +1023,14 @@ x[[
 # and between sequential arguments in calls.
 # This is common with pipelines.
 df |>
-	a() |>
+  a() |>
 
-	# Some important notes about this complex call
-	b() |>
+  # Some important notes about this complex call
+  b() |>
 
-	# Some more important notes
-	c() |>
-	d()
+  # Some more important notes
+  c() |>
+  d()
 
 # -----------------------------------------------------------------------------
 # Comments in chains
@@ -1039,37 +1039,37 @@ df |> foo() # Trailing of `df |> foo()` pipe chain
 
 # Leading of `df |> foo() |> bar() |> baz()` pipe chain
 df |>
-	foo() |>
-	bar() |>
-	baz()
+  foo() |>
+  bar() |>
+  baz()
 
 df |>
-	# Leading of `foo()` call
-	foo() |>
-	# Leading of `bar()` call
-	bar() |>
-	# Leading of `baz()` call
-	baz()
+  # Leading of `foo()` call
+  foo() |>
+  # Leading of `bar()` call
+  bar() |>
+  # Leading of `baz()` call
+  baz()
 
 df |> # Trailing of `df` identifier
-	foo() |>
-	bar() |>
-	baz()
+  foo() |>
+  bar() |>
+  baz()
 
 df |>
-	foo() |> # Trailing of `df |> foo()` pipe chain
-	bar() |>
-	baz()
+  foo() |> # Trailing of `df |> foo()` pipe chain
+  bar() |>
+  baz()
 
 df |>
-	foo() |>
-	bar() |> # Trailing of `df |> foo() |> bar()` pipe chain
-	baz()
+  foo() |>
+  bar() |> # Trailing of `df |> foo() |> bar()` pipe chain
+  baz()
 
 df |>
-	foo() |>
-	bar() |>
-	baz() # Trailing of `df |> foo() |> bar() |> baz()` pipe chain
+  foo() |>
+  bar() |>
+  baz() # Trailing of `df |> foo() |> bar() |> baz()` pipe chain
 
 # -----------------------------------------------------------------------------
 # Mixing pipes and pluses
@@ -1079,23 +1079,23 @@ df |>
 # We don't add an extra level of indent after the first `+`,
 # it is specially treated as being within the same group as the `|>`
 df |>
-	ggplot() +
-	geom_line() +
-	geom_bar()
+  ggplot() +
+  geom_line() +
+  geom_bar()
 
 df %>%
-	ggplot() +
-	geom_line() +
-	geom_bar()
+  ggplot() +
+  geom_line() +
+  geom_bar()
 
 # Piping OUT of a `+` chain should add an extra indent.
 # This is illogical behavior, it results in `identity(geom_bar())`, which is
 # definitely not what the user wants, so the extra indent is a good thing
 # as it proves that you've entered a different "group".
 ggplot() +
-	geom_line() +
-	geom_bar() %>%
-		identity()
+  geom_line() +
+  geom_bar() %>%
+    identity()
 
 # -----------------------------------------------------------------------------
 # Assignment
@@ -1103,20 +1103,20 @@ ggplot() +
 # The following assignments should start the LHS/RHS on the same
 # line as the operator
 fn = function(x) {
-	x
+  x
 }
 fn <- function(x) {
-	x
+  x
 }
 fn <<- function(x) {
-	x
+  x
 }
 
 # Assignment comment tests
 fn <- function(x) {
-	# comment1
-	# comment2
-	x # comment3
+  # comment1
+  # comment2
+  x # comment3
 } # comment4
 
 identity(1) -> x
@@ -1127,16 +1127,16 @@ identity(1) ->> x
 
 # Magic line break after the left assignment
 fn =
-	value
+  value
 fn <-
-	value
+  value
 fn <<-
-	value
+  value
 
 # Important that comment3 trails `value` here!
 fn <- # comment1
-	# comment2
-	value # comment3
+  # comment2
+  value # comment3
 
 # No magic line break after walrus operator
 fn := value
@@ -1151,18 +1151,18 @@ fn ->> value
 
 # https://github.com/posit-dev/air/issues/91
 is_condition_true <-
-	if (condition) {
-		"yes"
-	} else {
-		"no"
-	}
+  if (condition) {
+    "yes"
+  } else {
+    "no"
+  }
 
 # https://github.com/posit-dev/air/issues/91
 base_version <-
-	version %||%
-		b_get(brand, "defaults", "shiny", "theme", "version") %||%
-		b_get(brand, "defaults", "bootstrap", "version") %||%
-		version_default()
+  version %||%
+    b_get(brand, "defaults", "shiny", "theme", "version") %||%
+    b_get(brand, "defaults", "bootstrap", "version") %||%
+    version_default()
 ```
 
 # Lines exceeding max width of 80 characters

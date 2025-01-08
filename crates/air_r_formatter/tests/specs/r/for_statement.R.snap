@@ -27,8 +27,8 @@ for (
 ## Output 1
 
 -----
-Indent style: Tab
-Indent width: 4
+Indent style: Space
+Indent width: 2
 Line ending: LF
 Line width: 80
 -----
@@ -37,13 +37,13 @@ Line width: 80
 for (x in y) x + y
 
 for (a_really_long_argument_name in but_we_dont_ever_break_inside_for_conditions_no_matter_how_long)
-	1
+  1
 
 # own-line comments get lifted up
 # comment1
 # comment2
 for (a in 1) # comment3
-	a
+  a
 ```
 
 # Lines exceeding max width of 80 characters

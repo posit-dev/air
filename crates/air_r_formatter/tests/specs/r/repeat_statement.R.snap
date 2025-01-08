@@ -57,8 +57,8 @@ repeat # comment1
 ## Output 1
 
 -----
-Indent style: Tab
-Indent width: 4
+Indent style: Space
+Indent width: 2
 Line ending: LF
 Line width: 80
 -----
@@ -70,42 +70,42 @@ repeat {
 }
 
 repeat {
-	# a comment
+  # a comment
 }
 
 repeat {
-	# comment1
-	# comment2
-	1 + 1
+  # comment1
+  # comment2
+  1 + 1
 }
 
 repeat {
-	# comment1
-	# comment2
-	1 + 1
+  # comment1
+  # comment2
+  1 + 1
 }
 
 repeat {
-	# comment1
+  # comment1
 }
 
 repeat {
-	# comment1
-	# comment2
+  # comment1
+  # comment2
 }
 
 repeat {
-	# comment1
-	1 + 1
+  # comment1
+  1 + 1
 }
 
 # comment1
 repeat {
-	# comment2
-	1 + 1
+  # comment2
+  1 + 1
 }
 
 repeat
-	# comment1
-	1
+  # comment1
+  1
 ```

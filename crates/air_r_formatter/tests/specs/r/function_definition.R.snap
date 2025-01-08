@@ -140,8 +140,8 @@ map(xs, function(x,
 ## Output 1
 
 -----
-Indent style: Tab
-Indent width: 4
+Indent style: Space
+Indent width: 2
 Line ending: LF
 Line width: 80
 -----
@@ -151,50 +151,50 @@ function() 1
 function(a, b) 1
 
 function(
-	a_really_long_argument_name_to_break_on,
-	and_here_is_another_one_please_break_me,
-	and_this
+  a_really_long_argument_name_to_break_on,
+  and_here_is_another_one_please_break_me,
+  and_this
 ) 1
 
 function(a_really_long_argument_name_to_break_on, and_this)
-	a_really_long_argument_name_to_break_on
+  a_really_long_argument_name_to_break_on
 
 function(
-	a = {
-		1
-	},
-	b
+  a = {
+    1
+  },
+  b
 ) {
-	1
+  1
 }
 
 function() {
-	# comment
+  # comment
 }
 
 function() {
-	# becomes leading on `1 + 1`
-	1 + 1
+  # becomes leading on `1 + 1`
+  1 + 1
 }
 
 function() {
-	# becomes leading on `1 + 1`
-	# an inner comment
-	1 + 1
+  # becomes leading on `1 + 1`
+  # an inner comment
+  1 + 1
 }
 
 function() {
-	# becomes dangling on the `{}`
+  # becomes dangling on the `{}`
 }
 
 function() {
-	# becomes dangling on the `{}`
-	# an inner comment but empty `{}`
+  # becomes dangling on the `{}`
+  # an inner comment but empty `{}`
 }
 
 function()
-	# becomes leading on `1 + 1`
-	1 + 1
+  # becomes leading on `1 + 1`
+  1 + 1
 
 \(x, y) 1
 
@@ -205,55 +205,55 @@ function()
 
 # So this function definition stays expanded even though it fits on one line
 fn <- function(
-	a,
-	b
+  a,
+  b
 ) {
-	body
+  body
 }
 
 # This flattens to one line
 fn <- function(a, b) {
-	body
+  body
 }
 
 # This flattens to one line
 fn <- function(a, b) {
-	body
+  body
 }
 
 # Expansion doesn't propagate to the `c(1, 2, 3)`
 fn <- function(
-	a,
-	b = c(1, 2, 3)
+  a,
+  b = c(1, 2, 3)
 ) {
-	body
+  body
 }
 
 # Dots - this expands
 fn <- function(
-	...,
-	a,
-	b
+  ...,
+  a,
+  b
 ) {
-	body
+  body
 }
 
 # Dots - this flattens
 fn <- function(..., a, b) {
-	body
+  body
 }
 
 # User requested expansion of the `c()` call forces expansion of
 # the entire function definition
 fn <- function(
-	a,
-	b = c(
-		1,
-		2,
-		3
-	)
+  a,
+  b = c(
+    1,
+    2,
+    3
+  )
 ) {
-	body
+  body
 }
 
 # ------------------------------------------------------------------------
@@ -264,25 +264,25 @@ fn <- function(
 # This user line break expands the function definition, causing the whole
 # `map()` to expand
 map(
-	xs,
-	function(
-		x,
-		option = "a"
-	) {
-		x
-	}
+  xs,
+  function(
+    x,
+    option = "a"
+  ) {
+    x
+  }
 )
 
 # This flattens the function definition, but the `map()` stays expanded
 map(
-	xs,
-	function(x, option = "a") {
-		x
-	}
+  xs,
+  function(x, option = "a") {
+    x
+  }
 )
 
 # This flattens to one line
 map(xs, function(x, option = "a") {
-	x
+  x
 })
 ```
