@@ -1,3 +1,10 @@
+//
+// toml.rs
+//
+// Copyright (C) 2025 Posit Software, PBC. All rights reserved.
+//
+//
+
 //! Utilities for locating (and extracting configuration from) an air.toml.
 
 use crate::toml_options::TomlOptions;

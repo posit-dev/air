@@ -1,3 +1,10 @@
+//
+// magic_line_break.rs
+//
+// Copyright (C) 2025 Posit Software, PBC. All rights reserved.
+//
+//
+
 use std::fmt::Display;
 use std::str::FromStr;
 

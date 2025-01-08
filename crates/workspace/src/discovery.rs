@@ -1,3 +1,10 @@
+//
+// discovery.rs
+//
+// Copyright (C) 2025 Posit Software, PBC. All rights reserved.
+//
+//
+
 use ignore::DirEntry;
 use rustc_hash::FxHashSet;
 use std::path::Path;

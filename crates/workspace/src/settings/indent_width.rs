@@ -1,3 +1,10 @@
+//
+// indent_width.rs
+//
+// Copyright (C) 2025 Posit Software, PBC. All rights reserved.
+//
+//
+
 use std::fmt;
 use std::num::NonZeroU8;
 

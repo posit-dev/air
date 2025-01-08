@@ -1,3 +1,10 @@
+//
+// settings.rs
+//
+// Copyright (C) 2025 Posit Software, PBC. All rights reserved.
+//
+//
+
 mod indent_style;
 mod indent_width;
 // TODO: Can we pick a better crate name for `line_ending` so these don't collide?

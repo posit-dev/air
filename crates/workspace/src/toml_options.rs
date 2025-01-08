@@ -1,3 +1,10 @@
+//
+// toml_options.rs
+//
+// Copyright (C) 2025 Posit Software, PBC. All rights reserved.
+//
+//
+
 use crate::settings::FormatSettings;
 use crate::settings::IndentStyle;
 use crate::settings::IndentWidth;

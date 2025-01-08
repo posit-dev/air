@@ -1,3 +1,10 @@
+//
+// line_length.rs
+//
+// Copyright (C) 2025 Posit Software, PBC. All rights reserved.
+//
+//
+
 use std::fmt;
 use std::num::NonZeroU16;
 

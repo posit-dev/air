@@ -1,3 +1,10 @@
+//
+// workspaces.rs
+//
+// Copyright (C) 2025 Posit Software, PBC. All rights reserved.
+//
+//
+
 use std::path::Path;
 use std::path::PathBuf;
 

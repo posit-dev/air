@@ -1,3 +1,10 @@
+//
+// resolve.rs
+//
+// Copyright (C) 2025 Posit Software, PBC. All rights reserved.
+//
+//
+
 use std::collections::btree_map::Keys;
 use std::collections::btree_map::Range;
 use std::collections::btree_map::RangeMut;
