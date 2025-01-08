@@ -1,3 +1,10 @@
+//
+// capabilities.rs
+//
+// Copyright (C) 2025 Posit Software, PBC. All rights reserved.
+//
+//
+
 use tower_lsp::lsp_types::ClientCapabilities;
 use tower_lsp::lsp_types::PositionEncodingKind;
 
