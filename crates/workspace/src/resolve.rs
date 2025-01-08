@@ -20,6 +20,24 @@ pub struct PathResolver<T> {
     map: BTreeMap<PathBuf, T>,
 }
 
+pub struct PathResolution<'resolver, T> {
+    /// The `path` in the tree that was closest to the path provided in [`PathResolver::resolve`]
+    path: &'resolver PathBuf,
+
+    /// The `value` in the tree that matches the path provided in [`PathResolver::resolve`]
+    value: &'resolver T,
+}
+
+impl<'resolver, T> PathResolution<'resolver, T> {
+    pub fn path(&self) -> &'resolver PathBuf {
+        self.path
+    }
+
+    pub fn value(&self) -> &'resolver T {
+        self.value
+    }
+}
+
 impl<T> PathResolver<T> {
     /// Create a new empty [`PathResolver`]
     pub fn new(fallback: T) -> Self {
@@ -73,21 +91,17 @@ impl<T> PathResolver<T> {
     /// Then it detects both `"a/b"` and `"a/b/c"` as being "less than" the path of
     /// `"a/b/c/test.R"`, and then chooses `"a/b/c"` because it is at the back of
     /// that returned sorted list (i.e. the "closest" match).
-    pub fn resolve(&self, path: &Path) -> Option<&T> {
-        self.resolve_entry(path).map(|(_, value)| value)
+    pub fn resolve(&self, path: &Path) -> Option<PathResolution<T>> {
+        self.matches(path)
+            .next_back()
+            .map(|(path, value)| PathResolution { path, value })
     }
 
-    /// Same as `resolve()`, but returns the internal `fallback` if no associated value
-    /// is found.
+    /// Convenience method when you don't care about manually handling the fallback
+    /// case and don't need the matched path in the tree
     pub fn resolve_or_fallback(&self, path: &Path) -> &T {
-        self.resolve(path).unwrap_or(self.fallback())
-    }
-
-    /// Same as `resolve()`, but returns the `(key, value)` pair.
-    ///
-    /// Useful when you need the matched workspace path
-    pub fn resolve_entry(&self, path: &Path) -> Option<(&PathBuf, &T)> {
-        self.matches(path).next_back()
+        self.resolve(path)
+            .map_or_else(|| self.fallback(), |resolution| resolution.value())
     }
 
     /// Returns all matches matched by the `path` rather than just the closest one

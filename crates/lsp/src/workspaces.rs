@@ -11,12 +11,21 @@ use workspace::settings::Settings;
 /// Convenience type for the inner resolver of path -> [`Settings`]
 type SettingsResolver = PathResolver<Settings>;
 
-/// Resolver for retrieving [`Settings`] associated with a workspace specific [`Path`]
+/// Resolver for retrieving [`WorkspaceSettings`] associated with a workspace specific [`Path`]
 #[derive(Debug, Default)]
 pub(crate) struct WorkspaceSettingsResolver {
     /// Resolves a `path` to the closest workspace specific `SettingsResolver`.
     /// That `SettingsResolver` can then return `Settings` for the `path`.
     path_to_settings_resolver: PathResolver<SettingsResolver>,
+}
+
+/// Resolved [`WorkspaceSettings`] for a workspace specific [`Path`]
+pub(crate) enum WorkspaceSettings<'resolver> {
+    /// Contains the [`Settings`] associated with a given [`Path`]
+    Found(&'resolver Settings),
+
+    /// Contains fallback [`Settings`]
+    NotFound(&'resolver Settings),
 }
 
 impl WorkspaceSettingsResolver {
@@ -111,8 +120,8 @@ impl WorkspaceSettingsResolver {
         self.path_to_settings_resolver.len()
     }
 
-    /// Return the appropriate [`Settings`] for a given document [`Url`].
-    pub(crate) fn settings_for_url(&self, url: &Url) -> &Settings {
+    /// Return the appropriate [`WorkspaceSettings`] for a given document [`Url`].
+    pub(crate) fn settings_for_url(&self, url: &Url) -> WorkspaceSettings {
         if let Ok(Some(path)) = Self::url_to_path(url) {
             return self.settings_for_path(&path);
         }
@@ -128,7 +137,7 @@ impl WorkspaceSettingsResolver {
         }
 
         tracing::trace!("Using default settings for non-file URL: {url}");
-        self.path_to_settings_resolver.fallback().fallback()
+        WorkspaceSettings::NotFound(self.path_to_settings_resolver.fallback().fallback())
     }
 
     /// Reloads all workspaces matched by the [`Url`]
@@ -180,16 +189,25 @@ impl WorkspaceSettingsResolver {
         }
     }
 
-    /// Return the appropriate [`Settings`] for a given [`Path`].
+    /// Return the appropriate [`WorkspaceSettings`] for a given [`Path`].
     ///
     /// This actually performs a double resolution. It first resolves to the
     /// workspace specific `SettingsResolver` that matches this path, and then uses that
     /// resolver to actually resolve the `Settings` for this path. We do it this way
     /// to ensure we can easily add and remove workspaces (including all of their
     /// hierarchical paths).
-    fn settings_for_path(&self, path: &Path) -> &Settings {
-        let settings_resolver = self.path_to_settings_resolver.resolve_or_fallback(path);
-        settings_resolver.resolve_or_fallback(path)
+    fn settings_for_path(&self, path: &Path) -> WorkspaceSettings {
+        self.path_to_settings_resolver
+            .resolve(path)
+            .and_then(|resolution| resolution.value().resolve(path))
+            .map_or_else(
+                || {
+                    WorkspaceSettings::NotFound(
+                        self.path_to_settings_resolver.fallback().fallback(),
+                    )
+                },
+                |resolution| WorkspaceSettings::Found(resolution.value()),
+            )
     }
 
     fn url_to_path(url: &Url) -> anyhow::Result<Option<PathBuf>> {

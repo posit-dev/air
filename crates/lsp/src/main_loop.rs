@@ -33,6 +33,7 @@ use crate::tower_lsp::LspMessage;
 use crate::tower_lsp::LspNotification;
 use crate::tower_lsp::LspRequest;
 use crate::tower_lsp::LspResponse;
+use crate::workspaces::WorkspaceSettings;
 use crate::workspaces::WorkspaceSettingsResolver;
 
 pub(crate) type TokioUnboundedSender<T> = tokio::sync::mpsc::UnboundedSender<T>;
@@ -180,7 +181,14 @@ impl Default for LspState {
 
 impl LspState {
     pub(crate) fn document_settings(&self, url: &Url) -> &Settings {
-        self.workspace_settings_resolver.settings_for_url(url)
+        let workspace_settings = self.workspace_settings_resolver.settings_for_url(url);
+
+        // TODO: In the `NotFound` case, layer in client provided document specific
+        // settings on top of the `fallback_settings`
+        match workspace_settings {
+            WorkspaceSettings::Found(settings) => settings,
+            WorkspaceSettings::NotFound(fallback_settings) => fallback_settings,
+        }
     }
 
     pub(crate) fn open_workspace_folder(&mut self, url: &Url) {
