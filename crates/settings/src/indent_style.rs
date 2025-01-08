@@ -16,9 +16,9 @@ use std::str::FromStr;
 )]
 pub enum IndentStyle {
     /// Tab
-    #[default]
     Tab,
     /// Space
+    #[default]
     Space,
 }
 

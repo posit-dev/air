@@ -54,7 +54,8 @@ pub struct FormatTomlOptions {
 
     /// The number of spaces per indentation level (tab).
     ///
-    /// The value must be greater than or equal to `1` and less than or equal to `24`.
+    /// The value must be greater than or equal to `1` and less than or equal to `24`. The
+    /// default value is `2`.
     ///
     /// Used by the formatter to determine the visual width of a tab.
     ///
@@ -65,23 +66,24 @@ pub struct FormatTomlOptions {
 
     /// Whether to use spaces or tabs for indentation.
     ///
-    /// `indent-style = "tab"` (default):
+    /// `indent-style = "space"` (default):
     ///
     /// ```r
     /// fn <- function() {
-    ///     cat("Hello") # A tab `\t` indents the `cat()` call.
+    ///   cat("Hello") # Spaces indent the `cat()` call.
     /// }
     /// ```
     ///
-    /// `indent-style = "space"`:
+    /// `indent-style = "tab"`:
     ///
     /// ```r
     /// fn <- function() {
-    ///     cat("Hello") # Spaces indent the `cat()` call.
+    ///   cat("Hello") # A tab `\t` indents the `cat()` call.
     /// }
     /// ```
     ///
-    /// We recommend you use tabs for accessibility.
+    /// Air defaults to spaces due to the overwhelming amount of existing R code written
+    /// in this style, but consider using tabs for new projects to improve accessibility.
     ///
     /// See `indent-width` to configure the number of spaces per indentation and the tab width.
     pub indent_style: Option<IndentStyle>,
