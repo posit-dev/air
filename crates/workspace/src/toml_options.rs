@@ -34,9 +34,15 @@ pub struct TomlOptions {
     pub format: Option<FormatTomlOptions>,
 }
 
+// NOTE: Just a placeholder for now, we don't currently have any global settings
 #[derive(Clone, Debug, PartialEq, Eq, Default, serde::Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
-pub struct GlobalTomlOptions {
+pub struct GlobalTomlOptions {}
+
+/// Configures the way air formats your code.
+#[derive(Clone, Debug, PartialEq, Eq, Default, serde::Deserialize)]
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+pub struct FormatTomlOptions {
     /// The line width at which the formatter prefers to wrap lines.
     ///
     /// The value must be greater than or equal to `1` and less than or equal to `320`.
@@ -56,12 +62,7 @@ pub struct GlobalTomlOptions {
     /// using `indent-style = "space"`. It also represents the width of a tab when
     /// `indent-style = "tab"` for the purposes of computing the `line-width`.
     pub indent_width: Option<IndentWidth>,
-}
 
-/// Configures the way air formats your code.
-#[derive(Clone, Debug, PartialEq, Eq, Default, serde::Deserialize)]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
-pub struct FormatTomlOptions {
     /// Whether to use spaces or tabs for indentation.
     ///
     /// `indent-style = "tab"` (default):
@@ -108,9 +109,9 @@ impl TomlOptions {
 
         let format = FormatSettings {
             indent_style: format.indent_style.unwrap_or_default(),
-            indent_width: self.global.indent_width.unwrap_or_default(),
+            indent_width: format.indent_width.unwrap_or_default(),
             line_ending: format.line_ending.unwrap_or_default(),
-            line_width: self.global.line_width.unwrap_or_default(),
+            line_width: format.line_width.unwrap_or_default(),
             magic_line_break: match format.ignore_magic_line_break {
                 Some(ignore_magic_line_break) => {
                     if ignore_magic_line_break {

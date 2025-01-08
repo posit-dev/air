@@ -74,15 +74,16 @@ mod tests {
     use tempfile::TempDir;
 
     use crate::settings::LineEnding;
+    use crate::settings::LineWidth;
     use crate::toml::find_air_toml;
     use crate::toml::parse_air_toml;
+    use crate::toml_options::GlobalTomlOptions;
     use crate::toml_options::TomlOptions;
 
     #[test]
     fn deserialize_empty() -> Result<()> {
         let options: TomlOptions = toml::from_str(r"")?;
-        assert_eq!(options.global.indent_width, None);
-        assert_eq!(options.global.line_width, None);
+        assert_eq!(options.global, GlobalTomlOptions {});
         assert_eq!(options.format, None);
         Ok(())
     }
@@ -94,9 +95,8 @@ mod tests {
         fs::write(
             toml,
             r#"
-line-width = 88
-
 [format]
+line-width = 88
 line-ending = "auto"
 "#,
         )?;
@@ -104,12 +104,21 @@ line-ending = "auto"
         let toml = find_air_toml(tempdir.path()).context("Failed to find air.toml")?;
         let options = parse_air_toml(toml)?;
 
+        let line_width = options
+            .format
+            .as_ref()
+            .context("Expected to find [format] table")?
+            .line_width
+            .context("Expected to find `line-width` field")?;
+
         let line_ending = options
             .format
+            .as_ref()
             .context("Expected to find [format] table")?
             .line_ending
             .context("Expected to find `line-ending` field")?;
 
+        assert_eq!(line_width, LineWidth::try_from(88).unwrap());
         assert_eq!(line_ending, LineEnding::Auto);
 
         Ok(())
