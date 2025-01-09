@@ -39,7 +39,7 @@
 			"properties": {
 				"air.logLevel": {
 					"default": null,
-					"markdownDescription": "Controls the log level of the language server.\n\n**This setting requires a restart to take effect.**",
+					"markdownDescription": "Controls the log level of the language server.",
 					"enum": [
 					  "error",
 					  "warning",
@@ -52,7 +52,7 @@
 				},
 				"air.dependencyLogLevels": {
 					"default": null,
-					"markdownDescription": "Controls the log level of the Rust crates that the language server depends on.\n\n**This setting requires a restart to take effect.**",
+					"markdownDescription": "Controls the log level of the Rust crates that the language server depends on.",
 					"scope": "application",
 					"type": "string"
 				}
