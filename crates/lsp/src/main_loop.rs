@@ -26,8 +26,9 @@ use crate::handlers_ext;
 use crate::handlers_format;
 use crate::handlers_state;
 use crate::handlers_state::ConsoleInputs;
+use crate::logging;
 use crate::logging::LogMessageSender;
-use crate::logging::LogState;
+use crate::logging::LogThreadState;
 use crate::state::WorldState;
 use crate::tower_lsp::LspMessage;
 use crate::tower_lsp::LspNotification;
@@ -145,7 +146,7 @@ pub(crate) struct GlobalState {
     /// Log state that gets moved to the log thread,
     /// and a channel for communicating with that thread which we
     /// pass on to `init_logging()` during `initialize()`.
-    log_state: Option<LogState>,
+    log_thread_state: Option<LogThreadState>,
     log_tx: Option<LogMessageSender>,
 }
 
@@ -165,6 +166,9 @@ pub(crate) struct LspState {
 
     /// List of client capabilities that we care about
     pub(crate) capabilities: ResolvedClientCapabilities,
+
+    /// State used to dynamically update the log level
+    pub(crate) log_state: Option<logging::LogState>,
 }
 
 impl Default for LspState {
@@ -175,6 +179,7 @@ impl Default for LspState {
             position_encoding: PositionEncoding::Wide(WideEncoding::Utf16),
             parsers: Default::default(),
             capabilities: ResolvedClientCapabilities::default(),
+            log_state: None,
         }
     }
 }
@@ -232,7 +237,7 @@ impl GlobalState {
         // tower-lsp backend and the Jupyter kernel.
         let (events_tx, events_rx) = tokio_unbounded_channel::<Event>();
 
-        let (log_state, log_tx) = LogState::new(client.clone());
+        let (log_thread_state, log_tx) = LogThreadState::new(client.clone());
         let (auxiliary_state, auxiliary_event_tx) = AuxiliaryState::new(client.clone());
 
         let state = Self {
@@ -242,7 +247,7 @@ impl GlobalState {
             events_rx,
             auxiliary_state: Some(auxiliary_state),
             auxiliary_event_tx,
-            log_state: Some(log_state),
+            log_thread_state: Some(log_thread_state),
             log_tx: Some(log_tx),
         };
 
@@ -270,10 +275,10 @@ impl GlobalState {
         // Spawn latency-sensitive auxiliary and log threads.
         let mut set = tokio::task::JoinSet::<()>::new();
 
-        // Take ownership over `log_state` and start the log thread.
+        // Take ownership over `log_thread_state` and start the log thread.
         // Unwrap: `start()` should only be called once.
-        let log_state = self.log_state.take().unwrap();
-        set.spawn(async move { log_state.start().await });
+        let log_thread_state = self.log_thread_state.take().unwrap();
+        set.spawn(async move { log_thread_state.start().await });
 
         // Take ownership over `auxiliary_state` and start the auxiliary thread.
         // Unwrap: `start()` should only be called once.
@@ -326,7 +331,7 @@ impl GlobalState {
                             handlers_state::did_change_workspace_folders(params, &mut self.lsp_state)?;
                         },
                         LspNotification::DidChangeConfiguration(params) => {
-                            handlers_state::did_change_configuration(params, &self.client, &mut self.world).await?;
+                            handlers_state::did_change_configuration(params, &self.client, &mut self.lsp_state, &mut self.world).await?;
                         },
                         LspNotification::DidChangeWatchedFiles(params) => {
                             handlers_state::did_change_watched_files(params, &mut self.lsp_state)?;
