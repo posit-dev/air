@@ -18,8 +18,13 @@ pub fn parse_air_toml<P: AsRef<Path>>(path: P) -> Result<TomlOptions, ParseTomlE
     let contents = std::fs::read_to_string(path.as_ref())
         .map_err(|err| ParseTomlError::Read(path.as_ref().to_path_buf(), err))?;
 
-    toml::from_str(&contents)
+    parse_air_inline_toml(&contents)
         .map_err(|err| ParseTomlError::Deserialize(path.as_ref().to_path_buf(), err))
+}
+
+/// Parse inline toml
+pub fn parse_air_inline_toml(contents: &str) -> Result<TomlOptions, toml::de::Error> {
+    toml::from_str(contents)
 }
 
 #[derive(Debug)]

@@ -76,10 +76,9 @@ pub struct RFormatOptions {
     /// The type of line ending.
     line_ending: LineEnding,
 
-    /// The max width of a line. Defaults to 80.
+    /// The max width of a line.
     line_width: LineWidth,
 
-    // TODO: Actually use this internally!
     /// The behavior of magic line breaks.
     magic_line_break: MagicLineBreak,
 }
@@ -134,6 +133,10 @@ impl RFormatOptions {
 
     pub fn set_magic_line_break(&mut self, magic_line_break: MagicLineBreak) {
         self.magic_line_break = magic_line_break;
+    }
+
+    pub fn magic_line_break(&self) -> MagicLineBreak {
+        self.magic_line_break
     }
 }
 

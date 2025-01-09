@@ -1,3 +1,4 @@
+use crate::context::RFormatOptions;
 use crate::prelude::*;
 use air_r_syntax::RParameterList;
 use air_r_syntax::RParameters;
@@ -22,12 +23,12 @@ impl FormatNodeRule<RParameters> for FormatRParameters {
                 soft_block_indent(&items.format()),
                 r_paren_token.format()
             ])
-            .should_expand(needs_user_requested_expansion(&items))]
+            .should_expand(has_magic_line_break(&items, f.options()))]
         )
     }
 }
 
-/// Check if the user has inserted a leading newline before the very first `parameter`.
+/// Check if the user has inserted a magic line break before the very first `parameter`.
 /// If so, we respect that and treat it as a request to break ALL of the parameters in
 /// this function definition. Note this is a case of irreversible formatting!
 ///
@@ -76,9 +77,10 @@ impl FormatNodeRule<RParameters> for FormatRParameters {
 ///   body
 /// }
 /// ```
-fn needs_user_requested_expansion(items: &RParameterList) -> bool {
-    // TODO: This should be configurable by an option, since it is a case of
-    // irreversible formatting
+fn has_magic_line_break(items: &RParameterList, options: &RFormatOptions) -> bool {
+    if options.magic_line_break().is_ignore() {
+        return false;
+    }
 
     // Dig down to the first parameter
     // (Could be an empty parameter list, and first element could be a syntax error)
