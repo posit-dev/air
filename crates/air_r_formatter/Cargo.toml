@@ -27,6 +27,7 @@ air_r_parser = { workspace = true }
 biome_parser = { workspace = true }
 line_ending = { workspace = true }
 tests_macros = { workspace = true }
+workspace = { workspace = true }
 
 [lints]
 workspace = true
