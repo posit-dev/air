@@ -174,6 +174,7 @@ impl fmt::Display for RFormatOptions {
         writeln!(f, "Indent style: {}", self.indent_style)?;
         writeln!(f, "Indent width: {}", self.indent_width.value())?;
         writeln!(f, "Line ending: {}", self.line_ending)?;
-        writeln!(f, "Line width: {}", self.line_width.value())
+        writeln!(f, "Line width: {}", self.line_width.value())?;
+        writeln!(f, "Magic line break: {}", self.magic_line_break)
     }
 }
