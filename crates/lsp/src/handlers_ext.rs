@@ -46,11 +46,19 @@ pub(crate) fn view_file(params: ViewFileParams, state: &WorldState) -> anyhow::R
         }
 
         ViewFileKind::SyntaxTree => {
+            if doc.parse.has_errors() {
+                return Ok(String::from("*Parse error*"));
+            }
+
             let syntax = doc.syntax();
             Ok(format!("{syntax:#?}"))
         }
 
         ViewFileKind::FormatTree => {
+            if doc.parse.has_errors() {
+                return Ok(String::from("*Parse error*"));
+            }
+
             let line_width = LineWidth::try_from(80).map_err(|err| anyhow::anyhow!("{err}"))?;
 
             let options = RFormatOptions::default()
