@@ -89,6 +89,7 @@ dependencies = [
  "settings",
  "tests_macros",
  "tracing",
+ "workspace",
 ]
 
 [[package]]

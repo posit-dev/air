@@ -3,6 +3,7 @@
 use std::cell::Cell;
 
 use crate::comments::RComments;
+use crate::context::RFormatOptions;
 use crate::prelude::*;
 use crate::r::auxiliary::braced_expressions::as_curly_curly;
 use crate::r::auxiliary::function_definition::FormatFunctionOptions;
@@ -174,9 +175,9 @@ impl Format<RFormatContext> for RCallLikeArguments {
             );
         }
 
-        // Special case where a line break exists between the `l_token` and the
+        // Special case where a magic line break exists between the `l_token` and the
         // first non-hole argument. Treat this as a user request to expand.
-        if needs_user_requested_expansion(&leading_holes, &arguments) {
+        if has_magic_line_break(&leading_holes, &arguments, f.options()) {
             return write!(
                 f,
                 [FormatAllArgsBrokenOut {
@@ -206,10 +207,9 @@ impl Format<RFormatContext> for RCallLikeArguments {
     }
 }
 
-/// Check if the user has inserted a leading newline before the very first
-/// non-hole `argument`. If so, we respect that and treat it as a request to
-/// break ALL of the arguments.
-/// Note this is a case of irreversible formatting!
+/// Check if the user has inserted a magic line break before the very first non-hole
+/// `argument`. If so, we respect that and treat it as a request to break ALL of the
+/// arguments. Note this is a case of irreversible formatting!
 ///
 /// ```r
 /// # Fits on one line, but newline before `bob` forces ALL arguments to break, so it
@@ -244,8 +244,8 @@ impl Format<RFormatContext> for RCallLikeArguments {
 /// dictionary <- list(bob = "burger", dina = "dairy", john = "juice")
 /// ```
 ///
-/// The leading line check is done on the first non-hole argument, so this
-/// is considered a user requested expansion and stays as is because there
+/// The magic line break check is done on the first non-hole argument, so this
+/// is considered a magic line break and stays as is because there
 /// is a leading newline before the `j` argument node.
 ///
 /// ```r
@@ -255,10 +255,10 @@ impl Format<RFormatContext> for RCallLikeArguments {
 /// ]
 /// ```
 ///
-/// This is also considered a user requested expansion. We treat holes as
+/// This is also considered a magic line break. We treat holes as
 /// "invisible" for this check, so if you squint and remove the leading `,`
 /// and there are any leading lines before the first non-hole argument,
-/// that is still considered a user requested expansion, but the `,`s attached
+/// that is still considered a magic line break, but the `,`s attached
 /// to the hole will get moved to hug the `[`.
 ///
 /// ```r
@@ -267,12 +267,14 @@ impl Format<RFormatContext> for RCallLikeArguments {
 ///   by = col
 /// ]
 /// ```
-fn needs_user_requested_expansion(
+fn has_magic_line_break(
     leading_holes: &[FormatCallArgumentHole],
     arguments: &[FormatCallArgument],
+    options: &RFormatOptions,
 ) -> bool {
-    // TODO: This should be configurable by an option, since it is a case of
-    // irreversible formatting
+    if options.magic_line_break().is_ignore() {
+        return false;
+    }
 
     // Do any leading holes have leading lines?
     // We treat leading holes as "invisible" so a leading line in the hole

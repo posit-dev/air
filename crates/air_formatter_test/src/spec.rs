@@ -5,7 +5,7 @@ use biome_formatter::{FormatLanguage, FormatOptions, Printed};
 use biome_parser::AnyParse;
 use biome_rowan::{TextRange, TextSize};
 use std::ops::Range;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 #[derive(Debug)]
 pub struct SpecTestFile<'a> {
@@ -78,7 +78,6 @@ where
     L: TestFormatLanguage,
 {
     test_file: SpecTestFile<'a>,
-    test_directory: PathBuf,
     language: L,
     format_language: L::FormatLanguage,
 }
@@ -89,15 +88,11 @@ where
 {
     pub fn new(
         test_file: SpecTestFile<'a>,
-        test_directory: &str,
         language: L,
         format_language: L::FormatLanguage,
     ) -> Self {
-        let test_directory = PathBuf::from(test_directory);
-
         SpecSnapshot {
             test_file,
-            test_directory,
             language,
             format_language,
         }
@@ -196,60 +191,6 @@ where
             )
             .with_unimplemented(&printed)
             .with_lines_exceeding_max_width(&output_code, max_width);
-
-        let options_path = self.test_directory.join("options.json");
-        if options_path.exists() {
-            // TODO:! It would be very cool if we could support this `options.json` file!
-            // It's going to require a way to merge deserialized partial options
-            // with `RFormatOptions::default()`, and fleshing out `to_format_language()`.
-            panic!("`options.json` is not currently supported.");
-
-            //             let mut options_path = BiomePath::new(&options_path);
-            //
-            //             let mut settings = Settings::default();
-            //             // SAFETY: we checked its existence already, we assume we have rights to read it
-            //             let (test_options, diagnostics) = deserialize_from_str::<PartialConfiguration>(
-            //                 options_path.get_buffer_from_file().as_str(),
-            //             )
-            //             .consume();
-            //             settings
-            //                 .merge_with_configuration(test_options.unwrap_or_default(), None, None, &[])
-            //                 .unwrap();
-            //
-            //             if !diagnostics.is_empty() {
-            //                 for diagnostic in diagnostics {
-            //                     println!("{:?}", print_diagnostic_to_string(&diagnostic));
-            //                 }
-            //
-            //                 panic!("Configuration is invalid");
-            //             }
-            //
-            //             let format_language = self
-            //                 .language
-            //                 .to_format_language(&settings, &DocumentFileSource::from_path(input_file));
-            //
-            //             let (mut output_code, printed) = self.formatted(&parsed, format_language.clone());
-            //
-            //             let max_width = format_language.options().line_width().value() as usize;
-            //
-            //             // There are some logs that print different line endings, and we can't snapshot those
-            //             // otherwise we risk automatically having them replaced with LF by git.
-            //             //
-            //             // This is a workaround, and it might not work for all cases.
-            //             const CRLF_PATTERN: &str = "\r\n";
-            //             const CR_PATTERN: &str = "\r";
-            //             output_code = output_code
-            //                 .replace(CRLF_PATTERN, "<CRLF>\n")
-            //                 .replace(CR_PATTERN, "<CR>\n");
-            //
-            //             snapshot_builder = snapshot_builder
-            //                 .with_output_and_options(
-            //                     SnapshotOutput::new(&output_code).with_index(1),
-            //                     format_language.options(),
-            //                 )
-            //                 .with_unimplemented(&printed)
-            //                 .with_lines_exceeding_max_width(&output_code, max_width);
-        }
 
         snapshot_builder.finish(self.test_file.relative_file_name());
     }
