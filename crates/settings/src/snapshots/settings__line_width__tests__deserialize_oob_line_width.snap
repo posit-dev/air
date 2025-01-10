@@ -1,5 +1,5 @@
 ---
-source: crates/workspace/src/settings/line_width.rs
+source: crates/settings/src/line_width.rs
 expression: error
 ---
 TOML parse error at line 2, column 14

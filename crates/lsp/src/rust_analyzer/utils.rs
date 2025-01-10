@@ -7,7 +7,7 @@
 use std::ops::Range;
 
 use biome_lsp_converters::line_index;
-use line_ending::LineEnding;
+use settings::LineEnding;
 use tower_lsp::lsp_types;
 use triomphe::Arc;
 

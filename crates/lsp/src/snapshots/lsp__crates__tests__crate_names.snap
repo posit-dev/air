@@ -14,6 +14,7 @@ expression: AIR_CRATE_NAMES
     "line_ending",
     "lsp",
     "lsp_test",
+    "settings",
     "tests_macros",
     "workspace",
     "xtask",

@@ -49,12 +49,3 @@ impl Display for MagicLineBreak {
         }
     }
 }
-
-impl From<MagicLineBreak> for air_r_formatter::options::MagicLineBreak {
-    fn from(value: MagicLineBreak) -> Self {
-        match value {
-            MagicLineBreak::Respect => air_r_formatter::options::MagicLineBreak::Respect,
-            MagicLineBreak::Ignore => air_r_formatter::options::MagicLineBreak::Ignore,
-        }
-    }
-}

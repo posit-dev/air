@@ -5,9 +5,9 @@ use air_r_formatter::RFormatLanguage;
 use air_r_parser::parse;
 use air_r_parser::RParserOptions;
 use air_r_syntax::RRoot;
-use biome_formatter::IndentStyle;
-use biome_formatter::LineWidth;
 use biome_rowan::AstNode;
+use settings::IndentStyle;
+use settings::LineWidth;
 
 mod language {
     include!("language.rs");

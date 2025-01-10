@@ -5,22 +5,15 @@
 //
 //
 
-mod indent_style;
-mod indent_width;
-// TODO: Can we pick a better crate name for `line_ending` so these don't collide?
-#[path = "settings/line_ending.rs"]
-mod line_ending_setting;
-mod line_width;
-mod magic_line_break;
+mod line_ending;
 
-pub use indent_style::*;
-pub use indent_width::*;
-pub use line_ending_setting::*;
-pub use line_width::*;
-pub use magic_line_break::*;
+pub(crate) use line_ending::LineEnding;
 
 use air_r_formatter::context::RFormatOptions;
-use line_ending;
+use settings::IndentStyle;
+use settings::IndentWidth;
+use settings::LineWidth;
+use settings::MagicLineBreak;
 
 /// Resolved configuration settings used within air
 ///
@@ -44,24 +37,11 @@ pub struct FormatSettings {
 impl FormatSettings {
     // Finalize `RFormatOptions` in preparation for a formatting operation on `source`
     pub fn to_format_options(&self, source: &str) -> RFormatOptions {
-        let line_ending = match self.line_ending {
-            LineEnding::Lf => biome_formatter::LineEnding::Lf,
-            LineEnding::Crlf => biome_formatter::LineEnding::Crlf,
-            #[cfg(target_os = "windows")]
-            LineEnding::Native => biome_formatter::LineEnding::Crlf,
-            #[cfg(not(target_os = "windows"))]
-            LineEnding::Native => biome_formatter::LineEnding::Lf,
-            LineEnding::Auto => match line_ending::infer(source) {
-                line_ending::LineEnding::Lf => biome_formatter::LineEnding::Lf,
-                line_ending::LineEnding::Crlf => biome_formatter::LineEnding::Crlf,
-            },
-        };
-
         RFormatOptions::new()
-            .with_indent_style(self.indent_style.into())
-            .with_indent_width(self.indent_width.into())
-            .with_line_ending(line_ending)
-            .with_line_width(self.line_width.into())
-            .with_magic_line_break(self.magic_line_break.into())
+            .with_indent_style(self.indent_style)
+            .with_indent_width(self.indent_width)
+            .with_line_ending(self.line_ending.finalize(source))
+            .with_line_width(self.line_width)
+            .with_magic_line_break(self.magic_line_break)
     }
 }

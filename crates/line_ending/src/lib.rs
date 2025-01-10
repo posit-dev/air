@@ -5,17 +5,9 @@
 use std::sync::LazyLock;
 
 use memchr::memmem;
+use settings::LineEnding;
 
 static FINDER: LazyLock<memmem::Finder> = LazyLock::new(|| memmem::Finder::new(b"\r\n"));
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum LineEnding {
-    ///  Line Feed only (\n), common on Linux and macOS as well as inside git repos
-    Lf,
-
-    /// Carriage Return + Line Feed characters (\r\n), common on Windows
-    Crlf,
-}
 
 pub fn infer(x: &str) -> LineEnding {
     match FINDER.find(x.as_bytes()) {

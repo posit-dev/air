@@ -31,6 +31,7 @@ fs = { path = "./crates/fs" }
 line_ending = { path = "./crates/line_ending" }
 lsp = { path = "./crates/lsp" }
 lsp_test = { path = "./crates/lsp_test" }
+settings = { path = "./crates/settings" }
 tests_macros = { path = "./crates/tests_macros" }
 workspace = { path = "./crates/workspace" }
 

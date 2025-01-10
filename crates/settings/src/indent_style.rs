@@ -8,8 +8,12 @@
 use std::fmt::Display;
 use std::str::FromStr;
 
-#[derive(Debug, Default, Clone, Copy, Eq, Hash, PartialEq, serde::Deserialize)]
-#[serde(rename_all = "kebab-case")]
+#[derive(Debug, Default, Clone, Copy, Eq, Hash, PartialEq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Deserialize),
+    serde(rename_all = "kebab-case")
+)]
 pub enum IndentStyle {
     /// Tab
     #[default]
@@ -51,11 +55,51 @@ impl Display for IndentStyle {
     }
 }
 
+#[cfg(feature = "biome")]
 impl From<IndentStyle> for biome_formatter::IndentStyle {
     fn from(value: IndentStyle) -> Self {
         match value {
             IndentStyle::Tab => biome_formatter::IndentStyle::Tab,
             IndentStyle::Space => biome_formatter::IndentStyle::Space,
         }
+    }
+}
+
+#[cfg(feature = "biome")]
+impl From<biome_formatter::IndentStyle> for IndentStyle {
+    fn from(value: biome_formatter::IndentStyle) -> Self {
+        match value {
+            biome_formatter::IndentStyle::Tab => IndentStyle::Tab,
+            biome_formatter::IndentStyle::Space => IndentStyle::Space,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::IndentStyle;
+
+    #[test]
+    fn to_biome_conversion() {
+        assert_eq!(
+            biome_formatter::IndentStyle::from(IndentStyle::Tab),
+            biome_formatter::IndentStyle::Tab
+        );
+        assert_eq!(
+            biome_formatter::IndentStyle::from(IndentStyle::Space),
+            biome_formatter::IndentStyle::Space
+        );
+    }
+
+    #[test]
+    fn from_biome_conversion() {
+        assert_eq!(
+            IndentStyle::from(biome_formatter::IndentStyle::Tab),
+            IndentStyle::Tab
+        );
+        assert_eq!(
+            IndentStyle::from(biome_formatter::IndentStyle::Space),
+            IndentStyle::Space
+        );
     }
 }

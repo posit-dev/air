@@ -8,7 +8,7 @@
 //! into lsp positions.
 
 use biome_lsp_converters::line_index;
-use line_ending::LineEnding;
+use settings::LineEnding;
 use triomphe::Arc;
 
 #[derive(Debug, Clone)]

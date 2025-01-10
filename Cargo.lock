@@ -86,6 +86,7 @@ dependencies = [
  "biome_rowan",
  "itertools",
  "line_ending",
+ "settings",
  "tests_macros",
  "tracing",
 ]
@@ -1270,6 +1271,7 @@ name = "line_ending"
 version = "0.0.0"
 dependencies = [
  "memchr",
+ "settings",
 ]
 
 [[package]]
@@ -1335,6 +1337,7 @@ dependencies = [
  "memchr",
  "serde",
  "serde_json",
+ "settings",
  "struct-field-names-as-array",
  "strum",
  "tests_macros",
@@ -1860,6 +1863,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "87607cb1398ed59d48732e575a4c28a7a8ebf2454b964fe3f224f2afc07909e1"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "settings"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "biome_formatter",
+ "insta",
+ "serde",
+ "settings",
+ "toml",
 ]
 
 [[package]]
@@ -2706,6 +2721,7 @@ dependencies = [
  "line_ending",
  "rustc-hash",
  "serde",
+ "settings",
  "tempfile",
  "thiserror 2.0.5",
  "toml",
