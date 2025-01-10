@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Installing Air – Air</title>
+<title>Configuration – Air</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -126,7 +126,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./installation.html">Installation</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./configuration.html">Configuration</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -154,7 +154,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./installation.html" class="sidebar-item-text sidebar-link active">
+  <a href="./installation.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Installation</span></a>
   </div>
 </li>
@@ -166,7 +166,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./configuration.html" class="sidebar-item-text sidebar-link">
+  <a href="./configuration.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Configuration</span></a>
   </div>
 </li>
@@ -181,15 +181,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#example-configuration" id="toc-example-configuration" class="nav-link active" data-scroll-target="#example-configuration">Example configuration</a></li>
+  <li><a href="#configuration-discovery" id="toc-configuration-discovery" class="nav-link" data-scroll-target="#configuration-discovery">Configuration discovery</a></li>
+  <li><a href="#format-options" id="toc-format-options" class="nav-link" data-scroll-target="#format-options">Format options</a>
+  <ul class="collapse">
+  <li><a href="#line-width" id="toc-line-width" class="nav-link" data-scroll-target="#line-width">line-width</a></li>
+  <li><a href="#indent-width" id="toc-indent-width" class="nav-link" data-scroll-target="#indent-width">indent-width</a></li>
+  <li><a href="#indent-style" id="toc-indent-style" class="nav-link" data-scroll-target="#indent-style">indent-style</a></li>
+  <li><a href="#line-ending" id="toc-line-ending" class="nav-link" data-scroll-target="#line-ending">line-ending</a></li>
+  <li><a href="#ignore-magic-line-break" id="toc-ignore-magic-line-break" class="nav-link" data-scroll-target="#ignore-magic-line-break">ignore-magic-line-break</a></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Installing Air</h1>
+<h1 class="title">Configuration</h1>
 </div>
 
 
@@ -206,24 +221,108 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>If you’d like to use Air at the command line, you can use one of our standalone installers.</p>
-<!--
-# Uncomment after we support this
+<p>Air can be configured using a TOML file named <code>air.toml</code>. Air is purposefully minimally configurable, with the main configuration points being related to line width and indent style. Our hope is that most projects never need an <code>air.toml</code> file!</p>
+<section id="example-configuration" class="level2">
+<h2 class="anchored" data-anchor-id="example-configuration">Example configuration</h2>
+<p>Below is a complete <code>air.toml</code> file showing all available options set to their default values:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[format]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">line-width</span> <span class="op">=</span> <span class="dv">80</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">indent-width</span> <span class="op">=</span> <span class="dv">2</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dt">indent-style</span> <span class="op">=</span> <span class="st">"space"</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">line-ending</span> <span class="op">=</span> <span class="st">"auto"</span>   </span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">ignore-magic-line-break</span> <span class="op">=</span> <span class="cn">false</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="configuration-discovery" class="level2">
+<h2 class="anchored" data-anchor-id="configuration-discovery">Configuration discovery</h2>
+<p>The ideal place to put an <code>air.toml</code> file is at your project root. For example, note the placement of <code>air.toml</code> in this minimal dplyr project:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">~/files/dplyr</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> air.toml</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> DESCRIPTION</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> NAMESPACE</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> R</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> src</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> tests</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ex">└──</span> vignettes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>If you run <code>air format</code> with a working directory of <code>~/files/dplyr</code> or open your IDE in the dplyr project, then Air will find and use that TOML file.</p>
+<p>Air also supports walking up the directory tree from the project root. For example, if you ran <code>air format</code> from within <code>~/files/dplyr/R</code>, then Air would look “up” one directory and would find and use <code>~/files/dplyr/air.toml</code>.</p>
+</section>
+<section id="format-options" class="level2">
+<h2 class="anchored" data-anchor-id="format-options">Format options</h2>
+<p>All formatting options are specified under the <code>[format]</code> table.</p>
+<section id="line-width" class="level3">
+<h3 class="anchored" data-anchor-id="line-width">line-width</h3>
+<p>The preferred maximum line length.</p>
+<p>An integer value between 1 and 320, with a default of 80.</p>
+<p>While the formatter will attempt to format lines such that they remain within the <code>line-width</code>, it isn’t a hard upper bound, and formatted lines may exceed the <code>line-width</code>.</p>
+</section>
+<section id="indent-width" class="level3">
+<h3 class="anchored" data-anchor-id="indent-width">indent-width</h3>
+<p>The number of spaces per indentation level.</p>
+<p>An integer value between 1 and 24, with a default of 2.</p>
+<p>This option changes the number of spaces the formatter inserts when using <code>indent-style = "space"</code>. It also represents the width of a tab when <code>indent-style = "tab"</code> for the purposes of computing the <code>line-width</code>.</p>
+</section>
+<section id="indent-style" class="level3">
+<h3 class="anchored" data-anchor-id="indent-style">indent-style</h3>
+<p>Whether to use spaces or tabs for indentation.</p>
+<p>One of the following values, with a default of <code>"space"</code>:</p>
+<ul>
+<li><p><code>"space"</code>: Use spaces for indentation.</p></li>
+<li><p><code>"tab"</code>: Use tabs for indentation.</p></li>
+</ul>
+<p>Air defaults to spaces due to the overwhelming amount of existing R code written in this style, but consider using tabs for new projects to improve accessibility. See <code>indent-width</code> to configure the number of spaces per indentation and the tab width.</p>
+</section>
+<section id="line-ending" class="level3">
+<h3 class="anchored" data-anchor-id="line-ending">line-ending</h3>
+<p>The character air uses at the end of a line.</p>
+<p>One of the following values, with a default of <code>"auto"</code>:</p>
+<ul>
+<li><p><code>"auto"</code>: The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to <code>\n</code> for files that contain no line endings.</p></li>
+<li><p><code>"lf"</code>: Line endings will be converted to <code>\n</code>. The typical line ending on Unix.</p></li>
+<li><p><code>"crlf"</code>: Line endings will be converted to <code>\r\n</code>. The typical line ending on Windows.</p></li>
+<li><p><code>"native"</code>: Line endings will be converted to <code>\n</code> on Unix and <code>\r\n</code> on Windows.</p></li>
+</ul>
+</section>
+<section id="ignore-magic-line-break" class="level3">
+<h3 class="anchored" data-anchor-id="ignore-magic-line-break">ignore-magic-line-break</h3>
+<p>Whether or not magic line breaks should be ignored.</p>
+<p>Either <code>true</code> to ignore magic line breaks, or <code>false</code> to respect them, with a default of <code>false</code>.</p>
+<p>Air respects a small set of magic line breaks as an indication that certain function calls or function signatures should be left expanded. For example, the following list could be flattened to one line and would still fit within a <code>line-width</code> of 80, however, it remains expanded due to the magic line break between the opening <code>(</code> and the first argument, <code>apple</code>.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>dictionary <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">apple =</span> <span class="fl">0.75</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">banana =</span> <span class="fl">0.25</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">cherry =</span> <span class="fl">0.50</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Similarly, this function signature could also be flattened, but is not, due to the magic line break between the opening <code>(</code> and the first parameter, <code>...</code>.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>case_when <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  ..., </span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">.default =</span> <span class="cn">NULL</span>, </span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">.ptype =</span> <span class="cn">NULL</span>, </span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">.size =</span> <span class="cn">NULL</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>) {</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  body</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>To request flattening in these cases, just remove the magic line break. For example:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># If you started here,</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>dictionary <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">apple =</span> <span class="fl">0.75</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">banana =</span> <span class="fl">0.25</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">cherry =</span> <span class="fl">0.50</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># then do this, and run air,</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>dictionary <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">apple =</span> <span class="fl">0.75</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">banana =</span> <span class="fl">0.25</span>,</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">cherry =</span> <span class="fl">0.50</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co"># to get this.</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>dictionary <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">apple =</span> <span class="fl">0.75</span>, <span class="at">banana =</span> <span class="fl">0.25</span>, <span class="at">cherry =</span> <span class="fl">0.50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Alternatively, use a tool such as <a href="https://github.com/lionel-/codegrip">codegrip</a> bound to a keyboard shortcut to flatten the code, and air will keep it flattened as long as it fits within the <code>line-width</code>.</p>
+<p>It may be preferable to ignore magic line breaks if you prefer that <code>line-width</code> should be the only value that influences line breaks.</p>
 
-Note that if you'd like to use Air inside VS Code or Positron, then the Extension for those editors comes pre-bundled with an Air binary, so there's nothing you need to do besides [download the Extension](editors.qmd).
--->
-<p>To install Air as a command line tool:</p>
-<p>On macOS and Linux:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-LsSf</span> https://github.com/posit-dev/air/releases/latest/download/air-installer.sh <span class="kw">|</span> <span class="fu">sh</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>On Windows:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode powershell code-with-copy"><code class="sourceCode powershell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>powershell <span class="op">-</span>c <span class="st">"irm https://github.com/posit-dev/air/releases/latest/download/air-installer.ps1 | iex"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>For a specific version:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-LsSf</span> https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.sh <span class="kw">|</span> <span class="fu">sh</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">powershell</span> <span class="at">-c</span> <span class="st">"irm https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.ps1 | iex"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The installer scripts will automatically add Air to your <code>PATH</code>. The very first time you install Air, for the <code>PATH</code> modifications to be applied you’ll need to restart your terminal.</p>
-<p>On Windows, the first time you install Air it requires a full system restart for the <code>PATH</code> modification to take effect. We are working on improving this.</p>
 
-
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
