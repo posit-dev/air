@@ -1,0 +1,152 @@
+---
+title: "Configuration"
+editor:
+  markdown:
+    wrap: sentence
+    canonical: true
+---
+
+Air can be configured using a TOML file named `air.toml`.
+Air is purposefully minimally configurable, with the main configuration points being related to line width and indent style.
+Our hope is that most projects never need an `air.toml` file!
+
+## Example configuration
+
+Below is a complete `air.toml` file showing all available options set to their default values:
+
+``` toml
+[format]
+line-width = 80
+indent-width = 2
+indent-style = "space"
+line-ending = "auto"   
+ignore-magic-line-break = false
+```
+
+## Configuration discovery
+
+The ideal place to put an `air.toml` file is at your project root.
+For example, note the placement of `air.toml` in this minimal dplyr project:
+
+``` bash
+~/files/dplyr
+├── air.toml
+├── DESCRIPTION
+├── NAMESPACE
+├── R
+├── src
+├── tests
+└── vignettes
+```
+
+If you run `air format` with a working directory of `~/files/dplyr` or open your IDE in the dplyr project, then Air will find and use that TOML file.
+
+Air also supports walking up the directory tree from the project root.
+For example, if you ran `air format` from within `~/files/dplyr/R`, then Air would look "up" one directory and would find and use `~/files/dplyr/air.toml`.
+
+## Format options
+
+All formatting options are specified under the `[format]` table.
+
+### line-width
+
+The preferred maximum line length.
+
+An integer value between 1 and 320, with a default of 80.
+
+While the formatter will attempt to format lines such that they remain within the `line-width`, it isn't a hard upper bound, and formatted lines may exceed the `line-width`.
+
+### indent-width
+
+The number of spaces per indentation level.
+
+An integer value between 1 and 24, with a default of 2.
+
+This option changes the number of spaces the formatter inserts when using `indent-style = "space"`.
+It also represents the width of a tab when `indent-style = "tab"` for the purposes of computing the `line-width`.
+
+### indent-style
+
+Whether to use spaces or tabs for indentation.
+
+One of the following values, with a default of `"space"`:
+
+-   `"space"`: Use spaces for indentation.
+
+-   `"tab"`: Use tabs for indentation.
+
+Air defaults to spaces due to the overwhelming amount of existing R code written in this style, but consider using tabs for new projects to improve accessibility.
+See `indent-width` to configure the number of spaces per indentation and the tab width.
+
+### line-ending
+
+The character air uses at the end of a line.
+
+One of the following values, with a default of `"auto"`:
+
+-   `"auto"`: The newline style is detected automatically on a file per file basis.
+    Files with mixed line endings will be converted to the first detected line ending.
+    Defaults to `\n` for files that contain no line endings.
+
+-   `"lf"`: Line endings will be converted to `\n`.
+    The typical line ending on Unix.
+
+-   `"crlf"`: Line endings will be converted to `\r\n`.
+    The typical line ending on Windows.
+
+-   `"native"`: Line endings will be converted to `\n` on Unix and `\r\n` on Windows.
+
+### ignore-magic-line-break
+
+Whether or not magic line breaks should be ignored.
+
+Either `true` to ignore magic line breaks, or `false` to respect them, with a default of `false`.
+
+Air respects a small set of magic line breaks as an indication that certain function calls or function signatures should be left expanded.
+For example, the following list could be flattened to one line and would still fit within a `line-width` of 80, however, it remains expanded due to the magic line break between the opening `(` and the first argument, `apple`.
+
+``` r
+dictionary <- list(
+  apple = 0.75,
+  banana = 0.25,
+  cherry = 0.50
+)
+```
+
+Similarly, this function signature could also be flattened, but is not, due to the magic line break between the opening `(` and the first parameter, `...`.
+
+``` r
+case_when <- function(
+  ..., 
+  .default = NULL, 
+  .ptype = NULL, 
+  .size = NULL
+) {
+  body
+}
+```
+
+To request flattening in these cases, just remove the magic line break.
+For example:
+
+``` r
+# If you started here,
+dictionary <- list(
+  apple = 0.75,
+  banana = 0.25,
+  cherry = 0.50
+)
+
+# then do this, and run air,
+dictionary <- list(apple = 0.75,
+  banana = 0.25,
+  cherry = 0.50
+)
+
+# to get this.
+dictionary <- list(apple = 0.75, banana = 0.25, cherry = 0.50)
+```
+
+Alternatively, use a tool such as [codegrip](https://github.com/lionel-/codegrip) bound to a keyboard shortcut to flatten the code, and air will keep it flattened as long as it fits within the `line-width`.
+
+It may be preferable to ignore magic line breaks if you prefer that `line-width` should be the only value that influences line breaks.
