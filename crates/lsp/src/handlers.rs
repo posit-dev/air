@@ -14,6 +14,7 @@ use tracing::Instrument;
 
 use crate::config::VscDiagnosticsConfig;
 use crate::config::VscDocumentConfig;
+use crate::config::VscLogConfig;
 use crate::main_loop::LspState;
 
 // Handlers that do not mutate the world state. They take a sharing reference or
@@ -46,9 +47,14 @@ pub(crate) async fn handle_initialized(
             VscDiagnosticsConfig::FIELD_NAMES_AS_ARRAY.to_vec(),
             VscDiagnosticsConfig::section_from_key,
         );
+        let mut config_log_registrations: Vec<lsp_types::Registration> = collect_regs(
+            VscLogConfig::FIELD_NAMES_AS_ARRAY.to_vec(),
+            VscLogConfig::section_from_key,
+        );
 
         registrations.append(&mut config_document_registrations);
         registrations.append(&mut config_diagnostics_registrations);
+        registrations.append(&mut config_log_registrations);
     }
 
     if lsp_state

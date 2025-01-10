@@ -5,7 +5,10 @@
 //
 //
 
+use std::array::IntoIter;
+
 use anyhow::anyhow;
+use anyhow::Context;
 use biome_lsp_converters::PositionEncoding;
 use biome_lsp_converters::WideEncoding;
 use serde_json::Value;
@@ -36,6 +39,7 @@ use crate::config::indent_style_from_lsp;
 use crate::config::DocumentConfig;
 use crate::config::VscDiagnosticsConfig;
 use crate::config::VscDocumentConfig;
+use crate::config::VscLogConfig;
 use crate::documents::Document;
 use crate::logging;
 use crate::logging::LogMessageSender;
@@ -78,12 +82,12 @@ pub(crate) fn initialize(
         InitializationOptions::from_value,
     );
 
-    logging::init_logging(
+    lsp_state.log_state = Some(logging::init_logging(
         log_tx,
         log_level,
         dependency_log_levels,
         params.client_info.as_ref(),
-    );
+    ));
 
     // Initialize the workspace settings resolver using the initial set of client provided `workspace_folders`
     lsp_state.workspace_settings_resolver = WorkspaceSettingsResolver::from_workspace_folders(
@@ -182,13 +186,15 @@ pub(crate) fn did_close(
 pub(crate) async fn did_change_configuration(
     _params: DidChangeConfigurationParams,
     client: &tower_lsp::Client,
+    lsp_state: &mut LspState,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
-    // The notification params sometimes contain data but it seems in practice
-    // we should just ignore it. Instead we need to pull the settings again for
-    // all URI of interest.
+    // The LSP deprecated usage of `DidChangeConfigurationParams`, but still allows
+    // servers to use the notification itself as a way to get notified that some
+    // configuration that we watch has changed. When we detect any changes, we re-pull
+    // everything we are interested in.
 
-    update_config(workspace_uris(state), client, state)
+    update_config(workspace_uris(state), client, lsp_state, state)
         .instrument(tracing::info_span!("did_change_configuration"))
         .await
 }
@@ -252,6 +258,7 @@ pub(crate) fn did_change_formatting_options(
 async fn update_config(
     uris: Vec<Url>,
     client: &tower_lsp::Client,
+    lsp_state: &mut LspState,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
     let mut items: Vec<ConfigurationItem> = vec![];
@@ -278,15 +285,26 @@ async fn update_config(
             .collect();
     items.append(&mut document_items);
 
+    let log_keys = VscLogConfig::FIELD_NAMES_AS_ARRAY;
+    let mut log_items: Vec<ConfigurationItem> = log_keys
+        .iter()
+        .map(|key| ConfigurationItem {
+            scope_uri: None,
+            section: Some(VscLogConfig::section_from_key(key).into()),
+        })
+        .collect();
+    items.append(&mut log_items);
+
     let configs = client.configuration(items).await?;
 
     // We got the config items in a flat vector that's guaranteed to be
     // ordered in the same way it was sent in. Be defensive and check that
     // we've got the expected number of items before we process them chunk
     // by chunk
-    let n_document_items = document_keys.len();
     let n_diagnostics_items = diagnostics_keys.len();
-    let n_items = n_diagnostics_items + (n_document_items * uris.len());
+    let n_document_items = document_keys.len() * uris.len();
+    let n_log_items = log_keys.len();
+    let n_items = n_diagnostics_items + n_document_items + n_log_items;
 
     if configs.len() != n_items {
         return Err(anyhow!(
@@ -300,8 +318,26 @@ async fn update_config(
 
     // --- Diagnostics
     let keys = diagnostics_keys.into_iter();
-    let items: Vec<Value> = configs.by_ref().take(n_diagnostics_items).collect();
+    let items = configs.by_ref().take(n_diagnostics_items);
+    update_diagnostics_config(keys, items)?;
 
+    // --- Documents
+    let keys = document_keys.into_iter();
+    let items = configs.by_ref().take(n_document_items);
+    update_documents_config(keys, items, uris, state)?;
+
+    // --- Logs
+    let keys = log_keys.into_iter();
+    let items = configs.by_ref().take(n_log_items);
+    update_log_config(keys, items, lsp_state)?;
+
+    Ok(())
+}
+
+fn update_diagnostics_config(
+    keys: IntoIter<&str, 1>,
+    items: impl Iterator<Item = Value>,
+) -> anyhow::Result<()> {
     // Create a new `serde_json::Value::Object` manually to convert it
     // to a `VscDocumentConfig` with `from_value()`. This way serde_json
     // can type-check the dynamic JSON value we got from the client.
@@ -321,14 +357,22 @@ async fn update_config(
     //     lsp::spawn_diagnostics_refresh_all(state.clone());
     // }
 
-    // --- Documents
+    Ok(())
+}
+
+fn update_documents_config(
+    keys: IntoIter<&str, 3>,
+    mut items: impl Iterator<Item = Value>,
+    uris: Vec<Url>,
+    state: &mut WorldState,
+) -> anyhow::Result<()> {
     // For each document, deserialise the vector of JSON values into a typed config
     for uri in uris {
-        let keys = document_keys.into_iter();
-        let items: Vec<Value> = configs.by_ref().take(n_document_items).collect();
+        let uri_keys = keys.clone();
+        let uri_items = items.by_ref().take(keys.len());
 
         let mut map = serde_json::Map::new();
-        std::iter::zip(keys, items).for_each(|(key, item)| {
+        std::iter::zip(uri_keys, uri_items).for_each(|(key, item)| {
             map.insert(key.into(), item);
         });
 
@@ -341,6 +385,29 @@ async fn update_config(
         // Finally, update the document's config
         state.get_document_mut(&uri)?.config = config;
     }
+
+    Ok(())
+}
+
+fn update_log_config(
+    keys: IntoIter<&str, 2>,
+    items: impl Iterator<Item = Value>,
+    lsp_state: &mut LspState,
+) -> anyhow::Result<()> {
+    let log_state = lsp_state.log_state.as_mut().context("Missing log state")?;
+
+    let mut map = serde_json::Map::new();
+    std::iter::zip(keys, items).for_each(|(key, item)| {
+        map.insert(key.into(), item);
+    });
+
+    // Deserialise the VS Code configuration
+    let VscLogConfig {
+        log_level,
+        dependency_log_levels,
+    } = serde_json::from_value(serde_json::Value::Object(map))?;
+
+    log_state.reload(log_level, dependency_log_levels);
 
     Ok(())
 }
