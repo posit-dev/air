@@ -16,8 +16,8 @@ Below is a complete `air.toml` file showing all available options set to their d
 ``` toml
 [format]
 line-width = 80                   # Integer in 1:320
-indent-style = "space"            # "space" or "tab"
 indent-width = 2                  # Integer in 1:24
+indent-style = "space"            # "space" or "tab"
 line-ending = "auto"              # "auto", "lf", "crlf", or "native"
 ignore-magic-line-break = false   # true or false
 ```
