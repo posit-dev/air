@@ -60,8 +60,8 @@ argument_that_is_quite_quite_quite_quite_long(argument_that_is_quite_quite_quite
 ## Output 1
 
 -----
-Indent style: Tab
-Indent width: 4
+Indent style: Space
+Indent width: 2
 Line ending: LF
 Line width: 80
 -----
@@ -89,80 +89,80 @@ argument_that_is_quite_quite_quite_quite_long:argument_that_is_quite_quite_quite
 
 # If the RHS contains other complex expressions, they are allowed to break
 argument_that_is_quite_quite_quite_quite_long$argument_that_is_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )
 argument_that_is_quite_quite_quite_quite_long@argument_that_is_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )
 argument_that_is_quite_quite_quite_quite_long::argument_that_is_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )
 argument_that_is_quite_quite_quite_quite_long:::argument_that_is_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )
 argument_that_is_quite_quite_quite_quite_long?argument_that_is_quite_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )
 argument_that_is_quite_quite_quite_quite_long**argument_that_is_quite_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )
 argument_that_is_quite_quite_quite_quite_long^argument_that_is_quite_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )
 argument_that_is_quite_quite_quite_quite_long:argument_that_is_quite_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )
 
 # `$` and `@` and regular binary operators are allowed complex expressions on their LHS
 argument_that_is_quite_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )$argument_that_is_quite_quite_quite_long
 argument_that_is_quite_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )@argument_that_is_quite_quite_quite_long
 argument_that_is_quite_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )?argument_that_is_quite_quite_quite_quite_long
 argument_that_is_quite_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )**argument_that_is_quite_quite_quite_quite_long
 argument_that_is_quite_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )^argument_that_is_quite_quite_quite_quite_long
 argument_that_is_quite_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 ):argument_that_is_quite_quite_quite_quite_long
 
 # Chaining of method calls
 argument_that_is_quite_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )$argument_that_is_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )
 argument_that_is_quite_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )@argument_that_is_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )
 argument_that_is_quite_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )?argument_that_is_quite_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )
 argument_that_is_quite_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )**argument_that_is_quite_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )
 argument_that_is_quite_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )^argument_that_is_quite_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )
 argument_that_is_quite_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 ):argument_that_is_quite_quite_quite_quite_long(
-	argument_that_is_quite_quite_quite_long
+  argument_that_is_quite_quite_quite_long
 )
 ```
 
