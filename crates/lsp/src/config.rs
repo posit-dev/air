@@ -5,8 +5,6 @@
 //
 //
 
-use serde::Deserialize;
-use serde::Serialize;
 use struct_field_names_as_array::FieldNamesAsArray;
 
 use crate::logging::LogLevel;
@@ -16,34 +14,15 @@ use crate::logging::LogLevel;
 pub(crate) struct LspConfig {}
 
 /// Configuration of a document.
-///
-/// The naming follows <https://editorconfig.org/> where possible.
-#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct DocumentConfig {
-    pub indent: IndentationConfig,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct IndentationConfig {
-    /// Whether to insert spaces of tabs for one level of indentation.
-    pub indent_style: IndentStyle,
-
-    /// The number of spaces for one level of indentation.
-    pub indent_size: usize,
-
-    /// The width of a tab. There may be projects with an `indent_size` of 4 and
-    /// a `tab_width` of 8 (e.g. GNU R).
-    pub tab_width: usize,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub enum IndentStyle {
-    Tab,
-    Space,
+    pub indent_style: Option<settings::IndentStyle>,
+    pub indent_width: Option<settings::IndentWidth>,
+    pub line_width: Option<settings::LineWidth>,
 }
 
 /// VS Code representation of a document configuration
-#[derive(Serialize, Deserialize, FieldNamesAsArray, Clone, Debug)]
+#[derive(Clone, Debug, FieldNamesAsArray, serde::Serialize, serde::Deserialize)]
 pub(crate) struct VscDocumentConfig {
     // DEV NOTE: Update `section_from_key()` method after adding a field
     pub insert_spaces: bool,
@@ -51,34 +30,24 @@ pub(crate) struct VscDocumentConfig {
     pub tab_size: usize,
 }
 
-#[derive(Serialize, Deserialize, FieldNamesAsArray, Clone, Debug)]
+#[derive(Clone, Debug, FieldNamesAsArray, serde::Serialize, serde::Deserialize)]
 pub(crate) struct VscDiagnosticsConfig {
     // DEV NOTE: Update `section_from_key()` method after adding a field
     pub enable: bool,
 }
 
-#[derive(Deserialize, FieldNamesAsArray, Clone, Debug)]
+#[derive(Clone, Debug, FieldNamesAsArray, serde::Deserialize)]
 pub(crate) struct VscLogConfig {
     // DEV NOTE: Update `section_from_key()` method after adding a field
     pub log_level: Option<LogLevel>,
     pub dependency_log_levels: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 #[serde(untagged)]
 pub(crate) enum VscIndentSize {
     Alias(String),
     Size(usize),
-}
-
-impl Default for IndentationConfig {
-    fn default() -> Self {
-        Self {
-            indent_style: IndentStyle::Space,
-            indent_size: 2,
-            tab_width: 2,
-        }
-    }
 }
 
 impl VscDocumentConfig {
@@ -96,26 +65,13 @@ impl VscDocumentConfig {
 /// representation. Currently one-to-one.
 impl From<VscDocumentConfig> for DocumentConfig {
     fn from(x: VscDocumentConfig) -> Self {
-        let indent_style = indent_style_from_lsp(x.insert_spaces);
-
-        let indent_size = match x.indent_size {
-            VscIndentSize::Size(size) => size,
-            VscIndentSize::Alias(var) => {
-                if var == "tabSize" {
-                    x.tab_size
-                } else {
-                    tracing::warn!("Unknown indent alias {var}, using default");
-                    2
-                }
-            }
-        };
+        let indent_style = indent_style_from_vsc(x.insert_spaces);
+        let indent_width = indent_width_from_vsc(x);
 
         Self {
-            indent: IndentationConfig {
-                indent_style,
-                indent_size,
-                tab_width: x.tab_size,
-            },
+            indent_style: Some(indent_style),
+            indent_width: Some(indent_width),
+            line_width: None, // TODO!
         }
     }
 }
@@ -129,11 +85,33 @@ impl VscDiagnosticsConfig {
     }
 }
 
-pub(crate) fn indent_style_from_lsp(insert_spaces: bool) -> IndentStyle {
+pub(crate) fn indent_width_from_vsc(config: VscDocumentConfig) -> settings::IndentWidth {
+    let indent_width = match config.indent_size {
+        VscIndentSize::Size(size) => size,
+        VscIndentSize::Alias(var) => {
+            if var != "tabSize" {
+                tracing::warn!("Unknown indent alias {var}, using default");
+                return settings::IndentWidth::default();
+            }
+            config.tab_size
+        }
+    };
+
+    indent_width_from_usize(indent_width)
+}
+
+pub(crate) fn indent_width_from_usize(indent_width: usize) -> settings::IndentWidth {
+    indent_width.try_into().unwrap_or_else(|err| {
+        tracing::warn!("Invalid indent width: {err:?}");
+        settings::IndentWidth::default()
+    })
+}
+
+pub(crate) fn indent_style_from_vsc(insert_spaces: bool) -> settings::IndentStyle {
     if insert_spaces {
-        IndentStyle::Space
+        settings::IndentStyle::Space
     } else {
-        IndentStyle::Tab
+        settings::IndentStyle::Tab
     }
 }
 

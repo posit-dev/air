@@ -35,7 +35,8 @@ use tracing::Instrument;
 use url::Url;
 
 use crate::capabilities::ResolvedClientCapabilities;
-use crate::config::indent_style_from_lsp;
+use crate::config::indent_style_from_vsc;
+use crate::config::indent_width_from_usize;
 use crate::config::DocumentConfig;
 use crate::config::VscDiagnosticsConfig;
 use crate::config::VscDocumentConfig;
@@ -235,19 +236,8 @@ pub(crate) fn did_change_formatting_options(
         return;
     };
 
-    // The information provided in formatting requests is more up-to-date
-    // than the user settings because it also includes changes made to the
-    // configuration of particular editors. However the former is less rich
-    // than the latter: it does not allow the tab size to differ from the
-    // indent size, as in the R core sources. So we just ignore the less
-    // rich updates in this case.
-    if doc.config.indent.indent_size != doc.config.indent.tab_width {
-        return;
-    }
-
-    doc.config.indent.indent_size = opts.tab_size as usize;
-    doc.config.indent.tab_width = opts.tab_size as usize;
-    doc.config.indent.indent_style = indent_style_from_lsp(opts.insert_spaces);
+    doc.config.indent_width = Some(indent_width_from_usize(opts.tab_size as usize));
+    doc.config.indent_style = Some(indent_style_from_vsc(opts.insert_spaces));
 
     // TODO:
     // `trim_trailing_whitespace`

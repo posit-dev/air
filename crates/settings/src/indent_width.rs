@@ -11,8 +11,8 @@ use std::num::NonZeroU8;
 /// Validated value for the `indent-width` formatter options
 ///
 /// The allowed range of values is 1..=24
-#[derive(Clone, Copy, Eq, Hash, PartialEq)]
-pub struct IndentWidth(NonZeroU8);
+#[derive(Clone, Copy, Eq, Hash, PartialEq, serde::Serialize)]
+pub struct IndentWidth(pub NonZeroU8);
 
 impl IndentWidth {
     /// Default value for [IndentWidth]
@@ -59,7 +59,7 @@ impl<'de> serde::Deserialize<'de> for IndentWidth {
 
 /// Error type returned when converting a u8 or NonZeroU8 to a [`IndentWidth`] fails
 #[derive(Clone, Copy, Debug)]
-pub struct IndentWidthFromIntError(u8);
+pub struct IndentWidthFromIntError(usize);
 
 impl std::error::Error for IndentWidthFromIntError {}
 
@@ -69,8 +69,18 @@ impl TryFrom<u8> for IndentWidth {
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         match NonZeroU8::try_from(value) {
             Ok(value) => IndentWidth::try_from(value),
-            Err(_) => Err(IndentWidthFromIntError(value)),
+            Err(_) => Err(IndentWidthFromIntError(value as usize)),
         }
+    }
+}
+
+impl TryFrom<usize> for IndentWidth {
+    type Error = IndentWidthFromIntError;
+
+    fn try_from(value: usize) -> Result<Self, Self::Error> {
+        u8::try_from(value)
+            .map_err(|_| IndentWidthFromIntError(value))?
+            .try_into()
     }
 }
 
@@ -81,7 +91,7 @@ impl TryFrom<NonZeroU8> for IndentWidth {
         if value.get() <= Self::MAX {
             Ok(IndentWidth(value))
         } else {
-            Err(IndentWidthFromIntError(value.get()))
+            Err(IndentWidthFromIntError(value.get() as usize))
         }
     }
 }
@@ -164,7 +174,7 @@ indent-width = 6
 
         assert_eq!(
             options.indent_width,
-            Some(IndentWidth::try_from(6).unwrap())
+            Some(IndentWidth::try_from(6 as u8).unwrap())
         );
 
         Ok(())
