@@ -1,0 +1,68 @@
+---
+title: "Configuration"
+editor:
+  markdown:
+    wrap: sentence
+    canonical: true
+---
+
+Air can be configured using a TOML configuration file named `air.toml`.
+This file should be placed in your project's root directory.
+
+## Example Configuration
+
+Below is a complete `air.toml` file showing all available options set to their default values:
+
+``` toml
+[format]
+line-width = 80                   # Integer in 1:320
+indent-style = "space"            # "space" or "tab"
+indent-width = 2                  # Integer in 1:24
+line-ending = "auto"              # "auto", "lf", "crlf", or "native"
+ignore-magic-line-break = false   # true or false
+```
+
+## Format Options
+
+All formatting-related options are specified under the `[format]` table:
+
+-   **line-width**: The preferred maximum line length, between 1 and 320 characters.
+
+    While the formatter will attempt to format lines such that they remain within the `line-width`, it isn't a hard upper bound, and formatted lines may exceed the `line-width`.
+
+-   **indent-width**: Number of spaces per indentation level, between 1 and 24 spaces.
+
+    When using tabs, this value determines the visual width of a tab character.
+    This option changes the number of spaces the formatter inserts when using `indent-style = "space"`.
+    It also represents the width of a tab when `indent-style = "tab"` for the purposes of computing the `line-width`.
+
+-   **indent-style**: Whether to use spaces or tabs for indentation.
+
+    `indent-style = "space"` (default): \
+    ``` r
+    fn <- function() {
+      cat("Hello") # Spaces indent the `cat()` call.
+    }
+    ```
+
+    `indent-style = "tab"`: \
+    ``` r
+    fn <- function() {
+        cat("Hello") # A tab `\t` indents the `cat()` call.
+    }
+    ```
+
+    Air defaults to spaces due to the overwhelming amount of existing R code written in this style, but consider using tabs for new projects to improve accessibility.
+    See `indent-width` to configure the number of spaces per indentation and the tab width.
+
+-   **line-ending**: The character air uses at the end of a line.
+
+    -   `auto`: The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to `\n` for files that contain no line endings.
+    -   `lf`: Line endings will be converted to `\n`. The default line ending on Unix.
+    -   `crlf`: Line endings will be converted to `\r\n`. The default line ending on Windows.
+    -   `native`: Line endings will be converted to `\n` on Unix and `\r\n` on Windows.
+
+-   **ignore-magic-line-break**: Air respects a small set of magic line breaks as an indication that certain function calls or function signatures should be left expanded.
+    If this option is set to `true`, magic line breaks are ignored.
+
+    It may be preferable to ignore magic line breaks if you prefer that `line-width` should be the only value that influences line breaks.

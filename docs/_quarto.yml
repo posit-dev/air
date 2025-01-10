@@ -19,6 +19,9 @@ website:
       - text: "Editors"
         href: editors.qmd
 
+      - text: "Configuration"
+        href: config.qmd
+
       - text: "Formatter"
         href: formatter.qmd
 
