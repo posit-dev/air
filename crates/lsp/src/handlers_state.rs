@@ -35,12 +35,12 @@ use tracing::Instrument;
 use url::Url;
 
 use crate::capabilities::ResolvedClientCapabilities;
-use crate::config::indent_style_from_vsc;
-use crate::config::indent_width_from_usize;
 use crate::config::DocumentConfig;
-use crate::config::VscDiagnosticsConfig;
-use crate::config::VscDocumentConfig;
-use crate::config::VscLogConfig;
+use crate::config_vsc::indent_style_from_vsc;
+use crate::config_vsc::indent_width_from_usize;
+use crate::config_vsc::VscDiagnosticsConfig;
+use crate::config_vsc::VscDocumentConfig;
+use crate::config_vsc::VscLogConfig;
 use crate::documents::Document;
 use crate::logging;
 use crate::logging::LogMessageSender;

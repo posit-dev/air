@@ -5,6 +5,7 @@ pub use tower_lsp::start_lsp;
 
 pub mod capabilities;
 pub mod config;
+pub mod config_vsc;
 pub mod crates;
 pub mod documents;
 pub mod encoding;
