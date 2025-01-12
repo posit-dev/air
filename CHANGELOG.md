@@ -2,6 +2,18 @@
 
 # Development version
 
+- The default indent style has been changed to spaces. The default indent width
+  has been changed to two. This more closely matches the overwhelming majority
+  of existing R code.
+
+- Parse errors in your document no longer trigger an LSP error when you request
+  document or range formatting (which typically would show up as an annoying
+  toast notification in your code editor) (#120).
+
+- `air format` is now faster on Windows when nothing changes (#90).
+
+- `air format --check` now works correctly with Windows line endings (#123).
+
 - Magic line breaks are now supported in left assignment (#118).
 
 

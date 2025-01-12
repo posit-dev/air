@@ -50,11 +50,10 @@ impl TestClient {
         }
     }
 
-    // `jsonrpc::Id` requires i64 IDs
-    fn id(&mut self) -> i64 {
+    fn id(&mut self) -> jsonrpc::Id {
         let id = self.id_counter;
         self.id_counter = id + 1;
-        id
+        jsonrpc::Id::Number(id)
     }
 
     pub async fn recv_response(&mut self) -> jsonrpc::Response {
@@ -72,12 +71,12 @@ impl TestClient {
         self.tx.send(not).await.unwrap();
     }
 
-    pub async fn request<R>(&mut self, params: R::Params) -> i64
+    pub async fn request<R>(&mut self, params: R::Params) -> jsonrpc::Id
     where
         R: lsp_types::request::Request,
     {
         let id = self.id();
-        let req = Request::from_request::<R>(jsonrpc::Id::Number(id), params);
+        let req = Request::from_request::<R>(id.clone(), params);
 
         // Unwrap: For this test client it's fine to panic if we can't send
         self.tx.send(req).await.unwrap();
@@ -85,7 +84,7 @@ impl TestClient {
         id
     }
 
-    pub async fn initialize(&mut self) -> i64 {
+    pub async fn initialize(&mut self) -> jsonrpc::Id {
         let params: Option<lsp_types::InitializeParams> = std::mem::take(&mut self.init_params);
         let params = params.unwrap_or_default();
         let params = Self::with_client_info(params);
@@ -108,6 +107,12 @@ impl TestClient {
         self.init_params = Some(init_params);
     }
 
+    pub async fn initialized(&mut self) {
+        let params = lsp_types::InitializedParams {};
+        self.notify::<lsp_types::notification::Initialized>(params)
+            .await
+    }
+
     pub async fn close_document(&mut self, uri: url::Url) {
         let params = lsp_types::DidCloseTextDocumentParams {
             text_document: lsp_types::TextDocumentIdentifier { uri },
@@ -117,15 +122,18 @@ impl TestClient {
 
     pub async fn shutdown(&mut self) {
         // TODO: Check that no messages are incoming
+        let id = self.id();
 
         // Don't use `Request::from_request()`. It has a bug with undefined
         // params (when `R::Params = ()`) which causes tower-lsp to not
         // recognise the Shutdown request.
-        let req = Request::build("shutdown").id(self.id()).finish();
+        let req = Request::build("shutdown").id(id.clone()).finish();
 
         // Unwrap: For this test client it's fine to panic if we can't send
         self.tx.send(req).await.unwrap();
-        self.recv_response().await;
+
+        let response = self.recv_response().await;
+        assert_eq!(&id, response.id());
     }
 
     pub async fn exit(&mut self) {
@@ -149,14 +157,14 @@ impl TestClient {
             .await
     }
 
-    pub async fn formatting(&mut self, params: lsp_types::DocumentFormattingParams) -> i64 {
+    pub async fn formatting(&mut self, params: lsp_types::DocumentFormattingParams) -> jsonrpc::Id {
         self.request::<lsp_types::request::Formatting>(params).await
     }
 
     pub async fn range_formatting(
         &mut self,
         params: lsp_types::DocumentRangeFormattingParams,
-    ) -> i64 {
+    ) -> jsonrpc::Id {
         self.request::<lsp_types::request::RangeFormatting>(params)
             .await
     }

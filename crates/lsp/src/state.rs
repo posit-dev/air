@@ -14,9 +14,6 @@ pub(crate) struct WorldState {
     /// Watched documents
     pub(crate) documents: HashMap<Url, Document>,
 
-    /// Watched folders
-    pub(crate) workspace: Workspace,
-
     /// The scopes for the console. This currently contains a list (outer `Vec`)
     /// of names (inner `Vec`) within the environments on the search path, starting
     /// from the global environment and ending with the base package. Eventually
@@ -44,11 +41,6 @@ pub(crate) struct WorldState {
     pub(crate) installed_packages: Vec<String>,
 
     pub(crate) config: LspConfig,
-}
-
-#[derive(Clone, Default, Debug)]
-pub(crate) struct Workspace {
-    pub folders: Vec<Url>,
 }
 
 impl WorldState {

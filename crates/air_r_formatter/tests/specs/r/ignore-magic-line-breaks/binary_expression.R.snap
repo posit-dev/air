@@ -1,0 +1,46 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/ignore-magic-line-breaks/binary_expression.R
+---
+# Input
+
+```R
+#' [format]
+#' ignore-magic-line-break = true
+
+# Fits on one line, flatten
+x |>
+  foo() |>
+  bar()
+
+# Fits on one line, flatten
+x <-
+  1 + 1
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Space
+Indent width: 2
+Line ending: LF
+Line width: 80
+Magic line break: Ignore
+-----
+
+```R
+#' [format]
+#' ignore-magic-line-break = true
+
+# Fits on one line, flatten
+x |> foo() |> bar()
+
+# Fits on one line, flatten
+x <- 1 + 1
+```

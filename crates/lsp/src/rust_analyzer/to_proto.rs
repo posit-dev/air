@@ -10,7 +10,7 @@ use super::{
     line_index::LineIndex,
     text_edit::{Indel, TextEdit},
 };
-use line_ending::LineEnding;
+use settings::LineEnding;
 use tower_lsp::lsp_types;
 
 pub(crate) fn text_edit(

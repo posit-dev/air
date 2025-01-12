@@ -6,7 +6,7 @@
 //
 
 use biome_lsp_converters::{line_index, PositionEncoding};
-use line_ending::LineEnding;
+use settings::LineEnding;
 use tower_lsp::lsp_types;
 
 use crate::config::DocumentConfig;
@@ -91,7 +91,7 @@ impl Document {
 
     #[cfg(test)]
     pub fn doodle_and_range(contents: &str) -> (Self, biome_text_size::TextRange) {
-        let (contents, range) = crate::test_utils::extract_marked_range(contents);
+        let (contents, range) = crate::test::extract_marked_range(contents);
         let doc = Self::new(contents, None, PositionEncoding::Utf8);
         (doc, range)
     }

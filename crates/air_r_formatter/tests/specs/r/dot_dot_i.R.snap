@@ -23,10 +23,11 @@ function(...) {
 ## Output 1
 
 -----
-Indent style: Tab
+Indent style: Space
 Indent width: 2
 Line ending: LF
 Line width: 80
+Magic line break: Respect
 -----
 
 ```R
@@ -35,6 +36,6 @@ Line width: 80
 ..10
 
 function(...) {
-	..1 + ..2
+  ..1 + ..2
 }
 ```

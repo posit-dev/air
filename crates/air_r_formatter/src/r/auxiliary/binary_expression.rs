@@ -1,3 +1,4 @@
+use crate::context::RFormatOptions;
 use crate::prelude::*;
 use air_r_syntax::AnyRExpression;
 use air_r_syntax::RBinaryExpression;
@@ -145,7 +146,7 @@ fn fmt_binary_assignment(
     f: &mut Formatter<RFormatContext>,
 ) -> FormatResult<()> {
     let right = format_with(|f| {
-        if binary_assignment_needs_user_requested_expansion(&operator, &right) {
+        if binary_assignment_has_magic_line_break(&operator, &right, f.options()) {
             write!(
                 f,
                 [indent(&format_args![hard_line_break(), right.format()])]
@@ -166,12 +167,14 @@ fn fmt_binary_assignment(
     )
 }
 
-fn binary_assignment_needs_user_requested_expansion(
+fn binary_assignment_has_magic_line_break(
     operator: &SyntaxToken<RLanguage>,
     right: &AnyRExpression,
+    options: &RFormatOptions,
 ) -> bool {
-    // TODO: This should be configurable by an option, since it is a case of
-    // irreversible formatting
+    if options.magic_line_break().is_ignore() {
+        return false;
+    }
 
     // Only for these kinds of left assignment
     if !matches!(
@@ -286,7 +289,7 @@ struct TailPiece {
 ///     d
 ///
 /// # Also allowed, since it fits on one line
-/// # (depends on user requested line breaks and object lengths)
+/// # (depends on magic line breaks and object lengths)
 /// a +
 ///   b -
 ///   c * d
@@ -395,8 +398,7 @@ struct TailPiece {
 /// `geom_bar() %>% identity()` is executed first, and the extra indent helps you
 /// see that.
 ///
-/// As a final example, consider this user requested line break, which we
-/// actually want to ignore:
+/// As a final example, consider this line break, which we actually want to ignore:
 ///
 /// ```r
 /// # Input
@@ -530,7 +532,7 @@ fn fmt_binary_chain(
     write!(
         f,
         [group(&format_args![left.format(), indent(&chain)])
-            .should_expand(needs_user_requested_expansion(&tail))]
+            .should_expand(has_magic_line_break(&tail, f.options()))]
     )
 }
 
@@ -573,7 +575,7 @@ fn is_chainable_binary_operator(kind: RSyntaxKind) -> bool {
     }
 }
 
-/// Check if the user has inserted a leading newline before the very first `right`.
+/// Check if the user has inserted a magic line break before the very first `right`.
 /// If so, we respect that and treat it as a request to break ALL of the binary operators
 /// in the chain. Note this is a case of irreversible formatting!
 ///
@@ -622,9 +624,11 @@ fn is_chainable_binary_operator(kind: RSyntaxKind) -> bool {
 /// # Output
 /// (df %>% mutate(x = 1) %>% filter(x == y))
 /// ```
-fn needs_user_requested_expansion(tail: &[TailPiece]) -> bool {
-    // TODO: This should be configurable by an option, since it is a case of
-    // irreversible formatting
+fn has_magic_line_break(tail: &[TailPiece], options: &RFormatOptions) -> bool {
+    if options.magic_line_break().is_ignore() {
+        return false;
+    }
+
     tail.first()
         .map_or(false, |piece| piece.right.syntax().has_leading_newline())
 }

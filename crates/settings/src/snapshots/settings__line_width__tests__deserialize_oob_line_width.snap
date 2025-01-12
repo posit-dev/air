@@ -1,0 +1,9 @@
+---
+source: crates/settings/src/line_width.rs
+expression: error
+---
+TOML parse error at line 2, column 14
+  |
+2 | line-width = 400
+  |              ^^^
+The line width must be a value between 1 and 320, not 400.

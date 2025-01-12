@@ -9,6 +9,8 @@ use serde::Deserialize;
 use serde::Serialize;
 use struct_field_names_as_array::FieldNamesAsArray;
 
+use crate::logging::LogLevel;
+
 /// Configuration of the LSP
 #[derive(Clone, Debug, Default)]
 pub(crate) struct LspConfig {}
@@ -53,6 +55,13 @@ pub(crate) struct VscDocumentConfig {
 pub(crate) struct VscDiagnosticsConfig {
     // DEV NOTE: Update `section_from_key()` method after adding a field
     pub enable: bool,
+}
+
+#[derive(Deserialize, FieldNamesAsArray, Clone, Debug)]
+pub(crate) struct VscLogConfig {
+    // DEV NOTE: Update `section_from_key()` method after adding a field
+    pub log_level: Option<LogLevel>,
+    pub dependency_log_levels: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -125,5 +134,15 @@ pub(crate) fn indent_style_from_lsp(insert_spaces: bool) -> IndentStyle {
         IndentStyle::Space
     } else {
         IndentStyle::Tab
+    }
+}
+
+impl VscLogConfig {
+    pub(crate) fn section_from_key(key: &str) -> &str {
+        match key {
+            "log_level" => "air.logLevel",
+            "dependency_log_levels" => "air.dependencyLogLevels",
+            _ => "unknown", // To be caught via downstream errors
+        }
     }
 }

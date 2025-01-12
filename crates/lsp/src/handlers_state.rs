@@ -5,14 +5,20 @@
 //
 //
 
+use std::array::IntoIter;
+
 use anyhow::anyhow;
+use anyhow::Context;
 use biome_lsp_converters::PositionEncoding;
+use biome_lsp_converters::WideEncoding;
 use serde_json::Value;
 use struct_field_names_as_array::FieldNamesAsArray;
 use tower_lsp::lsp_types;
 use tower_lsp::lsp_types::ConfigurationItem;
 use tower_lsp::lsp_types::DidChangeConfigurationParams;
 use tower_lsp::lsp_types::DidChangeTextDocumentParams;
+use tower_lsp::lsp_types::DidChangeWatchedFilesParams;
+use tower_lsp::lsp_types::DidChangeWorkspaceFoldersParams;
 use tower_lsp::lsp_types::DidCloseTextDocumentParams;
 use tower_lsp::lsp_types::DidOpenTextDocumentParams;
 use tower_lsp::lsp_types::FoldingRangeProviderCapability;
@@ -29,16 +35,20 @@ use tower_lsp::lsp_types::WorkspaceServerCapabilities;
 use tracing::Instrument;
 use url::Url;
 
+use crate::capabilities::ResolvedClientCapabilities;
 use crate::config::indent_style_from_lsp;
 use crate::config::DocumentConfig;
 use crate::config::VscDiagnosticsConfig;
 use crate::config::VscDocumentConfig;
+use crate::config::VscLogConfig;
 use crate::documents::Document;
 use crate::logging;
 use crate::logging::LogMessageSender;
 use crate::main_loop::LspState;
+use crate::settings::InitializationOptions;
 use crate::state::workspace_uris;
 use crate::state::WorldState;
+use crate::workspaces::WorkspaceSettingsResolver;
 
 // Handlers that mutate the world state
 
@@ -63,58 +73,46 @@ pub struct ConsoleInputs {
 pub(crate) fn initialize(
     params: InitializeParams,
     lsp_state: &mut LspState,
-    state: &mut WorldState,
     log_tx: LogMessageSender,
 ) -> anyhow::Result<InitializeResult> {
-    // TODO: Get user specified options from `params.initialization_options`
-    let log_level = None;
-    let dependency_log_levels = None;
+    let InitializationOptions {
+        log_level,
+        dependency_log_levels,
+    } = params.initialization_options.map_or_else(
+        InitializationOptions::default,
+        InitializationOptions::from_value,
+    );
 
-    logging::init_logging(
+    lsp_state.log_state = Some(logging::init_logging(
         log_tx,
         log_level,
         dependency_log_levels,
         params.client_info.as_ref(),
+    ));
+
+    // Initialize the workspace settings resolver using the initial set of client provided `workspace_folders`
+    lsp_state.workspace_settings_resolver = WorkspaceSettingsResolver::from_workspace_folders(
+        params.workspace_folders.unwrap_or_default(),
     );
 
-    // Defaults to UTF-16
-    let mut position_encoding = None;
+    lsp_state.capabilities = ResolvedClientCapabilities::new(params.capabilities);
 
-    if let Some(caps) = params.capabilities.general {
-        // If the client supports UTF-8 we use that, even if it's not its
-        // preferred encoding (at position 0). Otherwise we use the mandatory
-        // UTF-16 encoding that all clients and servers must support, even if
-        // the client would have preferred UTF-32. Note that VSCode and Positron
-        // only support UTF-16.
-        if let Some(caps) = caps.position_encodings {
-            if caps.contains(&lsp_types::PositionEncodingKind::UTF8) {
-                lsp_state.position_encoding = PositionEncoding::Utf8;
-                position_encoding = Some(lsp_types::PositionEncodingKind::UTF8);
-            }
-        }
-    }
-
-    // Take note of supported capabilities so we can register them in the
-    // `Initialized` handler
-    if let Some(ws_caps) = params.capabilities.workspace {
-        if matches!(ws_caps.did_change_configuration, Some(caps) if matches!(caps.dynamic_registration, Some(true)))
-        {
-            lsp_state.needs_registration.did_change_configuration = true;
-        }
-    }
-
-    // Initialize the workspace folders
-    let mut folders: Vec<String> = Vec::new();
-    if let Some(workspace_folders) = params.workspace_folders {
-        for folder in workspace_folders.iter() {
-            state.workspace.folders.push(folder.uri.clone());
-            if let Ok(path) = folder.uri.to_file_path() {
-                if let Some(path) = path.to_str() {
-                    folders.push(path.to_string());
-                }
-            }
-        }
-    }
+    // If the client supports UTF-8 we use that, even if it's not its
+    // preferred encoding (at position 0). Otherwise we use the mandatory
+    // UTF-16 encoding that all clients and servers must support, even if
+    // the client would have preferred UTF-32. Note that VSCode and Positron
+    // only support UTF-16.
+    let position_encoding = if lsp_state
+        .capabilities
+        .position_encodings
+        .contains(&lsp_types::PositionEncodingKind::UTF8)
+    {
+        lsp_state.position_encoding = PositionEncoding::Utf8;
+        Some(lsp_types::PositionEncodingKind::UTF8)
+    } else {
+        lsp_state.position_encoding = PositionEncoding::Wide(WideEncoding::Utf16);
+        Some(lsp_types::PositionEncodingKind::UTF16)
+    };
 
     Ok(InitializeResult {
         server_info: Some(ServerInfo {
@@ -190,15 +188,43 @@ pub(crate) fn did_close(
 pub(crate) async fn did_change_configuration(
     _params: DidChangeConfigurationParams,
     client: &tower_lsp::Client,
+    lsp_state: &mut LspState,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
-    // The notification params sometimes contain data but it seems in practice
-    // we should just ignore it. Instead we need to pull the settings again for
-    // all URI of interest.
+    // The LSP deprecated usage of `DidChangeConfigurationParams`, but still allows
+    // servers to use the notification itself as a way to get notified that some
+    // configuration that we watch has changed. When we detect any changes, we re-pull
+    // everything we are interested in.
 
-    update_config(workspace_uris(state), client, state)
+    update_config(workspace_uris(state), client, lsp_state, state)
         .instrument(tracing::info_span!("did_change_configuration"))
         .await
+}
+
+pub(crate) fn did_change_workspace_folders(
+    params: DidChangeWorkspaceFoldersParams,
+    lsp_state: &mut LspState,
+) -> anyhow::Result<()> {
+    for lsp_types::WorkspaceFolder { uri, .. } in params.event.added {
+        lsp_state.open_workspace_folder(&uri);
+    }
+    for lsp_types::WorkspaceFolder { uri, .. } in params.event.removed {
+        lsp_state.close_workspace_folder(&uri);
+    }
+    Ok(())
+}
+
+pub(crate) fn did_change_watched_files(
+    params: DidChangeWatchedFilesParams,
+    lsp_state: &mut LspState,
+) -> anyhow::Result<()> {
+    for change in &params.changes {
+        lsp_state
+            .workspace_settings_resolver
+            .reload_workspaces_matched_by_url(&change.uri);
+    }
+
+    Ok(())
 }
 
 #[tracing::instrument(level = "info", skip_all)]
@@ -234,6 +260,7 @@ pub(crate) fn did_change_formatting_options(
 async fn update_config(
     uris: Vec<Url>,
     client: &tower_lsp::Client,
+    lsp_state: &mut LspState,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
     let mut items: Vec<ConfigurationItem> = vec![];
@@ -260,15 +287,26 @@ async fn update_config(
             .collect();
     items.append(&mut document_items);
 
+    let log_keys = VscLogConfig::FIELD_NAMES_AS_ARRAY;
+    let mut log_items: Vec<ConfigurationItem> = log_keys
+        .iter()
+        .map(|key| ConfigurationItem {
+            scope_uri: None,
+            section: Some(VscLogConfig::section_from_key(key).into()),
+        })
+        .collect();
+    items.append(&mut log_items);
+
     let configs = client.configuration(items).await?;
 
     // We got the config items in a flat vector that's guaranteed to be
     // ordered in the same way it was sent in. Be defensive and check that
     // we've got the expected number of items before we process them chunk
     // by chunk
-    let n_document_items = document_keys.len();
     let n_diagnostics_items = diagnostics_keys.len();
-    let n_items = n_diagnostics_items + (n_document_items * uris.len());
+    let n_document_items = document_keys.len() * uris.len();
+    let n_log_items = log_keys.len();
+    let n_items = n_diagnostics_items + n_document_items + n_log_items;
 
     if configs.len() != n_items {
         return Err(anyhow!(
@@ -282,8 +320,26 @@ async fn update_config(
 
     // --- Diagnostics
     let keys = diagnostics_keys.into_iter();
-    let items: Vec<Value> = configs.by_ref().take(n_diagnostics_items).collect();
+    let items = configs.by_ref().take(n_diagnostics_items);
+    update_diagnostics_config(keys, items)?;
 
+    // --- Documents
+    let keys = document_keys.into_iter();
+    let items = configs.by_ref().take(n_document_items);
+    update_documents_config(keys, items, uris, state)?;
+
+    // --- Logs
+    let keys = log_keys.into_iter();
+    let items = configs.by_ref().take(n_log_items);
+    update_log_config(keys, items, lsp_state)?;
+
+    Ok(())
+}
+
+fn update_diagnostics_config(
+    keys: IntoIter<&str, 1>,
+    items: impl Iterator<Item = Value>,
+) -> anyhow::Result<()> {
     // Create a new `serde_json::Value::Object` manually to convert it
     // to a `VscDocumentConfig` with `from_value()`. This way serde_json
     // can type-check the dynamic JSON value we got from the client.
@@ -303,14 +359,22 @@ async fn update_config(
     //     lsp::spawn_diagnostics_refresh_all(state.clone());
     // }
 
-    // --- Documents
+    Ok(())
+}
+
+fn update_documents_config(
+    keys: IntoIter<&str, 3>,
+    mut items: impl Iterator<Item = Value>,
+    uris: Vec<Url>,
+    state: &mut WorldState,
+) -> anyhow::Result<()> {
     // For each document, deserialise the vector of JSON values into a typed config
     for uri in uris {
-        let keys = document_keys.into_iter();
-        let items: Vec<Value> = configs.by_ref().take(n_document_items).collect();
+        let uri_keys = keys.clone();
+        let uri_items = items.by_ref().take(keys.len());
 
         let mut map = serde_json::Map::new();
-        std::iter::zip(keys, items).for_each(|(key, item)| {
+        std::iter::zip(uri_keys, uri_items).for_each(|(key, item)| {
             map.insert(key.into(), item);
         });
 
@@ -323,6 +387,29 @@ async fn update_config(
         // Finally, update the document's config
         state.get_document_mut(&uri)?.config = config;
     }
+
+    Ok(())
+}
+
+fn update_log_config(
+    keys: IntoIter<&str, 2>,
+    items: impl Iterator<Item = Value>,
+    lsp_state: &mut LspState,
+) -> anyhow::Result<()> {
+    let log_state = lsp_state.log_state.as_mut().context("Missing log state")?;
+
+    let mut map = serde_json::Map::new();
+    std::iter::zip(keys, items).for_each(|(key, item)| {
+        map.insert(key.into(), item);
+    });
+
+    // Deserialise the VS Code configuration
+    let VscLogConfig {
+        log_level,
+        dependency_log_levels,
+    } = serde_json::from_value(serde_json::Value::Object(map))?;
+
+    log_state.reload(log_level, dependency_log_levels);
 
     Ok(())
 }

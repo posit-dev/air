@@ -20,10 +20,11 @@ info: r/value/complex_value.R
 ## Output 1
 
 -----
-Indent style: Tab
+Indent style: Space
 Indent width: 2
 Line ending: LF
 Line width: 80
+Magic line break: Respect
 -----
 
 ```R

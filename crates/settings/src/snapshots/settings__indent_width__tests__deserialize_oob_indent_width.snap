@@ -1,0 +1,9 @@
+---
+source: crates/settings/src/indent_width.rs
+expression: error
+---
+TOML parse error at line 2, column 16
+  |
+2 | indent-width = 25
+  |                ^^
+The indent width must be a value between 1 and 24, not 25.

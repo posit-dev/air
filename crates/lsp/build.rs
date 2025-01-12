@@ -18,10 +18,17 @@ fn write_workspace_crate_names() {
     cmd.no_deps();
     let metadata = cmd.exec().unwrap();
 
-    let packages: Vec<String> = metadata
+    let mut packages: Vec<String> = metadata
         .workspace_packages()
-        .iter()
+        .into_iter()
         .map(|package| package.name.clone())
+        .collect();
+
+    // Sort for stability across `cargo metadata` versions
+    packages.sort();
+
+    let packages: Vec<String> = packages
+        .into_iter()
         .map(|package| String::from("\"") + package.as_str() + "\",")
         .collect();
 

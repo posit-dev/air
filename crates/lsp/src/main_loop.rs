@@ -18,19 +18,24 @@ use tokio::task::JoinHandle;
 use tower_lsp::lsp_types::Diagnostic;
 use tower_lsp::Client;
 use url::Url;
+use workspace::settings::Settings;
 
+use crate::capabilities::ResolvedClientCapabilities;
 use crate::handlers;
 use crate::handlers_ext;
 use crate::handlers_format;
 use crate::handlers_state;
 use crate::handlers_state::ConsoleInputs;
+use crate::logging;
 use crate::logging::LogMessageSender;
-use crate::logging::LogState;
+use crate::logging::LogThreadState;
 use crate::state::WorldState;
 use crate::tower_lsp::LspMessage;
 use crate::tower_lsp::LspNotification;
 use crate::tower_lsp::LspRequest;
 use crate::tower_lsp::LspResponse;
+use crate::workspaces::WorkspaceSettings;
+use crate::workspaces::WorkspaceSettingsResolver;
 
 pub(crate) type TokioUnboundedSender<T> = tokio::sync::mpsc::UnboundedSender<T>;
 pub(crate) type TokioUnboundedReceiver<T> = tokio::sync::mpsc::UnboundedReceiver<T>;
@@ -141,13 +146,16 @@ pub(crate) struct GlobalState {
     /// Log state that gets moved to the log thread,
     /// and a channel for communicating with that thread which we
     /// pass on to `init_logging()` during `initialize()`.
-    log_state: Option<LogState>,
+    log_thread_state: Option<LogThreadState>,
     log_tx: Option<LogMessageSender>,
 }
 
-/// Unlike `WorldState`, `ParserState` cannot be cloned and is only accessed by
+/// Unlike `WorldState`, `LspState` cannot be cloned and is only accessed by
 /// exclusive handlers.
 pub(crate) struct LspState {
+    /// Resolver to look up [`Settings`] given a document [`Url`]
+    pub(crate) workspace_settings_resolver: WorkspaceSettingsResolver,
+
     /// The negociated encoding for document positions. Note that documents are
     /// always stored as UTF-8 in Rust Strings. This encoding is only used to
     /// translate UTF-16 positions sent by the client to UTF-8 ones.
@@ -156,26 +164,45 @@ pub(crate) struct LspState {
     /// The set of tree-sitter document parsers managed by the `GlobalState`.
     pub(crate) parsers: HashMap<Url, tree_sitter::Parser>,
 
-    /// List of capabilities for which we need to send a registration request
-    /// when we get the `Initialized` notification.
-    pub(crate) needs_registration: ClientCaps,
-    // Add handle to aux loop here?
+    /// List of client capabilities that we care about
+    pub(crate) capabilities: ResolvedClientCapabilities,
+
+    /// State used to dynamically update the log level
+    pub(crate) log_state: Option<logging::LogState>,
 }
 
 impl Default for LspState {
     fn default() -> Self {
         Self {
+            workspace_settings_resolver: WorkspaceSettingsResolver::default(),
             // Default encoding specified in the LSP protocol
             position_encoding: PositionEncoding::Wide(WideEncoding::Utf16),
             parsers: Default::default(),
-            needs_registration: Default::default(),
+            capabilities: ResolvedClientCapabilities::default(),
+            log_state: None,
         }
     }
 }
 
-#[derive(Debug, Default)]
-pub(crate) struct ClientCaps {
-    pub(crate) did_change_configuration: bool,
+impl LspState {
+    pub(crate) fn document_settings(&self, url: &Url) -> &Settings {
+        let workspace_settings = self.workspace_settings_resolver.settings_for_url(url);
+
+        // TODO: In the `Fallback` case, layer in client provided document specific
+        // settings on top of the fallback `settings`
+        match workspace_settings {
+            WorkspaceSettings::Toml(settings) => settings,
+            WorkspaceSettings::Fallback(settings) => settings,
+        }
+    }
+
+    pub(crate) fn open_workspace_folder(&mut self, url: &Url) {
+        self.workspace_settings_resolver.open_workspace_folder(url)
+    }
+
+    pub(crate) fn close_workspace_folder(&mut self, url: &Url) {
+        self.workspace_settings_resolver.close_workspace_folder(url)
+    }
 }
 
 enum LoopControl {
@@ -210,7 +237,7 @@ impl GlobalState {
         // tower-lsp backend and the Jupyter kernel.
         let (events_tx, events_rx) = tokio_unbounded_channel::<Event>();
 
-        let (log_state, log_tx) = LogState::new(client.clone());
+        let (log_thread_state, log_tx) = LogThreadState::new(client.clone());
         let (auxiliary_state, auxiliary_event_tx) = AuxiliaryState::new(client.clone());
 
         let state = Self {
@@ -220,7 +247,7 @@ impl GlobalState {
             events_rx,
             auxiliary_state: Some(auxiliary_state),
             auxiliary_event_tx,
-            log_state: Some(log_state),
+            log_thread_state: Some(log_thread_state),
             log_tx: Some(log_tx),
         };
 
@@ -248,10 +275,10 @@ impl GlobalState {
         // Spawn latency-sensitive auxiliary and log threads.
         let mut set = tokio::task::JoinSet::<()>::new();
 
-        // Take ownership over `log_state` and start the log thread.
+        // Take ownership over `log_thread_state` and start the log thread.
         // Unwrap: `start()` should only be called once.
-        let log_state = self.log_state.take().unwrap();
-        set.spawn(async move { log_state.start().await });
+        let log_thread_state = self.log_thread_state.take().unwrap();
+        set.spawn(async move { log_thread_state.start().await });
 
         // Take ownership over `auxiliary_state` and start the auxiliary thread.
         // Unwrap: `start()` should only be called once.
@@ -300,14 +327,14 @@ impl GlobalState {
                         LspNotification::Initialized(_params) => {
                             handlers::handle_initialized(&self.client, &self.lsp_state).await?;
                         },
-                        LspNotification::DidChangeWorkspaceFolders(_params) => {
-                            // TODO: Restart indexer with new folders.
+                        LspNotification::DidChangeWorkspaceFolders(params) => {
+                            handlers_state::did_change_workspace_folders(params, &mut self.lsp_state)?;
                         },
                         LspNotification::DidChangeConfiguration(params) => {
-                            handlers_state::did_change_configuration(params, &self.client, &mut self.world).await?;
+                            handlers_state::did_change_configuration(params, &self.client, &mut self.lsp_state, &mut self.world).await?;
                         },
-                        LspNotification::DidChangeWatchedFiles(_params) => {
-                            // TODO: Re-index the changed files.
+                        LspNotification::DidChangeWatchedFiles(params) => {
+                            handlers_state::did_change_watched_files(params, &mut self.lsp_state)?;
                         },
                         LspNotification::DidOpenTextDocument(params) => {
                             handlers_state::did_open(params, &self.lsp_state, &mut self.world)?;
@@ -329,17 +356,17 @@ impl GlobalState {
                         LspRequest::Initialize(params) => {
                             // Unwrap: `Initialize` method should only be called once.
                             let log_tx = self.log_tx.take().unwrap();
-                            respond(tx, handlers_state::initialize(params, &mut self.lsp_state, &mut self.world, log_tx), LspResponse::Initialize)?;
+                            respond(tx, handlers_state::initialize(params, &mut self.lsp_state, log_tx), LspResponse::Initialize)?;
                         },
                         LspRequest::Shutdown => {
                             out = LoopControl::Shutdown;
                             respond(tx, Ok(()), LspResponse::Shutdown)?;
                         },
                         LspRequest::DocumentFormatting(params) => {
-                            respond(tx, handlers_format::document_formatting(params, &self.world), LspResponse::DocumentFormatting)?;
+                            respond(tx, handlers_format::document_formatting(params, &self.lsp_state, &self.world), LspResponse::DocumentFormatting)?;
                         },
                         LspRequest::DocumentRangeFormatting(params) => {
-                            respond(tx, handlers_format::document_range_formatting(params, &self.world), LspResponse::DocumentRangeFormatting)?;
+                            respond(tx, handlers_format::document_range_formatting(params, &self.lsp_state, &self.world), LspResponse::DocumentRangeFormatting)?;
                         },
                         LspRequest::FoldingRange(params) => {
                             respond(tx, handlers::handle_folding_range(params, &self.world), LspResponse::FoldingRange)?;
