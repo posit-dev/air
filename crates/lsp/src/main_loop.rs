@@ -367,6 +367,9 @@ impl GlobalState {
                             handlers_state::did_change_formatting_options(&params.text_document.uri, &params.options, &mut self.world);
                             respond(tx, handlers_format::document_range_formatting(params, &self.lsp_state, &self.world), LspResponse::DocumentRangeFormatting)?;
                         },
+                        LspRequest::FoldingRange(params) => {
+                            respond(tx, handlers::handle_folding_range(params, &self.world), LspResponse::FoldingRange)?;
+                        },
                         LspRequest::AirViewFile(params) => {
                             respond(tx, handlers_ext::view_file(params, &self.world), LspResponse::AirViewFile)?;
                         },

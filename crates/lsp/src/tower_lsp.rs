@@ -63,6 +63,7 @@ pub(crate) enum LspRequest {
     DocumentFormatting(DocumentFormattingParams),
     Shutdown,
     DocumentRangeFormatting(DocumentRangeFormattingParams),
+    FoldingRange(FoldingRangeParams),
     AirViewFile(ViewFileParams),
 }
 
@@ -72,6 +73,7 @@ pub(crate) enum LspResponse {
     Initialize(InitializeResult),
     DocumentFormatting(Option<Vec<TextEdit>>),
     DocumentRangeFormatting(Option<Vec<TextEdit>>),
+    FoldingRange(Option<Vec<FoldingRange>>),
     Shutdown(()),
     AirViewFile(String),
 }
@@ -261,6 +263,13 @@ impl LanguageServer for Backend {
             self.request(LspRequest::DocumentRangeFormatting(params))
                 .await,
             LspResponse::DocumentRangeFormatting
+        )
+    }
+
+    async fn folding_range(&self, params: FoldingRangeParams) -> Result<Option<Vec<FoldingRange>>> {
+        cast_response!(
+            self.request(LspRequest::FoldingRange(params)).await,
+            LspResponse::FoldingRange
         )
     }
 }
