@@ -1,3 +1,10 @@
+//
+// folding_range.rs
+//
+// Copyright (C) 2025 Posit Software, PBC. All rights reserved.
+//
+//
+
 use regex::Regex;
 use std::sync::LazyLock;
 
