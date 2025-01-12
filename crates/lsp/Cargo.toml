@@ -29,6 +29,7 @@ futures.workspace = true
 itertools.workspace = true
 line_ending.workspace = true
 memchr.workspace = true
+regex = "1.11.1"
 serde.workspace = true
 serde_json.workspace = true
 settings.workspace = true
