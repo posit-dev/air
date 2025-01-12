@@ -1330,6 +1330,7 @@ dependencies = [
  "line_ending",
  "lsp_test",
  "memchr",
+ "regex",
  "serde",
  "serde_json",
  "struct-field-names-as-array",
