@@ -7,12 +7,16 @@
 
 use struct_field_names_as_array::FieldNamesAsArray;
 use tower_lsp::lsp_types;
+use tower_lsp::lsp_types::FoldingRange;
+use tower_lsp::lsp_types::FoldingRangeParams;
 use tower_lsp::Client;
 use tracing::Instrument;
 
 use crate::config::VscDiagnosticsConfig;
 use crate::config::VscDocumentConfig;
+use crate::folding_range::folding_range;
 use crate::main_loop::LspState;
+use crate::state::WorldState;
 
 // Handlers that do not mutate the world state. They take a sharing reference or
 // a clone of the state.
@@ -65,4 +69,20 @@ fn collect_regs(
             register_options: Some(serde_json::json!({ "section": into_section(field) })),
         })
         .collect()
+}
+
+#[tracing::instrument(level = "info", skip_all)]
+pub(crate) fn handle_folding_range(
+    params: FoldingRangeParams,
+    state: &WorldState,
+) -> anyhow::Result<Option<Vec<FoldingRange>>> {
+    let uri = params.text_document.uri;
+    let document = state.get_document(&uri)?;
+    match folding_range(document) {
+        Ok(foldings) => Ok(Some(foldings)),
+        Err(err) => {
+            tracing::error!("{err:?}");
+            Ok(None)
+        }
+    }
 }
