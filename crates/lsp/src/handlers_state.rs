@@ -245,16 +245,9 @@ pub(crate) fn did_change_formatting_options(
 
     doc.config.indent_style = Some(indent_style_from_vsc(opts.insert_spaces));
 
-    // Only update the document indent width if using spaces. This allows users
-    // to change their tab width in an editor for usability purposes without
-    // affecting wrapping. This is experimental and potentially confusing for
-    // users because code might visibly pass the column ruler in the editor
-    // without causing the formatter to consider it a line width overflow. For
-    // now we're pursuing the idea of tab width being a purely user setting that
-    // doesn't affect code.
-    if opts.insert_spaces {
-        doc.config.indent_width = Some(indent_width_from_usize(opts.tab_size as usize));
-    }
+    // Note that `tabSize` in the LSP protocol corresponds to `indentSize` in VS Code options.
+    // And df Code's `indentSize` is aliased to Code's `tabSize`, we get the latter here.
+    doc.config.indent_width = Some(indent_width_from_usize(opts.tab_size as usize));
 
     // TODO:
     // `trim_trailing_whitespace`
@@ -262,7 +255,9 @@ pub(crate) fn did_change_formatting_options(
     // `insert_final_newline`
 }
 
-// TODO: Extract document-specific updating
+// TODO: Extract document-specific updating. This currently pulls global
+// settings as well but sometimes we only want to refresh document-specific
+// settings.
 
 async fn update_config(
     uris: Vec<Url>,
