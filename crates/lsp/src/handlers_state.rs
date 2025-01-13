@@ -236,6 +236,8 @@ pub(crate) fn did_change_formatting_options(
         return;
     };
 
+    tracing::trace!(file = ?uri, "Got formatting settings: {:?}", &opts);
+
     doc.config.indent_style = Some(indent_style_from_vsc(opts.insert_spaces));
 
     // Only update the document indent width if using spaces. This allows users
@@ -378,6 +380,7 @@ fn update_documents_config(
 
         // Deserialise the VS Code configuration
         let config: VscDocumentSettings = serde_json::from_value(serde_json::Value::Object(map))?;
+        tracing::trace!(file = ?uri, "Got VS Code settings: {:?}", &config);
 
         // Now convert the VS Code specific type into our own type
         let config: DocumentSettings = config.into();
