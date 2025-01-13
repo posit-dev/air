@@ -43,11 +43,11 @@ pub(crate) async fn handle_initialized(
             VscDocumentSettings::FIELD_NAMES_AS_ARRAY.to_vec(),
             VscDocumentSettings::section_from_key,
         );
-        let mut config_diagnostics_registrations: Vec<lsp_types::Registration> = collect_regs(
+        let mut config_diagnostics_registrations = collect_regs(
             VscDiagnosticsSettings::FIELD_NAMES_AS_ARRAY.to_vec(),
             VscDiagnosticsSettings::section_from_key,
         );
-        let mut config_log_registrations: Vec<lsp_types::Registration> = collect_regs(
+        let mut config_log_registrations = collect_regs(
             VscLogSettings::FIELD_NAMES_AS_ARRAY.to_vec(),
             VscLogSettings::section_from_key,
         );
