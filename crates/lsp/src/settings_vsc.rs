@@ -1,5 +1,5 @@
 //
-// config_vsc.rs
+// settings_vsc.rs
 //
 // Copyright (C) 2024 Posit Software, PBC. All rights reserved.
 //
@@ -9,7 +9,7 @@
 // the same settings sections for all IDEs, even if the naming and organization is
 // from VS Code?
 
-use crate::{config::DocumentSettings, logging::LogLevel};
+use crate::{logging::LogLevel, settings::DocumentSettings};
 use struct_field_names_as_array::FieldNamesAsArray;
 
 /// VS Code representation of a document settings

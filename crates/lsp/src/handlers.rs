@@ -12,10 +12,10 @@ use tower_lsp::lsp_types::FileSystemWatcher;
 use tower_lsp::Client;
 use tracing::Instrument;
 
-use crate::config_vsc::VscDiagnosticsSettings;
-use crate::config_vsc::VscDocumentSettings;
-use crate::config_vsc::VscLogSettings;
 use crate::main_loop::LspState;
+use crate::settings_vsc::VscDiagnosticsSettings;
+use crate::settings_vsc::VscDocumentSettings;
+use crate::settings_vsc::VscLogSettings;
 
 // Handlers that do not mutate the world state. They take a sharing reference or
 // a clone of the state.

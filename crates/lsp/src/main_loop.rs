@@ -21,7 +21,6 @@ use url::Url;
 use workspace::settings::Settings;
 
 use crate::capabilities::ResolvedClientCapabilities;
-use crate::config::DocumentSettings;
 use crate::handlers;
 use crate::handlers_ext;
 use crate::handlers_format;
@@ -30,6 +29,7 @@ use crate::handlers_state::ConsoleInputs;
 use crate::logging;
 use crate::logging::LogMessageSender;
 use crate::logging::LogThreadState;
+use crate::settings::DocumentSettings;
 use crate::state::WorldState;
 use crate::tower_lsp::LspMessage;
 use crate::tower_lsp::LspNotification;

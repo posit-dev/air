@@ -9,9 +9,9 @@ use biome_lsp_converters::{line_index, PositionEncoding};
 use settings::LineEnding;
 use tower_lsp::lsp_types;
 
-use crate::config::DocumentSettings;
 use crate::rust_analyzer::line_index::LineIndex;
 use crate::rust_analyzer::utils::apply_document_changes;
+use crate::settings::DocumentSettings;
 
 #[derive(Clone)]
 pub struct Document {

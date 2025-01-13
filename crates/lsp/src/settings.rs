@@ -1,6 +1,14 @@
 use serde::Deserialize;
 use serde_json::Value;
 
+/// Settings of a document.
+#[derive(Clone, Debug, Default, serde::Serialize, serde::Deserialize)]
+pub struct DocumentSettings {
+    pub indent_style: Option<settings::IndentStyle>,
+    pub indent_width: Option<settings::IndentWidth>,
+    pub line_width: Option<settings::LineWidth>,
+}
+
 /// This is the exact schema for initialization options sent in by the client
 /// during initialization. Remember that initialization options are ones that are
 /// strictly required at startup time, and most configuration options should really be
