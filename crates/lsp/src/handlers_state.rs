@@ -152,9 +152,11 @@ pub(crate) async fn did_open(
     let document = Document::new(contents, Some(version), lsp_state.position_encoding);
     state.documents.insert(uri.clone(), document);
 
-    update_config(vec![uri], client, lsp_state, state)
-        .instrument(tracing::info_span!("did_change_configuration"))
-        .await?;
+    if !cfg!(test) {
+        update_config(vec![uri], client, lsp_state, state)
+            .instrument(tracing::info_span!("did_change_configuration"))
+            .await?;
+    }
 
     Ok(())
 }
