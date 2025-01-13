@@ -5,10 +5,6 @@
 //
 //
 
-/// Configuration of the LSP
-#[derive(Clone, Debug, Default)]
-pub(crate) struct LspConfig {}
-
 /// Settings of a document.
 #[derive(Clone, Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct DocumentSettings {
