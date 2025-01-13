@@ -52,17 +52,11 @@ impl TestClientExt for TestClient {
     async fn format_document_edits(&mut self, doc: &Document) -> Option<Vec<lsp_types::TextEdit>> {
         let lsp_doc = self.open_document(doc).await;
 
-        let options = lsp_types::FormattingOptions {
-            tab_size: 4,
-            insert_spaces: false,
-            ..Default::default()
-        };
-
         self.formatting(lsp_types::DocumentFormattingParams {
             text_document: lsp_types::TextDocumentIdentifier {
                 uri: lsp_doc.uri.clone(),
             },
-            options,
+            options: formatting_options(doc),
             work_done_progress_params: Default::default(),
         })
         .await;
@@ -88,12 +82,6 @@ impl TestClientExt for TestClient {
     ) -> Option<Vec<lsp_types::TextEdit>> {
         let lsp_doc = self.open_document(doc).await;
 
-        let options = lsp_types::FormattingOptions {
-            tab_size: 4,
-            insert_spaces: false,
-            ..Default::default()
-        };
-
         let range = to_proto::range(&doc.line_index.index, range, doc.line_index.encoding).unwrap();
 
         self.range_formatting(lsp_types::DocumentRangeFormattingParams {
@@ -101,7 +89,7 @@ impl TestClientExt for TestClient {
                 uri: lsp_doc.uri.clone(),
             },
             range,
-            options,
+            options: formatting_options(doc),
             work_done_progress_params: Default::default(),
         })
         .await;
@@ -119,4 +107,18 @@ impl TestClientExt for TestClient {
 
         value
     }
+}
+
+fn formatting_options(_doc: &Document) -> lsp_types::FormattingOptions {
+    let options = lsp_types::FormattingOptions {
+        tab_size: settings::IndentWidth::default().0.get() as u32,
+        insert_spaces: matches!(
+            settings::IndentStyle::default(),
+            settings::IndentStyle::Space
+        ),
+
+        ..Default::default()
+    };
+
+    options
 }
