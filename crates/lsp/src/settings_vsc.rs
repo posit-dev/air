@@ -97,7 +97,7 @@ pub(crate) fn indent_width_from_vsc(settings: &VscDocumentSettings) -> settings:
                 tracing::warn!("Unknown indent alias {var}, using default");
                 return settings::IndentWidth::default();
             }
-            settings.tab_size.clone()
+            settings.tab_size
         }
     };
 
@@ -119,6 +119,6 @@ pub(crate) fn indent_style_from_vsc(insert_spaces: bool) -> settings::IndentStyl
     }
 }
 
-pub(crate) fn line_width_from_vsc(rulers: &Vec<usize>) -> Option<settings::LineWidth> {
-    rulers.get(0).and_then(|w| (*w as u16).try_into().ok())
+pub(crate) fn line_width_from_vsc(rulers: &[usize]) -> Option<settings::LineWidth> {
+    rulers.first().and_then(|w| (*w as u16).try_into().ok())
 }

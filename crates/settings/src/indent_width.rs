@@ -174,7 +174,7 @@ indent-width = 6
 
         assert_eq!(
             options.indent_width,
-            Some(IndentWidth::try_from(6 as u8).unwrap())
+            Some(IndentWidth::try_from(6_u8).unwrap())
         );
 
         Ok(())
