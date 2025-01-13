@@ -109,16 +109,13 @@ impl TestClientExt for TestClient {
     }
 }
 
-fn formatting_options(_doc: &Document) -> lsp_types::FormattingOptions {
-    let options = lsp_types::FormattingOptions {
-        tab_size: settings::IndentWidth::default().0.get() as u32,
-        insert_spaces: matches!(
-            settings::IndentStyle::default(),
-            settings::IndentStyle::Space
-        ),
+fn formatting_options(doc: &Document) -> lsp_types::FormattingOptions {
+    let tab_size = doc.config.indent_width.unwrap_or_default();
+    let indent_style = doc.config.indent_style.unwrap_or_default();
 
+    lsp_types::FormattingOptions {
+        tab_size: tab_size.0.get() as u32,
+        insert_spaces: matches!(indent_style, settings::IndentStyle::Space),
         ..Default::default()
-    };
-
-    options
+    }
 }

@@ -521,4 +521,40 @@ mod tests {
             insta::assert_snapshot!(output6);
         });
     }
+
+    #[test]
+    fn test_format_indent_options() {
+        with_client(|client| async {
+            let mut client = client.lock().await;
+
+            #[rustfmt::skip]
+            let mut doc = Document::doodle("{1}");
+
+            doc.config.indent_width = Some(settings::IndentWidth(8.try_into().unwrap()));
+            let output_8_spaces = client.format_document(&doc).await;
+            insta::assert_snapshot!(output_8_spaces);
+
+            doc.config.indent_style = Some(settings::IndentStyle::Tab);
+            let output_tab = client.format_document(&doc).await;
+            insta::assert_snapshot!(output_tab);
+        });
+    }
+
+    #[test]
+    fn test_format_range_indent_options() {
+        with_client(|client| async {
+            let mut client = client.lock().await;
+
+            #[rustfmt::skip]
+            let (mut doc, range) = Document::doodle_and_range("<<{1}>>");
+
+            doc.config.indent_width = Some(settings::IndentWidth(8.try_into().unwrap()));
+            let output_8_spaces = client.format_document_range(&doc, range).await;
+            insta::assert_snapshot!(output_8_spaces);
+
+            doc.config.indent_style = Some(settings::IndentStyle::Tab);
+            let output_tab = client.format_document_range(&doc, range).await;
+            insta::assert_snapshot!(output_tab);
+        });
+    }
 }
