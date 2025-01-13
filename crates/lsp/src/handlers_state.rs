@@ -236,8 +236,18 @@ pub(crate) fn did_change_formatting_options(
         return;
     };
 
-    doc.config.indent_width = Some(indent_width_from_usize(opts.tab_size as usize));
     doc.config.indent_style = Some(indent_style_from_vsc(opts.insert_spaces));
+
+    // Only update the document indent width if using spaces. This allows users
+    // to change their tab width in an editor for usability purposes without
+    // affecting wrapping. This is experimental and potentially confusing for
+    // users because code might visibly pass the column ruler in the editor
+    // without causing the formatter to consider it a line width overflow. For
+    // now we're pursuing the idea of tab width being a purely user setting that
+    // doesn't affect code.
+    if opts.insert_spaces {
+        doc.config.indent_width = Some(indent_width_from_usize(opts.tab_size as usize));
+    }
 
     // TODO:
     // `trim_trailing_whitespace`
