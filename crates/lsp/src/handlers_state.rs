@@ -35,12 +35,12 @@ use tracing::Instrument;
 use url::Url;
 
 use crate::capabilities::ResolvedClientCapabilities;
-use crate::config::DocumentConfig;
+use crate::config::DocumentSettings;
 use crate::config_vsc::indent_style_from_vsc;
 use crate::config_vsc::indent_width_from_usize;
-use crate::config_vsc::VscDiagnosticsConfig;
-use crate::config_vsc::VscDocumentConfig;
-use crate::config_vsc::VscLogConfig;
+use crate::config_vsc::VscDiagnosticsSettings;
+use crate::config_vsc::VscDocumentSettings;
+use crate::config_vsc::VscLogSettings;
 use crate::documents::Document;
 use crate::logging;
 use crate::logging::LogMessageSender;
@@ -253,34 +253,34 @@ async fn update_config(
 ) -> anyhow::Result<()> {
     let mut items: Vec<ConfigurationItem> = vec![];
 
-    let diagnostics_keys = VscDiagnosticsConfig::FIELD_NAMES_AS_ARRAY;
+    let diagnostics_keys = VscDiagnosticsSettings::FIELD_NAMES_AS_ARRAY;
     let mut diagnostics_items: Vec<ConfigurationItem> = diagnostics_keys
         .iter()
         .map(|key| ConfigurationItem {
             scope_uri: None,
-            section: Some(VscDiagnosticsConfig::section_from_key(key).into()),
+            section: Some(VscDiagnosticsSettings::section_from_key(key).into()),
         })
         .collect();
     items.append(&mut diagnostics_items);
 
     // For document configs we collect all pairs of URIs and config keys of
     // interest in a flat vector
-    let document_keys = VscDocumentConfig::FIELD_NAMES_AS_ARRAY;
+    let document_keys = VscDocumentSettings::FIELD_NAMES_AS_ARRAY;
     let mut document_items: Vec<ConfigurationItem> =
         itertools::iproduct!(uris.iter(), document_keys.iter())
             .map(|(uri, key)| ConfigurationItem {
                 scope_uri: Some(uri.clone()),
-                section: Some(VscDocumentConfig::section_from_key(key).into()),
+                section: Some(VscDocumentSettings::section_from_key(key).into()),
             })
             .collect();
     items.append(&mut document_items);
 
-    let log_keys = VscLogConfig::FIELD_NAMES_AS_ARRAY;
+    let log_keys = VscLogSettings::FIELD_NAMES_AS_ARRAY;
     let mut log_items: Vec<ConfigurationItem> = log_keys
         .iter()
         .map(|key| ConfigurationItem {
             scope_uri: None,
-            section: Some(VscLogConfig::section_from_key(key).into()),
+            section: Some(VscLogSettings::section_from_key(key).into()),
         })
         .collect();
     items.append(&mut log_items);
@@ -367,10 +367,10 @@ fn update_documents_config(
         });
 
         // Deserialise the VS Code configuration
-        let config: VscDocumentConfig = serde_json::from_value(serde_json::Value::Object(map))?;
+        let config: VscDocumentSettings = serde_json::from_value(serde_json::Value::Object(map))?;
 
         // Now convert the VS Code specific type into our own type
-        let config: DocumentConfig = config.into();
+        let config: DocumentSettings = config.into();
 
         // Finally, update the document's config
         state.get_document_mut(&uri)?.config = config;
@@ -392,7 +392,7 @@ fn update_log_config(
     });
 
     // Deserialise the VS Code configuration
-    let VscLogConfig {
+    let VscLogSettings {
         log_level,
         dependency_log_levels,
     } = serde_json::from_value(serde_json::Value::Object(map))?;

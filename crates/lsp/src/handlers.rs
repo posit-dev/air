@@ -12,9 +12,9 @@ use tower_lsp::lsp_types::FileSystemWatcher;
 use tower_lsp::Client;
 use tracing::Instrument;
 
-use crate::config_vsc::VscDiagnosticsConfig;
-use crate::config_vsc::VscDocumentConfig;
-use crate::config_vsc::VscLogConfig;
+use crate::config_vsc::VscDiagnosticsSettings;
+use crate::config_vsc::VscDocumentSettings;
+use crate::config_vsc::VscLogSettings;
 use crate::main_loop::LspState;
 
 // Handlers that do not mutate the world state. They take a sharing reference or
@@ -40,16 +40,16 @@ pub(crate) async fn handle_initialized(
         // changed by extensions or by the user without changing the actual
         // underlying setting. Unfortunately we don't receive updates in that case.
         let mut config_document_registrations = collect_regs(
-            VscDocumentConfig::FIELD_NAMES_AS_ARRAY.to_vec(),
-            VscDocumentConfig::section_from_key,
+            VscDocumentSettings::FIELD_NAMES_AS_ARRAY.to_vec(),
+            VscDocumentSettings::section_from_key,
         );
         let mut config_diagnostics_registrations: Vec<lsp_types::Registration> = collect_regs(
-            VscDiagnosticsConfig::FIELD_NAMES_AS_ARRAY.to_vec(),
-            VscDiagnosticsConfig::section_from_key,
+            VscDiagnosticsSettings::FIELD_NAMES_AS_ARRAY.to_vec(),
+            VscDiagnosticsSettings::section_from_key,
         );
         let mut config_log_registrations: Vec<lsp_types::Registration> = collect_regs(
-            VscLogConfig::FIELD_NAMES_AS_ARRAY.to_vec(),
-            VscLogConfig::section_from_key,
+            VscLogSettings::FIELD_NAMES_AS_ARRAY.to_vec(),
+            VscLogSettings::section_from_key,
         );
 
         registrations.append(&mut config_document_registrations);

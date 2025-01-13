@@ -21,7 +21,7 @@ use url::Url;
 use workspace::settings::Settings;
 
 use crate::capabilities::ResolvedClientCapabilities;
-use crate::config::DocumentConfig;
+use crate::config::DocumentSettings;
 use crate::handlers;
 use crate::handlers_ext;
 use crate::handlers_format;
@@ -186,7 +186,7 @@ impl Default for LspState {
 }
 
 impl LspState {
-    pub(crate) fn document_settings(&self, url: &Url, settings: &DocumentConfig) -> Settings {
+    pub(crate) fn document_settings(&self, url: &Url, settings: &DocumentSettings) -> Settings {
         let workspace_settings = self.workspace_settings_resolver.settings_for_url(url);
 
         // The TOML has precedence over client settings

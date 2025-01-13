@@ -6,15 +6,15 @@
 //
 
 // Should we rename this to `_lsp` or move to `from_proto`? We'll probably use
-// the same config sections for all IDEs, even if the naming and organization is
+// the same settings sections for all IDEs, even if the naming and organization is
 // from VS Code?
 
-use crate::{config::DocumentConfig, logging::LogLevel};
+use crate::{config::DocumentSettings, logging::LogLevel};
 use struct_field_names_as_array::FieldNamesAsArray;
 
-/// VS Code representation of a document configuration
+/// VS Code representation of a document settings
 #[derive(Clone, Debug, FieldNamesAsArray, serde::Serialize, serde::Deserialize)]
-pub(crate) struct VscDocumentConfig {
+pub(crate) struct VscDocumentSettings {
     // DEV NOTE: Update `section_from_key()` method after adding a field
     pub insert_spaces: bool,
     pub indent_size: VscIndentSize,
@@ -29,19 +29,19 @@ pub(crate) enum VscIndentSize {
 }
 
 #[derive(Clone, Debug, FieldNamesAsArray, serde::Serialize, serde::Deserialize)]
-pub(crate) struct VscDiagnosticsConfig {
+pub(crate) struct VscDiagnosticsSettings {
     // DEV NOTE: Update `section_from_key()` method after adding a field
     pub enable: bool,
 }
 
 #[derive(Clone, Debug, FieldNamesAsArray, serde::Deserialize)]
-pub(crate) struct VscLogConfig {
+pub(crate) struct VscLogSettings {
     // DEV NOTE: Update `section_from_key()` method after adding a field
     pub log_level: Option<LogLevel>,
     pub dependency_log_levels: Option<String>,
 }
 
-impl VscDocumentConfig {
+impl VscDocumentSettings {
     pub(crate) fn section_from_key(key: &str) -> &str {
         match key {
             "insert_spaces" => "editor.insertSpaces",
@@ -52,10 +52,10 @@ impl VscDocumentConfig {
     }
 }
 
-/// Convert from VS Code representation of a document config to our own
+/// Convert from VS Code representation of document settings to our own
 /// representation. Currently one-to-one.
-impl From<VscDocumentConfig> for DocumentConfig {
-    fn from(x: VscDocumentConfig) -> Self {
+impl From<VscDocumentSettings> for DocumentSettings {
+    fn from(x: VscDocumentSettings) -> Self {
         let indent_style = indent_style_from_vsc(x.insert_spaces);
         let indent_width = indent_width_from_vsc(x);
 
@@ -67,7 +67,7 @@ impl From<VscDocumentConfig> for DocumentConfig {
     }
 }
 
-impl VscDiagnosticsConfig {
+impl VscDiagnosticsSettings {
     pub(crate) fn section_from_key(key: &str) -> &str {
         match key {
             "enable" => "positron.r.diagnostics.enable",
@@ -76,7 +76,7 @@ impl VscDiagnosticsConfig {
     }
 }
 
-impl VscLogConfig {
+impl VscLogSettings {
     pub(crate) fn section_from_key(key: &str) -> &str {
         match key {
             "log_level" => "air.logLevel",
@@ -86,15 +86,15 @@ impl VscLogConfig {
     }
 }
 
-pub(crate) fn indent_width_from_vsc(config: VscDocumentConfig) -> settings::IndentWidth {
-    let indent_width = match config.indent_size {
+pub(crate) fn indent_width_from_vsc(settings: VscDocumentSettings) -> settings::IndentWidth {
+    let indent_width = match settings.indent_size {
         VscIndentSize::Size(size) => size,
         VscIndentSize::Alias(var) => {
             if var != "tabSize" {
                 tracing::warn!("Unknown indent alias {var}, using default");
                 return settings::IndentWidth::default();
             }
-            config.tab_size
+            settings.tab_size
         }
     };
 
