@@ -21,6 +21,7 @@ use url::Url;
 use workspace::settings::Settings;
 
 use crate::capabilities::ResolvedClientCapabilities;
+use crate::config::DocumentConfig;
 use crate::handlers;
 use crate::handlers_ext;
 use crate::handlers_format;
@@ -185,15 +186,27 @@ impl Default for LspState {
 }
 
 impl LspState {
-    pub(crate) fn document_settings(&self, url: &Url) -> &Settings {
+    pub(crate) fn document_settings(&self, url: &Url, settings: &DocumentConfig) -> Settings {
         let workspace_settings = self.workspace_settings_resolver.settings_for_url(url);
 
-        // TODO: In the `Fallback` case, layer in client provided document specific
-        // settings on top of the fallback `settings`
-        match workspace_settings {
-            WorkspaceSettings::Toml(settings) => settings,
-            WorkspaceSettings::Fallback(settings) => settings,
+        // The TOML has precedence over client settings
+        let mut fallback = match workspace_settings {
+            WorkspaceSettings::Toml(settings) => return settings.clone(),
+            WorkspaceSettings::Fallback(settings) => settings.clone(),
+        };
+
+        // There is no TOML. Merge client settings into our default settings.
+        if let Some(indent_style) = settings.indent_style {
+            fallback.format.indent_style = indent_style;
         }
+        if let Some(indent_width) = settings.indent_width {
+            fallback.format.indent_width = indent_width;
+        }
+        if let Some(line_width) = settings.line_width {
+            fallback.format.line_width = line_width;
+        }
+
+        fallback
     }
 
     pub(crate) fn open_workspace_folder(&mut self, url: &Url) {

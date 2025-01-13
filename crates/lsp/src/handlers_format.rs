@@ -23,7 +23,7 @@ pub(crate) fn document_formatting(
 ) -> anyhow::Result<Option<Vec<lsp_types::TextEdit>>> {
     let doc = state.get_document(&params.text_document.uri)?;
 
-    let settings = lsp_state.document_settings(&params.text_document.uri);
+    let settings = lsp_state.document_settings(&params.text_document.uri, &doc.config);
     let format_options = settings.format.to_format_options(&doc.contents);
 
     if doc.parse.has_errors() {
@@ -68,7 +68,7 @@ pub(crate) fn document_range_formatting(
     let range =
         from_proto::text_range(&doc.line_index.index, params.range, doc.line_index.encoding)?;
 
-    let settings = lsp_state.document_settings(&params.text_document.uri);
+    let settings = lsp_state.document_settings(&params.text_document.uri, &doc.config);
     let format_options = settings.format.to_format_options(&doc.contents);
 
     let logical_lines = find_deepest_enclosing_logical_lines(doc.parse.syntax(), range);
