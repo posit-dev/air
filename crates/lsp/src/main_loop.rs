@@ -376,9 +376,11 @@ impl GlobalState {
                             respond(tx, Ok(()), LspResponse::Shutdown)?;
                         },
                         LspRequest::DocumentFormatting(params) => {
+                            handlers_state::did_change_formatting_options(&params.text_document.uri, &params.options, &mut self.world);
                             respond(tx, handlers_format::document_formatting(params, &self.lsp_state, &self.world), LspResponse::DocumentFormatting)?;
                         },
                         LspRequest::DocumentRangeFormatting(params) => {
+                            handlers_state::did_change_formatting_options(&params.text_document.uri, &params.options, &mut self.world);
                             respond(tx, handlers_format::document_range_formatting(params, &self.lsp_state, &self.world), LspResponse::DocumentRangeFormatting)?;
                         },
                         LspRequest::AirViewFile(params) => {
