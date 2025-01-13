@@ -351,7 +351,7 @@ fn update_diagnostics_config(
 }
 
 fn update_documents_config(
-    keys: IntoIter<&str, 3>,
+    keys: IntoIter<&str, 4>,
     mut items: impl Iterator<Item = Value>,
     uris: Vec<Url>,
     state: &mut WorldState,

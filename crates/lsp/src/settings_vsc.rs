@@ -19,6 +19,7 @@ pub(crate) struct VscDocumentSettings {
     pub insert_spaces: bool,
     pub indent_size: VscIndentSize,
     pub tab_size: usize,
+    pub rulers: Vec<usize>,
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -47,6 +48,7 @@ impl VscDocumentSettings {
             "insert_spaces" => "editor.insertSpaces",
             "indent_size" => "editor.indentSize",
             "tab_size" => "editor.tabSize",
+            "rulers" => "editor.rulers",
             _ => "unknown", // To be caught via downstream errors
         }
     }
@@ -55,14 +57,15 @@ impl VscDocumentSettings {
 /// Convert from VS Code representation of document settings to our own
 /// representation. Currently one-to-one.
 impl From<VscDocumentSettings> for DocumentSettings {
-    fn from(x: VscDocumentSettings) -> Self {
-        let indent_style = indent_style_from_vsc(x.insert_spaces);
-        let indent_width = indent_width_from_vsc(x);
+    fn from(value: VscDocumentSettings) -> Self {
+        let indent_style = indent_style_from_vsc(value.insert_spaces);
+        let indent_width = indent_width_from_vsc(&value);
+        let line_width = line_width_from_vsc(&value.rulers);
 
         Self {
             indent_style: Some(indent_style),
             indent_width: Some(indent_width),
-            line_width: None, // TODO!
+            line_width,
         }
     }
 }
@@ -86,15 +89,15 @@ impl VscLogSettings {
     }
 }
 
-pub(crate) fn indent_width_from_vsc(settings: VscDocumentSettings) -> settings::IndentWidth {
+pub(crate) fn indent_width_from_vsc(settings: &VscDocumentSettings) -> settings::IndentWidth {
     let indent_width = match settings.indent_size {
-        VscIndentSize::Size(size) => size,
-        VscIndentSize::Alias(var) => {
+        VscIndentSize::Size(ref size) => *size,
+        VscIndentSize::Alias(ref var) => {
             if var != "tabSize" {
                 tracing::warn!("Unknown indent alias {var}, using default");
                 return settings::IndentWidth::default();
             }
-            settings.tab_size
+            settings.tab_size.clone()
         }
     };
 
@@ -114,4 +117,8 @@ pub(crate) fn indent_style_from_vsc(insert_spaces: bool) -> settings::IndentStyl
     } else {
         settings::IndentStyle::Tab
     }
+}
+
+pub(crate) fn line_width_from_vsc(rulers: &Vec<usize>) -> Option<settings::LineWidth> {
+    rulers.get(0).and_then(|w| (*w as u16).try_into().ok())
 }
