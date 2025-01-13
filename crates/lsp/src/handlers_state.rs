@@ -139,9 +139,10 @@ pub(crate) fn initialize(
 }
 
 #[tracing::instrument(level = "info", skip_all)]
-pub(crate) fn did_open(
+pub(crate) async fn did_open(
     params: DidOpenTextDocumentParams,
-    lsp_state: &LspState,
+    client: &tower_lsp::Client,
+    lsp_state: &mut LspState,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
     let contents = params.text_document.text;
@@ -149,7 +150,11 @@ pub(crate) fn did_open(
     let version = params.text_document.version;
 
     let document = Document::new(contents, Some(version), lsp_state.position_encoding);
-    state.documents.insert(uri, document);
+    state.documents.insert(uri.clone(), document);
+
+    update_config(vec![uri], client, lsp_state, state)
+        .instrument(tracing::info_span!("did_change_configuration"))
+        .await?;
 
     Ok(())
 }
