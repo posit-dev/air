@@ -178,7 +178,7 @@ fn parse_failure() -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Vec<ParseError>) {
 
     // Generate a single diagnostic, wrap it in our error type
     let span: Option<TextRange> = None;
-    let diagnostic = ParseDiagnostic::new("Failed to parse", span);
+    let diagnostic = ParseDiagnostic::new("Failed to parse due to syntax errors.", span);
     let error = ParseError::from(diagnostic);
     let errors = vec![error];
 
