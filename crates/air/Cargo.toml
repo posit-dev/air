@@ -15,11 +15,11 @@ rust-version.workspace = true
 air_r_formatter = { workspace = true }
 air_r_parser = { workspace = true }
 anyhow = { workspace = true }
-biome_console = { workspace = true }
-biome_diagnostics = { workspace = true }
 biome_formatter = { workspace = true }
 biome_parser = { workspace = true }
 clap = { workspace = true, features = ["wrap_help"] }
+colored = { workspace = true }
+crates = { workspace = true }
 fs = { workspace = true }
 ignore = { workspace = true }
 itertools = { workspace = true }
@@ -28,6 +28,7 @@ lsp = { workspace = true }
 thiserror = { workspace = true }
 tokio = "1.41.1"
 tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
 workspace = { workspace = true }
 
 [dev-dependencies]
