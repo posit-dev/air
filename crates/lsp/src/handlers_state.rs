@@ -248,7 +248,7 @@ pub(crate) fn did_change_formatting_options(
     doc.config.indent_style = Some(indent_style_from_vsc(opts.insert_spaces));
 
     // Note that `tabSize` in the LSP protocol corresponds to `indentSize` in VS Code options.
-    // And df Code's `indentSize` is aliased to Code's `tabSize`, we get the latter here.
+    // And if Code's `indentSize` is aliased to Code's `tabSize`, we get the latter here.
     doc.config.indent_width = Some(indent_width_from_usize(opts.tab_size as usize));
 
     // TODO:
