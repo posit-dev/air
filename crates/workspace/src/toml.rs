@@ -13,7 +13,7 @@ use std::fmt::Formatter;
 use std::io;
 use std::path::{Path, PathBuf};
 
-/// Parse an `air.toml` file.
+/// Parse an air configuration file.
 pub fn parse_air_toml<P: AsRef<Path>>(path: P) -> Result<TomlOptions, ParseTomlError> {
     let contents = std::fs::read_to_string(path.as_ref())
         .map_err(|err| ParseTomlError::Read(path.as_ref().to_path_buf(), err))?;
@@ -50,19 +50,25 @@ impl Display for ParseTomlError {
     }
 }
 
-/// Return the path to the `air.toml` file in a given directory.
+/// Return the path to the `air.toml` or `.air.toml` file in a given directory.
 pub fn find_air_toml_in_directory<P: AsRef<Path>>(path: P) -> Option<PathBuf> {
-    // Check for `air.toml`.
+    // Check for `air.toml` first, as we prioritize the "visible" one.
     let toml = path.as_ref().join("air.toml");
-
     if toml.is_file() {
-        Some(toml)
-    } else {
-        None
+        return Some(toml);
     }
+
+    // Now check for `.air.toml` as well
+    let toml = path.as_ref().join(".air.toml");
+    if toml.is_file() {
+        return Some(toml);
+    }
+
+    // Didn't find a configuration file
+    None
 }
 
-/// Find the path to the closest `air.toml` if one exists, walking up the filesystem
+/// Find the path to the closest `air.toml` or `.air.toml` if one exists, walking up the filesystem
 pub fn find_air_toml<P: AsRef<Path>>(path: P) -> Option<PathBuf> {
     for directory in path.as_ref().ancestors() {
         if let Some(toml) = find_air_toml_in_directory(directory) {
@@ -70,6 +76,14 @@ pub fn find_air_toml<P: AsRef<Path>>(path: P) -> Option<PathBuf> {
         }
     }
     None
+}
+
+/// Check if a path is named like an `air.toml` or `.air.toml` file
+///
+/// Does not check if the path is an existing file on disk
+pub fn is_air_toml<P: AsRef<Path>>(path: P) -> bool {
+    let path = path.as_ref();
+    path.ends_with("air.toml") || path.ends_with(".air.toml")
 }
 
 #[cfg(test)]
@@ -125,6 +139,62 @@ line-ending = "auto"
 
         assert_eq!(line_width, LineWidth::try_from(88).unwrap());
         assert_eq!(line_ending, LineEnding::Auto);
+
+        Ok(())
+    }
+
+    #[test]
+    fn find_and_parse_dot_air_toml() -> Result<()> {
+        let tempdir = TempDir::new()?;
+        let toml = tempdir.path().join(".air.toml");
+        fs::write(
+            toml,
+            r#"
+[format]
+ignore-magic-line-break = true
+"#,
+        )?;
+
+        let toml = find_air_toml(tempdir.path()).context("Failed to find air.toml")?;
+        let options = parse_air_toml(toml)?;
+
+        let ignore_magic_line_break = options
+            .format
+            .as_ref()
+            .context("Expected to find [format] table")?
+            .ignore_magic_line_break
+            .context("Expected to find `ignore-magic-line-break` field")?;
+
+        assert!(ignore_magic_line_break);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_air_toml_priority() -> Result<()> {
+        let tempdir = TempDir::new()?;
+
+        let toml = tempdir.path().join("air.toml");
+        fs::write(
+            toml.clone(),
+            r#"
+[format]
+indent-width = 3
+"#,
+        )?;
+
+        let dot_toml = tempdir.path().join(".air.toml");
+        fs::write(
+            dot_toml,
+            r#"
+[format]
+indent-width = 4
+"#,
+        )?;
+
+        // Finds `air.toml` over `.air.toml`
+        let found_toml = find_air_toml(tempdir.path()).context("Failed to find air.toml")?;
+        assert_eq!(found_toml, toml);
 
         Ok(())
     }
