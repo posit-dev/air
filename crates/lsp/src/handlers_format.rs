@@ -530,7 +530,7 @@ mod tests {
             #[rustfmt::skip]
             let mut doc = Document::doodle("{1}");
 
-            doc.settings.indent_width = Some(settings::IndentWidth(8.try_into().unwrap()));
+            doc.settings.indent_width = Some(settings::IndentWidth::try_from(8_u8).unwrap());
             let output_8_spaces = client.format_document(&doc).await;
             insta::assert_snapshot!(output_8_spaces);
 
@@ -548,7 +548,7 @@ mod tests {
             #[rustfmt::skip]
             let (mut doc, range) = Document::doodle_and_range("<<{1}>>");
 
-            doc.settings.indent_width = Some(settings::IndentWidth(8.try_into().unwrap()));
+            doc.settings.indent_width = Some(settings::IndentWidth::try_from(8_u8).unwrap());
             let output_8_spaces = client.format_document_range(&doc, range).await;
             insta::assert_snapshot!(output_8_spaces);
 

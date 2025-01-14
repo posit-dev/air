@@ -12,7 +12,7 @@ use std::num::NonZeroU8;
 ///
 /// The allowed range of values is 1..=24
 #[derive(Clone, Copy, Eq, Hash, PartialEq, serde::Serialize)]
-pub struct IndentWidth(pub NonZeroU8);
+pub struct IndentWidth(NonZeroU8);
 
 impl IndentWidth {
     /// Default value for [IndentWidth]
