@@ -368,8 +368,6 @@ fn update_diagnostics_config(
     Ok(())
 }
 
-// TODO: Hook up language-specific settings on the client side, see
-// https://github.com/microsoft/vscode-languageserver-node/issues/1056
 fn update_documents_config(
     keys: IntoIter<&str, 4>,
     mut items: impl Iterator<Item = Value>,
