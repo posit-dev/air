@@ -11,7 +11,8 @@ use std::num::NonZeroU16;
 /// Validated value for the `line-width` formatter options
 ///
 /// The allowed range of values is 1..=320
-#[derive(Clone, Copy, Eq, PartialEq, serde::Serialize)]
+#[derive(Clone, Copy, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub struct LineWidth(NonZeroU16);
 
 impl LineWidth {

@@ -11,7 +11,8 @@ use std::num::NonZeroU8;
 /// Validated value for the `indent-width` formatter options
 ///
 /// The allowed range of values is 1..=24
-#[derive(Clone, Copy, Eq, Hash, PartialEq, serde::Serialize)]
+#[derive(Clone, Copy, Eq, Hash, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub struct IndentWidth(NonZeroU8);
 
 impl IndentWidth {
