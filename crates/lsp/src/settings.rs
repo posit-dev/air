@@ -21,6 +21,25 @@ pub(crate) struct InitializationOptions {
     pub(crate) dependency_log_levels: Option<String>,
 }
 
+impl DocumentSettings {
+    pub(crate) fn merge(
+        &self,
+        mut settings: workspace::settings::Settings,
+    ) -> workspace::settings::Settings {
+        if let Some(indent_style) = self.indent_style {
+            settings.format.indent_style = indent_style;
+        }
+        if let Some(indent_width) = self.indent_width {
+            settings.format.indent_width = indent_width;
+        }
+        if let Some(line_width) = self.line_width {
+            settings.format.line_width = line_width;
+        }
+
+        settings
+    }
+}
+
 impl InitializationOptions {
     pub(crate) fn from_value(value: Value) -> Self {
         serde_json::from_value(value)

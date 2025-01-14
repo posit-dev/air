@@ -186,27 +186,17 @@ impl Default for LspState {
 }
 
 impl LspState {
-    pub(crate) fn document_settings(&self, url: &Url, settings: &DocumentSettings) -> Settings {
-        let workspace_settings = self.workspace_settings_resolver.settings_for_url(url);
-
-        // The TOML has precedence over client settings
-        let mut fallback = match workspace_settings {
-            WorkspaceSettings::Toml(settings) => return settings.clone(),
-            WorkspaceSettings::Fallback(settings) => settings.clone(),
-        };
-
-        // There is no TOML. Merge client settings into our default settings.
-        if let Some(indent_style) = settings.indent_style {
-            fallback.format.indent_style = indent_style;
+    pub(crate) fn document_settings(
+        &self,
+        url: &Url,
+        client_settings: &DocumentSettings,
+    ) -> Settings {
+        match self.workspace_settings_resolver.settings_for_url(url) {
+            // The TOML has precedence over client settings
+            WorkspaceSettings::Toml(settings) => settings.clone(),
+            // There is no TOML. Merge client settings into our default settings.
+            WorkspaceSettings::Fallback(settings) => client_settings.merge(settings.clone()),
         }
-        if let Some(indent_width) = settings.indent_width {
-            fallback.format.indent_width = indent_width;
-        }
-        if let Some(line_width) = settings.line_width {
-            fallback.format.line_width = line_width;
-        }
-
-        fallback
     }
 
     pub(crate) fn open_workspace_folder(&mut self, url: &Url) {
