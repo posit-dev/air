@@ -624,6 +624,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7704b5fdd17b18ae31c4c1da5a2e0305a2bf17b5249300a9ee9ed7b72114c636"
 
 [[package]]
+name = "crates"
+version = "0.0.0"
+dependencies = [
+ "cargo_metadata",
+ "insta",
+]
+
+[[package]]
 name = "crc32fast"
 version = "1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1325,7 +1333,7 @@ dependencies = [
  "biome_rowan",
  "biome_text_size",
  "bytes",
- "cargo_metadata",
+ "crates",
  "crossbeam",
  "dissimilar",
  "futures",

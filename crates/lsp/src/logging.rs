@@ -64,8 +64,6 @@ use tracing_subscriber::{
     layer::SubscriberExt,
 };
 
-use crate::crates;
-
 const AIR_LOG_LEVEL: &str = "AIR_LOG_LEVEL";
 const AIR_DEPENDENCY_LOG_LEVELS: &str = "AIR_DEPENDENCY_LOG_LEVELS";
 
