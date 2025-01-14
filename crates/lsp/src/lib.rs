@@ -8,6 +8,7 @@ pub mod config;
 pub mod crates;
 pub mod documents;
 pub mod encoding;
+pub mod folding_range;
 pub mod from_proto;
 pub mod handlers;
 pub mod handlers_ext;
