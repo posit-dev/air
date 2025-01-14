@@ -34,8 +34,8 @@ pub struct Document {
     /// None if the document hasn't been synchronized yet.
     pub version: Option<i32>,
 
-    /// Configuration of the document, such as indentation settings.
-    pub config: DocumentSettings,
+    /// Settings of the document, such as indentation settings.
+    pub settings: DocumentSettings,
 }
 
 impl std::fmt::Debug for Document {
@@ -80,7 +80,7 @@ impl Document {
             line_index,
             parse,
             version,
-            config: Default::default(),
+            settings: Default::default(),
         }
     }
 

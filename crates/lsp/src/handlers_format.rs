@@ -23,7 +23,7 @@ pub(crate) fn document_formatting(
 ) -> anyhow::Result<Option<Vec<lsp_types::TextEdit>>> {
     let doc = state.get_document(&params.text_document.uri)?;
 
-    let settings = lsp_state.document_settings(&params.text_document.uri, &doc.config);
+    let settings = lsp_state.document_settings(&params.text_document.uri, &doc.settings);
     let format_options = settings.format.to_format_options(&doc.contents);
 
     if doc.parse.has_errors() {
@@ -68,7 +68,7 @@ pub(crate) fn document_range_formatting(
     let range =
         from_proto::text_range(&doc.line_index.index, params.range, doc.line_index.encoding)?;
 
-    let settings = lsp_state.document_settings(&params.text_document.uri, &doc.config);
+    let settings = lsp_state.document_settings(&params.text_document.uri, &doc.settings);
     let format_options = settings.format.to_format_options(&doc.contents);
 
     let logical_lines = find_deepest_enclosing_logical_lines(doc.parse.syntax(), range);
@@ -530,11 +530,11 @@ mod tests {
             #[rustfmt::skip]
             let mut doc = Document::doodle("{1}");
 
-            doc.config.indent_width = Some(settings::IndentWidth(8.try_into().unwrap()));
+            doc.settings.indent_width = Some(settings::IndentWidth(8.try_into().unwrap()));
             let output_8_spaces = client.format_document(&doc).await;
             insta::assert_snapshot!(output_8_spaces);
 
-            doc.config.indent_style = Some(settings::IndentStyle::Tab);
+            doc.settings.indent_style = Some(settings::IndentStyle::Tab);
             let output_tab = client.format_document(&doc).await;
             insta::assert_snapshot!(output_tab);
         });
@@ -548,11 +548,11 @@ mod tests {
             #[rustfmt::skip]
             let (mut doc, range) = Document::doodle_and_range("<<{1}>>");
 
-            doc.config.indent_width = Some(settings::IndentWidth(8.try_into().unwrap()));
+            doc.settings.indent_width = Some(settings::IndentWidth(8.try_into().unwrap()));
             let output_8_spaces = client.format_document_range(&doc, range).await;
             insta::assert_snapshot!(output_8_spaces);
 
-            doc.config.indent_style = Some(settings::IndentStyle::Tab);
+            doc.settings.indent_style = Some(settings::IndentStyle::Tab);
             let output_tab = client.format_document_range(&doc, range).await;
             insta::assert_snapshot!(output_tab);
         });

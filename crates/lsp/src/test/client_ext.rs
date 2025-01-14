@@ -110,8 +110,8 @@ impl TestClientExt for TestClient {
 }
 
 fn formatting_options(doc: &Document) -> lsp_types::FormattingOptions {
-    let tab_size = doc.config.indent_width.unwrap_or_default();
-    let indent_style = doc.config.indent_style.unwrap_or_default();
+    let tab_size = doc.settings.indent_width.unwrap_or_default();
+    let indent_style = doc.settings.indent_style.unwrap_or_default();
 
     lsp_types::FormattingOptions {
         tab_size: tab_size.0.get() as u32,
