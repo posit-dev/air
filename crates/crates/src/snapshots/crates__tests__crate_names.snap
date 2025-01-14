@@ -1,5 +1,5 @@
 ---
-source: crates/lsp/src/crates.rs
+source: crates/crates/src/lib.rs
 expression: AIR_CRATE_NAMES
 ---
 [
@@ -10,6 +10,7 @@ expression: AIR_CRATE_NAMES
     "air_r_parser",
     "air_r_syntax",
     "biome_ungrammar",
+    "crates",
     "fs",
     "line_ending",
     "lsp",
