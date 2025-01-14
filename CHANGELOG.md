@@ -2,6 +2,9 @@
 
 # Development version
 
+
+# 0.1.2
+
 - The default indent style has been changed to spaces. The default indent width
   has been changed to two. This more closely matches the overwhelming majority
   of existing R code.
