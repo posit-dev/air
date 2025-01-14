@@ -7,6 +7,7 @@ use std::path::PathBuf;
 
 use air_r_formatter::context::RFormatOptions;
 use air_r_parser::RParserOptions;
+use colored::Colorize;
 use fs::relativize_path;
 use itertools::Either;
 use itertools::Itertools;
@@ -215,7 +216,7 @@ impl Display for FormatCommandError {
                     write!(
                         f,
                         "Failed to format {path}: {err}",
-                        path = relativize_path(path),
+                        path = relativize_path(path).underline(),
                         err = err
                             .io_error()
                             .map_or_else(|| err.to_string(), std::string::ToString::to_string)
@@ -234,21 +235,21 @@ impl Display for FormatCommandError {
                 write!(
                     f,
                     "Failed to read {path}: {err}",
-                    path = relativize_path(path),
+                    path = relativize_path(path).underline(),
                 )
             }
             Self::Write(path, err) => {
                 write!(
                     f,
                     "Failed to write {path}: {err}",
-                    path = relativize_path(path),
+                    path = relativize_path(path).underline(),
                 )
             }
             Self::Format(path, err) => {
                 write!(
                     f,
                     "Failed to format {path}: {err}",
-                    path = relativize_path(path),
+                    path = relativize_path(path).underline(),
                 )
             }
         }
