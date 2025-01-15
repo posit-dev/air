@@ -58,11 +58,6 @@
 				}
 			}
 		},
-		"configurationDefaults": {
-			"[r]": {
-				"editor.defaultFormatter": "Posit.air"
-			}
-		},
 		"commands": [
 			{
 				"title": "Restart Server",
