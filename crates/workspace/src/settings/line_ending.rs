@@ -7,7 +7,7 @@
 
 use std::fmt;
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Default, serde::Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum LineEnding {
     /// The newline style is detected automatically on a file per file basis.

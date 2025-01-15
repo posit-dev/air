@@ -9,21 +9,17 @@ use struct_field_names_as_array::FieldNamesAsArray;
 use tower_lsp::lsp_types;
 use tower_lsp::lsp_types::DidChangeWatchedFilesRegistrationOptions;
 use tower_lsp::lsp_types::FileSystemWatcher;
-use tower_lsp::Client;
 use tracing::Instrument;
 
 use crate::main_loop::LspState;
 use crate::settings_vsc::VscDiagnosticsSettings;
 use crate::settings_vsc::VscDocumentSettings;
-use crate::settings_vsc::VscLogSettings;
+use crate::settings_vsc::VscGlobalSettings;
 
 // Handlers that do not mutate the world state. They take a sharing reference or
 // a clone of the state.
 
-pub(crate) async fn handle_initialized(
-    client: &Client,
-    lsp_state: &LspState,
-) -> anyhow::Result<()> {
+pub(crate) async fn handle_initialized(lsp_state: &LspState) -> anyhow::Result<()> {
     let span = tracing::info_span!("handle_initialized").entered();
 
     // Register capabilities to the client
@@ -47,14 +43,14 @@ pub(crate) async fn handle_initialized(
             VscDiagnosticsSettings::FIELD_NAMES_AS_ARRAY.to_vec(),
             VscDiagnosticsSettings::section_from_key,
         );
-        let mut config_log_registrations = collect_regs(
-            VscLogSettings::FIELD_NAMES_AS_ARRAY.to_vec(),
-            VscLogSettings::section_from_key,
+        let mut config_global_registrations = collect_regs(
+            VscGlobalSettings::FIELD_NAMES_AS_ARRAY.to_vec(),
+            VscGlobalSettings::section_from_key,
         );
 
         registrations.append(&mut config_document_registrations);
         registrations.append(&mut config_diagnostics_registrations);
-        registrations.append(&mut config_log_registrations);
+        registrations.append(&mut config_global_registrations);
     }
 
     if lsp_state
@@ -80,7 +76,8 @@ pub(crate) async fn handle_initialized(
     }
 
     if !registrations.is_empty() {
-        client
+        lsp_state
+            .client
             .register_capability(registrations)
             .instrument(span.exit())
             .await?;
