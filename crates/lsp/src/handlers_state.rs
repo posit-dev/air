@@ -152,11 +152,9 @@ pub(crate) async fn did_open(
     let document = Document::new(contents, Some(version), lsp_state.position_encoding);
     state.documents.insert(uri.clone(), document);
 
-    if lsp_state.capabilities.request_configuration {
-        update_config(vec![uri], client, lsp_state, state)
-            .instrument(tracing::info_span!("did_change_configuration"))
-            .await?;
-    }
+    update_config(vec![uri], client, lsp_state, state)
+        .instrument(tracing::info_span!("did_change_configuration"))
+        .await?;
 
     Ok(())
 }
@@ -263,6 +261,11 @@ async fn update_config(
     lsp_state: &mut LspState,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
+    if !lsp_state.capabilities.request_configuration {
+        // Can't request an update, client doesn't support it
+        return Ok(());
+    }
+
     let mut items: Vec<ConfigurationItem> = vec![];
 
     let diagnostics_keys = VscDiagnosticsSettings::FIELD_NAMES_AS_ARRAY;
