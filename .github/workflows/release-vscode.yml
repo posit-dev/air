@@ -74,9 +74,8 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          working-directory: ./editors/code
           name: dist-${{ matrix.target }}
-          path: ./dist
+          path: ./editors/code/dist
 
   # Publish the built extension to the Code Marketplace.
   publish-code-marketplace:
