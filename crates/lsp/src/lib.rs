@@ -14,6 +14,7 @@ pub mod handlers_format;
 pub mod handlers_state;
 pub mod logging;
 pub mod main_loop;
+pub mod notifications;
 pub mod rust_analyzer;
 pub mod settings;
 pub mod settings_vsc;

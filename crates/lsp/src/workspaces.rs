@@ -148,16 +148,19 @@ impl WorkspaceSettingsResolver {
     ///
     /// This is utilized by the watched files handler to reload the settings
     /// resolver whenever an `air.toml` is modified.
-    pub(crate) fn reload_workspaces_matched_by_url(&mut self, url: &Url) {
+    ///
+    /// Returns whether an `air.toml` file was modified (currently doesn't check
+    /// for content changes).
+    pub(crate) fn reload_workspaces_matched_by_url(&mut self, url: &Url) -> bool {
         let path = match Self::url_to_path(url) {
             Ok(Some(path)) => path,
             Ok(None) => {
                 tracing::trace!("Ignoring non-`file` changed URL: {url}");
-                return;
+                return false;
             }
             Err(error) => {
                 tracing::error!("Failed to reload workspaces associated with '{url}':\n{error}");
-                return;
+                return false;
             }
         };
 
@@ -165,7 +168,7 @@ impl WorkspaceSettingsResolver {
             // We could get called with a changed file that isn't an `air.toml` if we are
             // watching more than `air.toml` files
             tracing::trace!("Ignoring non-`air.toml` changed URL: {url}");
-            return;
+            return false;
         }
 
         for (workspace_path, settings_resolver) in self.path_to_settings_resolver.matches_mut(&path)
@@ -191,6 +194,8 @@ impl WorkspaceSettingsResolver {
                 settings_resolver.add(&directory, settings);
             }
         }
+
+        true
     }
 
     /// Return the appropriate [`WorkspaceSettings`] for a given [`Path`].

@@ -337,7 +337,7 @@ impl GlobalState {
                             handlers_state::did_change_configuration(params, &mut self.lsp_state, &mut self.world).await?;
                         },
                         LspNotification::DidChangeWatchedFiles(params) => {
-                            handlers_state::did_change_watched_files(params, &mut self.lsp_state)?;
+                            handlers_state::did_change_watched_files(params, &mut self.lsp_state, &self.world).await?;
                         },
                         LspNotification::DidOpenTextDocument(params) => {
                             handlers_state::did_open(params, &mut self.lsp_state, &mut self.world).await?;
