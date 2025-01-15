@@ -1,0 +1,163 @@
+name: Release extension
+
+on:
+  workflow_dispatch:
+
+env:
+  FETCH_DEPTH: 0
+
+jobs:
+  # Build the extension on all platforms.
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            code-target: win32-x64
+          # - os: windows-latest
+          #   target: aarch64-pc-windows-msvc
+          #   code-target: win32-arm64
+          # - os: ubuntu-20.04
+          #   target: x86_64-unknown-linux-gnu
+          #   code-target: linux-x64
+          # - os: ubuntu-20.04
+          #   target: aarch64-unknown-linux-gnu
+          #   code-target: linux-arm64
+            arch: aarch64
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            code-target: darwin-x64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            code-target: darwin-arm64
+
+    name: Build (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        working-directory: ./editors/code
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: ${{ env.FETCH_DEPTH }}
+
+      # macOS or Linux binary
+      - run: curl -LsSf https://github.com/posit-dev/air/releases/latest/download/air-installer.sh | sh
+        if: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
+        env:
+          XDG_BIN_HOME: ./bundled/bin
+
+      # Windows binary
+      - run: powershell -c "irm https://github.com/posit-dev/air/releases/latest/download/air-installer.ps1 | iex"
+        if: ${{ startsWith(matrix.os, 'windows') }}
+        env:
+          XDG_BIN_HOME: ./bundled/bin
+
+      # Install Node.
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Install Node dependencies.
+      - run: npm ci
+
+      # Build the extension.
+      - name: Package Extension (release)
+        run: npx vsce package -o "./dist/air-${{ matrix.code-target }}.vsix" --target ${{ matrix.code-target }}
+
+      # Upload the extension.
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          working-directory: ./editors/code
+          name: dist-${{ matrix.target }}
+          path: ./dist
+
+  # Publish the built extension to the Code Marketplace.
+  publish-code-marketplace:
+    name: "Publish (Code Marketplace)"
+    needs: ["build"]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Download all built artifacts.
+      - uses: actions/download-artifact@v3
+        with:
+          name: dist-aarch64-apple-darwin
+          path: dist
+      - uses: actions/download-artifact@v3
+        with:
+          name: dist-x86_64-apple-darwin
+          path: dist
+      # - uses: actions/download-artifact@v3
+      #   with:
+      #     name: dist-x86_64-unknown-linux-gnu
+      #     path: dist
+      # - uses: actions/download-artifact@v3
+      #   with:
+      #     name: dist-aarch64-unknown-linux-gnu
+      #     path: dist
+      - uses: actions/download-artifact@v3
+        with:
+          name: dist-x86_64-pc-windows-msvc
+          path: dist
+      # - uses: actions/download-artifact@v3
+      #   with:
+      #     name: dist-aarch64-pc-windows-msvc
+      #     path: dist
+      - run: ls -al ./dist
+
+      # # Publish to the Code Marketplace.
+      # - name: Publish Extension (Code Marketplace, release)
+      #   run: npx vsce publish --pat ${{ secrets.MARKETPLACE_TOKEN }} --packagePath ./dist/air-*.vsix
+
+  # Publish the built extension to OpenVSX
+  publish-openvsx:
+    name: "Publish (OpenVSX)"
+    needs: ["build"]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Download all built artifacts.
+      - uses: actions/download-artifact@v3
+        with:
+          name: dist-aarch64-apple-darwin
+          path: dist
+      - uses: actions/download-artifact@v3
+        with:
+          name: dist-x86_64-apple-darwin
+          path: dist
+      # - uses: actions/download-artifact@v3
+      #   with:
+      #     name: dist-x86_64-unknown-linux-gnu
+      #     path: dist
+      # - uses: actions/download-artifact@v3
+      #   with:
+      #     name: dist-aarch64-unknown-linux-gnu
+      #     path: dist
+      - uses: actions/download-artifact@v3
+        with:
+          name: dist-x86_64-pc-windows-msvc
+          path: dist
+      # - uses: actions/download-artifact@v3
+      #   with:
+      #     name: dist-aarch64-pc-windows-msvc
+      #     path: dist
+      - run: ls -al ./dist
+
+      # # Publish to OpenVSX.
+      # - name: Publish Extension (OpenVSX, release)
+      #   run: npx ovsx publish --pat ${{ secrets.OPENVSX_TOKEN }} --packagePath ./dist/air-*.vsix
