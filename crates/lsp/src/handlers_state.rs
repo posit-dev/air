@@ -259,10 +259,6 @@ pub(crate) fn did_change_formatting_options(
     // `insert_final_newline`
 }
 
-// TODO: Extract document-specific updating. This currently pulls global
-// settings as well but sometimes we only want to refresh document-specific
-// settings.
-
 async fn update_config(
     uris: Vec<Url>,
     client: &tower_lsp::Client,
