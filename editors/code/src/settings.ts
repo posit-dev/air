@@ -12,7 +12,7 @@ export type InitializationOptions = {
 };
 
 export function getInitializationOptions(
-	namespace: string
+	namespace: string,
 ): InitializationOptions {
 	const config = getConfiguration(namespace);
 
@@ -20,14 +20,14 @@ export function getInitializationOptions(
 		logLevel: getOptionalUserValue<LogLevel>(config, "logLevel"),
 		dependencyLogLevels: getOptionalUserValue<string>(
 			config,
-			"dependencyLogLevels"
+			"dependencyLogLevels",
 		),
 	};
 }
 
 function getOptionalUserValue<T>(
 	config: WorkspaceConfiguration,
-	key: string
+	key: string,
 ): T | undefined {
 	const inspect = config.inspect<T>(key);
 	return inspect?.globalValue;
@@ -35,7 +35,7 @@ function getOptionalUserValue<T>(
 
 function getConfiguration(
 	config: string,
-	scope?: ConfigurationScope
+	scope?: ConfigurationScope,
 ): WorkspaceConfiguration {
 	return workspace.getConfiguration(config, scope);
 }
