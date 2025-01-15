@@ -152,8 +152,6 @@ pub(crate) async fn did_open(
     let document = Document::new(contents, Some(version), lsp_state.position_encoding);
     state.documents.insert(uri.clone(), document);
 
-    // TODO: Remove once the test client knows about the `configuration`
-    // server-to-client request
     if lsp_state.capabilities.request_configuration {
         update_config(vec![uri], client, lsp_state, state)
             .instrument(tracing::info_span!("did_change_configuration"))
