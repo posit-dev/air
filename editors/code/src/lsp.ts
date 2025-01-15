@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import * as lc from "vscode-languageclient/node";
 import { default as PQueue } from "p-queue";
 import { getInitializationOptions } from "./settings";
+import { Middleware, ResponseError } from "vscode-languageclient/node";
 
 // All session management operations are put on a queue. They can't run
 // concurrently and either result in a started or stopped state. Starting when
@@ -60,6 +61,44 @@ export class Lsp {
 			args: ["language-server"],
 		};
 
+		// We need a middleware for `configuration` requests from the server
+		// because the LSP client does not query language-specific configuration.
+		// See https://github.com/microsoft/vscode-languageserver-node/issues/1043 and
+		// https://github.com/microsoft/vscode-languageserver-node/issues/1056.
+		let middleware: Middleware = {
+			workspace: {
+				configuration: async (params, token, next) => {
+					const items = await next(params, token);
+
+					if (items instanceof ResponseError) {
+						return items;
+					}
+
+					for (let i = 0; i < params.items.length; ++i) {
+						const item = params.items[i];
+
+						if (!item.section || !item.scopeUri) {
+							continue;
+						}
+
+						const uri = vscode.Uri.parse(item.scopeUri);
+
+						const document =
+							await vscode.workspace.openTextDocument(uri);
+						const languageId = document.languageId;
+
+						const config = vscode.workspace.getConfiguration(
+							undefined,
+							{ uri, languageId },
+						);
+						items[i] = config.get(item.section);
+					}
+
+					return items;
+				},
+			},
+		};
+
 		let clientOptions: lc.LanguageClientOptions = {
 			// Look for unnamed scheme
 			documentSelector: [
@@ -70,13 +109,14 @@ export class Lsp {
 			],
 			outputChannel: this.channel,
 			initializationOptions: initializationOptions,
+			middleware,
 		};
 
 		const client = new lc.LanguageClient(
 			"airLanguageServer",
 			"Air Language Server",
 			serverOptions,
-			clientOptions
+			clientOptions,
 		);
 		await client.start();
 

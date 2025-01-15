@@ -20,7 +20,7 @@ use tower_lsp::Client;
 use url::Url;
 use workspace::settings::Settings;
 
-use crate::capabilities::ResolvedClientCapabilities;
+use crate::capabilities::AirClientCapabilities;
 use crate::handlers;
 use crate::handlers_ext;
 use crate::handlers_format;
@@ -29,6 +29,7 @@ use crate::handlers_state::ConsoleInputs;
 use crate::logging;
 use crate::logging::LogMessageSender;
 use crate::logging::LogThreadState;
+use crate::settings::DocumentSettings;
 use crate::state::WorldState;
 use crate::tower_lsp::LspMessage;
 use crate::tower_lsp::LspNotification;
@@ -165,7 +166,7 @@ pub(crate) struct LspState {
     pub(crate) parsers: HashMap<Url, tree_sitter::Parser>,
 
     /// List of client capabilities that we care about
-    pub(crate) capabilities: ResolvedClientCapabilities,
+    pub(crate) capabilities: AirClientCapabilities,
 
     /// State used to dynamically update the log level
     pub(crate) log_state: Option<logging::LogState>,
@@ -178,21 +179,23 @@ impl Default for LspState {
             // Default encoding specified in the LSP protocol
             position_encoding: PositionEncoding::Wide(WideEncoding::Utf16),
             parsers: Default::default(),
-            capabilities: ResolvedClientCapabilities::default(),
+            capabilities: AirClientCapabilities::default(),
             log_state: None,
         }
     }
 }
 
 impl LspState {
-    pub(crate) fn document_settings(&self, url: &Url) -> &Settings {
-        let workspace_settings = self.workspace_settings_resolver.settings_for_url(url);
-
-        // TODO: In the `Fallback` case, layer in client provided document specific
-        // settings on top of the fallback `settings`
-        match workspace_settings {
-            WorkspaceSettings::Toml(settings) => settings,
-            WorkspaceSettings::Fallback(settings) => settings,
+    pub(crate) fn document_settings(
+        &self,
+        url: &Url,
+        client_settings: &DocumentSettings,
+    ) -> Settings {
+        match self.workspace_settings_resolver.settings_for_url(url) {
+            // The TOML has precedence over client settings
+            WorkspaceSettings::Toml(settings) => settings.clone(),
+            // There is no TOML. Merge client settings into our default settings.
+            WorkspaceSettings::Fallback(settings) => client_settings.merge(settings.clone()),
         }
     }
 
@@ -337,7 +340,7 @@ impl GlobalState {
                             handlers_state::did_change_watched_files(params, &mut self.lsp_state)?;
                         },
                         LspNotification::DidOpenTextDocument(params) => {
-                            handlers_state::did_open(params, &self.lsp_state, &mut self.world)?;
+                            handlers_state::did_open(params, &self.client, &mut self.lsp_state, &mut self.world).await?;
                         },
                         LspNotification::DidChangeTextDocument(params) => {
                             handlers_state::did_change(params, &mut self.world)?;
@@ -363,9 +366,11 @@ impl GlobalState {
                             respond(tx, Ok(()), LspResponse::Shutdown)?;
                         },
                         LspRequest::DocumentFormatting(params) => {
+                            handlers_state::did_change_formatting_options(&params.text_document.uri, &params.options, &mut self.world);
                             respond(tx, handlers_format::document_formatting(params, &self.lsp_state, &self.world), LspResponse::DocumentFormatting)?;
                         },
                         LspRequest::DocumentRangeFormatting(params) => {
+                            handlers_state::did_change_formatting_options(&params.text_document.uri, &params.options, &mut self.world);
                             respond(tx, handlers_format::document_range_formatting(params, &self.lsp_state, &self.world), LspResponse::DocumentRangeFormatting)?;
                         },
                         LspRequest::AirViewFile(params) => {

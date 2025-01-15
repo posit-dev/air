@@ -4,7 +4,6 @@
 pub use tower_lsp::start_lsp;
 
 pub mod capabilities;
-pub mod config;
 pub mod crates;
 pub mod documents;
 pub mod encoding;
@@ -17,6 +16,7 @@ pub mod logging;
 pub mod main_loop;
 pub mod rust_analyzer;
 pub mod settings;
+pub mod settings_vsc;
 pub mod state;
 pub mod to_proto;
 pub mod tower_lsp;

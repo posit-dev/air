@@ -52,17 +52,11 @@ impl TestClientExt for TestClient {
     async fn format_document_edits(&mut self, doc: &Document) -> Option<Vec<lsp_types::TextEdit>> {
         let lsp_doc = self.open_document(doc).await;
 
-        let options = lsp_types::FormattingOptions {
-            tab_size: 4,
-            insert_spaces: false,
-            ..Default::default()
-        };
-
         self.formatting(lsp_types::DocumentFormattingParams {
             text_document: lsp_types::TextDocumentIdentifier {
                 uri: lsp_doc.uri.clone(),
             },
-            options,
+            options: formatting_options(doc),
             work_done_progress_params: Default::default(),
         })
         .await;
@@ -88,12 +82,6 @@ impl TestClientExt for TestClient {
     ) -> Option<Vec<lsp_types::TextEdit>> {
         let lsp_doc = self.open_document(doc).await;
 
-        let options = lsp_types::FormattingOptions {
-            tab_size: 4,
-            insert_spaces: false,
-            ..Default::default()
-        };
-
         let range = to_proto::range(&doc.line_index.index, range, doc.line_index.encoding).unwrap();
 
         self.range_formatting(lsp_types::DocumentRangeFormattingParams {
@@ -101,7 +89,7 @@ impl TestClientExt for TestClient {
                 uri: lsp_doc.uri.clone(),
             },
             range,
-            options,
+            options: formatting_options(doc),
             work_done_progress_params: Default::default(),
         })
         .await;
@@ -118,5 +106,16 @@ impl TestClientExt for TestClient {
         self.close_document(lsp_doc.uri).await;
 
         value
+    }
+}
+
+fn formatting_options(doc: &Document) -> lsp_types::FormattingOptions {
+    let tab_size = doc.settings.indent_width.unwrap_or_default();
+    let indent_style = doc.settings.indent_style.unwrap_or_default();
+
+    lsp_types::FormattingOptions {
+        tab_size: tab_size.value() as u32,
+        insert_spaces: matches!(indent_style, settings::IndentStyle::Space),
+        ..Default::default()
     }
 }

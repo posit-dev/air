@@ -9,9 +9,9 @@ use biome_lsp_converters::{line_index, PositionEncoding};
 use settings::LineEnding;
 use tower_lsp::lsp_types;
 
-use crate::config::DocumentConfig;
 use crate::rust_analyzer::line_index::LineIndex;
 use crate::rust_analyzer::utils::apply_document_changes;
+use crate::settings::DocumentSettings;
 
 #[derive(Clone)]
 pub struct Document {
@@ -34,8 +34,8 @@ pub struct Document {
     /// None if the document hasn't been synchronized yet.
     pub version: Option<i32>,
 
-    /// Configuration of the document, such as indentation settings.
-    pub config: DocumentConfig,
+    /// Settings of the document, such as indentation settings.
+    pub settings: DocumentSettings,
 }
 
 impl std::fmt::Debug for Document {
@@ -80,7 +80,7 @@ impl Document {
             line_index,
             parse,
             version,
-            config: Default::default(),
+            settings: Default::default(),
         }
     }
 

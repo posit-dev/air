@@ -34,17 +34,18 @@ use tower_lsp::lsp_types::WorkspaceServerCapabilities;
 use tracing::Instrument;
 use url::Url;
 
-use crate::capabilities::ResolvedClientCapabilities;
-use crate::config::indent_style_from_lsp;
-use crate::config::DocumentConfig;
-use crate::config::VscDiagnosticsConfig;
-use crate::config::VscDocumentConfig;
-use crate::config::VscLogConfig;
+use crate::capabilities::AirClientCapabilities;
 use crate::documents::Document;
 use crate::logging;
 use crate::logging::LogMessageSender;
 use crate::main_loop::LspState;
+use crate::settings::DocumentSettings;
 use crate::settings::InitializationOptions;
+use crate::settings_vsc::indent_style_from_vsc;
+use crate::settings_vsc::indent_width_from_usize;
+use crate::settings_vsc::VscDiagnosticsSettings;
+use crate::settings_vsc::VscDocumentSettings;
+use crate::settings_vsc::VscLogSettings;
 use crate::state::workspace_uris;
 use crate::state::WorldState;
 use crate::workspaces::WorkspaceSettingsResolver;
@@ -94,7 +95,7 @@ pub(crate) fn initialize(
         params.workspace_folders.unwrap_or_default(),
     );
 
-    lsp_state.capabilities = ResolvedClientCapabilities::new(params.capabilities);
+    lsp_state.capabilities = AirClientCapabilities::new(params.capabilities);
 
     // If the client supports UTF-8 we use that, even if it's not its
     // preferred encoding (at position 0). Otherwise we use the mandatory
@@ -138,9 +139,10 @@ pub(crate) fn initialize(
 }
 
 #[tracing::instrument(level = "info", skip_all)]
-pub(crate) fn did_open(
+pub(crate) async fn did_open(
     params: DidOpenTextDocumentParams,
-    lsp_state: &LspState,
+    client: &tower_lsp::Client,
+    lsp_state: &mut LspState,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
     let contents = params.text_document.text;
@@ -148,7 +150,15 @@ pub(crate) fn did_open(
     let version = params.text_document.version;
 
     let document = Document::new(contents, Some(version), lsp_state.position_encoding);
-    state.documents.insert(uri, document);
+    state.documents.insert(uri.clone(), document);
+
+    // TODO: Remove once the test client knows about the `configuration`
+    // server-to-client request
+    if lsp_state.capabilities.request_configuration {
+        update_config(vec![uri], client, lsp_state, state)
+            .instrument(tracing::info_span!("did_change_configuration"))
+            .await?;
+    }
 
     Ok(())
 }
@@ -235,19 +245,13 @@ pub(crate) fn did_change_formatting_options(
         return;
     };
 
-    // The information provided in formatting requests is more up-to-date
-    // than the user settings because it also includes changes made to the
-    // configuration of particular editors. However the former is less rich
-    // than the latter: it does not allow the tab size to differ from the
-    // indent size, as in the R core sources. So we just ignore the less
-    // rich updates in this case.
-    if doc.config.indent.indent_size != doc.config.indent.tab_width {
-        return;
-    }
+    tracing::trace!(file = ?uri, "Got formatting settings: {:?}", &opts);
 
-    doc.config.indent.indent_size = opts.tab_size as usize;
-    doc.config.indent.tab_width = opts.tab_size as usize;
-    doc.config.indent.indent_style = indent_style_from_lsp(opts.insert_spaces);
+    doc.settings.indent_style = Some(indent_style_from_vsc(opts.insert_spaces));
+
+    // Note that `tabSize` in the LSP protocol corresponds to `indentSize` in VS Code options.
+    // And if Code's `indentSize` is aliased to Code's `tabSize`, we get the latter here.
+    doc.settings.indent_width = Some(indent_width_from_usize(opts.tab_size as usize));
 
     // TODO:
     // `trim_trailing_whitespace`
@@ -263,34 +267,34 @@ async fn update_config(
 ) -> anyhow::Result<()> {
     let mut items: Vec<ConfigurationItem> = vec![];
 
-    let diagnostics_keys = VscDiagnosticsConfig::FIELD_NAMES_AS_ARRAY;
+    let diagnostics_keys = VscDiagnosticsSettings::FIELD_NAMES_AS_ARRAY;
     let mut diagnostics_items: Vec<ConfigurationItem> = diagnostics_keys
         .iter()
         .map(|key| ConfigurationItem {
             scope_uri: None,
-            section: Some(VscDiagnosticsConfig::section_from_key(key).into()),
+            section: Some(VscDiagnosticsSettings::section_from_key(key).into()),
         })
         .collect();
     items.append(&mut diagnostics_items);
 
     // For document configs we collect all pairs of URIs and config keys of
     // interest in a flat vector
-    let document_keys = VscDocumentConfig::FIELD_NAMES_AS_ARRAY;
+    let document_keys = VscDocumentSettings::FIELD_NAMES_AS_ARRAY;
     let mut document_items: Vec<ConfigurationItem> =
         itertools::iproduct!(uris.iter(), document_keys.iter())
             .map(|(uri, key)| ConfigurationItem {
                 scope_uri: Some(uri.clone()),
-                section: Some(VscDocumentConfig::section_from_key(key).into()),
+                section: Some(VscDocumentSettings::section_from_key(key).into()),
             })
             .collect();
     items.append(&mut document_items);
 
-    let log_keys = VscLogConfig::FIELD_NAMES_AS_ARRAY;
+    let log_keys = VscLogSettings::FIELD_NAMES_AS_ARRAY;
     let mut log_items: Vec<ConfigurationItem> = log_keys
         .iter()
         .map(|key| ConfigurationItem {
             scope_uri: None,
-            section: Some(VscLogConfig::section_from_key(key).into()),
+            section: Some(VscLogSettings::section_from_key(key).into()),
         })
         .collect();
     items.append(&mut log_items);
@@ -377,13 +381,14 @@ fn update_documents_config(
         });
 
         // Deserialise the VS Code configuration
-        let config: VscDocumentConfig = serde_json::from_value(serde_json::Value::Object(map))?;
+        let config: VscDocumentSettings = serde_json::from_value(serde_json::Value::Object(map))?;
+        tracing::trace!(file = ?uri, "Got VS Code settings: {:?}", &config);
 
         // Now convert the VS Code specific type into our own type
-        let config: DocumentConfig = config.into();
+        let config: DocumentSettings = config.into();
 
         // Finally, update the document's config
-        state.get_document_mut(&uri)?.config = config;
+        state.get_document_mut(&uri)?.settings = config;
     }
 
     Ok(())
@@ -402,7 +407,7 @@ fn update_log_config(
     });
 
     // Deserialise the VS Code configuration
-    let VscLogConfig {
+    let VscLogSettings {
         log_level,
         dependency_log_levels,
     } = serde_json::from_value(serde_json::Value::Object(map))?;
