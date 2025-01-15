@@ -1,11 +1,15 @@
 use serde::Deserialize;
 use serde_json::Value;
 
-/// Settings of a document.
+/// Client-side settings of a document.
+///
+/// This holds settings propagated by the client. These don't apply if there
+/// is an air.toml file in the project (or a parent folder).
 #[derive(Clone, Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct DocumentSettings {
     pub indent_style: Option<settings::IndentStyle>,
     pub indent_width: Option<settings::IndentWidth>,
+    // This setting is currently unwatched. The client can't propagate it.
     pub line_width: Option<settings::LineWidth>,
 }
 

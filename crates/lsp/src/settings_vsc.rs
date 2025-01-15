@@ -19,7 +19,6 @@ pub(crate) struct VscDocumentSettings {
     pub insert_spaces: bool,
     pub indent_size: VscIndentSize,
     pub tab_size: usize,
-    pub rulers: Vec<usize>,
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -48,7 +47,6 @@ impl VscDocumentSettings {
             "insert_spaces" => "editor.insertSpaces",
             "indent_size" => "editor.indentSize",
             "tab_size" => "editor.tabSize",
-            "rulers" => "editor.rulers",
             _ => "unknown", // To be caught via downstream errors
         }
     }
@@ -60,12 +58,11 @@ impl From<VscDocumentSettings> for DocumentSettings {
     fn from(value: VscDocumentSettings) -> Self {
         let indent_style = indent_style_from_vsc(value.insert_spaces);
         let indent_width = indent_width_from_vsc(&value);
-        let line_width = line_width_from_vsc(&value.rulers);
 
         Self {
             indent_style: Some(indent_style),
             indent_width: Some(indent_width),
-            line_width,
+            line_width: None, // We don't currently watch this setting
         }
     }
 }
