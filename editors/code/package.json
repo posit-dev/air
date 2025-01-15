@@ -75,6 +75,20 @@
 					"markdownDescription": "Whether settings from air.toml files should be propagated to the client (the IDE).",
 					"scope": "application",
 					"type": "boolean"
+				},
+				"air.executableLocation": {
+					"default": "environment",
+					"markdownDescription": "Location of the `air` executable to start the language server with.",
+					"enum": [
+						"environment",
+						"bundled"
+					],
+					"enumDescriptions": [
+						"Look for an `air` executable on the `PATH`, falling back to the bundled version.",
+						"Always use the bundled `air` executable."
+					],
+					"scope": "window",
+					"type": "string"
 				}
 			}
 		},
@@ -129,15 +143,19 @@
 	},
 	"dependencies": {
 		"@types/p-queue": "^3.1.0",
+		"fs-extra": "^11.1.1",
 		"p-queue": "npm:@esm2cjs/p-queue@^7.3.0",
 		"adm-zip": "^0.5.16",
-		"vscode-languageclient": "^9.0.1"
+		"vscode-languageclient": "^9.0.1",
+		"which": "^4.0.0"
 	},
 	"devDependencies": {
 		"@types/adm-zip": "^0.5.6",
+		"@types/fs-extra": "^11.0.4",
 		"@types/mocha": "^10.0.9",
 		"@types/node": "20.x",
 		"@types/vscode": "^1.90.0",
+		"@types/which": "^3.0.4",
 		"@typescript-eslint/eslint-plugin": "^8.10.0",
 		"@typescript-eslint/parser": "^8.7.0",
 		"@vscode/test-cli": "^0.0.10",

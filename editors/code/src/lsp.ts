@@ -1,10 +1,13 @@
 import * as vscode from "vscode";
 import * as lc from "vscode-languageclient/node";
 import { default as PQueue } from "p-queue";
-import { getInitializationOptions } from "./settings";
+import { getInitializationOptions, getWorkspaceSettings } from "./settings";
 import { FileSettingsState } from "./notification/sync-file-settings";
 import { Middleware, ResponseError } from "vscode-languageclient/node";
 import { SYNC_FILE_SETTINGS } from "./notification/sync-file-settings";
+import { registerLogger } from "./logging";
+import { resolveAirBinaryPath } from "./binary";
+import { getRootWorkspaceFolder } from "./workspace";
 
 // All session management operations are put on a queue. They can't run
 // concurrently and either result in a started or stopped state. Starting when
@@ -29,7 +32,7 @@ export class Lsp {
 
 	constructor(context: vscode.ExtensionContext) {
 		this.channel = vscode.window.createOutputChannel("Air Language Server");
-		context.subscriptions.push(this.channel);
+		context.subscriptions.push(this.channel, registerLogger(this.channel));
 		this.stateQueue = new PQueue({ concurrency: 1 });
 		this.fileSettings = new FileSettingsState(context);
 	}
@@ -59,10 +62,17 @@ export class Lsp {
 			return;
 		}
 
+		const workspaceFolder = await getRootWorkspaceFolder();
+
+		const workspaceSettings = getWorkspaceSettings("air", workspaceFolder);
 		const initializationOptions = getInitializationOptions("air");
 
+		const command = await resolveAirBinaryPath(
+			workspaceSettings.executableLocation
+		);
+
 		let serverOptions: lc.ServerOptions = {
-			command: "air",
+			command: command,
 			args: ["language-server"],
 		};
 
@@ -94,7 +104,7 @@ export class Lsp {
 
 						const config = vscode.workspace.getConfiguration(
 							undefined,
-							{ uri, languageId },
+							{ uri, languageId }
 						);
 						items[i] = config.get(item.section);
 					}
@@ -121,10 +131,10 @@ export class Lsp {
 			"airLanguageServer",
 			"Air Language Server",
 			serverOptions,
-			clientOptions,
+			clientOptions
 		);
 		client.onNotification(SYNC_FILE_SETTINGS, (settings) =>
-			this.fileSettings.handleSettingsNotification(settings),
+			this.fileSettings.handleSettingsNotification(settings)
 		);
 
 		await client.start();
