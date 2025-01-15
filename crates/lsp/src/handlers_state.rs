@@ -45,7 +45,7 @@ use crate::settings_vsc::indent_style_from_vsc;
 use crate::settings_vsc::indent_width_from_usize;
 use crate::settings_vsc::VscDiagnosticsSettings;
 use crate::settings_vsc::VscDocumentSettings;
-use crate::settings_vsc::VscLogSettings;
+use crate::settings_vsc::VscGlobalSettings;
 use crate::state::WorldState;
 use crate::workspaces::WorkspaceSettingsResolver;
 
@@ -298,15 +298,15 @@ async fn update_config(
             .collect();
     items.append(&mut document_items);
 
-    let log_keys = VscLogSettings::FIELD_NAMES_AS_ARRAY;
-    let mut log_items: Vec<ConfigurationItem> = log_keys
+    let global_keys = VscGlobalSettings::FIELD_NAMES_AS_ARRAY;
+    let mut global_items: Vec<ConfigurationItem> = global_keys
         .iter()
         .map(|key| ConfigurationItem {
             scope_uri: None,
-            section: Some(VscLogSettings::section_from_key(key).into()),
+            section: Some(VscGlobalSettings::section_from_key(key).into()),
         })
         .collect();
-    items.append(&mut log_items);
+    items.append(&mut global_items);
 
     let configs = lsp_state.client.configuration(items).await?;
 
@@ -316,8 +316,8 @@ async fn update_config(
     // by chunk
     let n_diagnostics_items = diagnostics_keys.len();
     let n_document_items = document_keys.len() * uris.len();
-    let n_log_items = log_keys.len();
-    let n_items = n_diagnostics_items + n_document_items + n_log_items;
+    let n_global_items = global_keys.len();
+    let n_items = n_diagnostics_items + n_document_items + n_global_items;
 
     if configs.len() != n_items {
         return Err(anyhow!(
@@ -339,10 +339,10 @@ async fn update_config(
     let items = configs.by_ref().take(n_document_items);
     update_documents_config(keys, items, uris, state)?;
 
-    // --- Logs
-    let keys = log_keys.into_iter();
-    let items = configs.by_ref().take(n_log_items);
-    update_log_config(keys, items, lsp_state)?;
+    // --- Global
+    let keys = global_keys.into_iter();
+    let items = configs.by_ref().take(n_global_items);
+    update_global_config(keys, items, lsp_state)?;
 
     Ok(())
 }
@@ -403,7 +403,7 @@ fn update_documents_config(
     Ok(())
 }
 
-fn update_log_config(
+fn update_global_config(
     keys: IntoIter<&str, 2>,
     items: impl Iterator<Item = Value>,
     lsp_state: &mut LspState,
@@ -416,7 +416,7 @@ fn update_log_config(
     });
 
     // Deserialise the VS Code configuration
-    let VscLogSettings {
+    let VscGlobalSettings {
         log_level,
         dependency_log_levels,
     } = serde_json::from_value(serde_json::Value::Object(map))?;
