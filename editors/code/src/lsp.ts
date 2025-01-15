@@ -1,8 +1,9 @@
 import * as vscode from "vscode";
 import * as lc from "vscode-languageclient/node";
 import { default as PQueue } from "p-queue";
-import { getInitializationOptions } from "./settings";
+import { getInitializationOptions, TomlSettings } from "./settings";
 import { Middleware, ResponseError } from "vscode-languageclient/node";
+import { tomlSettings } from "./lsp-ext";
 
 // All session management operations are put on a queue. They can't run
 // concurrently and either result in a started or stopped state. Starting when
@@ -23,10 +24,13 @@ export class Lsp {
 	private state = State.Stopped;
 	private stateQueue: PQueue;
 
+	private tomlSettings: TomlSettings;
+
 	constructor(context: vscode.ExtensionContext) {
 		this.channel = vscode.window.createOutputChannel("Air Language Server");
 		context.subscriptions.push(this.channel);
 		this.stateQueue = new PQueue({ concurrency: 1 });
+		this.tomlSettings = new TomlSettings(context);
 	}
 
 	public getClient(): lc.LanguageClient {
@@ -118,6 +122,10 @@ export class Lsp {
 			serverOptions,
 			clientOptions,
 		);
+		client.onNotification(tomlSettings, (settings) =>
+			this.tomlSettings.handleSettingsNotification(settings),
+		);
+
 		await client.start();
 
 		// Only update state if no error occurred
