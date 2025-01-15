@@ -141,7 +141,6 @@ pub(crate) fn initialize(
 #[tracing::instrument(level = "info", skip_all)]
 pub(crate) async fn did_open(
     params: DidOpenTextDocumentParams,
-    client: &tower_lsp::Client,
     lsp_state: &mut LspState,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
@@ -153,7 +152,7 @@ pub(crate) async fn did_open(
     state.documents.insert(uri.clone(), document);
 
     if lsp_state.capabilities.request_configuration {
-        update_config(vec![uri], client, lsp_state, state)
+        update_config(vec![uri], lsp_state, state)
             .instrument(tracing::info_span!("did_change_configuration"))
             .await?;
     }
@@ -193,7 +192,6 @@ pub(crate) fn did_close(
 
 pub(crate) async fn did_change_configuration(
     _params: DidChangeConfigurationParams,
-    client: &tower_lsp::Client,
     lsp_state: &mut LspState,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
@@ -202,7 +200,7 @@ pub(crate) async fn did_change_configuration(
     // configuration that we watch has changed. When we detect any changes, we re-pull
     // everything we are interested in.
 
-    update_config(workspace_uris(state), client, lsp_state, state)
+    update_config(workspace_uris(state), lsp_state, state)
         .instrument(tracing::info_span!("did_change_configuration"))
         .await
 }
@@ -259,7 +257,6 @@ pub(crate) fn did_change_formatting_options(
 
 async fn update_config(
     uris: Vec<Url>,
-    client: &tower_lsp::Client,
     lsp_state: &mut LspState,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
@@ -297,7 +294,7 @@ async fn update_config(
         .collect();
     items.append(&mut log_items);
 
-    let configs = client.configuration(items).await?;
+    let configs = lsp_state.client.configuration(items).await?;
 
     // We got the config items in a flat vector that's guaranteed to be
     // ordered in the same way it was sent in. Be defensive and check that
