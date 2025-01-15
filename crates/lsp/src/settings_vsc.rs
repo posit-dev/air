@@ -35,7 +35,7 @@ pub(crate) struct VscDiagnosticsSettings {
 }
 
 #[derive(Clone, Debug, FieldNamesAsArray, serde::Deserialize)]
-pub(crate) struct VscLogSettings {
+pub(crate) struct VscGlobalSettings {
     // DEV NOTE: Update `section_from_key()` method after adding a field
     pub log_level: Option<LogLevel>,
     pub dependency_log_levels: Option<String>,
@@ -76,7 +76,7 @@ impl VscDiagnosticsSettings {
     }
 }
 
-impl VscLogSettings {
+impl VscGlobalSettings {
     pub(crate) fn section_from_key(key: &str) -> &str {
         match key {
             "log_level" => "air.logLevel",
