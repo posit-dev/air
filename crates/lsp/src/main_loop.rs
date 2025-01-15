@@ -20,7 +20,7 @@ use tower_lsp::Client;
 use url::Url;
 use workspace::settings::Settings;
 
-use crate::capabilities::ResolvedClientCapabilities;
+use crate::capabilities::AirClientCapabilities;
 use crate::handlers;
 use crate::handlers_ext;
 use crate::handlers_format;
@@ -166,7 +166,7 @@ pub(crate) struct LspState {
     pub(crate) parsers: HashMap<Url, tree_sitter::Parser>,
 
     /// List of client capabilities that we care about
-    pub(crate) capabilities: ResolvedClientCapabilities,
+    pub(crate) capabilities: AirClientCapabilities,
 
     /// State used to dynamically update the log level
     pub(crate) log_state: Option<logging::LogState>,
@@ -179,7 +179,7 @@ impl Default for LspState {
             // Default encoding specified in the LSP protocol
             position_encoding: PositionEncoding::Wide(WideEncoding::Utf16),
             parsers: Default::default(),
-            capabilities: ResolvedClientCapabilities::default(),
+            capabilities: AirClientCapabilities::default(),
             log_state: None,
         }
     }

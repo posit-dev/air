@@ -34,7 +34,7 @@ use tower_lsp::lsp_types::WorkspaceServerCapabilities;
 use tracing::Instrument;
 use url::Url;
 
-use crate::capabilities::ResolvedClientCapabilities;
+use crate::capabilities::AirClientCapabilities;
 use crate::documents::Document;
 use crate::logging;
 use crate::logging::LogMessageSender;
@@ -95,7 +95,7 @@ pub(crate) fn initialize(
         params.workspace_folders.unwrap_or_default(),
     );
 
-    lsp_state.capabilities = ResolvedClientCapabilities::new(params.capabilities);
+    lsp_state.capabilities = AirClientCapabilities::new(params.capabilities);
 
     // If the client supports UTF-8 we use that, even if it's not its
     // preferred encoding (at position 0). Otherwise we use the mandatory
@@ -154,7 +154,7 @@ pub(crate) async fn did_open(
 
     // TODO: Remove once the test client knows about the `configuration`
     // server-to-client request
-    if !cfg!(test) {
+    if lsp_state.capabilities.request_configuration {
         update_config(vec![uri], client, lsp_state, state)
             .instrument(tracing::info_span!("did_change_configuration"))
             .await?;
@@ -365,7 +365,7 @@ fn update_diagnostics_config(
 }
 
 fn update_documents_config(
-    keys: IntoIter<&str, 4>,
+    keys: IntoIter<&str, 3>,
     mut items: impl Iterator<Item = Value>,
     uris: Vec<Url>,
     state: &mut WorldState,
