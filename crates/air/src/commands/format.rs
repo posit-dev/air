@@ -1,7 +1,7 @@
 use std::fmt::Display;
 use std::fmt::Formatter;
 use std::io;
-use std::io::stdout;
+use std::io::stderr;
 use std::io::Write;
 use std::path::PathBuf;
 
@@ -58,7 +58,7 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
     match mode {
         FormatMode::Write => {}
         FormatMode::Check => {
-            write_changed(&actions, &mut stdout().lock())?;
+            write_changed(&actions, &mut stderr().lock())?;
         }
     }
 
