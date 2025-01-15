@@ -79,6 +79,10 @@ export class TomlSettings {
 	}
 
 	public apply(editor: vscode.TextEditor) {
+		if (!this.enabled()) {
+			return;
+		}
+
 		const settings = this.settings.get(editor.document.uri.fsPath);
 
 		if (settings) {
@@ -92,6 +96,16 @@ export class TomlSettings {
 				indentSize: indentSize,
 				insertSpaces: insertSpaces,
 			};
+		}
+	}
+
+	enabled(): boolean {
+		const config = vscode.workspace.getConfiguration();
+		const enabled = config.get<boolean>("air.settingsBackpropagation");
+		if (enabled === undefined) {
+			return true;
+		} else {
+			return enabled;
 		}
 	}
 }
