@@ -11,28 +11,31 @@ use workspace::settings::Settings;
 
 use crate::{main_loop::LspState, workspaces::WorkspaceSettings};
 
-struct SettingsNotifications {}
+#[derive(serde::Serialize, serde::Deserialize)]
+struct SettingsNotifications {
+    file_settings: Vec<FileSettings>,
+}
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct FileSettings {
-    path: String,
+    url: String,
     settings: Settings,
 }
 
 impl Notification for SettingsNotifications {
-    type Params = Vec<FileSettings>;
+    type Params = SettingsNotifications;
     const METHOD: &'static str = "air/tomlSettings";
 }
 
 impl LspState {
     pub(crate) async fn notify_settings(&self, urls: Vec<Url>) {
-        let settings: Vec<_> = urls
+        let file_settings: Vec<_> = urls
             .into_iter()
             .filter_map(
                 |url| match self.workspace_settings_resolver.settings_for_url(&url) {
                     // There is a TOML to backpropagate
                     WorkspaceSettings::Toml(settings) => Some(FileSettings {
-                        path: url.to_string(),
+                        url: url.to_string(),
                         settings: settings.clone(),
                     }),
                     // There is no TOML. Let the IDE use its own settings.
@@ -40,10 +43,11 @@ impl LspState {
                 },
             )
             .collect();
+        let file_settings = SettingsNotifications { file_settings };
 
         tracing::trace!("Sending notification with backpropagated settings");
         self.client
-            .send_notification::<SettingsNotifications>(settings)
+            .send_notification::<SettingsNotifications>(file_settings)
             .await;
     }
 }
