@@ -28,7 +28,7 @@ dependencies = [
 
 [[package]]
 name = "air"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "air_r_formatter",
  "air_r_parser",

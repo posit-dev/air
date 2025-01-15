@@ -11,7 +11,7 @@ use std::str::FromStr;
 #[derive(Debug, Default, Clone, Copy, Eq, Hash, PartialEq)]
 #[cfg_attr(
     feature = "serde",
-    derive(serde::Deserialize),
+    derive(serde::Serialize, serde::Deserialize),
     serde(rename_all = "kebab-case")
 )]
 pub enum IndentStyle {

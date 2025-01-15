@@ -12,6 +12,7 @@ use std::num::NonZeroU16;
 ///
 /// The allowed range of values is 1..=320
 #[derive(Clone, Copy, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub struct LineWidth(NonZeroU16);
 
 impl LineWidth {

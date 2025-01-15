@@ -8,16 +8,17 @@
 use tower_lsp::lsp_types::ClientCapabilities;
 use tower_lsp::lsp_types::PositionEncodingKind;
 
-/// A resolved representation of the [ClientCapabilities] the Client sends over that we
-/// actually do something with
+/// The subset of [ClientCapabilities] the Client sends over that we actually do
+/// something with
 #[derive(Debug, Default)]
-pub(crate) struct ResolvedClientCapabilities {
+pub(crate) struct AirClientCapabilities {
     pub(crate) position_encodings: Vec<PositionEncodingKind>,
     pub(crate) dynamic_registration_for_did_change_configuration: bool,
     pub(crate) dynamic_registration_for_did_change_watched_files: bool,
+    pub(crate) request_configuration: bool,
 }
 
-impl ResolvedClientCapabilities {
+impl AirClientCapabilities {
     pub(crate) fn new(capabilities: ClientCapabilities) -> Self {
         let position_encodings = capabilities
             .general
@@ -38,10 +39,17 @@ impl ResolvedClientCapabilities {
             .and_then(|watched_files| watched_files.dynamic_registration)
             .unwrap_or_default();
 
+        let configuration = capabilities
+            .workspace
+            .as_ref()
+            .and_then(|workspace| workspace.configuration)
+            .unwrap_or_default();
+
         Self {
             position_encodings,
             dynamic_registration_for_did_change_configuration,
             dynamic_registration_for_did_change_watched_files,
+            request_configuration: configuration,
         }
     }
 }

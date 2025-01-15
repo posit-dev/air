@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use anyhow::anyhow;
 use url::Url;
 
-use crate::config::LspConfig;
 use crate::documents::Document;
 
 #[derive(Clone, Default, Debug)]
@@ -39,8 +38,6 @@ pub(crate) struct WorldState {
 
     /// Currently installed packages
     pub(crate) installed_packages: Vec<String>,
-
-    pub(crate) config: LspConfig,
 }
 
 impl WorldState {

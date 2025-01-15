@@ -23,7 +23,7 @@ pub(crate) fn document_formatting(
 ) -> anyhow::Result<Option<Vec<lsp_types::TextEdit>>> {
     let doc = state.get_document(&params.text_document.uri)?;
 
-    let settings = lsp_state.document_settings(&params.text_document.uri);
+    let settings = lsp_state.document_settings(&params.text_document.uri, &doc.settings);
     let format_options = settings.format.to_format_options(&doc.contents);
 
     if doc.parse.has_errors() {
@@ -68,7 +68,7 @@ pub(crate) fn document_range_formatting(
     let range =
         from_proto::text_range(&doc.line_index.index, params.range, doc.line_index.encoding)?;
 
-    let settings = lsp_state.document_settings(&params.text_document.uri);
+    let settings = lsp_state.document_settings(&params.text_document.uri, &doc.settings);
     let format_options = settings.format.to_format_options(&doc.contents);
 
     let logical_lines = find_deepest_enclosing_logical_lines(doc.parse.syntax(), range);
@@ -519,6 +519,42 @@ mod tests {
 
             let output6 = client.format_document_range(&doc, range).await;
             insta::assert_snapshot!(output6);
+        });
+    }
+
+    #[test]
+    fn test_format_indent_options() {
+        with_client(|client| async {
+            let mut client = client.lock().await;
+
+            #[rustfmt::skip]
+            let mut doc = Document::doodle("{1}");
+
+            doc.settings.indent_width = Some(settings::IndentWidth::try_from(8_u8).unwrap());
+            let output_8_spaces = client.format_document(&doc).await;
+            insta::assert_snapshot!(output_8_spaces);
+
+            doc.settings.indent_style = Some(settings::IndentStyle::Tab);
+            let output_tab = client.format_document(&doc).await;
+            insta::assert_snapshot!(output_tab);
+        });
+    }
+
+    #[test]
+    fn test_format_range_indent_options() {
+        with_client(|client| async {
+            let mut client = client.lock().await;
+
+            #[rustfmt::skip]
+            let (mut doc, range) = Document::doodle_and_range("<<{1}>>");
+
+            doc.settings.indent_width = Some(settings::IndentWidth::try_from(8_u8).unwrap());
+            let output_8_spaces = client.format_document_range(&doc, range).await;
+            insta::assert_snapshot!(output_8_spaces);
+
+            doc.settings.indent_style = Some(settings::IndentStyle::Tab);
+            let output_tab = client.format_document_range(&doc, range).await;
+            insta::assert_snapshot!(output_tab);
         });
     }
 }
