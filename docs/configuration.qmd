@@ -44,6 +44,11 @@ If you run `air format` with a working directory of `~/files/dplyr` or open your
 Air also supports walking up the directory tree from the project root.
 For example, if you ran `air format` from within `~/files/dplyr/R`, then Air would look "up" one directory and would find and use `~/files/dplyr/air.toml`.
 
+## Dotfiles
+
+Air supports both `air.toml` and `.air.toml`.
+If both are present in the same directory, then `air.toml` is preferred (but we don't recommend this).
+
 ## Format options
 
 All formatting options are specified under the `[format]` table.
