@@ -8,7 +8,6 @@ editor:
 
 Air can be configured using a TOML file named `air.toml`.
 Air is purposefully minimally configurable, with the main configuration points being related to line width and indent style.
-Our hope is that most projects never need an `air.toml` file!
 
 ## Example configuration
 
@@ -19,9 +18,30 @@ Below is a complete `air.toml` file showing all available options set to their d
 line-width = 80
 indent-width = 2
 indent-style = "space"
-line-ending = "auto"   
+line-ending = "auto"
 ignore-magic-line-break = false
 ```
+
+## Configuration recommendations
+
+For collaborative projects, we recommend creating an `air.toml` and placing it at your project root even if you plan to use the default Air settings.
+This has a number of benefits:
+
+-   It stops Air from using user level editor settings.
+    When an `air.toml` is not present, Air respects some user level editor settings, such as `editor.tabWidth` in VS Code.
+    The presence of an `air.toml` (even an empty one) disables this, instead pulling all settings from the configuration file.
+    This ensures that settings are the same across team members, code editors, and in CI.
+
+-   It stops [configuration discovery] from extending outside your project.
+    Without an `air.toml` at the project root, Air might discover your local `~/packages/air.toml` as the configuration file to use for the `~/packages/dplyr` project.
+    By adding `~/packages/dplyr/air.toml`, you prevent configuration discovery from looking "above" `~/packages/dplyr`, again ensuring consistent settings across team members.
+
+-   It serves as a signal to others that your project is using Air.
+
+If you do plan to just use the defaults, the `air.toml` can be completely empty.
+The important thing is that it exists.
+
+If you're happy with Air's defaults and don't plan for your project to ever leave your computer, you likely don't need an `air.toml`.
 
 ## Configuration discovery
 
@@ -29,7 +49,7 @@ The ideal place to put an `air.toml` file is at your project root.
 For example, note the placement of `air.toml` in this minimal dplyr project:
 
 ``` bash
-~/files/dplyr
+~/packages/dplyr
 ├── air.toml
 ├── DESCRIPTION
 ├── NAMESPACE
@@ -39,10 +59,10 @@ For example, note the placement of `air.toml` in this minimal dplyr project:
 └── vignettes
 ```
 
-If you run `air format` with a working directory of `~/files/dplyr` or open your IDE in the dplyr project, then Air will find and use that TOML file.
+If you run `air format` with a working directory of `~/packages/dplyr` or open your IDE in the dplyr project, then Air will find and use that TOML file.
 
 Air also supports walking up the directory tree from the project root.
-For example, if you ran `air format` from within `~/files/dplyr/R`, then Air would look "up" one directory and would find and use `~/files/dplyr/air.toml`.
+For example, if you ran `air format` from within `~/packages/dplyr/R`, then Air would look "up" one directory and would find and use `~/packages/dplyr/air.toml`.
 
 ## Format options
 
@@ -117,9 +137,9 @@ Similarly, this function signature could also be flattened, but is not, due to t
 
 ``` r
 case_when <- function(
-  ..., 
-  .default = NULL, 
-  .ptype = NULL, 
+  ...,
+  .default = NULL,
+  .ptype = NULL,
   .size = NULL
 ) {
   body
