@@ -158,7 +158,7 @@ pub(crate) async fn did_open(
     }
 
     // Backpropagate Air settings to client
-    lsp_state.notify_settings(vec![uri]).await;
+    lsp_state.sync_file_settings(vec![uri]).await;
 
     Ok(())
 }
@@ -239,7 +239,7 @@ pub(crate) async fn did_change_watched_files(
 
     // Backpropagate settings for all opened files if an `air.toml` file changed
     if changed_settings {
-        lsp_state.notify_settings(state.workspace_uris()).await;
+        lsp_state.sync_file_settings(state.workspace_uris()).await;
     }
 
     Ok(())
@@ -342,7 +342,7 @@ async fn update_config(
     // --- Global
     let keys = global_keys.into_iter();
     let items = configs.by_ref().take(n_global_items);
-    update_global_config(keys, items, lsp_state)?;
+    update_global_config(keys, items, lsp_state, state).await?;
 
     Ok(())
 }
@@ -403,12 +403,15 @@ fn update_documents_config(
     Ok(())
 }
 
-fn update_global_config(
-    keys: IntoIter<&str, 2>,
+async fn update_global_config(
+    keys: IntoIter<&str, 3>,
     items: impl Iterator<Item = Value>,
     lsp_state: &mut LspState,
+    state: &WorldState,
 ) -> anyhow::Result<()> {
     let log_state = lsp_state.log_state.as_mut().context("Missing log state")?;
+
+    let old_sync_file_settings_with_client = lsp_state.settings.sync_file_settings_with_client;
 
     let mut map = serde_json::Map::new();
     std::iter::zip(keys, items).for_each(|(key, item)| {
@@ -416,12 +419,18 @@ fn update_global_config(
     });
 
     // Deserialise the VS Code configuration
-    let VscGlobalSettings {
-        log_level,
-        dependency_log_levels,
-    } = serde_json::from_value(serde_json::Value::Object(map))?;
+    let settings: VscGlobalSettings = serde_json::from_value(serde_json::Value::Object(map))?;
 
-    log_state.reload(log_level, dependency_log_levels);
+    // These log settings are not stored in the LSP state
+    log_state.reload(settings.log_level, settings.dependency_log_levels.clone());
+
+    // Convert and set the global LSP settings
+    lsp_state.settings = settings.into();
+
+    // If the client just enabled file setttings synchronisation, sync them
+    if !old_sync_file_settings_with_client && lsp_state.settings.sync_file_settings_with_client {
+        lsp_state.sync_file_settings(state.workspace_uris()).await
+    }
 
     Ok(())
 }

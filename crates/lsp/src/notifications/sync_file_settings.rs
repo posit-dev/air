@@ -37,7 +37,11 @@ impl From<workspace::settings::FormatSettings> for FileFormatSettings {
 }
 
 impl LspState {
-    pub(crate) async fn notify_settings(&self, urls: Vec<Url>) {
+    pub(crate) async fn sync_file_settings(&self, urls: Vec<Url>) {
+        if !self.settings.sync_file_settings_with_client {
+            return;
+        }
+
         let file_settings: Vec<_> = urls
             .into_iter()
             .filter_map(

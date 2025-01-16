@@ -30,6 +30,7 @@ use crate::logging;
 use crate::logging::LogMessageSender;
 use crate::logging::LogThreadState;
 use crate::settings::DocumentSettings;
+use crate::settings::GlobalSettings;
 use crate::state::WorldState;
 use crate::tower_lsp::LspMessage;
 use crate::tower_lsp::LspNotification;
@@ -170,6 +171,9 @@ pub(crate) struct LspState {
 
     /// State used to dynamically update the log level
     pub(crate) log_state: Option<logging::LogState>,
+
+    /// Global settings communicated by the client
+    pub(crate) settings: GlobalSettings,
 }
 
 impl LspState {
@@ -182,6 +186,7 @@ impl LspState {
             parsers: Default::default(),
             capabilities: Default::default(),
             log_state: Default::default(),
+            settings: Default::default(),
         }
     }
 }
