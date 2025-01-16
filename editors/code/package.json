@@ -13,7 +13,9 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onLanguage:r"
+		"onLanguage:r",
+		"workspaceContains:*.r",
+		"workspaceContains:*.R"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
