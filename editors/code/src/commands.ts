@@ -2,9 +2,10 @@ import * as vscode from "vscode";
 import AdmZip from "adm-zip";
 
 import { Cmd, Ctx } from "./context";
-import { viewFileUsingTextDocumentContentProvider } from "./rust-analyzer/viewFileProvider";
+import { viewFileUsingTextDocumentContentProvider } from "./request/viewFile";
 import * as ext from "./lsp-ext";
 import path from "path";
+import { VIEW_FILE } from "./request/viewFile";
 
 export function registerCommands(ctx: Ctx) {
 	ctx.extension.subscriptions.push(
@@ -65,7 +66,7 @@ function viewTreeSitter(ctx: Ctx): Cmd {
 
 	return viewFileUsingTextDocumentContentProvider(
 		ctx,
-		ext.viewFile,
+		VIEW_FILE,
 		"TreeSitter",
 		uri,
 		scheme,
@@ -79,7 +80,7 @@ function viewSyntaxTree(ctx: Ctx): Cmd {
 
 	return viewFileUsingTextDocumentContentProvider(
 		ctx,
-		ext.viewFile,
+		VIEW_FILE,
 		"SyntaxTree",
 		uri,
 		scheme,
@@ -93,7 +94,7 @@ function viewFormatTree(ctx: Ctx): Cmd {
 
 	return viewFileUsingTextDocumentContentProvider(
 		ctx,
-		ext.viewFile,
+		VIEW_FILE,
 		"FormatTree",
 		uri,
 		scheme,
