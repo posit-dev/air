@@ -82,13 +82,21 @@ export class TomlSettings {
 		const settings = this.settings.get(editor.document.uri.fsPath);
 
 		if (settings) {
-			const indentSize = settings.indent_width;
 			const insertSpaces = settings.indent_style === "space";
+			const indentSize = settings.indent_width;
+
+			// If inserting spaces, keep tab size in sync. If inserting tabs,
+			// allow them to diverge so user can configure the visual aspect of
+			// tabs without affecting the formatting (we'll use `indentSize` to
+			// decide the width of a tab and figure out where does code overflow
+			// the line width).
+			const tabSize = insertSpaces ? indentSize : editor.options.tabSize;
 
 			editor.options = {
 				...editor.options,
-				indentSize: indentSize,
-				insertSpaces: insertSpaces,
+				insertSpaces,
+				indentSize,
+				tabSize,
 			};
 		}
 	}
