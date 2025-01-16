@@ -1,10 +1,3 @@
-//
-// notifications.rs
-//
-// Copyright (C) 2024 Posit Software, PBC. All rights reserved.
-//
-//
-
 use tower_lsp::lsp_types::notification::Notification;
 use url::Url;
 use workspace::settings::Settings;
