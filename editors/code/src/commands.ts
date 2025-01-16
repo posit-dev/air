@@ -1,10 +1,9 @@
 import * as vscode from "vscode";
+import path from "path";
 import AdmZip from "adm-zip";
 
 import { Cmd, Ctx } from "./context";
 import { viewFileUsingTextDocumentContentProvider } from "./request/viewFile";
-import * as ext from "./lsp-ext";
-import path from "path";
 import { VIEW_FILE } from "./request/viewFile";
 
 export function registerCommands(ctx: Ctx) {
