@@ -9,7 +9,6 @@ use std::fmt::Display;
 use std::str::FromStr;
 
 #[derive(Debug, Default, Clone, Copy, Eq, Hash, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum MagicLineBreak {
     /// Respect
     #[default]

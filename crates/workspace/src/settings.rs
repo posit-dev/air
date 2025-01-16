@@ -19,13 +19,13 @@ use settings::MagicLineBreak;
 ///
 /// May still require a source document to finalize some options, such as
 /// `LineEnding::Auto` in the formatter.
-#[derive(Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub struct Settings {
     /// Settings to configure code formatting.
     pub format: FormatSettings,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub struct FormatSettings {
     pub indent_style: IndentStyle,
     pub indent_width: IndentWidth,
