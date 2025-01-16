@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as url from "url";
 import * as path from "path";
-import { TomlGlobalSettings, SyncFileSettingsParams } from "./lsp-ext";
+import { FileFormatSettings, SyncFileSettingsParams } from "./lsp-ext";
 
 type LogLevel = "error" | "warn" | "info" | "debug" | "trace";
 
@@ -49,7 +49,7 @@ export class TomlSettings {
 	// handle background editors (e.g. editors in other groups), we need to
 	// maintain a map of file settings and query it when the visibility state of
 	// an editor changes.
-	private settings = new Map<string, TomlGlobalSettings>();
+	private settings = new Map<string, FileFormatSettings>();
 
 	constructor(context: vscode.ExtensionContext) {
 		context.subscriptions.push(
@@ -67,7 +67,7 @@ export class TomlSettings {
 
 		for (const fileSettings of params.file_settings) {
 			const path = normalizePath(fileSettings.url);
-			this.settings.set(path, fileSettings.settings);
+			this.settings.set(path, fileSettings.format);
 		}
 
 		// Apply right away the active text editors. We also have a handler
@@ -86,10 +86,8 @@ export class TomlSettings {
 		const settings = this.settings.get(editor.document.uri.fsPath);
 
 		if (settings) {
-			const formatSettings = settings.format;
-
-			const indentSize = formatSettings.indent_width;
-			const insertSpaces = formatSettings.indent_style === "space";
+			const indentSize = settings.indent_width;
+			const insertSpaces = settings.indent_style === "space";
 
 			editor.options = {
 				...editor.options,
