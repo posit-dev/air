@@ -8,7 +8,7 @@ export const viewFile = new lc.RequestType<
 	void
 >("air/viewFile");
 
-export interface TomlSettingsParams {
+export interface SyncFileSettingsParams {
 	file_settings: TomlFileSettings[];
 	[key: string]: any;
 }
@@ -31,6 +31,5 @@ export interface TomlFormatSettings {
 	[key: string]: any;
 }
 
-export const tomlSettings = new lc.NotificationType<TomlSettingsParams>(
-	"air/tomlSettings",
-);
+export const SYNC_FILE_SETTINGS =
+	new lc.NotificationType<SyncFileSettingsParams>("air/syncFileSettings");

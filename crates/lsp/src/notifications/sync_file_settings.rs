@@ -5,7 +5,7 @@ use workspace::settings::Settings;
 use crate::{main_loop::LspState, workspaces::WorkspaceSettings};
 
 #[derive(serde::Serialize, serde::Deserialize)]
-struct SettingsNotifications {
+struct SyncFileSettings {
     file_settings: Vec<FileSettings>,
 }
 
@@ -15,9 +15,9 @@ struct FileSettings {
     settings: Settings,
 }
 
-impl Notification for SettingsNotifications {
-    type Params = SettingsNotifications;
-    const METHOD: &'static str = "air/tomlSettings";
+impl Notification for SyncFileSettings {
+    type Params = SyncFileSettings;
+    const METHOD: &'static str = "air/syncFileSettings";
 }
 
 impl LspState {
@@ -36,11 +36,11 @@ impl LspState {
                 },
             )
             .collect();
-        let file_settings = SettingsNotifications { file_settings };
+        let file_settings = SyncFileSettings { file_settings };
 
         tracing::trace!("Sending notification with backpropagated settings");
         self.client
-            .send_notification::<SettingsNotifications>(file_settings)
+            .send_notification::<SyncFileSettings>(file_settings)
             .await;
     }
 }

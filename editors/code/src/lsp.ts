@@ -3,7 +3,7 @@ import * as lc from "vscode-languageclient/node";
 import { default as PQueue } from "p-queue";
 import { getInitializationOptions, TomlSettings } from "./settings";
 import { Middleware, ResponseError } from "vscode-languageclient/node";
-import { tomlSettings } from "./lsp-ext";
+import { SYNC_FILE_SETTINGS } from "./lsp-ext";
 
 // All session management operations are put on a queue. They can't run
 // concurrently and either result in a started or stopped state. Starting when
@@ -122,7 +122,7 @@ export class Lsp {
 			serverOptions,
 			clientOptions,
 		);
-		client.onNotification(tomlSettings, (settings) =>
+		client.onNotification(SYNC_FILE_SETTINGS, (settings) =>
 			this.tomlSettings.handleSettingsNotification(settings),
 		);
 
