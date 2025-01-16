@@ -5,7 +5,7 @@
 	"version": "0.0.1",
 	"publisher": "Posit",
 	"license": "MIT",
-	"homepage": "https://posit-dev.github.io/air/",
+	"homepage": "https://posit-dev.github.io/air",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/posit-dev/air.git"
