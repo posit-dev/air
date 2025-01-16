@@ -63,7 +63,7 @@ export class TomlSettings {
 
 	public handleSettingsNotification(params: TomlSettingsParams) {
 		// Reset map of settings
-		this.settings = new Map<string, TomlGlobalSettings>();
+		this.settings.clear();
 
 		for (const fileSettings of params.file_settings) {
 			const path = normalizePath(fileSettings.url);
