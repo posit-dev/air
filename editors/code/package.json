@@ -58,7 +58,7 @@
 				},
 				"air.settingsBackpropagation": {
 					"default": true,
-					"markdownDescription": "Whether indentation settings from air.toml files should be propagated to the IDE.",
+					"markdownDescription": "Whether settings from air.toml files should be propagated to the IDE.",
 					"scope": "application",
 					"type": "boolean"
 				}
