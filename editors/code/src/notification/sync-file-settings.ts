@@ -56,18 +56,37 @@ export class FileSettingsState {
 	}
 
 	public apply(editor: vscode.TextEditor) {
-		const settings = this.settings.get(editor.document.uri.fsPath);
+		const uri = editor.document.uri;
+		const settings = this.settings.get(uri.path);
 
 		if (settings) {
 			const insertSpaces = settings.indent_style === "space";
 			const indentSize = settings.indent_width;
 
-			// If inserting spaces, keep tab size in sync. If inserting tabs,
-			// allow them to diverge so user can configure the visual aspect of
-			// tabs without affecting the formatting (we'll use `indentSize` to
-			// decide the width of a tab and figure out where does code overflow
-			// the line width).
-			const tabSize = insertSpaces ? indentSize : editor.options.tabSize;
+			let tabSize;
+
+			if (insertSpaces) {
+				// If inserting spaces, keep tab size in sync
+				tabSize = indentSize;
+			} else {
+				// If inserting tabs, allow them to diverge so user can
+				// configure the visual aspect of tabs without affecting the
+				// formatting (we'll use `indentSize` to decide the width of a
+				// tab and figure out where does code overflow the line width).
+				//
+				// Favor the `tabSize` from the user configuration, but use the
+				// editor value as fallback. The editor value might have been
+				// set by us if the user set indent style to spaces before.
+				// In general we consider the editor values to be ephemeral as
+				// we take over them when synchronisation is enabled.
+				const config = vscode.workspace.getConfiguration(undefined, {
+					uri,
+					languageId: "r",
+				});
+				tabSize =
+					config.get<number>("editor.tabSize") ??
+					editor.options.tabSize;
+			}
 
 			editor.options = {
 				...editor.options,
