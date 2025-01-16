@@ -56,9 +56,9 @@
 					"scope": "application",
 					"type": "string"
 				},
-				"air.settingsBackpropagation": {
+				"air.syncFileSettingsWithClient": {
 					"default": true,
-					"markdownDescription": "Whether settings from air.toml files should be propagated to the IDE.",
+					"markdownDescription": "Whether settings from air.toml files should be propagated to the client (the IDE).",
 					"scope": "application",
 					"type": "boolean"
 				}
