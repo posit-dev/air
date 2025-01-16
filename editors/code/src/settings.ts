@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as url from "url";
 import * as path from "path";
-import { TomlGlobalSettings, TomlSettingsParams } from "./lsp-ext";
+import { TomlGlobalSettings, SyncFileSettingsParams } from "./lsp-ext";
 
 type LogLevel = "error" | "warn" | "info" | "debug" | "trace";
 
@@ -61,7 +61,7 @@ export class TomlSettings {
 		);
 	}
 
-	public handleSettingsNotification(params: TomlSettingsParams) {
+	public handleSettingsNotification(params: SyncFileSettingsParams) {
 		// Reset map of settings
 		this.settings.clear();
 
