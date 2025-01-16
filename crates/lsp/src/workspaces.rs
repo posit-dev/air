@@ -171,6 +171,8 @@ impl WorkspaceSettingsResolver {
             return false;
         }
 
+        let mut changed = false;
+
         for (workspace_path, settings_resolver) in self.path_to_settings_resolver.matches_mut(&path)
         {
             tracing::trace!("Reloading workspace settings: {}", workspace_path.display());
@@ -191,11 +193,12 @@ impl WorkspaceSettingsResolver {
                 settings,
             } in discovered_settings
             {
+                changed = true;
                 settings_resolver.add(&directory, settings);
             }
         }
 
-        true
+        changed
     }
 
     /// Return the appropriate [`WorkspaceSettings`] for a given [`Path`].
