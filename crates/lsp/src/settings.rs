@@ -1,6 +1,12 @@
 use serde::Deserialize;
 use serde_json::Value;
 
+/// Global settings from the client
+#[derive(Debug, Default)]
+pub(crate) struct GlobalSettings {
+    pub(crate) sync_file_settings_with_client: bool,
+}
+
 /// Client-side settings of a document.
 ///
 /// This holds settings propagated by the client. These don't apply if there

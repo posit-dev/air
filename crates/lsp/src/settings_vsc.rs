@@ -9,8 +9,19 @@
 // the same settings sections for all IDEs, even if the naming and organization is
 // from VS Code?
 
-use crate::{logging::LogLevel, settings::DocumentSettings};
+use crate::{
+    logging::LogLevel,
+    settings::{DocumentSettings, GlobalSettings},
+};
 use struct_field_names_as_array::FieldNamesAsArray;
+
+#[derive(Clone, Debug, FieldNamesAsArray, serde::Deserialize)]
+pub(crate) struct VscGlobalSettings {
+    // DEV NOTE: Update `section_from_key()` method after adding a field
+    pub log_level: Option<LogLevel>,
+    pub dependency_log_levels: Option<String>,
+    pub sync_file_settings_with_client: Option<bool>,
+}
 
 /// VS Code representation of a document settings
 #[derive(Clone, Debug, FieldNamesAsArray, serde::Serialize, serde::Deserialize)]
@@ -34,11 +45,14 @@ pub(crate) struct VscDiagnosticsSettings {
     pub enable: bool,
 }
 
-#[derive(Clone, Debug, FieldNamesAsArray, serde::Deserialize)]
-pub(crate) struct VscGlobalSettings {
-    // DEV NOTE: Update `section_from_key()` method after adding a field
-    pub log_level: Option<LogLevel>,
-    pub dependency_log_levels: Option<String>,
+impl From<VscGlobalSettings> for GlobalSettings {
+    fn from(value: VscGlobalSettings) -> Self {
+        Self {
+            sync_file_settings_with_client: value
+                .sync_file_settings_with_client
+                .unwrap_or_default(),
+        }
+    }
 }
 
 impl VscDocumentSettings {
@@ -81,6 +95,7 @@ impl VscGlobalSettings {
         match key {
             "log_level" => "air.logLevel",
             "dependency_log_levels" => "air.dependencyLogLevels",
+            "sync_file_settings_with_client" => "air.syncFileSettingsWithClient",
             _ => "unknown", // To be caught via downstream errors
         }
     }
