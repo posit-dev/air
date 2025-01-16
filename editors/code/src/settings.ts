@@ -99,7 +99,7 @@ export class TomlSettings {
 
 	enabled(): boolean {
 		const config = vscode.workspace.getConfiguration();
-		const enabled = config.get<boolean>("air.settingsBackpropagation");
+		const enabled = config.get<boolean>("air.syncFileSettingsWithClient");
 		if (enabled === undefined) {
 			return true;
 		} else {
