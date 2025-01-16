@@ -9,26 +9,18 @@ export const viewFile = new lc.RequestType<
 >("air/viewFile");
 
 export interface SyncFileSettingsParams {
-	file_settings: TomlFileSettings[];
-	[key: string]: any;
+	file_settings: FileSettings[];
 }
 
-export interface TomlFileSettings {
+export interface FileSettings {
 	url: string;
-	settings: TomlGlobalSettings;
-	[key: string]: any;
+	format: FileFormatSettings;
 }
 
-export interface TomlGlobalSettings {
-	format: TomlFormatSettings;
-	[key: string]: any;
-}
-
-export interface TomlFormatSettings {
+export interface FileFormatSettings {
 	indent_style: "tab" | "space";
 	indent_width: number;
 	line_width: number;
-	[key: string]: any;
 }
 
 export const SYNC_FILE_SETTINGS =

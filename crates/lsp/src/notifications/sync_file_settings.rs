@@ -1,23 +1,39 @@
 use tower_lsp::lsp_types::notification::Notification;
 use url::Url;
-use workspace::settings::Settings;
 
 use crate::{main_loop::LspState, workspaces::WorkspaceSettings};
 
 #[derive(serde::Serialize, serde::Deserialize)]
-struct SyncFileSettings {
+struct SyncFileSettingsParams {
     file_settings: Vec<FileSettings>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct FileSettings {
     url: String,
-    settings: Settings,
+    format: FileFormatSettings,
 }
 
-impl Notification for SyncFileSettings {
-    type Params = SyncFileSettings;
+#[derive(serde::Serialize, serde::Deserialize)]
+struct FileFormatSettings {
+    pub indent_style: settings::IndentStyle,
+    pub indent_width: settings::IndentWidth,
+    pub line_width: settings::LineWidth,
+}
+
+impl Notification for SyncFileSettingsParams {
+    type Params = SyncFileSettingsParams;
     const METHOD: &'static str = "air/syncFileSettings";
+}
+
+impl From<workspace::settings::FormatSettings> for FileFormatSettings {
+    fn from(value: workspace::settings::FormatSettings) -> Self {
+        Self {
+            indent_style: value.indent_style,
+            indent_width: value.indent_width,
+            line_width: value.line_width,
+        }
+    }
 }
 
 impl LspState {
@@ -29,18 +45,18 @@ impl LspState {
                     // There is a TOML to backpropagate
                     WorkspaceSettings::Toml(settings) => Some(FileSettings {
                         url: url.to_string(),
-                        settings: settings.clone(),
+                        format: settings.format.clone().into(),
                     }),
                     // There is no TOML. Let the IDE use its own settings.
                     WorkspaceSettings::Fallback(_) => None,
                 },
             )
             .collect();
-        let file_settings = SyncFileSettings { file_settings };
+        let params = SyncFileSettingsParams { file_settings };
 
         tracing::trace!("Sending notification with backpropagated settings");
         self.client
-            .send_notification::<SyncFileSettings>(file_settings)
+            .send_notification::<SyncFileSettingsParams>(params)
             .await;
     }
 }
