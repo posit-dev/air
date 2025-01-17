@@ -15,15 +15,15 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             code-target: win32-x64
-          # - os: windows-latest
-          #   target: aarch64-pc-windows-msvc
-          #   code-target: win32-arm64
-          # - os: ubuntu-20.04
-          #   target: x86_64-unknown-linux-gnu
-          #   code-target: linux-x64
-          # - os: ubuntu-20.04
-          #   target: aarch64-unknown-linux-gnu
-          #   code-target: linux-arm64
+            # - os: windows-latest
+            #   target: aarch64-pc-windows-msvc
+            #   code-target: win32-arm64
+            # - os: ubuntu-20.04
+            #   target: x86_64-unknown-linux-gnu
+            #   code-target: linux-x64
+            # - os: ubuntu-20.04
+            #   target: aarch64-unknown-linux-gnu
+            #   code-target: linux-arm64
             arch: aarch64
           - os: macos-latest
             target: x86_64-apple-darwin
@@ -115,15 +115,16 @@ jobs:
       #     path: dist
       - run: ls -al ./dist
 
-      # # Publish to the Code Marketplace.
-      # - name: Publish Extension (Code Marketplace, release)
-      #   run: npx vsce publish --pat ${{ secrets.MARKETPLACE_TOKEN }} --packagePath ./dist/air-*.vsix
+      # Publish to the Code Marketplace.
+      - name: Publish Extension (Code Marketplace, release)
+        run: npx vsce publish --pat ${{ secrets.VSCE_PAT }} --packagePath ./dist/air-*.vsix
 
   # Publish the built extension to OpenVSX
   publish-openvsx:
     name: "Publish (OpenVSX)"
     needs: ["build"]
     runs-on: ubuntu-latest
+    environment: release
     steps:
       - name: Install Nodejs
         uses: actions/setup-node@v4
@@ -157,6 +158,6 @@ jobs:
       #     path: dist
       - run: ls -al ./dist
 
-      # # Publish to OpenVSX.
-      # - name: Publish Extension (OpenVSX, release)
-      #   run: npx ovsx publish --pat ${{ secrets.OPENVSX_TOKEN }} --packagePath ./dist/air-*.vsix
+      # Publish to OpenVSX.
+      - name: Publish Extension (OpenVSX, release)
+        run: npx ovsx publish --pat ${{ secrets.OPEN_VSX_TOKEN }} --packagePath ./dist/air-*.vsix
