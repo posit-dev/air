@@ -30,6 +30,7 @@ use crate::logging;
 use crate::logging::LogMessageSender;
 use crate::logging::LogThreadState;
 use crate::settings::DocumentSettings;
+use crate::settings::GlobalSettings;
 use crate::state::WorldState;
 use crate::tower_lsp::LspMessage;
 use crate::tower_lsp::LspNotification;
@@ -129,9 +130,6 @@ pub(crate) struct GlobalState {
     /// handlers, and is not cloneable.
     lsp_state: LspState,
 
-    /// LSP client shared with tower-lsp and the log loop
-    client: Client,
-
     /// Event receiver channel for the main loop. The tower-lsp methods forward
     /// notifications and requests here via `Event::Lsp`. We also receive
     /// messages from the kernel via `Event::Kernel`, and from ourselves via
@@ -154,6 +152,9 @@ pub(crate) struct GlobalState {
 /// Unlike `WorldState`, `LspState` cannot be cloned and is only accessed by
 /// exclusive handlers.
 pub(crate) struct LspState {
+    /// LSP client shared with tower-lsp and the log loop
+    pub(crate) client: Client,
+
     /// Resolver to look up [`Settings`] given a document [`Url`]
     pub(crate) workspace_settings_resolver: WorkspaceSettingsResolver,
 
@@ -170,17 +171,22 @@ pub(crate) struct LspState {
 
     /// State used to dynamically update the log level
     pub(crate) log_state: Option<logging::LogState>,
+
+    /// Global settings communicated by the client
+    pub(crate) settings: GlobalSettings,
 }
 
-impl Default for LspState {
-    fn default() -> Self {
+impl LspState {
+    pub(crate) fn new(client: Client) -> Self {
         Self {
-            workspace_settings_resolver: WorkspaceSettingsResolver::default(),
-            // Default encoding specified in the LSP protocol
+            client,
+            workspace_settings_resolver: Default::default(),
+            // All servers and clients have to support UTF-16 so that's the default
             position_encoding: PositionEncoding::Wide(WideEncoding::Utf16),
             parsers: Default::default(),
-            capabilities: AirClientCapabilities::default(),
-            log_state: None,
+            capabilities: Default::default(),
+            log_state: Default::default(),
+            settings: Default::default(),
         }
     }
 }
@@ -245,8 +251,7 @@ impl GlobalState {
 
         let state = Self {
             world: WorldState::default(),
-            lsp_state: LspState::default(),
-            client,
+            lsp_state: LspState::new(client),
             events_rx,
             auxiliary_state: Some(auxiliary_state),
             auxiliary_event_tx,
@@ -328,19 +333,19 @@ impl GlobalState {
                 LspMessage::Notification(notif) => {
                     match notif {
                         LspNotification::Initialized(_params) => {
-                            handlers::handle_initialized(&self.client, &self.lsp_state).await?;
+                            handlers::handle_initialized(&self.lsp_state).await?;
                         },
                         LspNotification::DidChangeWorkspaceFolders(params) => {
                             handlers_state::did_change_workspace_folders(params, &mut self.lsp_state)?;
                         },
                         LspNotification::DidChangeConfiguration(params) => {
-                            handlers_state::did_change_configuration(params, &self.client, &mut self.lsp_state, &mut self.world).await?;
+                            handlers_state::did_change_configuration(params, &mut self.lsp_state, &mut self.world).await?;
                         },
                         LspNotification::DidChangeWatchedFiles(params) => {
-                            handlers_state::did_change_watched_files(params, &mut self.lsp_state)?;
+                            handlers_state::did_change_watched_files(params, &mut self.lsp_state, &self.world).await?;
                         },
                         LspNotification::DidOpenTextDocument(params) => {
-                            handlers_state::did_open(params, &self.client, &mut self.lsp_state, &mut self.world).await?;
+                            handlers_state::did_open(params, &mut self.lsp_state, &mut self.world).await?;
                         },
                         LspNotification::DidChangeTextDocument(params) => {
                             handlers_state::did_change(params, &mut self.world)?;

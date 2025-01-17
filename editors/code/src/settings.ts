@@ -1,4 +1,8 @@
-import { ConfigurationScope, workspace, WorkspaceConfiguration } from "vscode";
+import * as vscode from "vscode";
+import {
+	FileFormatSettings,
+	SyncFileSettingsParams,
+} from "./notification/sync-file-settings";
 
 type LogLevel = "error" | "warn" | "info" | "debug" | "trace";
 
@@ -12,7 +16,7 @@ export type InitializationOptions = {
 };
 
 export function getInitializationOptions(
-	namespace: string
+	namespace: string,
 ): InitializationOptions {
 	const config = getConfiguration(namespace);
 
@@ -20,14 +24,14 @@ export function getInitializationOptions(
 		logLevel: getOptionalUserValue<LogLevel>(config, "logLevel"),
 		dependencyLogLevels: getOptionalUserValue<string>(
 			config,
-			"dependencyLogLevels"
+			"dependencyLogLevels",
 		),
 	};
 }
 
 function getOptionalUserValue<T>(
-	config: WorkspaceConfiguration,
-	key: string
+	config: vscode.WorkspaceConfiguration,
+	key: string,
 ): T | undefined {
 	const inspect = config.inspect<T>(key);
 	return inspect?.globalValue;
@@ -35,7 +39,7 @@ function getOptionalUserValue<T>(
 
 function getConfiguration(
 	config: string,
-	scope?: ConfigurationScope
-): WorkspaceConfiguration {
-	return workspace.getConfiguration(config, scope);
+	scope?: vscode.ConfigurationScope,
+): vscode.WorkspaceConfiguration {
+	return vscode.workspace.getConfiguration(config, scope);
 }

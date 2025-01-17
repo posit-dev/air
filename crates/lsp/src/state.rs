@@ -56,9 +56,15 @@ impl WorldState {
             Err(anyhow!("Can't find document for URI {uri}"))
         }
     }
-}
 
-pub(crate) fn workspace_uris(state: &WorldState) -> Vec<Url> {
-    let uris: Vec<Url> = state.documents.iter().map(|elt| elt.0.clone()).collect();
-    uris
+    pub(crate) fn workspace_uris(&self) -> Vec<Url> {
+        self.documents.iter().map(|elt| elt.0.clone()).collect()
+    }
+
+    pub(crate) fn workspace_paths(&self) -> Vec<String> {
+        self.workspace_uris()
+            .into_iter()
+            .map(|uri| uri.to_string())
+            .collect()
+    }
 }

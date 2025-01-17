@@ -41,11 +41,11 @@
 					"default": null,
 					"markdownDescription": "Controls the log level of the language server.",
 					"enum": [
-					  "error",
-					  "warning",
-					  "info",
-					  "debug",
-					  "trace"
+						"error",
+						"warning",
+						"info",
+						"debug",
+						"trace"
 					],
 					"scope": "application",
 					"type": "string"
@@ -55,6 +55,12 @@
 					"markdownDescription": "Controls the log level of the Rust crates that the language server depends on.",
 					"scope": "application",
 					"type": "string"
+				},
+				"air.syncFileSettingsWithClient": {
+					"default": true,
+					"markdownDescription": "Whether settings from air.toml files should be propagated to the client (the IDE).",
+					"scope": "application",
+					"type": "boolean"
 				}
 			}
 		},

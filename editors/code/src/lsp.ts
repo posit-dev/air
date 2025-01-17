@@ -2,7 +2,9 @@ import * as vscode from "vscode";
 import * as lc from "vscode-languageclient/node";
 import { default as PQueue } from "p-queue";
 import { getInitializationOptions } from "./settings";
+import { FileSettingsState } from "./notification/sync-file-settings";
 import { Middleware, ResponseError } from "vscode-languageclient/node";
+import { SYNC_FILE_SETTINGS } from "./notification/sync-file-settings";
 
 // All session management operations are put on a queue. They can't run
 // concurrently and either result in a started or stopped state. Starting when
@@ -23,10 +25,13 @@ export class Lsp {
 	private state = State.Stopped;
 	private stateQueue: PQueue;
 
+	private fileSettings: FileSettingsState;
+
 	constructor(context: vscode.ExtensionContext) {
 		this.channel = vscode.window.createOutputChannel("Air Language Server");
 		context.subscriptions.push(this.channel);
 		this.stateQueue = new PQueue({ concurrency: 1 });
+		this.fileSettings = new FileSettingsState(context);
 	}
 
 	public getClient(): lc.LanguageClient {
@@ -118,6 +123,10 @@ export class Lsp {
 			serverOptions,
 			clientOptions,
 		);
+		client.onNotification(SYNC_FILE_SETTINGS, (settings) =>
+			this.fileSettings.handleSettingsNotification(settings),
+		);
+
 		await client.start();
 
 		// Only update state if no error occurred

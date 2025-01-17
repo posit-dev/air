@@ -9,7 +9,14 @@ import * as lc from "vscode-languageclient/node";
 import { Ctx, Cmd } from "../context";
 import { activeREditor, isRDocument, isREditor } from "../r-files";
 import { sleep } from "../utils";
-import { ViewFileKind } from "../lsp-ext";
+
+export type ViewFileKind = "TreeSitter" | "SyntaxTree" | "FormatTree";
+
+export const VIEW_FILE = new lc.RequestType<
+	lc.TextDocumentPositionParams & { kind: ViewFileKind },
+	string,
+	void
+>("air/viewFile");
 
 export function viewFileUsingTextDocumentContentProvider(
 	ctx: Ctx,
