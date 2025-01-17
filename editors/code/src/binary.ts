@@ -15,22 +15,22 @@ export async function resolveAirBinaryPath(
 		return BUNDLED_AIR_EXECUTABLE;
 	}
 
-	// User requested the bundled air binary
 	if (executableLocation === "bundled") {
+		// User requested the `"bundled"` air binary
 		output.log(
 			`Using bundled executable as requested by \`air.executableLocation\`: ${BUNDLED_AIR_EXECUTABLE}`,
 		);
 		return BUNDLED_AIR_EXECUTABLE;
-	}
+	} else {
+		// User requested `"environment"`, so check the `PATH` first
+		const environmentPath = await which(AIR_BINARY_NAME, { nothrow: true });
 
-	// First choice: the executable in the global environment.
-	const environmentPath = await which(AIR_BINARY_NAME, { nothrow: true });
-	if (environmentPath) {
-		output.log(`Using environment executable: ${environmentPath}`);
-		return environmentPath;
+		if (environmentPath) {
+			output.log(`Using environment executable: ${environmentPath}`);
+			return environmentPath;
+		} else {
+			output.log(`Using bundled executable: ${BUNDLED_AIR_EXECUTABLE}`);
+			return BUNDLED_AIR_EXECUTABLE;
+		}
 	}
-
-	// Second choice: bundled executable.
-	output.log(`Using bundled executable: ${BUNDLED_AIR_EXECUTABLE}`);
-	return BUNDLED_AIR_EXECUTABLE;
 }
