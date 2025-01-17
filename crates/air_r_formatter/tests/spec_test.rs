@@ -28,7 +28,7 @@ pub fn run(spec_input_file: &str, _expected_file: &str, _test_directory: &str, _
 /// ```r
 /// #' [format]
 /// #' indent-width = 4
-/// #' ignore-magic-line-break = true
+/// #' persistent-line-breaks = false
 /// ```
 fn format_options_from_code(code: &str) -> RFormatOptions {
     let lines = code.lines();

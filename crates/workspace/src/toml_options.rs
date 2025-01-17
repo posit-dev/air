@@ -11,7 +11,7 @@ use crate::settings::Settings;
 use settings::IndentStyle;
 use settings::IndentWidth;
 use settings::LineWidth;
-use settings::MagicLineBreak;
+use settings::PersistentLineBreaks;
 
 /// The Rust representation of `air.toml`
 ///
@@ -96,13 +96,13 @@ pub struct FormatTomlOptions {
     /// * `native`: Line endings will be converted to `\n` on Unix and `\r\n` on Windows.
     pub line_ending: Option<LineEnding>,
 
-    /// Air respects a small set of magic line breaks as an indication that certain
+    /// Air respects a small set of persistent line breaks as an indication that certain
     /// function calls or function signatures should be left expanded. If this option
-    /// is set to `true`, magic line breaks are ignored.
+    /// is set to `false`, persistent line breaks are ignored.
     ///
-    /// It may be preferable to ignore magic line breaks if you prefer that `line-width`
+    /// It may be preferable to ignore persistent line breaks if you prefer that `line-width`
     /// should be the only value that influences line breaks.
-    pub ignore_magic_line_break: Option<bool>,
+    pub persistent_line_breaks: Option<bool>,
 }
 
 impl TomlOptions {
@@ -114,15 +114,15 @@ impl TomlOptions {
             indent_width: format.indent_width.unwrap_or_default(),
             line_ending: format.line_ending.unwrap_or_default(),
             line_width: format.line_width.unwrap_or_default(),
-            magic_line_break: match format.ignore_magic_line_break {
-                Some(ignore_magic_line_break) => {
-                    if ignore_magic_line_break {
-                        MagicLineBreak::Ignore
+            persistent_line_breaks: match format.persistent_line_breaks {
+                Some(persistent_line_breaks) => {
+                    if persistent_line_breaks {
+                        PersistentLineBreaks::Respect
                     } else {
-                        MagicLineBreak::Respect
+                        PersistentLineBreaks::Ignore
                     }
                 }
-                None => MagicLineBreak::Respect,
+                None => PersistentLineBreaks::Respect,
             },
         };
 

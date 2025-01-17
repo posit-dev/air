@@ -23,12 +23,12 @@ impl FormatNodeRule<RParameters> for FormatRParameters {
                 soft_block_indent(&items.format()),
                 r_paren_token.format()
             ])
-            .should_expand(has_magic_line_break(&items, f.options()))]
+            .should_expand(has_persistent_line_break(&items, f.options()))]
         )
     }
 }
 
-/// Check if the user has inserted a magic line break before the very first `parameter`.
+/// Check if the user has inserted a persistent line break before the very first `parameter`.
 /// If so, we respect that and treat it as a request to break ALL of the parameters in
 /// this function definition. Note this is a case of irreversible formatting!
 ///
@@ -77,8 +77,8 @@ impl FormatNodeRule<RParameters> for FormatRParameters {
 ///   body
 /// }
 /// ```
-fn has_magic_line_break(items: &RParameterList, options: &RFormatOptions) -> bool {
-    if options.magic_line_break().is_ignore() {
+fn has_persistent_line_break(items: &RParameterList, options: &RFormatOptions) -> bool {
+    if options.persistent_line_breaks().is_ignore() {
         return false;
     }
 

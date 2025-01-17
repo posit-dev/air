@@ -79,10 +79,10 @@ fn fmt_binary_sticky(
 
 /// Assignment expressions keep LHS and RHS on the same line, separated by a single space
 ///
-/// # Magic line breaks
+/// # Persistent line breaks
 ///
 /// The one exception to this is if a newline already exists between a left assignment
-/// operator and the rhs, which is a magic line break case, like:
+/// operator and the rhs, which is a persistent line break case, like:
 ///
 /// ```r
 /// response <-
@@ -99,7 +99,7 @@ fn fmt_binary_sticky(
 ///     default()
 /// ```
 ///
-/// Walrus assignment is not considered when looking for magic line breaks because we
+/// Walrus assignment is not considered when looking for persistent line breaks because we
 /// don't want the `:=` case below to look like a request for expansion. While `:=` is
 /// technically parsed as a binary operator, we format it more like a named argument with
 /// a simple `space()` between the operator and the right hand side.
@@ -119,7 +119,7 @@ fn fmt_binary_sticky(
 /// )
 /// ```
 ///
-/// Comment handling with magic line breaks here is a bit tricky. Consider this example:
+/// Comment handling with persistent line breaks here is a bit tricky. Consider this example:
 ///
 /// ```r
 /// x <-
@@ -146,7 +146,7 @@ fn fmt_binary_assignment(
     f: &mut Formatter<RFormatContext>,
 ) -> FormatResult<()> {
     let right = format_with(|f| {
-        if binary_assignment_has_magic_line_break(&operator, &right, f.options()) {
+        if binary_assignment_has_persistent_line_break(&operator, &right, f.options()) {
             write!(
                 f,
                 [indent(&format_args![hard_line_break(), right.format()])]
@@ -167,12 +167,12 @@ fn fmt_binary_assignment(
     )
 }
 
-fn binary_assignment_has_magic_line_break(
+fn binary_assignment_has_persistent_line_break(
     operator: &SyntaxToken<RLanguage>,
     right: &AnyRExpression,
     options: &RFormatOptions,
 ) -> bool {
-    if options.magic_line_break().is_ignore() {
+    if options.persistent_line_breaks().is_ignore() {
         return false;
     }
 
@@ -289,7 +289,7 @@ struct TailPiece {
 ///     d
 ///
 /// # Also allowed, since it fits on one line
-/// # (depends on magic line breaks and object lengths)
+/// # (depends on persistent line breaks and object lengths)
 /// a +
 ///   b -
 ///   c * d
@@ -532,7 +532,7 @@ fn fmt_binary_chain(
     write!(
         f,
         [group(&format_args![left.format(), indent(&chain)])
-            .should_expand(has_magic_line_break(&tail, f.options()))]
+            .should_expand(has_persistent_line_break(&tail, f.options()))]
     )
 }
 
@@ -575,7 +575,7 @@ fn is_chainable_binary_operator(kind: RSyntaxKind) -> bool {
     }
 }
 
-/// Check if the user has inserted a magic line break before the very first `right`.
+/// Check if the user has inserted a persistent line break before the very first `right`.
 /// If so, we respect that and treat it as a request to break ALL of the binary operators
 /// in the chain. Note this is a case of irreversible formatting!
 ///
@@ -624,8 +624,8 @@ fn is_chainable_binary_operator(kind: RSyntaxKind) -> bool {
 /// # Output
 /// (df %>% mutate(x = 1) %>% filter(x == y))
 /// ```
-fn has_magic_line_break(tail: &[TailPiece], options: &RFormatOptions) -> bool {
-    if options.magic_line_break().is_ignore() {
+fn has_persistent_line_break(tail: &[TailPiece], options: &RFormatOptions) -> bool {
+    if options.persistent_line_breaks().is_ignore() {
         return false;
     }
 

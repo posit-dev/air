@@ -1,5 +1,5 @@
 //
-// magic_line_break.rs
+// persistent_line_breaks.rs
 //
 // Copyright (C) 2025 Posit Software, PBC. All rights reserved.
 //
@@ -10,7 +10,7 @@ use std::str::FromStr;
 
 #[derive(Debug, Default, Clone, Copy, Eq, Hash, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub enum MagicLineBreak {
+pub enum PersistentLineBreaks {
     /// Respect
     #[default]
     Respect,
@@ -18,19 +18,19 @@ pub enum MagicLineBreak {
     Ignore,
 }
 
-impl MagicLineBreak {
-    /// Returns `true` if magic line breaks should be respected.
+impl PersistentLineBreaks {
+    /// Returns `true` if persistent line breaks should be respected.
     pub const fn is_respect(&self) -> bool {
-        matches!(self, MagicLineBreak::Respect)
+        matches!(self, PersistentLineBreaks::Respect)
     }
 
-    /// Returns `true` if magic line breaks should be ignored.
+    /// Returns `true` if persistent line breaks should be ignored.
     pub const fn is_ignore(&self) -> bool {
-        matches!(self, MagicLineBreak::Ignore)
+        matches!(self, PersistentLineBreaks::Ignore)
     }
 }
 
-impl FromStr for MagicLineBreak {
+impl FromStr for PersistentLineBreaks {
     type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -42,11 +42,11 @@ impl FromStr for MagicLineBreak {
     }
 }
 
-impl Display for MagicLineBreak {
+impl Display for PersistentLineBreaks {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            MagicLineBreak::Respect => std::write!(f, "Respect"),
-            MagicLineBreak::Ignore => std::write!(f, "Ignore"),
+            PersistentLineBreaks::Respect => std::write!(f, "Respect"),
+            PersistentLineBreaks::Ignore => std::write!(f, "Ignore"),
         }
     }
 }

@@ -1,20 +1,28 @@
 ---
 source: crates/air_formatter_test/src/snapshot_builder.rs
-info: r/ignore-magic-line-breaks/function_definition.R
+info: r/persistent-line-breaks/call.R
 ---
 # Input
 
 ```R
 #' [format]
-#' ignore-magic-line-break = true
+#' persistent-line-breaks = false
 
 # Fits on one line, flatten
-fn <- function(
+fn(
   a,
-  b
-) {
-  body
-}
+  b,
+  c
+)
+
+# Fits on one line, flatten
+fn(
+  ,
+  ,
+  a,
+  b,
+  c
+)
 
 ```
 
@@ -30,15 +38,16 @@ Indent style: Space
 Indent width: 2
 Line ending: LF
 Line width: 80
-Magic line break: Ignore
+Persistent line breaks: Ignore
 -----
 
 ```R
 #' [format]
-#' ignore-magic-line-break = true
+#' persistent-line-breaks = false
 
 # Fits on one line, flatten
-fn <- function(a, b) {
-  body
-}
+fn(a, b, c)
+
+# Fits on one line, flatten
+fn(,, a, b, c)
 ```
