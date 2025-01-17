@@ -4,6 +4,7 @@ const folderName = path.basename(__dirname);
 
 /**
  * Path to the root directory of this extension.
+ * https://github.com/microsoft/vscode-python-tools-extension-template/blob/main/src/common/constants.ts
  */
 export const EXTENSION_ROOT_DIR =
 	folderName === "common"

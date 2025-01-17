@@ -2,6 +2,16 @@ import path from "path";
 import * as vscode from "vscode";
 import * as fs from "fs-extra";
 
+/*
+ * Locate the "root" workspace folder
+ *
+ * Iterates through the open workspace folders, looking for the one with the "shortest"
+ * path. If no workspaces are open, returns a mock `WorkspaceFolder` representing the
+ * current directory.
+ *
+ * Adapted from:
+ * https://github.com/microsoft/vscode-python-tools-extension-template/blob/8f474ec4ac4e7205ffed9f7f243473bb00bf29c0/src/common/utilities.ts#L38
+ */
 export async function getRootWorkspaceFolder(): Promise<vscode.WorkspaceFolder> {
 	const workspaces: readonly vscode.WorkspaceFolder[] = getWorkspaceFolders();
 

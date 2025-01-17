@@ -20,6 +20,12 @@ export function registerLogger(logChannel: OutputChannel): Disposable {
 	};
 }
 
+/*
+ * Free function for logging to the global output channel shared with the server
+ *
+ * Adapted from:
+ * https://github.com/microsoft/vscode-python-tools-extension-template/blob/main/src/common/log/logging.ts
+ */
 export function outputLog(...args: Arguments): void {
 	if (process.env.CI === "true") {
 		console.log(...args);
