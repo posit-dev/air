@@ -30,6 +30,16 @@
     ]
   },
   {
+    "objectID": "configuration.html#dotfiles",
+    "href": "configuration.html#dotfiles",
+    "title": "Configuration",
+    "section": "Dotfiles",
+    "text": "Dotfiles\nAir supports both air.toml and .air.toml. If both are present in the same directory, then air.toml is preferred (but we don’t recommend this).",
+    "crumbs": [
+      "Configuration"
+    ]
+  },
+  {
     "objectID": "configuration.html#format-options",
     "href": "configuration.html#format-options",
     "title": "Configuration",

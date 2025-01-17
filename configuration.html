@@ -188,6 +188,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#example-configuration" id="toc-example-configuration" class="nav-link active" data-scroll-target="#example-configuration">Example configuration</a></li>
   <li><a href="#configuration-discovery" id="toc-configuration-discovery" class="nav-link" data-scroll-target="#configuration-discovery">Configuration discovery</a></li>
+  <li><a href="#dotfiles" id="toc-dotfiles" class="nav-link" data-scroll-target="#dotfiles">Dotfiles</a></li>
   <li><a href="#format-options" id="toc-format-options" class="nav-link" data-scroll-target="#format-options">Format options</a>
   <ul class="collapse">
   <li><a href="#line-width" id="toc-line-width" class="nav-link" data-scroll-target="#line-width">line-width</a></li>
@@ -245,6 +246,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ex">└──</span> vignettes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>If you run <code>air format</code> with a working directory of <code>~/files/dplyr</code> or open your IDE in the dplyr project, then Air will find and use that TOML file.</p>
 <p>Air also supports walking up the directory tree from the project root. For example, if you ran <code>air format</code> from within <code>~/files/dplyr/R</code>, then Air would look “up” one directory and would find and use <code>~/files/dplyr/air.toml</code>.</p>
+</section>
+<section id="dotfiles" class="level2">
+<h2 class="anchored" data-anchor-id="dotfiles">Dotfiles</h2>
+<p>Air supports both <code>air.toml</code> and <code>.air.toml</code>. If both are present in the same directory, then <code>air.toml</code> is preferred (but we don’t recommend this).</p>
 </section>
 <section id="format-options" class="level2">
 <h2 class="anchored" data-anchor-id="format-options">Format options</h2>
