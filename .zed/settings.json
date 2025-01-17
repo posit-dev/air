@@ -3,16 +3,18 @@
 // For a full list of overridable settings, and general information on folder-specific settings,
 // see the documentation: https://zed.dev/docs/configuring-zed#settings-files
 {
-  "TypeScript": {
-    "remove_trailing_whitespace_on_save": true,
-    "formatter": "prettier",
-    "code_actions_on_format": {
-      "source.fixAll.eslint": true
-    },
-    "format_on_save": {
-      "external": {
-        "command": "prettier",
-        "arguments": ["--stdin-filepath", "{buffer_path}"]
+  "languages": {
+    "TypeScript": {
+      "remove_trailing_whitespace_on_save": true,
+      "formatter": "prettier",
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true
+      },
+      "format_on_save": {
+        "external": {
+          "command": "prettier",
+          "arguments": ["--stdin-filepath", "{buffer_path}"]
+        }
       }
     }
   },

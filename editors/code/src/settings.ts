@@ -1,8 +1,5 @@
 import * as vscode from "vscode";
-import {
-	FileFormatSettings,
-	SyncFileSettingsParams,
-} from "./notification/sync-file-settings";
+import { ExecutableLocation } from "./binary";
 
 type LogLevel = "error" | "warn" | "info" | "debug" | "trace";
 
@@ -13,6 +10,10 @@ type LogLevel = "error" | "warn" | "info" | "debug" | "trace";
 export type InitializationOptions = {
 	logLevel?: LogLevel;
 	dependencyLogLevels?: string;
+};
+
+export type WorkspaceSettings = {
+	executableLocation: ExecutableLocation;
 };
 
 export function getInitializationOptions(
@@ -26,6 +27,18 @@ export function getInitializationOptions(
 			config,
 			"dependencyLogLevels",
 		),
+	};
+}
+
+export function getWorkspaceSettings(
+	namespace: string,
+	workspace: vscode.WorkspaceFolder,
+): WorkspaceSettings {
+	const config = getConfiguration(namespace, workspace);
+
+	return {
+		executableLocation:
+			config.get<ExecutableLocation>("executableLocation") ?? "bundled",
 	};
 }
 
