@@ -1,8 +1,8 @@
 {
 	"name": "air-vscode",
-	"displayName": "Air",
+	"displayName": "Air - R Language Support",
 	"description": "R formatter and language server",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"publisher": "Posit",
 	"license": "MIT",
 	"homepage": "https://posit-dev.github.io/air",
