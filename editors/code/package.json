@@ -77,15 +77,15 @@
 					"type": "boolean"
 				},
 				"air.executableLocation": {
-					"default": "environment",
+					"default": "bundled",
 					"markdownDescription": "Location of the `air` executable to start the language server with.",
 					"enum": [
-						"environment",
-						"bundled"
+						"bundled",
+						"environment"
 					],
 					"enumDescriptions": [
-						"Look for an `air` executable on the `PATH`, falling back to the bundled version.",
-						"Always use the bundled `air` executable."
+						"Always use the bundled `air` executable.",
+						"Look for an `air` executable on the `PATH`, falling back to the bundled version."
 					],
 					"scope": "window",
 					"type": "string"

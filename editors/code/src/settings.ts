@@ -38,8 +38,7 @@ export function getWorkspaceSettings(
 
 	return {
 		executableLocation:
-			config.get<ExecutableLocation>("executableLocation") ??
-			"environment",
+			config.get<ExecutableLocation>("executableLocation") ?? "bundled",
 	};
 }
 
