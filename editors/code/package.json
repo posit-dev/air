@@ -1,16 +1,28 @@
 {
 	"name": "air",
 	"displayName": "Air",
-	"description": "Air Language Server",
+	"description": "R formatter and language server",
 	"version": "0.0.1",
 	"publisher": "Posit",
 	"license": "MIT",
-	"repository": "https://github.com/posit-dev/air",
+	"homepage": "https://posit-dev.github.io/air",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/posit-dev/air.git"
+	},
+	"bugs": {
+		"url": "https://github.com/posit-dev/air/issues"
+	},
+	"keywords": [
+		"r",
+		"formatting"
+	],
 	"engines": {
 		"vscode": "^1.90.0"
 	},
 	"categories": [
-		"Other"
+		"Formatters",
+		"Programming Languages"
 	],
 	"activationEvents": [
 		"onLanguage:r",
