@@ -5,7 +5,7 @@ type Arguments = unknown[];
 class OutputChannelLogger {
 	constructor(private readonly channel: OutputChannel) {}
 
-	public outputLog(...data: Arguments): void {
+	public log(...data: Arguments): void {
 		this.channel.appendLine(util.format(...data));
 	}
 }
@@ -26,9 +26,9 @@ export function registerLogger(logChannel: OutputChannel): Disposable {
  * Adapted from:
  * https://github.com/microsoft/vscode-python-tools-extension-template/blob/main/src/common/log/logging.ts
  */
-export function outputLog(...args: Arguments): void {
+export function log(...args: Arguments): void {
 	if (process.env.CI === "true") {
 		console.log(...args);
 	}
-	channel?.outputLog(...args);
+	channel?.log(...args);
 }

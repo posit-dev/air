@@ -5,7 +5,7 @@ import { getInitializationOptions, getWorkspaceSettings } from "./settings";
 import { FileSettingsState } from "./notification/sync-file-settings";
 import { Middleware, ResponseError } from "vscode-languageclient/node";
 import { SYNC_FILE_SETTINGS } from "./notification/sync-file-settings";
-import { registerLogger } from "./logging";
+import { registerLogger } from "./output";
 import { resolveAirBinaryPath } from "./binary";
 import { getRootWorkspaceFolder } from "./workspace";
 
