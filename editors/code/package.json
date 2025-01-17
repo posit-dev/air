@@ -1,5 +1,5 @@
 {
-	"name": "air",
+	"name": "air-vscode",
 	"displayName": "Air",
 	"description": "R formatter and language server",
 	"version": "1.0.0",
