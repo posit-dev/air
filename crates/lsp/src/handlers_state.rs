@@ -151,11 +151,9 @@ pub(crate) async fn did_open(
     state.documents.insert(uri.clone(), document);
 
     // Propagate client settings to Air
-    if lsp_state.capabilities.request_configuration {
-        update_config(vec![uri.clone()], lsp_state, state)
-            .instrument(tracing::info_span!("did_change_configuration"))
-            .await?;
-    }
+    update_config(vec![uri.clone()], lsp_state, state)
+        .instrument(tracing::info_span!("did_change_configuration"))
+        .await?;
 
     // Backpropagate Air settings to client
     lsp_state.sync_file_settings(vec![uri]).await;
@@ -274,6 +272,11 @@ async fn update_config(
     lsp_state: &mut LspState,
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
+    if !lsp_state.capabilities.request_configuration {
+        // Can't request an update, client doesn't support it
+        return Ok(());
+    }
+
     let mut items: Vec<ConfigurationItem> = vec![];
 
     let diagnostics_keys = VscDiagnosticsSettings::FIELD_NAMES_AS_ARRAY;
