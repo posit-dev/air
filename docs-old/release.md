@@ -1,6 +1,6 @@
 # CLI
 
-The release process of the air cli has some manual steps. One complication is that for each release of the CLI binary, we create a new release of the extension as this is our primary way of distributing Air.
+The release process of the air cli has some manual steps. One complication is that for each release of the CLI binary, we create a new release of the extension as this is our primary way of distributing Air. The version numbers between the CLI binary and the extension are not required to be the same.
 
 When you want to cut a release:
 
@@ -14,7 +14,7 @@ When you want to cut a release:
 
     - In `editors/code/package.json`, bump the minor version to the next even number for standard releases, or to the next odd number for odd releases.
 
-    - Do a PR and merge the release branch.
+    - Open a PR with these changes.
 
 - Manually run the [release workflow](https://github.com/posit-dev/air/actions/workflows/release.yml)
 
@@ -32,6 +32,8 @@ When you want to cut a release:
 
 - Manually run the [extension release workflow](https://github.com/posit-dev/air/actions/workflows/release-vscode.yml)
 
-  It runs on `workflow_dispatch`, and automatically pulls in the latest release binary of Air from the binary release workflow above.
+    - It runs on `workflow_dispatch`, and automatically pulls in the latest release binary of Air from the binary release workflow above.
 
-There is no need to bump to an intermediate "dev version" after a release.
+- Merge the release branch
+
+    - There is no need to bump to an intermediate "dev version" after a release.
