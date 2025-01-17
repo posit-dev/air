@@ -427,7 +427,7 @@ async fn update_global_config(
     // Convert and set the global LSP settings
     lsp_state.settings = settings.into();
 
-    // If the client just enabled file setttings synchronisation, sync them
+    // If the client just enabled file settings synchronisation, sync them
     if !old_sync_file_settings_with_client && lsp_state.settings.sync_file_settings_with_client {
         lsp_state.sync_file_settings(state.workspace_uris()).await
     }

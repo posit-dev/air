@@ -47,9 +47,9 @@ export class FileSettingsState {
 			this.settings.set(path, fileSettings.format);
 		}
 
-		// Apply right away the active text editors. We also have a handler
-		// for the case where visible editors change. We could apply to all
-		// visible text editors but that would not be useful AFAICT.
+		// Apply right away to the active text editor. We also have a handler
+		// for the case where the active editor changes so it always has
+		// up-to-date settings.
 		if (vscode.window.activeTextEditor) {
 			this.apply(vscode.window.activeTextEditor);
 		}
