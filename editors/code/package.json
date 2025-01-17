@@ -94,7 +94,7 @@
 		},
 		"configurationDefaults": {
 			"[r]": {
-				"editor.defaultFormatter": "Posit.air"
+				"editor.defaultFormatter": "Posit.air-vscode"
 			}
 		},
 		"commands": [
