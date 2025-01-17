@@ -25,13 +25,13 @@ export class Lsp {
 	private state = State.Stopped;
 	private stateQueue: PQueue;
 
-	private tomlSettings: FileSettingsState;
+	private fileSettings: FileSettingsState;
 
 	constructor(context: vscode.ExtensionContext) {
 		this.channel = vscode.window.createOutputChannel("Air Language Server");
 		context.subscriptions.push(this.channel);
 		this.stateQueue = new PQueue({ concurrency: 1 });
-		this.tomlSettings = new FileSettingsState(context);
+		this.fileSettings = new FileSettingsState(context);
 	}
 
 	public getClient(): lc.LanguageClient {
@@ -124,7 +124,7 @@ export class Lsp {
 			clientOptions,
 		);
 		client.onNotification(SYNC_FILE_SETTINGS, (settings) =>
-			this.tomlSettings.handleSettingsNotification(settings),
+			this.fileSettings.handleSettingsNotification(settings),
 		);
 
 		await client.start();
