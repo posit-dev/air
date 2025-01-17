@@ -28,12 +28,9 @@ For collaborative projects, we recommend creating an `air.toml` and placing it a
 This has a number of benefits:
 
 -   It stops Air from using user level editor settings.
-    When an `air.toml` is not present, Air respects some user level editor settings, such as `editor.tabWidth` in VS Code or Positron.
+    When an `air.toml` is not present, Air respects some user level editor settings, such as `editor.tabWidth` in VS Code.
     The presence of an `air.toml` (even an empty one) disables this, instead pulling all settings from the configuration file.
     This ensures that settings are the same across team members, code editors, and in CI.
-    In that case, the propagation of settings runs in the other direction in editors that support it such as VS Code and Positron.
-    The settings in the air.toml file (if your project has one) take precedence over your IDE settings.
-    This ensures that IDE features like indentation work in lockstep with the Air formatter.
 
 -   It stops [configuration discovery] from extending outside your project.
     Without an `air.toml` at the project root, Air might discover your local `~/packages/air.toml` as the configuration file to use for the `~/packages/dplyr` project.
@@ -44,7 +41,7 @@ This has a number of benefits:
 If you do plan to just use the defaults, the `air.toml` can be completely empty.
 The important thing is that it exists.
 
-If you're happy with Air's defaults (or your IDE settings) and don't plan for your project to ever leave your computer, you likely don't need an `air.toml`.
+If you're happy with Air's defaults and don't plan for your project to ever leave your computer, you likely don't need an `air.toml`.
 
 ## Configuration discovery
 
