@@ -2,6 +2,12 @@
 
 # Development version
 
+# 1.0.0
+
+- Initial public release, yay!
+
+- Added a synchronization mechanism between IDE and Air settings. See documentation for more information https://posit-dev.github.io/air/configuration.html#settings-synchronization.
+
 - Renamed `ignore-magic-line-break` to `persistent-line-breaks` (#177).
 
 - In the CLI, errors and warnings are now written to stderr. This allows you to
