@@ -43,19 +43,6 @@ The important thing is that it exists.
 
 If you're happy with Air's defaults (or your IDE settings, see section on synchronization) and don't plan for your project to ever leave your computer, you likely don't need an `air.toml`.
 
-## Settings synchronization
-
-In IDEs that support synchronization (VS Code and Positron currently), Air does its best to ensure that the formatter and the IDE are in agreement.
-This is supported by two mechanisms:
-
--   In projects that don't have an `air.toml` file, IDE settings are sent to Air.
-    This ensures that Air will use the same indentation style and width that is configured in the IDE.
-
--   In projects that do have an `air.toml` file, the Air settings are sent to the IDE.
-    This ensures that the IDE will use the same indentation sytle and width that air uses.
-
-The goal of this synchronization mechanism is for the IDE to work in lockstep with the Air formatter.
-
 ## Configuration discovery
 
 The ideal place to put an `air.toml` file is at your project root.
@@ -76,6 +63,19 @@ If you run `air format` with a working directory of `~/packages/dplyr` or open y
 
 Air also supports walking up the directory tree from the project root.
 For example, if you ran `air format` from within `~/packages/dplyr/R`, then Air would look "up" one directory and would find and use `~/packages/dplyr/air.toml`.
+
+## Settings synchronization
+
+In IDEs that support synchronization (VS Code and Positron currently), Air does its best to ensure that the formatter and the IDE are in agreement.
+This is supported by two mechanisms:
+
+-   In projects that don't have an `air.toml` file, IDE settings are sent to Air.
+    This ensures that Air will use the same indentation style and width that is configured in the IDE.
+
+-   In projects that do have an `air.toml` file, the Air settings are sent to the IDE.
+    This ensures that the IDE will use the same indentation style and width that Air uses.
+
+The goal of this synchronization mechanism is for the IDE to work in lockstep with the Air formatter.
 
 ## Format options
 
