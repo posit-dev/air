@@ -24,5 +24,5 @@ export const BUNDLED_AIR_EXECUTABLE = path.join(
 	EXTENSION_ROOT_DIR,
 	"bundled",
 	"bin",
-	AIR_BINARY_NAME
+	AIR_BINARY_NAME,
 );

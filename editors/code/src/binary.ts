@@ -6,11 +6,11 @@ import { AIR_BINARY_NAME, BUNDLED_AIR_EXECUTABLE } from "./constants";
 export type ExecutableLocation = "environment" | "bundled";
 
 export async function resolveAirBinaryPath(
-	executableLocation: ExecutableLocation
+	executableLocation: ExecutableLocation,
 ): Promise<string> {
 	if (!vscode.workspace.isTrusted) {
 		output.log(
-			`Workspace is not trusted, using bundled executable: ${BUNDLED_AIR_EXECUTABLE}`
+			`Workspace is not trusted, using bundled executable: ${BUNDLED_AIR_EXECUTABLE}`,
 		);
 		return BUNDLED_AIR_EXECUTABLE;
 	}
@@ -18,7 +18,7 @@ export async function resolveAirBinaryPath(
 	// User requested the bundled air binary
 	if (executableLocation === "bundled") {
 		output.log(
-			`Using bundled executable as requested by \`air.executableLocation\`: ${BUNDLED_AIR_EXECUTABLE}`
+			`Using bundled executable as requested by \`air.executableLocation\`: ${BUNDLED_AIR_EXECUTABLE}`,
 		);
 		return BUNDLED_AIR_EXECUTABLE;
 	}

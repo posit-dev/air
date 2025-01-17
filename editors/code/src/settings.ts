@@ -17,7 +17,7 @@ export type WorkspaceSettings = {
 };
 
 export function getInitializationOptions(
-	namespace: string
+	namespace: string,
 ): InitializationOptions {
 	const config = getConfiguration(namespace);
 
@@ -25,14 +25,14 @@ export function getInitializationOptions(
 		logLevel: getOptionalUserValue<LogLevel>(config, "logLevel"),
 		dependencyLogLevels: getOptionalUserValue<string>(
 			config,
-			"dependencyLogLevels"
+			"dependencyLogLevels",
 		),
 	};
 }
 
 export function getWorkspaceSettings(
 	namespace: string,
-	workspace: vscode.WorkspaceFolder
+	workspace: vscode.WorkspaceFolder,
 ): WorkspaceSettings {
 	const config = getConfiguration(namespace, workspace);
 
@@ -45,7 +45,7 @@ export function getWorkspaceSettings(
 
 function getOptionalUserValue<T>(
 	config: vscode.WorkspaceConfiguration,
-	key: string
+	key: string,
 ): T | undefined {
 	const inspect = config.inspect<T>(key);
 	return inspect?.globalValue;
@@ -53,7 +53,7 @@ function getOptionalUserValue<T>(
 
 function getConfiguration(
 	config: string,
-	scope?: vscode.ConfigurationScope
+	scope?: vscode.ConfigurationScope,
 ): vscode.WorkspaceConfiguration {
 	return vscode.workspace.getConfiguration(config, scope);
 }

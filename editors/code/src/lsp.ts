@@ -68,7 +68,7 @@ export class Lsp {
 		const initializationOptions = getInitializationOptions("air");
 
 		const command = await resolveAirBinaryPath(
-			workspaceSettings.executableLocation
+			workspaceSettings.executableLocation,
 		);
 
 		let serverOptions: lc.ServerOptions = {
@@ -104,7 +104,10 @@ export class Lsp {
 
 						const config = vscode.workspace.getConfiguration(
 							undefined,
-							{ uri, languageId }
+							{
+								uri,
+								languageId,
+							},
 						);
 						items[i] = config.get(item.section);
 					}
@@ -131,10 +134,10 @@ export class Lsp {
 			"airLanguageServer",
 			"Air Language Server",
 			serverOptions,
-			clientOptions
+			clientOptions,
 		);
 		client.onNotification(SYNC_FILE_SETTINGS, (settings) =>
-			this.fileSettings.handleSettingsNotification(settings)
+			this.fileSettings.handleSettingsNotification(settings),
 		);
 
 		await client.start();
