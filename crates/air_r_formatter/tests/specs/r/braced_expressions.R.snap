@@ -93,7 +93,7 @@ Indent style: Space
 Indent width: 2
 Line ending: LF
 Line width: 80
-Magic line break: Respect
+Persistent line breaks: Respect
 -----
 
 ```R

@@ -1,5 +1,5 @@
 #' [format]
-#' ignore-magic-line-break = true
+#' persistent-line-breaks = false
 
 # Fits on one line, flatten
 x |>

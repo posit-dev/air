@@ -274,7 +274,7 @@ bar() |> baz()
 df |> foo() |> bar() |>
 baz()
 
-# Flattened, removing just this first magic line break is how users can
+# Flattened, removing just this first persistent line break is how users can
 # easily request flattened pipe chains if one is possible (as opposed
 # to having to flatten every pipe element to keep it flat)
 df |> foo() |>
@@ -334,7 +334,7 @@ and() |> this() }
 
 # Inside parentheses, subset, or, subset2, you can put a newline before
 # the `|>`, which isn't valid R code at top level. This doesn't result
-# in a break because we strictly require the magic line break to come
+# in a break because we strictly require the persistent line break to come
 # AFTER the first binary operator in the chain.
 (df
 |> foo())
@@ -463,9 +463,9 @@ identity(1) -> x
 identity(1) ->> x
 
 # -----------------------------------------------------------------------------
-# Assignment with magic line breaks
+# Assignment with persistent line breaks
 
-# Magic line break after the left assignment
+# Persistent line break after the left assignment
 fn =
   value
 fn <-
@@ -478,17 +478,17 @@ fn <- # comment1
   # comment2
   value # comment3
 
-# No magic line break after walrus operator
+# No persistent line break after walrus operator
 fn :=
   value
 
-# We want these to match, neither support magic line breaks
+# We want these to match, neither support persistent line breaks
 call(fn :=
   value)
 call(fn =
   value)
 
-# No magic line break after right assignment
+# No persistent line break after right assignment
 fn ->
   value
 fn ->>

@@ -2,6 +2,8 @@
 
 # Development version
 
+- Renamed `ignore-magic-line-break` to `persistent-line-breaks` (#177).
+
 - In the CLI, errors and warnings are now written to stderr. This allows you to
   see issues that occur during `air format`, such as parse errors or file not
   found errors (#155).

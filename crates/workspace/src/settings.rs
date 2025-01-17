@@ -13,7 +13,7 @@ use air_r_formatter::context::RFormatOptions;
 use settings::IndentStyle;
 use settings::IndentWidth;
 use settings::LineWidth;
-use settings::MagicLineBreak;
+use settings::PersistentLineBreaks;
 
 /// Resolved configuration settings used within air
 ///
@@ -31,7 +31,7 @@ pub struct FormatSettings {
     pub indent_width: IndentWidth,
     pub line_ending: LineEnding,
     pub line_width: LineWidth,
-    pub magic_line_break: MagicLineBreak,
+    pub persistent_line_breaks: PersistentLineBreaks,
 }
 
 impl FormatSettings {
@@ -42,6 +42,6 @@ impl FormatSettings {
             .with_indent_width(self.indent_width)
             .with_line_ending(self.line_ending.finalize(source))
             .with_line_width(self.line_width)
-            .with_magic_line_break(self.magic_line_break)
+            .with_persistent_line_breaks(self.persistent_line_breaks)
     }
 }

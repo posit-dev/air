@@ -151,21 +151,21 @@ line-ending = "auto"
             toml,
             r#"
 [format]
-ignore-magic-line-break = true
+persistent-line-breaks = false
 "#,
         )?;
 
         let toml = find_air_toml(tempdir.path()).context("Failed to find air.toml")?;
         let options = parse_air_toml(toml)?;
 
-        let ignore_magic_line_break = options
+        let persistent_line_breaks = options
             .format
             .as_ref()
             .context("Expected to find [format] table")?
-            .ignore_magic_line_break
-            .context("Expected to find `ignore-magic-line-break` field")?;
+            .persistent_line_breaks
+            .context("Expected to find `persistent-line-breaks` field")?;
 
-        assert!(ignore_magic_line_break);
+        assert!(!persistent_line_breaks);
 
         Ok(())
     }

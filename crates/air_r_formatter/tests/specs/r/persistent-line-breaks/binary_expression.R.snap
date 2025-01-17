@@ -1,12 +1,12 @@
 ---
 source: crates/air_formatter_test/src/snapshot_builder.rs
-info: r/ignore-magic-line-breaks/binary_expression.R
+info: r/persistent-line-breaks/binary_expression.R
 ---
 # Input
 
 ```R
 #' [format]
-#' ignore-magic-line-break = true
+#' persistent-line-breaks = false
 
 # Fits on one line, flatten
 x |>
@@ -31,12 +31,12 @@ Indent style: Space
 Indent width: 2
 Line ending: LF
 Line width: 80
-Magic line break: Ignore
+Persistent line breaks: Ignore
 -----
 
 ```R
 #' [format]
-#' ignore-magic-line-break = true
+#' persistent-line-breaks = false
 
 # Fits on one line, flatten
 x |> foo() |> bar()

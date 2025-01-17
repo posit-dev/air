@@ -13,7 +13,7 @@ use settings::IndentStyle;
 use settings::IndentWidth;
 use settings::LineEnding;
 use settings::LineWidth;
-use settings::MagicLineBreak;
+use settings::PersistentLineBreaks;
 
 use crate::comments::FormatRLeadingComment;
 use crate::comments::RCommentStyle;
@@ -79,8 +79,8 @@ pub struct RFormatOptions {
     /// The max width of a line.
     line_width: LineWidth,
 
-    /// The behavior of magic line breaks.
-    magic_line_break: MagicLineBreak,
+    /// The behavior of persistent line breaks.
+    persistent_line_breaks: PersistentLineBreaks,
 }
 
 impl RFormatOptions {
@@ -110,8 +110,11 @@ impl RFormatOptions {
         self
     }
 
-    pub fn with_magic_line_break(mut self, magic_line_break: MagicLineBreak) -> Self {
-        self.magic_line_break = magic_line_break;
+    pub fn with_persistent_line_breaks(
+        mut self,
+        persistent_line_breaks: PersistentLineBreaks,
+    ) -> Self {
+        self.persistent_line_breaks = persistent_line_breaks;
         self
     }
 
@@ -131,12 +134,12 @@ impl RFormatOptions {
         self.line_width = line_width;
     }
 
-    pub fn set_magic_line_break(&mut self, magic_line_break: MagicLineBreak) {
-        self.magic_line_break = magic_line_break;
+    pub fn set_persistent_line_breaks(&mut self, persistent_line_breaks: PersistentLineBreaks) {
+        self.persistent_line_breaks = persistent_line_breaks;
     }
 
-    pub fn magic_line_break(&self) -> MagicLineBreak {
-        self.magic_line_break
+    pub fn persistent_line_breaks(&self) -> PersistentLineBreaks {
+        self.persistent_line_breaks
     }
 }
 
@@ -178,6 +181,6 @@ impl fmt::Display for RFormatOptions {
         writeln!(f, "Indent width: {}", self.indent_width.value())?;
         writeln!(f, "Line ending: {}", self.line_ending)?;
         writeln!(f, "Line width: {}", self.line_width.value())?;
-        writeln!(f, "Magic line break: {}", self.magic_line_break)
+        writeln!(f, "Persistent line breaks: {}", self.persistent_line_breaks)
     }
 }
