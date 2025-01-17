@@ -2,6 +2,9 @@
 
 # Development version
 
+- Fixed an issue where the language server failed to start due to logging
+  being initialized twice.
+
 # 1.0.0
 
 - Initial public release, yay!
