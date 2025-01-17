@@ -33,11 +33,11 @@ dependencies = [
  "air_r_formatter",
  "air_r_parser",
  "anyhow",
- "biome_console",
- "biome_diagnostics",
  "biome_formatter",
  "biome_parser",
  "clap",
+ "colored",
+ "crates",
  "fs",
  "ignore",
  "itertools",
@@ -47,6 +47,7 @@ dependencies = [
  "thiserror 2.0.5",
  "tokio",
  "tracing",
+ "tracing-subscriber",
  "workspace",
 ]
 
@@ -606,6 +607,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b63caa9aa9397e2d9480a9b13673856c78d8ac123288526c37d7839f2a86990"
 
 [[package]]
+name = "colored"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fde0e0ec90c9dfb3b4b1a0891a7dcd0e2bffde2f7efed5fe7c9bb00e5bfb915e"
+dependencies = [
+ "windows-sys 0.59.0",
+]
+
+[[package]]
 name = "console"
 version = "0.15.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -622,6 +632,14 @@ name = "countme"
 version = "3.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7704b5fdd17b18ae31c4c1da5a2e0305a2bf17b5249300a9ee9ed7b72114c636"
+
+[[package]]
+name = "crates"
+version = "0.0.0"
+dependencies = [
+ "cargo_metadata",
+ "insta",
+]
 
 [[package]]
 name = "crc32fast"
@@ -1325,7 +1343,7 @@ dependencies = [
  "biome_rowan",
  "biome_text_size",
  "bytes",
- "cargo_metadata",
+ "crates",
  "crossbeam",
  "dissimilar",
  "futures",

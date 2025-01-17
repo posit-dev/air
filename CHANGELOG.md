@@ -2,6 +2,15 @@
 
 # Development version
 
+- In the CLI, errors and warnings are now written to stderr. This allows you to
+  see issues that occur during `air format`, such as parse errors or file not
+  found errors (#155).
+
+- New global CLI option `--log-level` to control the log level. The default is
+  `warn` (#155).
+
+- New global CLI option `--no-color` to disable colored output (#155).
+
 - Air now supports `.air.toml` files in addition to `air.toml` files. If both
   are in the same directory, `air.toml` is preferred, but we don't recommend
   doing that (#152).

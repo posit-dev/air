@@ -11,7 +11,7 @@ fn main() {
 /// Write out a constant array of air crate names as `AIR_CRATE_NAMES` at build time
 fn write_workspace_crate_names() {
     let dir = env::var_os("OUT_DIR").unwrap();
-    let path = Path::new(&dir).join("crates.rs");
+    let path = Path::new(&dir).join("lib.rs");
 
     // Equivalent to `cargo metadata --no-deps`
     let mut cmd = cargo_metadata::MetadataCommand::new();
@@ -34,7 +34,7 @@ fn write_workspace_crate_names() {
 
     let packages = packages.join(" ");
 
-    let contents = format!("pub(crate) const AIR_CRATE_NAMES: &[&str] = &[{packages}];");
+    let contents = format!("pub const AIR_CRATE_NAMES: &[&str] = &[{packages}];");
 
     fs::write(&path, contents).unwrap();
     println!("cargo::rerun-if-changed=build.rs");

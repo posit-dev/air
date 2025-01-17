@@ -27,6 +27,7 @@ air_r_formatter = { path = "./crates/air_r_formatter" }
 air_r_parser = { path = "./crates/air_r_parser" }
 air_r_syntax = { path = "./crates/air_r_syntax" }
 biome_ungrammar = { path = "./crates/biome_ungrammar" }
+crates = { path = "./crates/crates" }
 fs = { path = "./crates/fs" }
 line_ending = { path = "./crates/line_ending" }
 lsp = { path = "./crates/lsp" }
@@ -49,6 +50,7 @@ biome_unicode_table = { git = "https://github.com/biomejs/biome", rev = "2648fa4
 bytes = "1.8.0"
 cargo_metadata = "0.19.1"
 clap = { version = "4.5.20", features = ["derive"] }
+colored = "3.0.0"
 crossbeam = "0.8.4"
 dissimilar = "1.0.9"
 futures = "0.3.31"
