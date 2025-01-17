@@ -57,16 +57,22 @@ pub(crate) async fn handle_initialized(lsp_state: &LspState) -> anyhow::Result<(
         .capabilities
         .dynamic_registration_for_did_change_watched_files
     {
-        // Watch for changes in `air.toml` files so we can react dynamically
+        // Watch for changes in configuration files so we can react dynamically
         let watch_air_toml_registration = lsp_types::Registration {
             id: String::from("air-toml-watcher"),
             method: "workspace/didChangeWatchedFiles".into(),
             register_options: Some(
                 serde_json::to_value(DidChangeWatchedFilesRegistrationOptions {
-                    watchers: vec![FileSystemWatcher {
-                        glob_pattern: lsp_types::GlobPattern::String("**/air.toml".into()),
-                        kind: None,
-                    }],
+                    watchers: vec![
+                        FileSystemWatcher {
+                            glob_pattern: lsp_types::GlobPattern::String("**/air.toml".into()),
+                            kind: None,
+                        },
+                        FileSystemWatcher {
+                            glob_pattern: lsp_types::GlobPattern::String("**/.air.toml".into()),
+                            kind: None,
+                        },
+                    ],
                 })
                 .unwrap(),
             ),

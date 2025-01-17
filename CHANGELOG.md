@@ -2,6 +2,10 @@
 
 # Development version
 
+- Air now supports `.air.toml` files in addition to `air.toml` files. If both
+  are in the same directory, `air.toml` is preferred, but we don't recommend
+  doing that (#152).
+
 
 # 0.1.2
 

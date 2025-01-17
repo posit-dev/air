@@ -14,6 +14,7 @@ use workspace::discovery::discover_settings;
 use workspace::discovery::DiscoveredSettings;
 use workspace::resolve::PathResolver;
 use workspace::settings::Settings;
+use workspace::toml::is_air_toml;
 
 /// Convenience type for the inner resolver of path -> [`Settings`]
 type SettingsResolver = PathResolver<Settings>;
@@ -164,7 +165,7 @@ impl WorkspaceSettingsResolver {
             }
         };
 
-        if !path.ends_with("air.toml") {
+        if !is_air_toml(&path) {
             // We could get called with a changed file that isn't an `air.toml` if we are
             // watching more than `air.toml` files
             tracing::trace!("Ignoring non-`air.toml` changed URL: {url}");
