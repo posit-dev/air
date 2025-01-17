@@ -1,7 +1,7 @@
 {
 	"name": "air",
 	"displayName": "Air",
-	"description": "R formatter and language server for Visual Studio Code",
+	"description": "R formatter and language server",
 	"version": "0.0.1",
 	"publisher": "Posit",
 	"license": "MIT",
