@@ -187,7 +187,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#example-configuration" id="toc-example-configuration" class="nav-link active" data-scroll-target="#example-configuration">Example configuration</a></li>
+  <li><a href="#configuration-recommendations" id="toc-configuration-recommendations" class="nav-link" data-scroll-target="#configuration-recommendations">Configuration recommendations</a></li>
   <li><a href="#configuration-discovery" id="toc-configuration-discovery" class="nav-link" data-scroll-target="#configuration-discovery">Configuration discovery</a></li>
+  <li><a href="#settings-synchronization" id="toc-settings-synchronization" class="nav-link" data-scroll-target="#settings-synchronization">Settings synchronization</a></li>
   <li><a href="#dotfiles" id="toc-dotfiles" class="nav-link" data-scroll-target="#dotfiles">Dotfiles</a></li>
   <li><a href="#format-options" id="toc-format-options" class="nav-link" data-scroll-target="#format-options">Format options</a>
   <ul class="collapse">
@@ -222,7 +224,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Air can be configured using a TOML file named <code>air.toml</code>. Air is purposefully minimally configurable, with the main configuration points being related to line width and indent style. Our hope is that most projects never need an <code>air.toml</code> file!</p>
+<p>Air can be configured using a TOML file named <code>air.toml</code>. Air is purposefully minimally configurable, with the main configuration points being related to line width and indent style.</p>
 <section id="example-configuration" class="level2">
 <h2 class="anchored" data-anchor-id="example-configuration">Example configuration</h2>
 <p>Below is a complete <code>air.toml</code> file showing all available options set to their default values:</p>
@@ -230,13 +232,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">line-width</span> <span class="op">=</span> <span class="dv">80</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">indent-width</span> <span class="op">=</span> <span class="dv">2</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dt">indent-style</span> <span class="op">=</span> <span class="st">"space"</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">line-ending</span> <span class="op">=</span> <span class="st">"auto"</span>   </span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">line-ending</span> <span class="op">=</span> <span class="st">"auto"</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">ignore-magic-line-break</span> <span class="op">=</span> <span class="cn">false</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="configuration-recommendations" class="level2">
+<h2 class="anchored" data-anchor-id="configuration-recommendations">Configuration recommendations</h2>
+<p>For collaborative projects, we recommend creating an <code>air.toml</code> and placing it at your project root even if you plan to use the default Air settings. This has a number of benefits:</p>
+<ul>
+<li><p>It stops Air from using user level editor settings. When an <code>air.toml</code> is not present, Air respects some user level editor settings, such as <code>editor.tabWidth</code> in VS Code or Positron. The presence of an <code>air.toml</code> (even an empty one) disables this, instead pulling all settings from the configuration file. This ensures that settings are the same across team members, code editors, and in CI.</p></li>
+<li><p>It stops <a href="#configuration-discovery">configuration discovery</a> from extending outside your project. Without an <code>air.toml</code> at the project root, Air might discover your local <code>~/packages/air.toml</code> as the configuration file to use for the <code>~/packages/dplyr</code> project. By adding <code>~/packages/dplyr/air.toml</code>, you prevent configuration discovery from looking “above” <code>~/packages/dplyr</code>, again ensuring consistent settings across team members.</p></li>
+<li><p>It serves as a signal to others that your project is using Air.</p></li>
+</ul>
+<p>If you do plan to just use the defaults, the <code>air.toml</code> can be completely empty. The important thing is that it exists.</p>
+<p>If you’re happy with Air’s defaults (or your IDE settings, see section on synchronization) and don’t plan for your project to ever leave your computer, you likely don’t need an <code>air.toml</code>.</p>
 </section>
 <section id="configuration-discovery" class="level2">
 <h2 class="anchored" data-anchor-id="configuration-discovery">Configuration discovery</h2>
 <p>The ideal place to put an <code>air.toml</code> file is at your project root. For example, note the placement of <code>air.toml</code> in this minimal dplyr project:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">~/files/dplyr</span></span>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">~/packages/dplyr</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> air.toml</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> DESCRIPTION</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> NAMESPACE</span>
@@ -244,8 +257,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> src</span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> tests</span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ex">└──</span> vignettes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>If you run <code>air format</code> with a working directory of <code>~/files/dplyr</code> or open your IDE in the dplyr project, then Air will find and use that TOML file.</p>
-<p>Air also supports walking up the directory tree from the project root. For example, if you ran <code>air format</code> from within <code>~/files/dplyr/R</code>, then Air would look “up” one directory and would find and use <code>~/files/dplyr/air.toml</code>.</p>
+<p>If you run <code>air format</code> with a working directory of <code>~/packages/dplyr</code> or open your IDE in the dplyr project, then Air will find and use that TOML file.</p>
+<p>Air also supports walking up the directory tree from the project root. For example, if you ran <code>air format</code> from within <code>~/packages/dplyr/R</code>, then Air would look “up” one directory and would find and use <code>~/packages/dplyr/air.toml</code>.</p>
+</section>
+<section id="settings-synchronization" class="level2">
+<h2 class="anchored" data-anchor-id="settings-synchronization">Settings synchronization</h2>
+<p>In IDEs that support synchronization (VS Code and Positron currently), Air does its best to ensure that the formatter and the IDE are in agreement. This is supported by two mechanisms:</p>
+<ul>
+<li><p>In projects that don’t have an <code>air.toml</code> file, IDE settings are sent to Air. This ensures that Air will use the same indentation style and width that is configured in the IDE.</p></li>
+<li><p>In projects that do have an <code>air.toml</code> file, the Air settings are sent to the IDE. This ensures that the IDE will use the same indentation style and width that Air uses.</p></li>
+</ul>
+<p>The goal of this synchronization mechanism is for the IDE to work in lockstep with the Air formatter.</p>
 </section>
 <section id="dotfiles" class="level2">
 <h2 class="anchored" data-anchor-id="dotfiles">Dotfiles</h2>
@@ -299,9 +321,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Similarly, this function signature could also be flattened, but is not, due to the magic line break between the opening <code>(</code> and the first parameter, <code>...</code>.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>case_when <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  ..., </span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">.default =</span> <span class="cn">NULL</span>, </span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">.ptype =</span> <span class="cn">NULL</span>, </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  ...,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">.default =</span> <span class="cn">NULL</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">.ptype =</span> <span class="cn">NULL</span>,</span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">.size =</span> <span class="cn">NULL</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>) {</span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  body</span>
