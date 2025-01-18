@@ -30,10 +30,7 @@ curl -LsSf https://github.com/posit-dev/air/releases/download/0.1.1/air-installe
 powershell -c "irm https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.ps1 | iex"
 ```
 
-The installer scripts will automatically add air to your `PATH`. The very first time you install air, for the `PATH` modifications to be applied:
-
-- On macOS and Linux, you'll need to restart your shell.
-- On Windows, you'll need to restart your computer.
+The installer scripts will automatically add air to your `PATH`. The very first time you install air, you'll need to restart your shell for the `PATH` modifications to be applied.
 
 # Acknowledgements and inspiration
 
