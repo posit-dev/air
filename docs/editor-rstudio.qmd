@@ -1,0 +1,45 @@
+---
+title: "RStudio"
+editor:
+  markdown:
+    wrap: sentence
+    canonical: true
+---
+
+RStudio does not support the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/), but you can still use Air as an *external formatter*.
+
+# Installation
+
+::: callout-note
+## Air is currently only supported on macOS and Windows. Linux support is coming soon!
+:::
+
+Ensure you have at least RStudio version 2024.12.0, which you can download from [here](https://posit.co/download/rstudio-desktop/).
+Additionally, you'll need to install the Air [command line tool](cli.qmd).
+
+Open `Tools -> Global Options -> Code` and change the option to use an `External` formatter.
+Then set the `Reformat command` to {`path/to/air} format`.
+
+The easiest way to figure out `{path/to/air}` for yourself is to run `which air` from a Terminal on Unix, and `where air` from the Command Prompt on Windows.
+
+![](./images/rstudio-external-formatter.png){fig-alt="Setting Air as an external formatter with Tools -> Global Options -> Code -> Formatting" fig-align="center"}
+
+# Features
+
+## Format on save
+
+After you've set Air as an external formatter, you can either tell RStudio to format all documents on save, or set this on a per document basis.
+
+To format all documents on save, open `Tools -> Global Options -> Code -> Saving` and check `Reformat documents on save`.
+
+![](images/rstudio-format-on-save.png){fig-alt="Setting RStudio to format all documents on save in Tools -> Global Options -> Code -> Saving" fig-align="center"}
+
+To format individual documents on save, open the file specific settings and check `Reformat Document on Save`.
+
+![](images/rstudio-reformat-document-on-save.png){fig-align="center"}
+
+<!--# Come back and add video of formatting in action -->
+
+## Quarto
+
+There is currently no way to use Air in RStudio with Quarto documents.

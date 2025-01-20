@@ -1,5 +1,5 @@
 ---
-title: "Editor setup"
+title: "Editor support"
 editor:
   markdown:
     wrap: sentence
@@ -9,115 +9,10 @@ editor:
 Air provides excellent support for code editors that support the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/).
 Many do, including [Positron](https://positron.posit.co/), [VS Code](https://code.visualstudio.com/), and [Zed](https://zed.dev/).
 Air also provides some support for code editors that allow for external formatters, such as [RStudio](https://posit.co/products/open-source/rstudio/).
+Follow one of our editor specific guides to get set up with Air in your preferred editor:
 
-```{=html}
-<!--
-# Uncomment after we support this
+-   [VS Code](editor-vscode.qmd)
 
-For both Positron and VS Code, Air provides a first class VS Code Extension, installable through either the VS Code Marketplace, or through OpenVSX. For other editors that support the LSP, there may be additional setup required.
- -->
-```
+-   [Positron](editor-vscode.qmd)
 
-# VS Code {#vs-code}
-
-Our VS Code extension does not yet bundle the Air binary, so the first thing you need to do is [install the Air binary](installation.qmd).
-After you install the Air binary, the extension will automatically find it.
-
-We don't currently have a VS Code Extension on the marketplace yet, but we do build them as artifacts on each commit.
-The short-term way to install the extension is to open this link in your browser, which will download a zip folder containing the extension as a vsix file:
-
-<https://github.com/posit-dev/air/actions/runs/12417189172/artifacts/2344425762>
-
-After downloading the extension, open VS Code, navigate to the Extensions pane, and drag the vsix file into the Extensions pane and "drop" it in.
-VS Code will automatically recognize it and install the extension.
-
-## Format on save
-
-Once you have the extension installed, turn on Format on Save for R documents by opening your `settings.json` and adding:
-
-``` json
-{
-    "[r]": {
-        "editor.formatOnSave": true
-    }
-}
-```
-
-You may also want to set Air as the default formatter for R documents if you have multiple R formatters installed.
-You can set that with `"editor.defaultFormatter": "Posit.air"`.
-
-You should now be able to simply open an R document, save it, and have the entire document formatted by Air.
-You can also explicitly call the command `Format Document` if you'd like to control this manually.
-
-<!--# Come back and add video -->
-
-## Format selection
-
-To format a selection of code, highlight it with your cursor and run the command `Format Selection`.
-Formatting a selection may *expand* that selection to find the nearest complete fragment of code that is formattable.
-
-<!--# Come back and add video -->
-
-# Positron
-
-Follow the instructions for [VS Code](#vs-code).
-
-Eventually the Air extension will be available on OpenVSX for easy use in Positron.
-
-# RStudio
-
-As of RStudio 2024.12.0, there is experimental support for an "external formatter".
-
-RStudio does not bundle an Air binary, so the first thing you need to do is [install the Air binary](installation.qmd).
-
-Open `Tools -> Global Options -> Code` and change the option to use an `External` formatter.
-Then set the `Reformat command` to `path/to/air format`.
-
-The easiest way to figure out `path/to/air` for yourself is to run `which air` from a Terminal on Mac or Linux, and `where air` from the Command Prompt on Windows.
-
-![](./images/rstudio-external-formatter.png){fig-alt="Setting Air as an external formatter with Tools -> Global Options -> Code -> Formatting" fig-align="center"}
-
-## Format on save
-
-After you've set Air as an external formatter, you can either tell RStudio to format all documents on save, or set this on a per document basis.
-
-To format all documents on save, open `Tools -> Global Options -> Code -> Saving` and check `Reformat documents on save`.
-
-![](images/rstudio-format-on-save.png){fig-alt="Setting RStudio to format all documents on save in Tools -> Global Options -> Code -> Saving" fig-align="center"}
-
-To format individual documents on save, open the file specific settings and check `Reformat Document on Save`.
-
-![](images/rstudio-reformat-document-on-save.png){fig-align="center"}
-
-<!--# Come back and add images -->
-
-# Quarto
-
-Quarto support currently only works in VS Code.
-
-There is an [issue](https://github.com/posit-dev/air/issues/77) in VS Code itself that currently prevents it from working correctly in Positron, we will fix this in Positron soon.
-
-There is currently no way to use Air in RStudio with Quarto documents.
-
-## Format on save
-
-To format all R code cells on save, set this in your `settings.json`:
-
-``` json
-{
-    "[quarto]": {
-        "editor.formatOnSave": true
-    },
-    "[r]": {
-        "editor.formatOnSave": true
-    }
-}
-```
-
-<!--# Come back and add video -->
-
-## Format cell
-
-When inside an R cell in a Quarto document, use the chorded key combination `Cmd+K Cmd+F` or the command `Quarto: Format Cell` to format a single cell.
-
-<!--# Come back and add video -->
+-   [RStudio](editor-rstudio.qmd)

@@ -14,6 +14,6 @@ Once installed, Air will automatically be activated when you open an R file. To 
 }
 ```
 
-Click [here](https://posit-dev.github.io/air/editors.html#vs-code) to learn about all of Air's features.
+Click [here](https://posit-dev.github.io/air/editor-vscode.html) to learn about all of Air's features.
 
 Click [here](https://posit-dev.github.io/air/configuration.html) to learn about how Air can be configured.

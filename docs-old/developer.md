@@ -1,4 +1,4 @@
-# CLI
+# Release
 
 The release process of the air cli has some manual steps. One complication is that for each release of the CLI binary, we create a new release of the extension as this is our primary way of distributing Air.
 
@@ -35,3 +35,28 @@ When you want to cut a release:
   It runs on `workflow_dispatch`, and automatically pulls in the latest release binary of Air from the binary release workflow above.
 
 There is no need to bump to an intermediate "dev version" after a release.
+
+# Development installation
+
+Install the dev version of the Air cli with:
+
+```sh
+cargo install --path crates/air --debug
+```
+
+This installs it to `~/.cargo/bin` (which must be on your `PATH`), and can be removed with `cargo uninstall air`.
+
+Install the dev version of the VS Code extension:
+
+```sh
+# The first time
+npm install --global vsce
+
+# Install for Positron
+cd editors/code && rm -rf *.vsix && vsce package && positron --install-extension *.vsix
+
+# Install for VS Code
+cd editors/code && rm -rf *.vsix && vsce package && code --install-extension *.vsix
+```
+
+The CLI tools for Positron or VS Code need to be installed on your path using the command palette command `Shell Command: Install 'code'/'positron' command in PATH`.

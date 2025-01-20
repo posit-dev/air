@@ -1,5 +1,5 @@
 ---
-title: "Overview"
+title: "Air"
 editor:
   markdown:
     wrap: sentence
@@ -7,6 +7,10 @@ editor:
 ---
 
 [![](https://github.com/posit-dev/air/actions/workflows/test.yml/badge.svg)](https://github.com/posit-dev/air/actions)
+
+::: callout-note
+## Air is currently in alpha. Expect breaking changes both in the API and in formatting results. We also recommend that you use a version control system like git so you can easily see the changes that Air makes.
+:::
 
 Air is an R formatter and language server, written in Rust.
 
@@ -16,7 +20,7 @@ Air is an R formatter and language server, written in Rust.
 
     -   Format selection
 
--   Usable from the [command line](formatter.qmd) with support for
+-   Usable from the [command line](cli.qmd) with support for
 
     -   Formatting individual files
 
@@ -24,6 +28,5 @@ Air is an R formatter and language server, written in Rust.
 
     -   `--check` mode, suitable for a git pre-commit hook or a GitHub Actions workflow
 
-If you'd like to use Air from the command line, read our [installation guide](installation.qmd).
+If you'd like to use Air from the command line, read our [installation guide](cli.qmd).
 If you'd like to use Air inside a code editor, read our [editors guide](editors.qmd).
-
