@@ -39,6 +39,3 @@ powershell -c "irm https://github.com/posit-dev/air/releases/download/0.1.1/air-
 
 The installer scripts will automatically add Air to your `PATH`.
 The very first time you install Air, for the `PATH` modifications to be applied you'll need to restart your terminal.
-
-On Windows, the first time you install Air it requires a full system restart for the `PATH` modification to take effect.
-We are working on improving this.
