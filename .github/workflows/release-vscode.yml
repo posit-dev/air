@@ -77,54 +77,11 @@ jobs:
           name: dist-${{ matrix.target }}
           path: ./editors/code/dist
 
-  # Publish the built extension to the Code Marketplace.
-  publish-code-marketplace:
-    name: "Publish (Code Marketplace)"
-    needs: ["build"]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install Nodejs
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      # Download all built artifacts.
-      - uses: actions/download-artifact@v3
-        with:
-          name: dist-aarch64-apple-darwin
-          path: dist
-      - uses: actions/download-artifact@v3
-        with:
-          name: dist-x86_64-apple-darwin
-          path: dist
-      # - uses: actions/download-artifact@v3
-      #   with:
-      #     name: dist-x86_64-unknown-linux-gnu
-      #     path: dist
-      # - uses: actions/download-artifact@v3
-      #   with:
-      #     name: dist-aarch64-unknown-linux-gnu
-      #     path: dist
-      - uses: actions/download-artifact@v3
-        with:
-          name: dist-x86_64-pc-windows-msvc
-          path: dist
-      # - uses: actions/download-artifact@v3
-      #   with:
-      #     name: dist-aarch64-pc-windows-msvc
-      #     path: dist
-      - run: ls -al ./dist
-
-      # Publish to the Code Marketplace.
-      - name: Publish Extension (Code Marketplace, release)
-        run: npx vsce publish --pat ${{ secrets.VSCE_PAT }} --packagePath ./dist/air-*.vsix
-
-  # # Publish the built extension to OpenVSX
-  # publish-openvsx:
-  #   name: "Publish (OpenVSX)"
+  # # Publish the built extension to the Code Marketplace.
+  # publish-code-marketplace:
+  #   name: "Publish (Code Marketplace)"
   #   needs: ["build"]
   #   runs-on: ubuntu-latest
-  #   environment: release
   #   steps:
   #     - name: Install Nodejs
   #       uses: actions/setup-node@v4
@@ -158,6 +115,49 @@ jobs:
   #     #     path: dist
   #     - run: ls -al ./dist
 
-  #     # Publish to OpenVSX.
-  #     - name: Publish Extension (OpenVSX, release)
-  #       run: npx ovsx publish --pat ${{ secrets.OPEN_VSX_TOKEN }} --packagePath ./dist/air-*.vsix
+  #     # Publish to the Code Marketplace.
+  #     - name: Publish Extension (Code Marketplace, release)
+  #       run: npx vsce publish --pat ${{ secrets.VSCE_PAT }} --packagePath ./dist/air-*.vsix
+
+  # Publish the built extension to OpenVSX
+  publish-openvsx:
+    name: "Publish (OpenVSX)"
+    needs: ["build"]
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - name: Install Nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Download all built artifacts.
+      - uses: actions/download-artifact@v3
+        with:
+          name: dist-aarch64-apple-darwin
+          path: dist
+      - uses: actions/download-artifact@v3
+        with:
+          name: dist-x86_64-apple-darwin
+          path: dist
+      # - uses: actions/download-artifact@v3
+      #   with:
+      #     name: dist-x86_64-unknown-linux-gnu
+      #     path: dist
+      # - uses: actions/download-artifact@v3
+      #   with:
+      #     name: dist-aarch64-unknown-linux-gnu
+      #     path: dist
+      - uses: actions/download-artifact@v3
+        with:
+          name: dist-x86_64-pc-windows-msvc
+          path: dist
+      # - uses: actions/download-artifact@v3
+      #   with:
+      #     name: dist-aarch64-pc-windows-msvc
+      #     path: dist
+      - run: ls -al ./dist
+
+      # Publish to OpenVSX.
+      - name: Publish Extension (OpenVSX, release)
+        run: npx ovsx publish --pat ${{ secrets.OPEN_VSX_TOKEN }} --packagePath ./dist/air-*.vsix
