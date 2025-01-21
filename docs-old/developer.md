@@ -49,14 +49,11 @@ This installs it to `~/.cargo/bin` (which must be on your `PATH`), and can be re
 Install the dev version of the VS Code extension:
 
 ```sh
-# The first time
-npm install --global vsce
-
 # Install for Positron
-cd editors/code && rm -rf *.vsix && vsce package && positron --install-extension *.vsix
+(cd editors/code && (rm -rf *.vsix || true) && npx @vscode/vsce package && positron --install-extension *.vsix)
 
 # Install for VS Code
-cd editors/code && rm -rf *.vsix && vsce package && code --install-extension *.vsix
+(cd editors/code && (rm -rf *.vsix || true) && npx @vscode/vsce package && code --install-extension *.vsix)
 ```
 
 The CLI tools for Positron or VS Code need to be installed on your path using the command palette command `Shell Command: Install 'code'/'positron' command in PATH`.

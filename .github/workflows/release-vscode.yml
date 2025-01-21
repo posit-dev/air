@@ -68,7 +68,7 @@ jobs:
 
       # Build the extension.
       - name: Package Extension (release)
-        run: npx vsce package -o "./dist/air-${{ matrix.code-target }}.vsix" --target ${{ matrix.code-target }}
+        run: npx @vscode/vsce package -o "./dist/air-${{ matrix.code-target }}.vsix" --target ${{ matrix.code-target }}
 
       # Upload the extension.
       - name: Upload artifacts
@@ -117,7 +117,7 @@ jobs:
 
       # Publish to the Code Marketplace.
       - name: Publish Extension (Code Marketplace, release)
-        run: npx vsce publish --pat ${{ secrets.VSCE_PAT }} --packagePath ./dist/air-*.vsix
+        run: npx @vscode/vsce publish --pat ${{ secrets.VSCE_PAT }} --packagePath ./dist/air-*.vsix
 
   # Publish the built extension to OpenVSX
   publish-openvsx:
