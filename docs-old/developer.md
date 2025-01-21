@@ -8,6 +8,8 @@ When you want to cut a release:
 
     - Polish `CHANGELOG.md`, bump the version and add a new `Development version` header (yep, right away - `cargo dist` is smart enough to ignore this header).
 
+    - Polish `editors/code/CHANGELOG.md`, bump the version and add a new `Development version` header.
+
     - In `crates/air/Cargo.toml`, bump the version.
 
     - Run `cargo check` to sync `Cargo.lock`.

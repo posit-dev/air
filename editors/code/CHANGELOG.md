@@ -6,14 +6,6 @@
 
 ## Development version
 
-- Fixed an issue where the name of the `editor.defaultFormatter` in the
-  `configurationDefaults` was being set incorrectly.
-
-## 1.0.1
-
-- Fixed an issue where a unique `displayName` was needed in the Visual Studio
-  Marketplace.
-
-## 1.0.0
+## 0.2.0
 
 - Initial release
