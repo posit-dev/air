@@ -10,20 +10,20 @@ website:
     style: "floating"
     search: true
     contents:
-      - text: "Overview"
+      - text: "Air"
         href: index.qmd
 
-      - text: "Installation"
-        href: installation.qmd
+      - text: "Command line"
+        href: cli.qmd
 
-      - text: "Editors"
+      - section: "Editors"
         href: editors.qmd
+        contents:
+          - editor-rstudio.qmd
+          - editor-vscode.qmd
 
       - text: "Configuration"
         href: configuration.qmd
-
-      - text: "Formatter"
-        href: formatter.qmd
   margin-header: |
     <img src="/images/air.png" alt="Logo" width="150"/>
 

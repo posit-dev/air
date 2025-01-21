@@ -1,0 +1,73 @@
+---
+title: "VS Code and Positron"
+editor:
+  markdown:
+    wrap: sentence
+    canonical: true
+---
+
+Air provides first class support for both VS Code and Positron, which both support the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/).
+
+# Installation
+
+::: callout-note
+## Air is currently only supported on macOS and Windows. Linux support is coming soon!
+:::
+
+Air is available [as an Extension](https://marketplace.visualstudio.com/items?itemName=Posit.air-vscode) for both VS Code and Positron.
+The extension comes pre-bundled with an Air binary, so you don't need anything else to get going!
+The Air extension is hosted in the VS Code Marketplace and on OpenVSX.
+
+# Features
+
+## Format on save
+
+Once you have the extension installed, turn on Format on Save for R documents by opening your `settings.json` and adding:
+
+``` json
+{
+    "[r]": {
+        "editor.formatOnSave": true
+    }
+}
+```
+
+You should now be able to simply open an R document, save it, and have the entire document formatted by Air.
+You can also explicitly call the command `Format Document` if you'd like to control this manually.
+
+<!--# Come back and add video -->
+
+## Format selection
+
+To format a selection of code, highlight it with your cursor and run the command `Format Selection`.
+Formatting a selection may *expand* that selection to find the nearest complete fragment of code that is formattable.
+
+<!--# Come back and add video -->
+
+## Quarto
+
+Quarto support currently only works in VS Code.
+There is an [issue](https://github.com/posit-dev/air/issues/77) in VS Code itself that currently prevents it from working correctly in Positron, we will fix this in Positron soon.
+
+### Format on save
+
+To format all R code cells on save, set this in your `settings.json`:
+
+``` json
+{
+    "[quarto]": {
+        "editor.formatOnSave": true
+    },
+    "[r]": {
+        "editor.formatOnSave": true
+    }
+}
+```
+
+<!--# Come back and add video -->
+
+### Format cell
+
+When inside an R cell in a Quarto document, use the chorded key combination `Cmd+K Cmd+F` or the command `Quarto: Format Cell` to format a single cell.
+
+<!--# Come back and add video -->
