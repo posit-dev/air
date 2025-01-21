@@ -24,6 +24,7 @@
 		"Formatters",
 		"Programming Languages"
 	],
+	"icon": "air.png",
 	"activationEvents": [
 		"onLanguage:r",
 		"workspaceContains:*.r",

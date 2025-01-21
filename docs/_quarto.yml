@@ -24,6 +24,8 @@ website:
 
       - text: "Formatter"
         href: formatter.qmd
+  margin-header: |
+    <img src="/images/air.png" alt="Logo" width="150"/>
 
 format:
   html:

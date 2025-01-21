@@ -1,4 +1,5 @@
-# air
+Air <img src="docs/images/air.png" align="right" height=160 />
+============================================================================
 
 [![Actions status](https://github.com/posit-dev/air/actions/workflows/test.yml/badge.svg)](https://github.com/posit-dev/air/actions)
 
