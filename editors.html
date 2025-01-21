@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Editor setup – Air</title>
+<title>Editor support – Air</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,40 +19,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -149,31 +115,42 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Overview</span></a>
+ <span class="menu-text">Air</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./installation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Installation</span></a>
+  <a href="./cli.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Command line</span></a>
   </div>
 </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./editors.html" class="sidebar-item-text sidebar-link active">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./editors.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Editors</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./editor-rstudio.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">RStudio</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./editor-vscode.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">VS Code and Positron</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./configuration.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Configuration</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./formatter.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Formatter</span></a>
   </div>
 </li>
     </ul>
@@ -184,34 +161,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar"><div class="quarto-margin-header"><div class="margin-header-item">
 <p><img src="./images/air.png" alt="Logo" width="150"></p>
 </div></div>
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#vs-code" id="toc-vs-code" class="nav-link active" data-scroll-target="#vs-code">VS Code</a>
-  <ul class="collapse">
-  <li><a href="#format-on-save" id="toc-format-on-save" class="nav-link" data-scroll-target="#format-on-save">Format on save</a></li>
-  <li><a href="#format-selection" id="toc-format-selection" class="nav-link" data-scroll-target="#format-selection">Format selection</a></li>
-  </ul></li>
-  <li><a href="#positron" id="toc-positron" class="nav-link" data-scroll-target="#positron">Positron</a></li>
-  <li><a href="#rstudio" id="toc-rstudio" class="nav-link" data-scroll-target="#rstudio">RStudio</a>
-  <ul class="collapse">
-  <li><a href="#format-on-save-1" id="toc-format-on-save-1" class="nav-link" data-scroll-target="#format-on-save-1">Format on save</a></li>
-  </ul></li>
-  <li><a href="#quarto" id="toc-quarto" class="nav-link" data-scroll-target="#quarto">Quarto</a>
-  <ul class="collapse">
-  <li><a href="#format-on-save-2" id="toc-format-on-save-2" class="nav-link" data-scroll-target="#format-on-save-2">Format on save</a></li>
-  <li><a href="#format-cell" id="toc-format-cell" class="nav-link" data-scroll-target="#format-cell">Format cell</a></li>
-  </ul></li>
-  </ul>
-</nav>
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Editor setup</h1>
+<h1 class="title">Editor support</h1>
 </div>
 
 
@@ -228,96 +185,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Air provides excellent support for code editors that support the <a href="https://microsoft.github.io/language-server-protocol/">Language Server Protocol</a>. Many do, including <a href="https://positron.posit.co/">Positron</a>, <a href="https://code.visualstudio.com/">VS Code</a>, and <a href="https://zed.dev/">Zed</a>. Air also provides some support for code editors that allow for external formatters, such as <a href="https://posit.co/products/open-source/rstudio/">RStudio</a>.</p>
-<!--
-# Uncomment after we support this
-
-For both Positron and VS Code, Air provides a first class VS Code Extension, installable through either the VS Code Marketplace, or through OpenVSX. For other editors that support the LSP, there may be additional setup required.
- -->
-<section id="vs-code" class="level1">
-<h1>VS Code</h1>
-<p>Our VS Code extension does not yet bundle the Air binary, so the first thing you need to do is <a href="./installation.html">install the Air binary</a>. After you install the Air binary, the extension will automatically find it.</p>
-<p>We don’t currently have a VS Code Extension on the marketplace yet, but we do build them as artifacts on each commit. The short-term way to install the extension is to open this link in your browser, which will download a zip folder containing the extension as a vsix file:</p>
-<p><a href="https://github.com/posit-dev/air/actions/runs/12417189172/artifacts/2344425762" class="uri">https://github.com/posit-dev/air/actions/runs/12417189172/artifacts/2344425762</a></p>
-<p>After downloading the extension, open VS Code, navigate to the Extensions pane, and drag the vsix file into the Extensions pane and “drop” it in. VS Code will automatically recognize it and install the extension.</p>
-<section id="format-on-save" class="level2">
-<h2 class="anchored" data-anchor-id="format-on-save">Format on save</h2>
-<p>Once you have the extension installed, turn on Format on Save for R documents by opening your <code>settings.json</code> and adding:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"[r]"</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">"editor.formatOnSave"</span><span class="fu">:</span> <span class="kw">true</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>You may also want to set Air as the default formatter for R documents if you have multiple R formatters installed. You can set that with <code>"editor.defaultFormatter": "Posit.air"</code>.</p>
-<p>You should now be able to simply open an R document, save it, and have the entire document formatted by Air. You can also explicitly call the command <code>Format Document</code> if you’d like to control this manually.</p>
-<!--# Come back and add video -->
-</section>
-<section id="format-selection" class="level2">
-<h2 class="anchored" data-anchor-id="format-selection">Format selection</h2>
-<p>To format a selection of code, highlight it with your cursor and run the command <code>Format Selection</code>. Formatting a selection may <em>expand</em> that selection to find the nearest complete fragment of code that is formattable.</p>
-<!--# Come back and add video -->
-</section>
-</section>
-<section id="positron" class="level1">
-<h1>Positron</h1>
-<p>Follow the instructions for <a href="#vs-code">VS Code</a>.</p>
-<p>Eventually the Air extension will be available on OpenVSX for easy use in Positron.</p>
-</section>
-<section id="rstudio" class="level1">
-<h1>RStudio</h1>
-<p>As of RStudio 2024.12.0, there is experimental support for an “external formatter”.</p>
-<p>RStudio does not bundle an Air binary, so the first thing you need to do is <a href="./installation.html">install the Air binary</a>.</p>
-<p>Open <code>Tools -&gt; Global Options -&gt; Code</code> and change the option to use an <code>External</code> formatter. Then set the <code>Reformat command</code> to <code>path/to/air format</code>.</p>
-<p>The easiest way to figure out <code>path/to/air</code> for yourself is to run <code>which air</code> from a Terminal on Mac or Linux, and <code>where air</code> from the Command Prompt on Windows.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/rstudio-external-formatter.png" class="img-fluid quarto-figure quarto-figure-center figure-img" alt="Setting Air as an external formatter with Tools -> Global Options -> Code -> Formatting"></p>
-</figure>
-</div>
-<section id="format-on-save-1" class="level2">
-<h2 class="anchored" data-anchor-id="format-on-save-1">Format on save</h2>
-<p>After you’ve set Air as an external formatter, you can either tell RStudio to format all documents on save, or set this on a per document basis.</p>
-<p>To format all documents on save, open <code>Tools -&gt; Global Options -&gt; Code -&gt; Saving</code> and check <code>Reformat documents on save</code>.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="images/rstudio-format-on-save.png" class="img-fluid quarto-figure quarto-figure-center figure-img" alt="Setting RStudio to format all documents on save in Tools -> Global Options -> Code -> Saving"></p>
-</figure>
-</div>
-<p>To format individual documents on save, open the file specific settings and check <code>Reformat Document on Save</code>.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="images/rstudio-reformat-document-on-save.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
-</figure>
-</div>
-<!--# Come back and add images -->
-</section>
-</section>
-<section id="quarto" class="level1">
-<h1>Quarto</h1>
-<p>Quarto support currently only works in VS Code.</p>
-<p>There is an <a href="https://github.com/posit-dev/air/issues/77">issue</a> in VS Code itself that currently prevents it from working correctly in Positron, we will fix this in Positron soon.</p>
-<p>There is currently no way to use Air in RStudio with Quarto documents.</p>
-<section id="format-on-save-2" class="level2">
-<h2 class="anchored" data-anchor-id="format-on-save-2">Format on save</h2>
-<p>To format all R code cells on save, set this in your <code>settings.json</code>:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"[quarto]"</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">"editor.formatOnSave"</span><span class="fu">:</span> <span class="kw">true</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">},</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"[r]"</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        <span class="dt">"editor.formatOnSave"</span><span class="fu">:</span> <span class="kw">true</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<!--# Come back and add video -->
-</section>
-<section id="format-cell" class="level2">
-<h2 class="anchored" data-anchor-id="format-cell">Format cell</h2>
-<p>When inside an R cell in a Quarto document, use the chorded key combination <code>Cmd+K Cmd+F</code> or the command <code>Quarto: Format Cell</code> to format a single cell.</p>
-<!--# Come back and add video -->
+<p>Air provides excellent support for code editors that support the <a href="https://microsoft.github.io/language-server-protocol/">Language Server Protocol</a>. Many do, including <a href="https://positron.posit.co/">Positron</a>, <a href="https://code.visualstudio.com/">VS Code</a>, and <a href="https://zed.dev/">Zed</a>. Air also provides some support for code editors that allow for external formatters, such as <a href="https://posit.co/products/open-source/rstudio/">RStudio</a>. Follow one of our editor specific guides to get set up with Air in your preferred editor:</p>
+<ul>
+<li><p><a href="./editor-vscode.html">VS Code</a></p></li>
+<li><p><a href="./editor-vscode.html">Positron</a></p></li>
+<li><p><a href="./editor-rstudio.html">RStudio</a></p></li>
+</ul>
 
 
-</section>
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

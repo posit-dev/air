@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Air</title>
+<title>RStudio – Air</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -92,7 +92,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Air</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./editors.html">Editors</a></li><li class="breadcrumb-item"><a href="./editor-rstudio.html">RStudio</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -114,7 +114,7 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link active">
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Air</span></a>
   </div>
 </li>
@@ -135,7 +135,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./editor-rstudio.html" class="sidebar-item-text sidebar-link">
+  <a href="./editor-rstudio.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">RStudio</span></a>
   </div>
 </li>
@@ -161,14 +161,25 @@ ul.task-list li input[type="checkbox"] {
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar"><div class="quarto-margin-header"><div class="margin-header-item">
 <p><img src="./images/air.png" alt="Logo" width="150"></p>
 </div></div>
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#installation" id="toc-installation" class="nav-link active" data-scroll-target="#installation">Installation</a></li>
+  <li><a href="#features" id="toc-features" class="nav-link" data-scroll-target="#features">Features</a>
+  <ul class="collapse">
+  <li><a href="#format-on-save" id="toc-format-on-save" class="nav-link" data-scroll-target="#format-on-save">Format on save</a></li>
+  <li><a href="#quarto" id="toc-quarto" class="nav-link" data-scroll-target="#quarto">Quarto</a></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./editors.html">Editors</a></li><li class="breadcrumb-item"><a href="./editor-rstudio.html">RStudio</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Air</h1>
+<h1 class="title">RStudio</h1>
 </div>
 
 
@@ -185,37 +196,57 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p><a href="https://github.com/posit-dev/air/actions"><img src="https://github.com/posit-dev/air/actions/workflows/test.yml/badge.svg" class="img-fluid"></a></p>
+<p>RStudio does not support the <a href="https://microsoft.github.io/language-server-protocol/">Language Server Protocol</a>, but you can still use Air as an <em>external formatter</em>.</p>
+<section id="installation" class="level1">
+<h1>Installation</h1>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Air is currently in alpha. Expect breaking changes both in the API and in formatting results. We also recommend that you use a version control system like git so you can easily see the changes that Air makes.
+Air is currently only supported on macOS and Windows. Linux support is coming soon!
 </div>
 </div>
 <div class="callout-body-container callout-body">
 
 </div>
 </div>
-<p>Air is an R formatter and language server, written in Rust.</p>
-<ul>
-<li><p>Integrates with <a href="./editors.html">your favorite editor</a> with support for</p>
-<ul>
-<li><p>Format on save</p></li>
-<li><p>Format selection</p></li>
-</ul></li>
-<li><p>Usable from the <a href="./cli.html">command line</a> with support for</p>
-<ul>
-<li><p>Formatting individual files</p></li>
-<li><p>Recursively formatting entire directories</p></li>
-<li><p><code>--check</code> mode, suitable for a git pre-commit hook or a GitHub Actions workflow</p></li>
-</ul></li>
-</ul>
-<p>If you’d like to use Air from the command line, read our <a href="./cli.html">installation guide</a>. If you’d like to use Air inside a code editor, read our <a href="./editors.html">editors guide</a>.</p>
+<p>Ensure you have at least RStudio version 2024.12.0, which you can download from <a href="https://posit.co/download/rstudio-desktop/">here</a>. Additionally, you’ll need to install the Air <a href="./cli.html">command line tool</a>.</p>
+<p>Open <code>Tools -&gt; Global Options -&gt; Code</code> and change the option to use an <code>External</code> formatter. Then set the <code>Reformat command</code> to {<code>path/to/air} format</code>.</p>
+<p>The easiest way to figure out <code>{path/to/air}</code> for yourself is to run <code>which air</code> from a Terminal on Unix, and <code>where air</code> from the Command Prompt on Windows.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/rstudio-external-formatter.png" class="img-fluid quarto-figure quarto-figure-center figure-img" alt="Setting Air as an external formatter with Tools -> Global Options -> Code -> Formatting"></p>
+</figure>
+</div>
+</section>
+<section id="features" class="level1">
+<h1>Features</h1>
+<section id="format-on-save" class="level2">
+<h2 class="anchored" data-anchor-id="format-on-save">Format on save</h2>
+<p>After you’ve set Air as an external formatter, you can either tell RStudio to format all documents on save, or set this on a per document basis.</p>
+<p>To format all documents on save, open <code>Tools -&gt; Global Options -&gt; Code -&gt; Saving</code> and check <code>Reformat documents on save</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/rstudio-format-on-save.png" class="img-fluid quarto-figure quarto-figure-center figure-img" alt="Setting RStudio to format all documents on save in Tools -> Global Options -> Code -> Saving"></p>
+</figure>
+</div>
+<p>To format individual documents on save, open the file specific settings and check <code>Reformat Document on Save</code>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/rstudio-reformat-document-on-save.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<!--# Come back and add video of formatting in action -->
+</section>
+<section id="quarto" class="level2">
+<h2 class="anchored" data-anchor-id="quarto">Quarto</h2>
+<p>There is currently no way to use Air in RStudio with Quarto documents.</p>
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
