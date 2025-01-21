@@ -1,6 +1,6 @@
 [package]
 name = "air"
-version = "1.0.0"
+version = "0.2.0"
 publish = true
 authors.workspace = true
 categories.workspace = true

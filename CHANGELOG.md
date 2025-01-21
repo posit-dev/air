@@ -2,12 +2,14 @@
 
 # Development version
 
-- Fixed an issue where the language server failed to start due to logging
-  being initialized twice.
-
-# 1.0.0
+# 0.2.0
 
 - Initial public release, yay!
+
+  Note that we first released 0.2.0 as 1.0.0. If you have installed the VS Code extension or the CLI program as 1.0.0, please uninstall it.
+
+- Fixed an issue where the language server failed to start due to logging
+  being initialized twice.
 
 - Added a synchronization mechanism between IDE and Air settings. See documentation for more information https://posit-dev.github.io/air/configuration.html#settings-synchronization.
 
