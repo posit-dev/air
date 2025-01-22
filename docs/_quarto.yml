@@ -13,6 +13,9 @@ website:
       - text: "Air"
         href: index.qmd
 
+      - text: "R formatter"
+        href: formatter.qmd
+
       - text: "Command line"
         href: cli.qmd
 

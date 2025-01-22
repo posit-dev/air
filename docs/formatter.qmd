@@ -6,4 +6,180 @@ editor:
     canonical: true
 ---
 
-TODO
+# What's a formatter?
+
+A formatter is in charge of the *layout* of your R code.
+It does not modify the actual contents of your code but it makes sure that whitespace and punctuation conform to certain rules and standards.
+
+-   Making sure your code is **indented** with the appropriate amount of leading whitespace depending on the context.
+    By default we use an indentation of 2 spaces.
+    You will see this indentation in pipelines:
+
+    ``` r
+    data +
+      ggplot(aes(x, y)) +
+      geom_point()
+    ```
+
+    As well as *expanded* (i.e. vertically laid out) function calls:
+
+    ``` r
+    list(
+      foo = 1,
+      bar = 2
+    )
+    ```
+
+-   Preventing your code from overflowing a given **line width** (80 characters by default).
+    It does so by breaking lines of code that have become too long into multiple lines.
+    For instance, let's say that we've set the line width to be extremely small and these expressions would overflow:
+
+    ``` r
+    data |> select(foo)
+
+    foo <- function(bar = 1, baz =2) {
+      list(bar, baz)
+    }
+    ```
+
+    To respect the very small line width, Air would switch these expressions from a horizontal layout (also called "flat") to a vertical one (called "expanded"):
+
+    ``` r
+    data |>
+      select(foo)
+
+    foo <- function(
+      bar = 1,
+      baz = 2
+    ) {
+      list(
+        bar,
+        baz
+      )
+    }
+    ```
+
+-   Ensuring some breathing room around operators.
+    Have you ever had difficulties deciphering very dense code?
+
+    ``` r
+    1+2:3*(4/5)
+    ```
+
+    Air reformats this expression to:
+
+    ``` r
+    1 + 2:3 * (4 / 5)
+    ```
+
+In general, a formatter takes over the whitespace in your code and moves elements around to respect style conventions and ensure readability of code.
+
+# How does a formatter help your workflow?
+
+By using a formatter it might seem like you're rescinding control over the layout of your code.
+And indeed you are.
+However putting Air in charge of styling your code has substantial advantages.
+
+First it helps you writing legible code that is neither too wide nor too narrow with proper breathing room around syntactic elements.
+Having a formatter as companion significantly improves the process of writing code as you no longer have to think about style as much and just let it do that work for you.
+
+Second, it reduces friction when working in a team.
+By agreeing to use a formatter in a project, collaborators no longer have to discuss styling and layout issues.
+Code sent to you by a colleague will adhere to the standards that you're used to.
+Code review no longer has to be about style nitpicks and can focus on the substance of the changes instead.
+
+# How does Air decide how to format your code?
+
+Air tries to strike a balance between enforcing rigid rules and allowing authors some control over the layout.
+Our main source of styling rules is the [Tidyverse style guide](https://style.tidyverse.org).
+
+There is a trend among modern formatter of being *opionated*.
+Air certainly fits this trend and provides very few [configuration options](https://posit-dev.github.io/air/configuration.html), mostly the indent style (spaces versus tabs), the indent width, and the line width.
+However, Air also puts code authors in charge of certain aspects of the layout through the notion of **persisent line breaks**.
+
+In general, Air is in control of deciding where to put vertical space (line breaks) in your code.
+For instance if you write:
+
+``` r
+list(foo,
+bar)
+```
+
+Air will figure out that this expression fits on a single line without exceeding the line width.
+It will discard the line break and reformat to:
+
+``` r
+list(foo, bar)
+```
+
+However there are very specific places at which you can enforce a line break, i.e. make it persistent.
+
+-   Before the very first argument in a function call.
+    This:
+
+    ``` r
+    list(
+    foo, bar)
+    ```
+
+    gets formatted as:
+
+    ``` r
+    list(
+      foo,
+      bar
+    )
+    ```
+
+-   Before the very first right-hand side expression in a pipeline.
+    This:
+
+    ``` r
+    1 +
+    2 + 3
+    ```
+
+    gets formatted as:
+
+    ``` r
+    1 +
+      2 +
+      3
+    ```
+
+A persistent line break will never be removed by Air.
+But you can remove it manually.
+Taking the last example, if you join the first lines like this:
+
+``` r
+list(foo,
+  bar
+)
+
+1 + 2 +
+  3
+```
+
+Air will format as:
+
+``` r
+list(foo, bar )
+
+1 + 2 + 3
+```
+
+The goal of this feature is to strike a balance between being opionated and being flexible.
+
+# When does a formatter run?
+
+The most convenient way to run a formatter is when you save a file.
+This is not typically enabled by default so you will need to enable it manually (see the [Editors](editors.qmd) section).
+Once enabled, your code will be reformatted every time you save!
+This prevents your code from ever diverging from the standards set by Air.
+Another way of running the formatter in an IDE is when you paste code (this is enabled by the setting "Format on paste").
+
+Air also provides a [CLI tool](https://posit-dev.github.io/air/cli.html).
+It makes it easy to reformat whole directories such as an R project or package.
+
+Note that in all of these cases, the formatter will only run if your code is grammatically correct.
+If the formatter is seemingly no longer working, check your code for any syntax error.
