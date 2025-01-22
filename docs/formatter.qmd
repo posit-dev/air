@@ -59,7 +59,7 @@ It does not modify the actual contents of your code but it makes sure that white
     }
     ```
 
--   Ensuring some breathing room around operators.
+-   Standardizing the whitespace around code elements.
     Have you ever had difficulties deciphering very dense code?
 
     ``` r
