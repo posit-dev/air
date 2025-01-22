@@ -163,7 +163,7 @@ list(foo,
 Air will format as:
 
 ``` r
-list(foo, bar )
+list(foo, bar)
 
 1 + 2 + 3
 ```
