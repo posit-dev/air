@@ -45,17 +45,29 @@ jobs:
         with:
           fetch-depth: ${{ env.FETCH_DEPTH }}
 
-      # macOS or Linux binary
-      - run: curl -LsSf https://github.com/posit-dev/air/releases/latest/download/air-installer.sh | sh
-        if: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
-        env:
-          XDG_BIN_HOME: ./bundled/bin
+      # macOs or Linux binary
+      # Download, unpack, move into place, and clean up
+      - if: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
+        run: |
+          curl -LsSfO https://github.com/posit-dev/air/releases/latest/download/air-${{ matrix.target }}.tar.gz
+          tar -xvzf air-${{ matrix.target }}.tar.gz
+          mkdir -p bundled/bin/
+          mv air-${{ matrix.target }}/air bundled/bin/air
+          rm -R air-${{ matrix.target }}
+          rm -R air-${{ matrix.target }}.tar.gz
+          ls
 
       # Windows binary
-      - run: powershell -c "irm https://github.com/posit-dev/air/releases/latest/download/air-installer.ps1 | iex"
-        if: ${{ startsWith(matrix.os, 'windows') }}
-        env:
-          XDG_BIN_HOME: ./bundled/bin
+      # Download, unpack, move into place, and clean up
+      - if: ${{ startsWith(matrix.os, 'windows') }}
+        run: |
+          Invoke-WebRequest -Uri https://github.com/posit-dev/air/releases/latest/download/air-${{ matrix.target }}.zip -OutFile .\air-${{ matrix.target }}.zip
+          Expand-Archive -Path .\air-${{ matrix.target }}.zip -DestinationPath .\air-${{ matrix.target }} -Force
+          New-Item -ItemType Directory -Path .\bundled\bin | Out-Null
+          Move-Item -Path .\air-${{ matrix.target }}\air.exe -Destination .\bundled\bin\air.exe -Force
+          Remove-Item -Path .\air-${{ matrix.target }} -Recurse -Force
+          Remove-Item -Path .\air-${{ matrix.target }}.zip -Force
+          Get-ChildItem
 
       # Install Node.
       - name: Install Node.js
@@ -77,87 +89,87 @@ jobs:
           name: dist-${{ matrix.target }}
           path: ./editors/code/dist
 
-  # Publish the built extension to the Code Marketplace.
-  publish-code-marketplace:
-    name: "Publish (Code Marketplace)"
-    needs: ["build"]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install Nodejs
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      # Download all built artifacts.
-      - uses: actions/download-artifact@v3
-        with:
-          name: dist-aarch64-apple-darwin
-          path: dist
-      - uses: actions/download-artifact@v3
-        with:
-          name: dist-x86_64-apple-darwin
-          path: dist
-      # - uses: actions/download-artifact@v3
-      #   with:
-      #     name: dist-x86_64-unknown-linux-gnu
-      #     path: dist
-      # - uses: actions/download-artifact@v3
-      #   with:
-      #     name: dist-aarch64-unknown-linux-gnu
-      #     path: dist
-      - uses: actions/download-artifact@v3
-        with:
-          name: dist-x86_64-pc-windows-msvc
-          path: dist
-      # - uses: actions/download-artifact@v3
-      #   with:
-      #     name: dist-aarch64-pc-windows-msvc
-      #     path: dist
-      - run: ls -al ./dist
-
-      # Publish to the Code Marketplace.
-      - name: Publish Extension (Code Marketplace, release)
-        run: npx @vscode/vsce publish --pat ${{ secrets.VSCE_PAT }} --packagePath ./dist/air-*.vsix
-
-  # Publish the built extension to OpenVSX
-  publish-openvsx:
-    name: "Publish (OpenVSX)"
-    needs: ["build"]
-    runs-on: ubuntu-latest
-    environment: release
-    steps:
-      - name: Install Nodejs
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      # Download all built artifacts.
-      - uses: actions/download-artifact@v3
-        with:
-          name: dist-aarch64-apple-darwin
-          path: dist
-      - uses: actions/download-artifact@v3
-        with:
-          name: dist-x86_64-apple-darwin
-          path: dist
-      # - uses: actions/download-artifact@v3
-      #   with:
-      #     name: dist-x86_64-unknown-linux-gnu
-      #     path: dist
-      # - uses: actions/download-artifact@v3
-      #   with:
-      #     name: dist-aarch64-unknown-linux-gnu
-      #     path: dist
-      - uses: actions/download-artifact@v3
-        with:
-          name: dist-x86_64-pc-windows-msvc
-          path: dist
-      # - uses: actions/download-artifact@v3
-      #   with:
-      #     name: dist-aarch64-pc-windows-msvc
-      #     path: dist
-      - run: ls -al ./dist
-
-      # Publish to OpenVSX.
-      - name: Publish Extension (OpenVSX, release)
-        run: npx ovsx publish --pat ${{ secrets.OPEN_VSX_TOKEN }} --packagePath ./dist/air-*.vsix
+#   # Publish the built extension to the Code Marketplace.
+#   publish-code-marketplace:
+#     name: "Publish (Code Marketplace)"
+#     needs: ["build"]
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Install Nodejs
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: 22
+#
+#       # Download all built artifacts.
+#       - uses: actions/download-artifact@v3
+#         with:
+#           name: dist-aarch64-apple-darwin
+#           path: dist
+#       - uses: actions/download-artifact@v3
+#         with:
+#           name: dist-x86_64-apple-darwin
+#           path: dist
+#       # - uses: actions/download-artifact@v3
+#       #   with:
+#       #     name: dist-x86_64-unknown-linux-gnu
+#       #     path: dist
+#       # - uses: actions/download-artifact@v3
+#       #   with:
+#       #     name: dist-aarch64-unknown-linux-gnu
+#       #     path: dist
+#       - uses: actions/download-artifact@v3
+#         with:
+#           name: dist-x86_64-pc-windows-msvc
+#           path: dist
+#       # - uses: actions/download-artifact@v3
+#       #   with:
+#       #     name: dist-aarch64-pc-windows-msvc
+#       #     path: dist
+#       - run: ls -al ./dist
+#
+#       # Publish to the Code Marketplace.
+#       - name: Publish Extension (Code Marketplace, release)
+#         run: npx @vscode/vsce publish --pat ${{ secrets.VSCE_PAT }} --packagePath ./dist/air-*.vsix
+#
+#   # Publish the built extension to OpenVSX
+#   publish-openvsx:
+#     name: "Publish (OpenVSX)"
+#     needs: ["build"]
+#     runs-on: ubuntu-latest
+#     environment: release
+#     steps:
+#       - name: Install Nodejs
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: 22
+#
+#       # Download all built artifacts.
+#       - uses: actions/download-artifact@v3
+#         with:
+#           name: dist-aarch64-apple-darwin
+#           path: dist
+#       - uses: actions/download-artifact@v3
+#         with:
+#           name: dist-x86_64-apple-darwin
+#           path: dist
+#       # - uses: actions/download-artifact@v3
+#       #   with:
+#       #     name: dist-x86_64-unknown-linux-gnu
+#       #     path: dist
+#       # - uses: actions/download-artifact@v3
+#       #   with:
+#       #     name: dist-aarch64-unknown-linux-gnu
+#       #     path: dist
+#       - uses: actions/download-artifact@v3
+#         with:
+#           name: dist-x86_64-pc-windows-msvc
+#           path: dist
+#       # - uses: actions/download-artifact@v3
+#       #   with:
+#       #     name: dist-aarch64-pc-windows-msvc
+#       #     path: dist
+#       - run: ls -al ./dist
+#
+#       # Publish to OpenVSX.
+#       - name: Publish Extension (OpenVSX, release)
+#         run: npx ovsx publish --pat ${{ secrets.OPEN_VSX_TOKEN }} --packagePath ./dist/air-*.vsix
