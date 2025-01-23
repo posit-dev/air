@@ -96,7 +96,7 @@ Code review no longer has to be about style nitpicks and can focus on the substa
 Air tries to strike a balance between enforcing rigid rules and allowing authors some control over the layout.
 Our main source of styling rules is the [Tidyverse style guide](https://style.tidyverse.org), but we occasionally deviate from these.
 
-There is a trend among modern formatters of being *opionated*.
+There is a trend among modern formatters of being *opinionated*.
 Air certainly fits this trend and provides very few [configuration options](configuration.qmd), mostly the indent style (spaces versus tabs), the indent width, and the line width.
 However, Air also puts code authors in charge of certain aspects of the layout through the notion of **persistent line breaks**.
 
