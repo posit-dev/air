@@ -84,7 +84,7 @@ jobs:
 
       # Upload the extension.
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist-${{ matrix.target }}
           path: ./editors/code/dist
@@ -101,27 +101,27 @@ jobs:
 #           node-version: 22
 #
 #       # Download all built artifacts.
-#       - uses: actions/download-artifact@v3
+#       - uses: actions/download-artifact@v4
 #         with:
 #           name: dist-aarch64-apple-darwin
 #           path: dist
-#       - uses: actions/download-artifact@v3
+#       - uses: actions/download-artifact@v4
 #         with:
 #           name: dist-x86_64-apple-darwin
 #           path: dist
-#       # - uses: actions/download-artifact@v3
+#       # - uses: actions/download-artifact@v4
 #       #   with:
 #       #     name: dist-x86_64-unknown-linux-gnu
 #       #     path: dist
-#       # - uses: actions/download-artifact@v3
+#       # - uses: actions/download-artifact@v4
 #       #   with:
 #       #     name: dist-aarch64-unknown-linux-gnu
 #       #     path: dist
-#       - uses: actions/download-artifact@v3
+#       - uses: actions/download-artifact@v4
 #         with:
 #           name: dist-x86_64-pc-windows-msvc
 #           path: dist
-#       # - uses: actions/download-artifact@v3
+#       # - uses: actions/download-artifact@v4
 #       #   with:
 #       #     name: dist-aarch64-pc-windows-msvc
 #       #     path: dist
@@ -144,27 +144,27 @@ jobs:
 #           node-version: 22
 #
 #       # Download all built artifacts.
-#       - uses: actions/download-artifact@v3
+#       - uses: actions/download-artifact@v4
 #         with:
 #           name: dist-aarch64-apple-darwin
 #           path: dist
-#       - uses: actions/download-artifact@v3
+#       - uses: actions/download-artifact@v4
 #         with:
 #           name: dist-x86_64-apple-darwin
 #           path: dist
-#       # - uses: actions/download-artifact@v3
+#       # - uses: actions/download-artifact@v4
 #       #   with:
 #       #     name: dist-x86_64-unknown-linux-gnu
 #       #     path: dist
-#       # - uses: actions/download-artifact@v3
+#       # - uses: actions/download-artifact@v4
 #       #   with:
 #       #     name: dist-aarch64-unknown-linux-gnu
 #       #     path: dist
-#       - uses: actions/download-artifact@v3
+#       - uses: actions/download-artifact@v4
 #         with:
 #           name: dist-x86_64-pc-windows-msvc
 #           path: dist
-#       # - uses: actions/download-artifact@v3
+#       # - uses: actions/download-artifact@v4
 #       #   with:
 #       #     name: dist-aarch64-pc-windows-msvc
 #       #     path: dist
