@@ -35,6 +35,8 @@ The installer scripts will automatically add Air to your `PATH`. The very first 
 
 # Acknowledgements and inspiration
 
-Air draws inspiration from many sources including [rust-analyzer](https://github.com/rust-lang/rust-analyzer), [prettier](https://github.com/prettier/prettier), [biome](https://github.com/biomejs/biome), and [ruff](https://github.com/astral-sh/ruff). These are all excellent tools that provide either formatters, language servers, or both, all of which have influenced design decisions in Air.
+First and foremost, Air would not exist without the preexisting work and dedication poured into [styler](https://github.com/r-lib/styler). Created by [Kirill Müller](https://github.com/krlmlr) and maintained by [Lorenz Walthert](https://github.com/lorenzwalthert), styler proved that the R community does care about how their code is formatted, and had been the primary implementation of the [tidyverse style guide](https://style.tidyverse.org/) for many years.
+
+Additionally, Air draws inspiration from many non-R sources including [rust-analyzer](https://github.com/rust-lang/rust-analyzer), [prettier](https://github.com/prettier/prettier), [biome](https://github.com/biomejs/biome), and [ruff](https://github.com/astral-sh/ruff). These are all excellent tools that provide either formatters, language servers, or both, all of which have influenced design decisions in Air.
 
 We are particularly thankful to [biome](https://github.com/biomejs/biome), as Air is built on top of their language agnostic tooling for both building a [rowan](https://github.com/rust-analyzer/rowan) syntax tree and implementing a formatter. Biome is an open source project maintained by community members, please consider [sponsoring them](https://github.com/sponsors/biomejs#sponsors).
