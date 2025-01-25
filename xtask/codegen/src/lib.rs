@@ -23,7 +23,6 @@ mod kind_src;
 mod language_kind;
 mod parser_tests;
 mod termcolorful;
-mod unicode;
 
 use bpaf::Bpaf;
 use std::path::Path;
@@ -34,7 +33,6 @@ pub use self::ast::generate_ast;
 pub use self::formatter::generate_formatters;
 pub use self::generate_crate::generate_crate;
 pub use self::parser_tests::generate_parser_tests;
-pub use self::unicode::generate_tables;
 
 pub enum UpdateResult {
     NotUpdated,
@@ -85,9 +83,6 @@ pub enum TaskCommand {
     /// Extracts parser inline comments into test files
     #[bpaf(command)]
     Test,
-    /// Generates unicode table inside lexer
-    #[bpaf(command)]
-    Unicode,
     /// Runs ALL the codegen
     #[bpaf(command)]
     All,
