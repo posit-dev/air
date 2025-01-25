@@ -223,7 +223,7 @@ pub(crate) fn init_logging(
         // These IDEs are known to support `window/logMessage` well
         BoxMakeWriter::new(LogWriterMaker::new(log_tx))
     } else if is_test_client(client_info) {
-        // Ensures a standard `cargo test` captures output unless `-- --nocapture` is used
+        // Ensures a standard `cargo nextest run` captures output unless `--no-capture` is used
         BoxMakeWriter::new(TestWriter::default())
     } else {
         // Fallback for other editors / IDEs
@@ -269,12 +269,11 @@ pub(crate) fn init_logging(
     }
 }
 
-/// We use a special `TestWriter` during tests to be compatible with `cargo test`'s
+/// We use a special `TestWriter` during tests to be compatible with `cargo nextest run`'s
 /// typical output capturing behavior (even during integration tests!).
 ///
-/// Importantly, note that `cargo test` swallows all logs unless you use `-- --nocapture`,
-/// which is the correct expected behavior. We use `cargo test -- --nocapture` on CI
-/// because of this.
+/// Importantly, note that `cargo nextest run` swallows all logs for passing tests unless
+/// you use `--no-capture`, which is the correct expected behavior.
 fn is_test_client(client_info: Option<&ClientInfo>) -> bool {
     client_info.map_or(false, |client_info| client_info.name == "AirTestClient")
 }
