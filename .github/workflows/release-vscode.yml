@@ -49,23 +49,30 @@ jobs:
         if: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
         # Download, unpack, move into place, and clean up
         run: |
-          curl -LsSfO https://github.com/posit-dev/air/releases/latest/download/air-${{ matrix.target }}.tar.gz
-          tar -xvzf air-${{ matrix.target }}.tar.gz
+          ARCHIVE_NAME=air-${{ matrix.target }}
+          ARCHIVE_FILE=$ARCHIVE_NAME.tar.gz
+
+          curl -LsSfO https://github.com/posit-dev/air/releases/latest/download/$ARCHIVE_FILE
+          tar -xvzf $ARCHIVE_FILE
           mkdir -p bundled/bin/
-          mv air-${{ matrix.target }}/air bundled/bin/air
-          rm -R air-${{ matrix.target }}
-          rm -R air-${{ matrix.target }}.tar.gz
+          mv $ARCHIVE_NAME/air bundled/bin/air
+          rm -R $ARCHIVE_NAME
+          rm -R $ARCHIVE_FILE
 
       - name: Download air binary (Windows)
         if: ${{ startsWith(matrix.os, 'windows') }}
         # Download, unpack, move into place, and clean up
+        # Use git bash
+        shell: bash
         run: |
-          Invoke-WebRequest -Uri https://github.com/posit-dev/air/releases/latest/download/air-${{ matrix.target }}.zip -OutFile .\air-${{ matrix.target }}.zip
-          Expand-Archive -Path .\air-${{ matrix.target }}.zip -DestinationPath .\air-${{ matrix.target }} -Force
-          New-Item -ItemType Directory -Path .\bundled\bin | Out-Null
-          Move-Item -Path .\air-${{ matrix.target }}\air.exe -Destination .\bundled\bin\air.exe -Force
-          Remove-Item -Path .\air-${{ matrix.target }} -Recurse -Force
-          Remove-Item -Path .\air-${{ matrix.target }}.zip -Force
+          ARCHIVE_NAME=air-${{ matrix.target }}
+          ARCHIVE_FILE=$ARCHIVE_NAME.zip
+
+          curl -LsSfO https://github.com/posit-dev/air/releases/latest/download/$ARCHIVE_FILE
+          unzip $ARCHIVE_FILE
+          mkdir -p bundled/bin/
+          mv air.exe bundled/bin/air.exe
+          rm -R $ARCHIVE_FILE
 
       # Install Node.
       - name: Install Node.js
