@@ -6,6 +6,8 @@
 
 ## Development version
 
+- The extension now works properly for Intel macOS (#194).
+
 ## 0.2.0
 
 - Initial release

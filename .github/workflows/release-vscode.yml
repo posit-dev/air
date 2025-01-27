@@ -45,17 +45,34 @@ jobs:
         with:
           fetch-depth: ${{ env.FETCH_DEPTH }}
 
-      # macOS or Linux binary
-      - run: curl -LsSf https://github.com/posit-dev/air/releases/latest/download/air-installer.sh | sh
+      - name: Download air binary (macOS or Linux)
         if: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
-        env:
-          XDG_BIN_HOME: ./bundled/bin
+        # Download, unpack, move into place, and clean up
+        run: |
+          ARCHIVE_NAME=air-${{ matrix.target }}
+          ARCHIVE_FILE=$ARCHIVE_NAME.tar.gz
 
-      # Windows binary
-      - run: powershell -c "irm https://github.com/posit-dev/air/releases/latest/download/air-installer.ps1 | iex"
+          curl -LsSfO https://github.com/posit-dev/air/releases/latest/download/$ARCHIVE_FILE
+          tar -xvzf $ARCHIVE_FILE
+          mkdir -p bundled/bin/
+          mv $ARCHIVE_NAME/air bundled/bin/air
+          rm -R $ARCHIVE_NAME
+          rm -R $ARCHIVE_FILE
+
+      - name: Download air binary (Windows)
         if: ${{ startsWith(matrix.os, 'windows') }}
-        env:
-          XDG_BIN_HOME: ./bundled/bin
+        # Download, unpack, move into place, and clean up
+        # Use git bash
+        shell: bash
+        run: |
+          ARCHIVE_NAME=air-${{ matrix.target }}
+          ARCHIVE_FILE=$ARCHIVE_NAME.zip
+
+          curl -LsSfO https://github.com/posit-dev/air/releases/latest/download/$ARCHIVE_FILE
+          unzip $ARCHIVE_FILE
+          mkdir -p bundled/bin/
+          mv air.exe bundled/bin/air.exe
+          rm -R $ARCHIVE_FILE
 
       # Install Node.
       - name: Install Node.js
@@ -72,7 +89,7 @@ jobs:
 
       # Upload the extension.
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist-${{ matrix.target }}
           path: ./editors/code/dist
@@ -89,27 +106,27 @@ jobs:
           node-version: 22
 
       # Download all built artifacts.
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: dist-aarch64-apple-darwin
           path: dist
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: dist-x86_64-apple-darwin
           path: dist
-      # - uses: actions/download-artifact@v3
+      # - uses: actions/download-artifact@v4
       #   with:
       #     name: dist-x86_64-unknown-linux-gnu
       #     path: dist
-      # - uses: actions/download-artifact@v3
+      # - uses: actions/download-artifact@v4
       #   with:
       #     name: dist-aarch64-unknown-linux-gnu
       #     path: dist
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: dist-x86_64-pc-windows-msvc
           path: dist
-      # - uses: actions/download-artifact@v3
+      # - uses: actions/download-artifact@v4
       #   with:
       #     name: dist-aarch64-pc-windows-msvc
       #     path: dist
@@ -132,27 +149,27 @@ jobs:
           node-version: 22
 
       # Download all built artifacts.
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: dist-aarch64-apple-darwin
           path: dist
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: dist-x86_64-apple-darwin
           path: dist
-      # - uses: actions/download-artifact@v3
+      # - uses: actions/download-artifact@v4
       #   with:
       #     name: dist-x86_64-unknown-linux-gnu
       #     path: dist
-      # - uses: actions/download-artifact@v3
+      # - uses: actions/download-artifact@v4
       #   with:
       #     name: dist-aarch64-unknown-linux-gnu
       #     path: dist
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: dist-x86_64-pc-windows-msvc
           path: dist
-      # - uses: actions/download-artifact@v3
+      # - uses: actions/download-artifact@v4
       #   with:
       #     name: dist-aarch64-pc-windows-msvc
       #     path: dist
