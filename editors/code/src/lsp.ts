@@ -20,6 +20,7 @@ enum State {
 
 export class Lsp {
 	public client: lc.LanguageClient | null = null;
+	public onSettingsNotification: vscode.Event<void>;
 
 	// We use the same output channel for all LSP instances (e.g. a new instance
 	// after a restart) to avoid having multiple channels in the Output viewpane.
@@ -30,11 +31,17 @@ export class Lsp {
 
 	private fileSettings: FileSettingsState;
 
+	public onSettingsNotificationEmitter: vscode.EventEmitter<void>;
+
 	constructor(context: vscode.ExtensionContext) {
 		this.channel = vscode.window.createOutputChannel("Air Language Server");
 		context.subscriptions.push(this.channel, registerLogger(this.channel));
+
 		this.stateQueue = new PQueue({ concurrency: 1 });
 		this.fileSettings = new FileSettingsState(context);
+
+		this.onSettingsNotificationEmitter = new vscode.EventEmitter<void>();
+		this.onSettingsNotification = this.onSettingsNotificationEmitter.event;
 	}
 
 	public getClient(): lc.LanguageClient {
@@ -42,6 +49,15 @@ export class Lsp {
 			throw new Error("LSP must be started");
 		}
 		return this.client;
+	}
+
+	public waitForSettingsNotification(): Promise<void> {
+		return new Promise((resolve, _) => {
+			const disposable = this.onSettingsNotification(() => {
+				disposable.dispose();
+				resolve();
+			});
+		});
 	}
 
 	public async start() {
@@ -136,9 +152,11 @@ export class Lsp {
 			serverOptions,
 			clientOptions,
 		);
-		client.onNotification(SYNC_FILE_SETTINGS, (settings) =>
-			this.fileSettings.handleSettingsNotification(settings),
-		);
+
+		client.onNotification(SYNC_FILE_SETTINGS, (settings) => {
+			this.fileSettings.handleSettingsNotification(settings);
+			this.onSettingsNotificationEmitter.fire();
+		});
 
 		await client.start();
 

@@ -11,6 +11,13 @@ export function activate(context: vscode.ExtensionContext) {
 
 	ctx = new Ctx(context, lsp);
 	registerCommands(ctx);
+
+	return {
+		// For unit tests
+		__private: {
+			ctx: ctx,
+		},
+	};
 }
 
 export function deactivate() {

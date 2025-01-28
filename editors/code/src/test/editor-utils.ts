@@ -39,50 +39,39 @@ export function createRandomFile(
 	});
 }
 
-export function deleteFile(file: vscode.Uri): Thenable<boolean> {
-	return new Promise((resolve, reject) => {
-		fs.unlink(file.fsPath, (err) => {
-			if (err) {
-				reject(err);
-			} else {
-				resolve(true);
-			}
-		});
-	});
-}
-
-export const CURSOR = '"<>"';
-
 export async function withFileEditor(
-	contents: string,
-	fileExtension: string,
+	file: string,
 	run: (editor: vscode.TextEditor, doc: vscode.TextDocument) => Promise<void>,
 ): Promise<void> {
-	const cursorIndex = contents.indexOf(CURSOR);
-	const rawContents = contents.replace(CURSOR, "");
-
-	const file = await createRandomFile(rawContents, fileExtension);
+	const doc = await vscode.workspace.openTextDocument(file);
 
 	try {
-		const doc = await vscode.workspace.openTextDocument(file);
 		const editor = await vscode.window.showTextDocument(doc);
-
-		editor.options.insertSpaces = true;
-		editor.options.indentSize = 4;
-		editor.options.tabSize = 4;
-
-		if (cursorIndex >= 0) {
-			const pos = doc.positionAt(cursorIndex);
-			editor.selection = new vscode.Selection(pos, pos);
-		}
-
 		await run(editor, doc);
-
-		if (doc.isDirty) {
-			await doc.save();
-		}
 	} finally {
-		deleteFile(file);
+		await vscode.commands.executeCommand(
+			"workbench.action.closeActiveEditor",
+		);
+	}
+}
+
+export async function withUntitledEditor(
+	content: string,
+	language: string,
+	run: (editor: vscode.TextEditor, doc: vscode.TextDocument) => Promise<void>,
+): Promise<void> {
+	const doc = await vscode.workspace.openTextDocument({
+		language,
+		content,
+	});
+
+	try {
+		const editor = await vscode.window.showTextDocument(doc);
+		await run(editor, doc);
+	} finally {
+		await vscode.commands.executeCommand(
+			"workbench.action.closeActiveEditor",
+		);
 	}
 }
 
