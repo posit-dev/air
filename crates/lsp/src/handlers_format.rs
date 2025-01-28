@@ -244,132 +244,125 @@ fn find_expression_lists(node: &RSyntaxNode, offset: TextSize, end: bool) -> Vec
 
 #[cfg(test)]
 mod tests {
-    use crate::{documents::Document, test::with_client, test::TestClientExt};
+    use crate::{documents::Document, test::new_test_client, test::TestClientExt};
 
-    #[test]
-    fn test_format() {
-        with_client(|client| async {
-            let mut client = client.lock().await;
+    #[tokio::test]
+    async fn test_format() {
+        let mut client = new_test_client().await;
 
-            #[rustfmt::skip]
-            let doc = Document::doodle(
+        #[rustfmt::skip]
+        let doc = Document::doodle(
 "
 1
 2+2
 3 + 3 +
 3",
-            );
+        );
 
-            let formatted = client.format_document(&doc).await;
-            insta::assert_snapshot!(formatted);
-        })
+        let formatted = client.format_document(&doc).await;
+        insta::assert_snapshot!(formatted);
     }
 
     // https://github.com/posit-dev/air/issues/61
-    #[test]
-    fn test_format_minimal_diff() {
-        with_client(|client| async {
-            let mut client = client.lock().await;
+    #[tokio::test]
+    async fn test_format_minimal_diff() {
+        let mut client = new_test_client().await;
 
-            #[rustfmt::skip]
-            let doc = Document::doodle(
+        #[rustfmt::skip]
+        let doc = Document::doodle(
 "1
 2+2
 3
 ",
-            );
+        );
 
-            let edits = client.format_document_edits(&doc).await.unwrap();
-            assert!(edits.len() == 1);
+        let edits = client.format_document_edits(&doc).await.unwrap();
+        assert!(edits.len() == 1);
 
-            let edit = &edits[0];
-            assert_eq!(edit.new_text, " + ");
-        })
+        let edit = &edits[0];
+        assert_eq!(edit.new_text, " + ");
     }
 
-    #[test]
-    fn test_format_range_none() {
-        with_client(|client| async {
-            let mut client = client.lock().await;
+    #[tokio::test]
+    async fn test_format_range_none() {
+        let mut client = new_test_client().await;
 
-            #[rustfmt::skip]
-            let (doc, range) = Document::doodle_and_range(
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
 "<<>>",
-            );
+        );
 
-            let output = client.format_document_range(&doc, range).await;
-            insta::assert_snapshot!(output);
+        let output = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output);
 
-            #[rustfmt::skip]
-            let (doc, range) = Document::doodle_and_range(
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
 "<<
 >>",
-            );
+        );
 
-            let output = client.format_document_range(&doc, range).await;
-            insta::assert_snapshot!(output);
+        let output = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output);
 
-            #[rustfmt::skip]
-            let (doc, range) = Document::doodle_and_range(
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
 "<<1
 >>",
-            );
+        );
 
-            let output = client.format_document_range(&doc, range).await;
-            insta::assert_snapshot!(output);
-        });
+        let output = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output);
     }
 
-    #[test]
-    fn test_format_range_logical_lines() {
-        with_client(|client| async {
-            let mut client = client.lock().await;
+    #[tokio::test]
+    async fn test_format_range_logical_lines() {
+        let mut client = new_test_client().await;
 
-            // 2+2 is the logical line to format
-            #[rustfmt::skip]
-            let (doc, range) = Document::doodle_and_range(
+        // 2+2 is the logical line to format
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
 "1+1
 <<2+2>>
 ",
-            );
-            let output = client.format_document_range(&doc, range).await;
-            insta::assert_snapshot!(output);
+        );
+        let output = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output);
 
-            #[rustfmt::skip]
-            let (doc, range) = Document::doodle_and_range(
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
 "1+1
 #
 <<2+2>>
 ",
-            );
+        );
 
-            let output = client.format_document_range(&doc, range).await;
-            insta::assert_snapshot!(output);
+        let output = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output);
 
-            // The element in the braced expression is a logical line
-            // FIXME: Should this be the whole `{2+2}` instead?
-            #[rustfmt::skip]
-            let (doc, range) = Document::doodle_and_range(
+        // The element in the braced expression is a logical line
+        // FIXME: Should this be the whole `{2+2}` instead?
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
 "1+1
 {<<2+2>>}
 ",
-            );
+        );
 
-            let output = client.format_document_range(&doc, range).await;
-            insta::assert_snapshot!(output);
+        let output = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output);
 
-            #[rustfmt::skip]
-            let (doc, range) = Document::doodle_and_range(
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
 "1+1
 <<{2+2}>>
 ",
-            );
-            let output = client.format_document_range(&doc, range).await;
-            insta::assert_snapshot!(output);
+        );
+        let output = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output);
 
-            // The deepest element in the braced expression is our target
-            #[rustfmt::skip]
-            let (doc, range) = Document::doodle_and_range(
+        // The deepest element in the braced expression is our target
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
 "1+1
 {
   2+2
@@ -378,77 +371,71 @@ mod tests {
   }
 }
 ",
-            );
+        );
 
-            let output = client.format_document_range(&doc, range).await;
-            insta::assert_snapshot!(output);
-        });
+        let output = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output);
     }
 
-    #[test]
-    fn test_format_range_mismatched_indent() {
-        with_client(|client| async {
-            let mut client = client.lock().await;
+    #[tokio::test]
+    async fn test_format_range_mismatched_indent() {
+        let mut client = new_test_client().await;
 
-            #[rustfmt::skip]
-            let (doc, range) = Document::doodle_and_range(
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
 "1
   <<2+2>>
 ",
-            );
+        );
 
-            // We don't change indentation when `2+2` is formatted
-            let output = client.format_document_range(&doc, range).await;
-            insta::assert_snapshot!(output);
+        // We don't change indentation when `2+2` is formatted
+        let output = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output);
 
-            // Debatable: Should we make an effort to remove unneeded indentation
-            // when it's part of the range?
-            #[rustfmt::skip]
-            let (doc, range) = Document::doodle_and_range(
+        // Debatable: Should we make an effort to remove unneeded indentation
+        // when it's part of the range?
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
 "1
 <<  2+2>>
 ",
-            );
-            let output_wide = client.format_document_range(&doc, range).await;
-            assert_eq!(output, output_wide);
-        });
+        );
+        let output_wide = client.format_document_range(&doc, range).await;
+        assert_eq!(output, output_wide);
     }
 
-    #[test]
-    fn test_format_range_multiple_lines() {
-        with_client(|client| async {
-            let mut client = client.lock().await;
+    #[tokio::test]
+    async fn test_format_range_multiple_lines() {
+        let mut client = new_test_client().await;
 
-            #[rustfmt::skip]
-            let (doc, range) = Document::doodle_and_range(
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
 "1+1
 <<#
 2+2>>
 ",
-            );
+        );
 
-            let output1 = client.format_document_range(&doc, range).await;
-            insta::assert_snapshot!(output1);
+        let output1 = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output1);
 
-            #[rustfmt::skip]
-            let (doc, range) = Document::doodle_and_range(
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
 "<<1+1
 #
 2+2>>
 ",
-            );
-            let output2 = client.format_document_range(&doc, range).await;
-            insta::assert_snapshot!(output2);
-        });
+        );
+        let output2 = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output2);
     }
 
-    #[test]
-    fn test_format_range_unmatched_lists() {
-        with_client(|client| async {
-            let mut client = client.lock().await;
+    #[tokio::test]
+    async fn test_format_range_unmatched_lists() {
+        let mut client = new_test_client().await;
 
-            #[rustfmt::skip]
-            let (doc, range) = Document::doodle_and_range(
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
 "0+0
 <<1+1
 {
@@ -456,13 +443,13 @@ mod tests {
 }
 3+3
 ",
-            );
+        );
 
-            let output1 = client.format_document_range(&doc, range).await;
-            insta::assert_snapshot!(output1);
+        let output1 = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output1);
 
-            #[rustfmt::skip]
-            let (doc, range) = Document::doodle_and_range(
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
 "0+0
 <<1+1
 {
@@ -470,12 +457,12 @@ mod tests {
 }
 3+3
 ",
-            );
-            let output2 = client.format_document_range(&doc, range).await;
-            insta::assert_snapshot!(output2);
+        );
+        let output2 = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output2);
 
-            #[rustfmt::skip]
-            let (doc, range) = Document::doodle_and_range(
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
 "0+0
 <<1+1
 {
@@ -483,12 +470,12 @@ mod tests {
 }
 >>3+3
 ",
-            );
-            let output3 = client.format_document_range(&doc, range).await;
-            insta::assert_snapshot!(output3);
+        );
+        let output3 = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output3);
 
-            #[rustfmt::skip]
-            let (doc, range) = Document::doodle_and_range(
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
 "0+0
 1+1
 {
@@ -496,65 +483,60 @@ mod tests {
 }
 >>3+3
 ",
-            );
-            let output4 = client.format_document_range(&doc, range).await;
-            insta::assert_snapshot!(output4);
+        );
+        let output4 = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output4);
 
-            #[rustfmt::skip]
-            let (doc, range) = Document::doodle_and_range(
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
 "<<1+1>>
 2+2
 ",
-            );
+        );
 
-            let output5 = client.format_document_range(&doc, range).await;
-            insta::assert_snapshot!(output5);
+        let output5 = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output5);
 
-            #[rustfmt::skip]
-            let (doc, range) = Document::doodle_and_range(
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
 "1+1
 <<2+2>>
 ",
-            );
+        );
 
-            let output6 = client.format_document_range(&doc, range).await;
-            insta::assert_snapshot!(output6);
-        });
+        let output6 = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output6);
     }
 
-    #[test]
-    fn test_format_indent_options() {
-        with_client(|client| async {
-            let mut client = client.lock().await;
+    #[tokio::test]
+    async fn test_format_indent_options() {
+        let mut client = new_test_client().await;
 
-            #[rustfmt::skip]
-            let mut doc = Document::doodle("{1}");
+        #[rustfmt::skip]
+        let mut doc = Document::doodle("{1}");
 
-            doc.settings.indent_width = Some(settings::IndentWidth::try_from(8_u8).unwrap());
-            let output_8_spaces = client.format_document(&doc).await;
-            insta::assert_snapshot!(output_8_spaces);
+        doc.settings.indent_width = Some(settings::IndentWidth::try_from(8_u8).unwrap());
+        let output_8_spaces = client.format_document(&doc).await;
+        insta::assert_snapshot!(output_8_spaces);
 
-            doc.settings.indent_style = Some(settings::IndentStyle::Tab);
-            let output_tab = client.format_document(&doc).await;
-            insta::assert_snapshot!(output_tab);
-        });
+        doc.settings.indent_style = Some(settings::IndentStyle::Tab);
+        let output_tab = client.format_document(&doc).await;
+        insta::assert_snapshot!(output_tab);
     }
 
-    #[test]
-    fn test_format_range_indent_options() {
-        with_client(|client| async {
-            let mut client = client.lock().await;
+    #[tokio::test]
+    async fn test_format_range_indent_options() {
+        let mut client = new_test_client().await;
 
-            #[rustfmt::skip]
-            let (mut doc, range) = Document::doodle_and_range("<<{1}>>");
+        #[rustfmt::skip]
+        let (mut doc, range) = Document::doodle_and_range("<<{1}>>");
 
-            doc.settings.indent_width = Some(settings::IndentWidth::try_from(8_u8).unwrap());
-            let output_8_spaces = client.format_document_range(&doc, range).await;
-            insta::assert_snapshot!(output_8_spaces);
+        doc.settings.indent_width = Some(settings::IndentWidth::try_from(8_u8).unwrap());
+        let output_8_spaces = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output_8_spaces);
 
-            doc.settings.indent_style = Some(settings::IndentStyle::Tab);
-            let output_tab = client.format_document_range(&doc, range).await;
-            insta::assert_snapshot!(output_tab);
-        });
+        doc.settings.indent_style = Some(settings::IndentStyle::Tab);
+        let output_tab = client.format_document_range(&doc, range).await;
+        insta::assert_snapshot!(output_tab);
     }
 }

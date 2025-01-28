@@ -61,3 +61,17 @@ Install the dev version of the VS Code extension:
 ```
 
 The CLI tools for Positron or VS Code need to be installed on your path using the command palette command `Shell Command: Install 'code'/'positron' command in PATH`.
+
+# Testing
+
+We use [nextest](https://nexte.st/) for testing rather than a standard `cargo test`, primarily because nextest runs each test in its own process rather than in its own thread.
+This is critical for us, as Air has global objects that can only be set up once per process (such as the global logger).
+Additionally, using one process per test means that it is impossible for one test to interfere with another (so you don't have to worry about test cleanup).
+Tests are still run in parallel, using multiple processes, and this ends up being quite fast and reliable.
+
+Install the nextest cli tool using a [prebuilt binary](https://nexte.st/docs/installation/pre-built-binaries/).
+
+Run tests locally with `just test`, which calls `cargo nextest run`.
+Run insta snapshot tests in "update" mode with `just test-insta`.
+
+On CI we use the nextest profile found in `.config/nextest.toml`.

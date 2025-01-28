@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       ssh:
-        description: 'Set up an SSH session before running `cargo test`?'
+        description: 'Set up an SSH session before running `cargo nextest run`?'
         type: boolean
         required: true
         default: false
@@ -42,6 +42,11 @@ jobs:
         # Cache isn't useful on nightly, it would be thrown away every day
         if: matrix.config.rust != 'nightly'
 
+      - name: Install nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest
+
       - name: Setup SSH access
         uses: mxschmitt/action-tmate@v3
         if: ${{ inputs.ssh }}
@@ -50,8 +55,8 @@ jobs:
       - name: Build
         run: cargo build
 
-      - name: Run unit tests
+      - name: Run tests
         env:
+          NEXTEST_PROFILE: "ci"
           AIR_LOG_LEVEL: trace
-        # `--nocapture` to see our own `tracing` logs
-        run: cargo test -- --nocapture
+        run: cargo nextest run

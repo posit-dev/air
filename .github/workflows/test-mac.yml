@@ -25,11 +25,16 @@ jobs:
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
 
+      - name: Install nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest
+
       - name: Build
         run: cargo build
 
-      - name: Run unit tests
+      - name: Run tests
         env:
+          NEXTEST_PROFILE: "ci"
           AIR_LOG_LEVEL: trace
-        # `--nocapture` to see our own `tracing` logs
-        run: cargo test -- --nocapture
+        run: cargo nextest run
