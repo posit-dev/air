@@ -81,12 +81,14 @@ fn parse_settings(toml: &Path) -> Result<Settings, ParseTomlError> {
     Ok(settings)
 }
 
+type DiscoveredFiles = Vec<Result<PathBuf, ignore::Error>>;
+
 /// For each provided `path`, recursively search for any R files within that `path`
 /// that match our inclusion criteria
 ///
 /// NOTE: Make sure that the inclusion criteria that guide `path` discovery are also
 /// consistently applied to [discover_settings()].
-pub fn discover_r_file_paths<P: AsRef<Path>>(paths: &[P]) -> Vec<Result<PathBuf, ignore::Error>> {
+pub fn discover_r_file_paths<P: AsRef<Path>>(paths: &[P]) -> DiscoveredFiles {
     let paths: Vec<PathBuf> = paths.iter().map(fs::normalize_path).collect();
 
     let Some((first_path, paths)) = paths.split_first() else {
@@ -94,7 +96,6 @@ pub fn discover_r_file_paths<P: AsRef<Path>>(paths: &[P]) -> Vec<Result<PathBuf,
         return Vec::new();
     };
 
-    // TODO: Parallel directory visitor
     let mut builder = ignore::WalkBuilder::new(first_path);
 
     for path in paths {
@@ -114,27 +115,116 @@ pub fn discover_r_file_paths<P: AsRef<Path>>(paths: &[P]) -> Vec<Result<PathBuf,
     builder.git_global(true);
     builder.git_exclude(true);
 
-    let mut paths = Vec::new();
+    // Prefer `available_parallelism()`, with a max of 12 threads
+    builder.threads(
+        std::thread::available_parallelism()
+            .map_or(1, std::num::NonZeroUsize::get)
+            .min(12),
+    );
 
-    // Walk all `paths` recursively, collecting R files that we can format
-    for path in builder.build() {
-        match path {
-            Ok(entry) => {
-                if let Some(path) = is_match(entry) {
-                    paths.push(Ok(path));
-                }
-            }
-            Err(err) => {
-                paths.push(Err(err));
-            }
+    let walker = builder.build_parallel();
+
+    // Run the `WalkParallel` to collect all R files.
+    let state = FilesState::new();
+    let mut visitor_builder = FilesVisitorBuilder::new(&state);
+    walker.visit(&mut visitor_builder);
+
+    state.finish()
+}
+
+/// Shared state across the threads of the walker
+struct FilesState {
+    files: std::sync::Mutex<DiscoveredFiles>,
+}
+
+impl FilesState {
+    fn new() -> Self {
+        Self {
+            files: std::sync::Mutex::new(Vec::new()),
         }
     }
 
-    paths
+    fn finish(self) -> DiscoveredFiles {
+        self.files.into_inner().unwrap()
+    }
+}
+
+/// Object capable of building a [FilesVisitor]
+///
+/// Implements the `build()` method of [ignore::ParallelVisitorBuilder], which
+/// [ignore::WalkParallel] utilizes to create one [FilesVisitor] per thread.
+struct FilesVisitorBuilder<'state> {
+    state: &'state FilesState,
+}
+
+impl<'state> FilesVisitorBuilder<'state> {
+    fn new(state: &'state FilesState) -> Self {
+        Self { state }
+    }
+}
+
+impl<'state> ignore::ParallelVisitorBuilder<'state> for FilesVisitorBuilder<'state> {
+    /// Constructs the per-thread [FilesVisitor], called for us by `ignore`
+    fn build(&mut self) -> Box<dyn ignore::ParallelVisitor + 'state> {
+        Box::new(FilesVisitor {
+            files: vec![],
+            state: self.state,
+        })
+    }
+}
+
+/// Object that implements [ignore::ParallelVisitor]'s `visit()` method
+///
+/// A files visitor has its `visit()` method repeatedly called. It modifies its own
+/// synchronous state by pushing to its thread specific `files` while visiting. On `Drop`,
+/// the collected `files` are appended to the global set of `state.files`.
+///
+/// The files visitor can influence the walk process by returning an [ignore::WalkState].
+/// In particular, returning [ignore::WalkState::Skip] when the current entry is a
+/// directory will prevent the walker from recursing into that directory.
+struct FilesVisitor<'state> {
+    files: DiscoveredFiles,
+    state: &'state FilesState,
+}
+
+impl ignore::ParallelVisitor for FilesVisitor<'_> {
+    fn visit(&mut self, result: std::result::Result<DirEntry, ignore::Error>) -> ignore::WalkState {
+        // TODO: Add in `WalkState::Skip` behavior when we have `exclude` support
+
+        let entry = match result {
+            Ok(entry) => entry,
+            Err(error) => {
+                // Store error but continue walking
+                self.files.push(Err(error));
+                return ignore::WalkState::Continue;
+            }
+        };
+
+        if let Some(file) = as_match(entry) {
+            self.files.push(Ok(file));
+        }
+
+        ignore::WalkState::Continue
+    }
+}
+
+impl Drop for FilesVisitor<'_> {
+    fn drop(&mut self) {
+        // Lock the global shared set of `files`
+        // Unwrap: If we can't lock the mutex then something is very wrong
+        let mut files = self.state.files.lock().unwrap();
+
+        // Transfer files gathered on this thread to the global set
+        if files.is_empty() {
+            *files = std::mem::take(&mut self.files);
+        } else {
+            files.append(&mut self.files);
+        }
+    }
 }
 
 // Decide whether or not to accept an `entry` based on include/exclude rules.
-fn is_match(entry: DirEntry) -> Option<PathBuf> {
+fn as_match(entry: DirEntry) -> Option<PathBuf> {
     // Ignore directories
     if entry.file_type().map_or(true, |ft| ft.is_dir()) {
         return None;
