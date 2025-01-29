@@ -2,6 +2,9 @@
 
 # Development version
 
+- Linux binaries are now available. Note that your Linux distribution must
+  support glibc 2.31+ for the binary to work (#71).
+
 - ARM Windows binaries are now available (#170).
 
 # 0.2.0
