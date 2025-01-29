@@ -10,10 +10,6 @@ RStudio does not support the [Language Server Protocol](https://microsoft.github
 
 # Installation
 
-::: callout-note
-## Air is currently only supported on macOS and Windows. Linux support is coming soon!
-:::
-
 Ensure you have at least RStudio version 2024.12.0, which you can download from [here](https://posit.co/download/rstudio-desktop/).
 Additionally, you'll need to install the Air [command line tool](cli.qmd).
 
