@@ -1,5 +1,5 @@
 [workspace]
-members = ["cargo:."]
+members = ["cargo:crates/air"]
 
 # Config for 'dist'
 [dist]
@@ -17,11 +17,19 @@ windows-archive = ".zip"
 unix-archive = ".tar.gz"
 # Target platforms to build apps for (Rust target-triple syntax)
 targets = [
-    "aarch64-apple-darwin",
+    # Mac
     "x86_64-apple-darwin",
-    "x86_64-unknown-linux-gnu",
+    "aarch64-apple-darwin",
+    # Windows
     "x86_64-pc-windows-msvc",
+    "aarch64-pc-windows-msvc",
+    # Linux
+    "x86_64-unknown-linux-gnu",
 ]
+# Tell dist to only build `crates/air` rather than every crate in the workspace,
+# which it does by default to be conservative but would include some heavier test-only
+# crates that aren't required (including xtask).
+precise-builds = true
 # Whether to auto-include files like READMEs, LICENSEs, and CHANGELOGs (default true)
 auto-includes = false
 # Which actions to run on pull requests (use "upload" to force a build in CI for testing)

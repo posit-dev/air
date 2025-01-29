@@ -6,6 +6,8 @@
 
 ## Development version
 
+- The extension is now available on ARM Windows (#170).
+
 - The extension now works properly for Intel macOS (#194).
 
 ## 0.2.0

@@ -2,6 +2,8 @@
 
 # Development version
 
+- ARM Windows binaries are now available (#170).
+
 # 0.2.0
 
 - Initial public release, yay!
