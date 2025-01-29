@@ -25,6 +25,7 @@ targets = [
     "aarch64-pc-windows-msvc",
     # Linux
     "x86_64-unknown-linux-gnu",
+    "aarch64-unknown-linux-gnu",
 ]
 # Tell dist to only build `crates/air` rather than every crate in the workspace,
 # which it does by default to be conservative but would include some heavier test-only
@@ -40,3 +41,12 @@ dispatch-releases = true
 install-path = ["$XDG_BIN_HOME/", "$XDG_DATA_HOME/../bin", "~/.local/bin"]
 # Whether to install an updater program
 install-updater = false
+
+[dist.github-custom-runners]
+# Use ARM Mac runner to build ARM binary (not strictly required, but nice).
+# dist uses `macos-13` by default and cross-compiles.
+aarch64-apple-darwin = "macos-14"
+# Lock Linux to minimum supported Ubuntu version (glibc 2.31).
+# For ARM Linux dist actually uses an x86_64 host and uses cargo-zigbuild to cross compile.
+x86_64-unknown-linux-gnu = "ubuntu-20.04"
+aarch64-unknown-linux-gnu = "ubuntu-20.04"
