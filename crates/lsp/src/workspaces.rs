@@ -8,6 +8,7 @@
 use std::path::Path;
 use std::path::PathBuf;
 
+use air_r_formatter::context::RFormatOptions;
 use tower_lsp::lsp_types::Url;
 use tower_lsp::lsp_types::WorkspaceFolder;
 use workspace::discovery::discover_settings;
@@ -15,6 +16,8 @@ use workspace::discovery::DiscoveredSettings;
 use workspace::resolve::PathResolver;
 use workspace::settings::Settings;
 use workspace::toml::is_air_toml;
+
+use crate::settings::DocumentSettings;
 
 /// Convenience type for the inner resolver of path -> [`Settings`]
 type SettingsResolver = PathResolver<Settings>;
@@ -84,7 +87,7 @@ impl WorkspaceSettingsResolver {
         let discovered_settings = match discover_settings(&[&path]) {
             Ok(discovered_settings) => discovered_settings,
             Err(error) => {
-                failed_to_open_workspace_folder(url, error.into());
+                failed_to_open_workspace_folder(url, error);
                 return;
             }
         };
@@ -233,5 +236,32 @@ impl WorkspaceSettingsResolver {
             .map_err(|()| anyhow::anyhow!("Failed to convert workspace URL to file path: {url}"))?;
 
         Ok(Some(path))
+    }
+}
+
+impl WorkspaceSettings<'_> {
+    pub(crate) fn settings(&self) -> &Settings {
+        match self {
+            WorkspaceSettings::Toml(settings) => settings,
+            WorkspaceSettings::Fallback(settings) => settings,
+        }
+    }
+
+    pub(crate) fn to_format_options(
+        &self,
+        source: &str,
+        document_settings: &DocumentSettings,
+    ) -> RFormatOptions {
+        match self {
+            WorkspaceSettings::Toml(settings) => {
+                // If there is an actual TOML, that wins
+                settings.format.to_format_options(source)
+            }
+            WorkspaceSettings::Fallback(settings) => {
+                // In the fallback case, merge with client provided `DocumentSettings`
+                let format_options = settings.format.to_format_options(source);
+                DocumentSettings::merge(format_options, document_settings)
+            }
+        }
     }
 }

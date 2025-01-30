@@ -18,7 +18,6 @@ use tokio::task::JoinHandle;
 use tower_lsp::lsp_types::Diagnostic;
 use tower_lsp::Client;
 use url::Url;
-use workspace::settings::Settings;
 
 use crate::capabilities::AirClientCapabilities;
 use crate::handlers;
@@ -29,7 +28,6 @@ use crate::handlers_state::ConsoleInputs;
 use crate::logging;
 use crate::logging::LogMessageSender;
 use crate::logging::LogThreadState;
-use crate::settings::DocumentSettings;
 use crate::settings::GlobalSettings;
 use crate::state::WorldState;
 use crate::tower_lsp::LspMessage;
@@ -192,17 +190,8 @@ impl LspState {
 }
 
 impl LspState {
-    pub(crate) fn document_settings(
-        &self,
-        url: &Url,
-        client_settings: &DocumentSettings,
-    ) -> Settings {
-        match self.workspace_settings_resolver.settings_for_url(url) {
-            // The TOML has precedence over client settings
-            WorkspaceSettings::Toml(settings) => settings.clone(),
-            // There is no TOML. Merge client settings into our default settings.
-            WorkspaceSettings::Fallback(settings) => client_settings.merge(settings.clone()),
-        }
+    pub(crate) fn workspace_document_settings(&self, url: &Url) -> WorkspaceSettings {
+        self.workspace_settings_resolver.settings_for_url(url)
     }
 
     pub(crate) fn open_workspace_folder(&mut self, url: &Url) {

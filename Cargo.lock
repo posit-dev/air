@@ -2736,6 +2736,7 @@ dependencies = [
  "anyhow",
  "biome_formatter",
  "fs",
+ "globset",
  "ignore",
  "insta",
  "line_ending",
@@ -2746,6 +2747,7 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.5",
  "toml",
+ "tracing",
 ]
 
 [[package]]

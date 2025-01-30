@@ -11,6 +11,7 @@ use biome_rowan::{AstNode, Language, SyntaxElement};
 use biome_text_size::{TextRange, TextSize};
 use tower_lsp::lsp_types;
 
+use crate::file_patterns::is_document_ignored_during_formatting;
 use crate::main_loop::LspState;
 use crate::state::WorldState;
 use crate::{from_proto, to_proto};
@@ -21,10 +22,20 @@ pub(crate) fn document_formatting(
     lsp_state: &LspState,
     state: &WorldState,
 ) -> anyhow::Result<Option<Vec<lsp_types::TextEdit>>> {
-    let doc = state.get_document(&params.text_document.uri)?;
+    let uri = &params.text_document.uri;
+    let doc = state.get_document(uri)?;
 
-    let settings = lsp_state.document_settings(&params.text_document.uri, &doc.settings);
-    let format_options = settings.format.to_format_options(&doc.contents);
+    let workspace_settings = lsp_state.workspace_document_settings(uri);
+
+    if let Ok(path) = uri.to_file_path() {
+        // TODO: `language_id` should be a property of the `Document` stored in `did_open()`
+        let language_id = String::from("r");
+        let settings = workspace_settings.settings();
+
+        if is_document_ignored_during_formatting(&path, &settings.format, language_id) {
+            return Ok(None);
+        }
+    }
 
     if doc.parse.has_errors() {
         // Refuse to format in the face of parse errors, but only log a warning
@@ -36,12 +47,9 @@ pub(crate) fn document_formatting(
         return Ok(None);
     }
 
+    let format_options = workspace_settings.to_format_options(&doc.contents, &doc.settings);
     let formatted = format_node(format_options, &doc.parse.syntax())?;
     let output = formatted.print()?.into_code();
-
-    // Do we need to check that `doc` is indeed an R file? What about special
-    // files that don't have extensions like `NAMESPACE`, do we hard-code a
-    // list? What about unnamed temporary files?
 
     let edits = to_proto::replace_all_edit(&doc.line_index, &doc.contents, &output)?;
     Ok(Some(edits))
@@ -53,7 +61,20 @@ pub(crate) fn document_range_formatting(
     lsp_state: &LspState,
     state: &WorldState,
 ) -> anyhow::Result<Option<Vec<lsp_types::TextEdit>>> {
-    let doc = state.get_document(&params.text_document.uri)?;
+    let uri = &params.text_document.uri;
+    let doc = state.get_document(uri)?;
+
+    let workspace_settings = lsp_state.workspace_document_settings(uri);
+
+    if let Ok(path) = uri.to_file_path() {
+        // TODO: `language_id` should be a property of the `Document` stored in `did_open()`
+        let language_id = String::from("r");
+        let settings = workspace_settings.settings();
+
+        if is_document_ignored_during_formatting(&path, &settings.format, language_id) {
+            return Ok(None);
+        }
+    }
 
     if doc.parse.has_errors() {
         // Refuse to format in the face of parse errors, but only log a warning
@@ -67,9 +88,6 @@ pub(crate) fn document_range_formatting(
 
     let range =
         from_proto::text_range(&doc.line_index.index, params.range, doc.line_index.encoding)?;
-
-    let settings = lsp_state.document_settings(&params.text_document.uri, &doc.settings);
-    let format_options = settings.format.to_format_options(&doc.contents);
 
     let logical_lines = find_deepest_enclosing_logical_lines(doc.parse.syntax(), range);
     if logical_lines.is_empty() {
@@ -104,6 +122,8 @@ pub(crate) fn document_range_formatting(
     let list = air_r_factory::r_expression_list(exprs);
     let eof = air_r_syntax::RSyntaxToken::new_detached(RSyntaxKind::EOF, "", vec![], vec![]);
     let root = air_r_factory::r_root(list, eof).build();
+
+    let format_options = workspace_settings.to_format_options(&doc.contents, &doc.settings);
 
     let format_info = biome_formatter::format_sub_tree(
         root.syntax(),
@@ -538,5 +558,11 @@ mod tests {
         doc.settings.indent_style = Some(settings::IndentStyle::Tab);
         let output_tab = client.format_document_range(&doc, range).await;
         insta::assert_snapshot!(output_tab);
+    }
+
+    #[tokio::test]
+    async fn test_format_ignored_files() {
+        // TODO!: Test ignored files behavior, both normal and with custom ignores
+        // and with `default-ignore` turned off
     }
 }

@@ -5,7 +5,10 @@
 //
 //
 
+use std::path::Path;
+
 use crate::settings::FormatSettings;
+use crate::settings::IgnorePatterns;
 use crate::settings::LineEnding;
 use crate::settings::Settings;
 use settings::IndentStyle;
@@ -93,10 +96,10 @@ pub struct FormatTomlOptions {
 
     /// The character air uses at the end of a line.
     ///
-    /// * `auto`: The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to `\n` for files that contain no line endings.
-    /// * `lf`: Line endings will be converted to `\n`. The default line ending on Unix.
-    /// * `crlf`: Line endings will be converted to `\r\n`. The default line ending on Windows.
-    /// * `native`: Line endings will be converted to `\n` on Unix and `\r\n` on Windows.
+    /// - `auto`: The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to `\n` for files that contain no line endings.
+    /// - `lf`: Line endings will be converted to `\n`. The default line ending on Unix.
+    /// - `crlf`: Line endings will be converted to `\r\n`. The default line ending on Windows.
+    /// - `native`: Line endings will be converted to `\n` on Unix and `\r\n` on Windows.
     pub line_ending: Option<LineEnding>,
 
     /// Air respects a small set of persistent line breaks as an indication that certain
@@ -106,10 +109,49 @@ pub struct FormatTomlOptions {
     /// It may be preferable to ignore persistent line breaks if you prefer that `line-width`
     /// should be the only value that influences line breaks.
     pub persistent_line_breaks: Option<bool>,
+
+    /// By default, Air will refuse to format files listed in the set of `default_ignore`.
+    /// To add to this list, use this option to supply a list of ignore patterns.
+    ///
+    /// Ignore patterns are modeled after what you can provide in a
+    /// [.gitignore](https://git-scm.com/docs/gitignore), and are resolved relative to the
+    /// parent directory that your `air.toml` is contained within. For example, if your
+    /// `air.toml` was located at `root/air.toml`, then you could provide:
+    ///
+    /// - `ignore.R` to ignore that R file located anywhere below `root`.
+    /// - `ignore/` to ignore that directory located anywhere below `root`. You can also
+    ///   just use `ignore`, but this would technically also match a file named `ignore`,
+    ///   so the trailing slash is preferred when targeting directories.
+    /// - `/ignore/` to ignore a directory at `root/ignore/`, where the leading `/` forces
+    ///   the directory to appear right under `root/`, rather than anywhere.
+    /// - `ignore-*.R` to ignore R files like `ignore-this.R` and `ignore-that.R` located
+    ///   anywhere below `root`.
+    /// - `ignore/*.R` to ignore all R files at `root/ignore/*.R`, where the `/` in the
+    ///   middle of the pattern forces the directory to appear right under `root/`, rather
+    ///   than anywhere.
+    /// - `**/ignore/*.R` to ignore all R files below an `ignore/` directory, where the
+    ///   `ignore/` directory itself can appear anywhere.
+    ///
+    /// See the full [.gitignore](https://git-scm.com/docs/gitignore) documentation for
+    /// all of the patterns you can provide.
+    pub ignore: Option<Vec<String>>,
+
+    /// Air automatically ignores a default set of folders and files. If this option is
+    /// set to `false`, these files will be formatted as well.
+    ///
+    /// The default set of ignored patterns are:
+    /// - `.git/`
+    /// - `renv/`
+    /// - `revdep/`
+    /// - `cpp11.R`
+    /// - `RcppExports.R`
+    /// - `extendr-wrappers.R`
+    /// - `import-standalone-*.R`
+    pub default_ignore: Option<bool>,
 }
 
 impl TomlOptions {
-    pub fn into_settings(self) -> Settings {
+    pub fn into_settings(self, root: &Path) -> anyhow::Result<Settings> {
         let format = self.format.unwrap_or_default();
 
         let format = FormatSettings {
@@ -127,8 +169,14 @@ impl TomlOptions {
                 }
                 None => PersistentLineBreaks::Respect,
             },
+            ignore: {
+                let ignore = format.ignore.unwrap_or_default();
+                let ignore = ignore.iter().map(String::as_str);
+                let default_ignore = format.default_ignore.unwrap_or(true);
+                IgnorePatterns::try_from_iter(root, ignore, default_ignore)?
+            },
         };
 
-        Settings { format }
+        Ok(Settings { format })
     }
 }

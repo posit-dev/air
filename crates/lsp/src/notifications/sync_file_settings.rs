@@ -26,12 +26,15 @@ impl Notification for SyncFileSettingsParams {
     const METHOD: &'static str = "air/syncFileSettings";
 }
 
-impl From<workspace::settings::FormatSettings> for FileFormatSettings {
-    fn from(value: workspace::settings::FormatSettings) -> Self {
+impl FileFormatSettings {
+    // The interior types we care about sending to the client are all `Copy`
+    // and extremely cheap to duplicate, but `FormatSettings` itself is not,
+    // so we make sure to take a reference here.
+    fn from_format_settings(settings: &workspace::settings::FormatSettings) -> Self {
         Self {
-            indent_style: value.indent_style,
-            indent_width: value.indent_width,
-            line_width: value.line_width,
+            indent_style: settings.indent_style,
+            indent_width: settings.indent_width,
+            line_width: settings.line_width,
         }
     }
 }
@@ -49,7 +52,7 @@ impl LspState {
                     // There is a TOML to backpropagate
                     WorkspaceSettings::Toml(settings) => Some(FileSettings {
                         url: url.to_string(),
-                        format: settings.format.clone().into(),
+                        format: FileFormatSettings::from_format_settings(&settings.format),
                     }),
                     // There is no TOML. Let the IDE use its own settings.
                     WorkspaceSettings::Fallback(_) => None,

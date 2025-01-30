@@ -25,8 +25,6 @@ use crate::ExitStatus;
 pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
     let mode = FormatMode::from_command(&command);
 
-    let paths = discover_r_file_paths(&command.paths);
-
     let mut resolver = PathResolver::new(Settings::default());
 
     for DiscoveredSettings {
@@ -36,6 +34,8 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
     {
         resolver.add(&directory, settings);
     }
+
+    let paths = discover_r_file_paths(&command.paths, &resolver, true);
 
     let (actions, errors): (Vec<_>, Vec<_>) = paths
         .into_iter()
@@ -52,7 +52,6 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
         });
 
     for error in &errors {
-        // TODO: Hook up a tracing subscriber!
         tracing::error!("{error}");
     }
 
@@ -285,6 +284,69 @@ mod test {
         let err = run(args)?;
 
         assert_eq!(err, ExitStatus::Success);
+        Ok(())
+    }
+
+    #[test]
+    fn test_default_ignore_patterns() -> anyhow::Result<()> {
+        let tempdir = TempDir::new()?;
+
+        let test_path = tempdir.path().join("test.R");
+        let test_contents = r#"
+1+1
+"#;
+
+        let cpp11_path = tempdir.path().join("cpp11.R");
+        let cpp11_contents = r#"
+1+1
+"#;
+
+        std::fs::write(&test_path, test_contents)?;
+        std::fs::write(&cpp11_path, cpp11_contents)?;
+
+        // Only `test.R` should be formatted, `cpp11.R` is a default ignore
+        let args = Args::parse_from(["", "format", tempdir.path().to_str().unwrap()]);
+        let err = run(args)?;
+        assert_eq!(err, ExitStatus::Success);
+        assert!(test_contents != std::fs::read_to_string(&test_path)?);
+        assert_eq!(cpp11_contents, std::fs::read_to_string(&cpp11_path)?);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_modified_ignore_patterns() -> anyhow::Result<()> {
+        let tempdir = TempDir::new()?;
+
+        let test_path = tempdir.path().join("test.R");
+        let test_contents = r#"
+1+1
+"#;
+
+        let cpp11_path = tempdir.path().join("cpp11.R");
+        let cpp11_contents = r#"
+1+1
+"#;
+
+        let air_path = tempdir.path().join("air.toml");
+        let air_contents = r#"
+[format]
+ignore = ["test.R"]
+default-ignore = false
+"#;
+
+        // Turn off `default-ignore`, turn on the custom `ignore`
+        std::fs::write(&test_path, test_contents)?;
+        std::fs::write(&cpp11_path, cpp11_contents)?;
+        std::fs::write(&air_path, air_contents)?;
+
+        // Only `cpp11.R` should be formatted
+        let args = Args::parse_from(["", "format", tempdir.path().to_str().unwrap()]);
+        let err = run(args)?;
+        assert_eq!(err, ExitStatus::Success);
+        assert_eq!(test_contents, std::fs::read_to_string(&test_path)?);
+        assert!(cpp11_contents != std::fs::read_to_string(&cpp11_path)?);
+
         Ok(())
     }
 

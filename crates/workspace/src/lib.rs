@@ -6,6 +6,7 @@
 //
 
 pub mod discovery;
+pub mod file_patterns;
 pub mod resolve;
 pub mod settings;
 pub mod toml;

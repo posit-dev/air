@@ -5,8 +5,10 @@
 //
 //
 
+mod ignore_patterns;
 mod line_ending;
 
+pub use ignore_patterns::IgnorePatterns;
 pub(crate) use line_ending::LineEnding;
 
 use air_r_formatter::context::RFormatOptions;
@@ -19,19 +21,20 @@ use settings::PersistentLineBreaks;
 ///
 /// May still require a source document to finalize some options, such as
 /// `LineEnding::Auto` in the formatter.
-#[derive(Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Default)]
 pub struct Settings {
     /// Settings to configure code formatting.
     pub format: FormatSettings,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Default)]
 pub struct FormatSettings {
     pub indent_style: IndentStyle,
     pub indent_width: IndentWidth,
     pub line_ending: LineEnding,
     pub line_width: LineWidth,
     pub persistent_line_breaks: PersistentLineBreaks,
+    pub ignore: IgnorePatterns,
 }
 
 impl FormatSettings {
