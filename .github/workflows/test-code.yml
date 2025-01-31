@@ -1,0 +1,51 @@
+name: "Test / Code extension"
+
+on:
+  push:
+    branches:
+      - main
+    paths: ["editors/code/**"]
+  pull_request:
+    paths: ["editors/code/**"]
+  workflow_dispatch:
+
+jobs:
+  code:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update build environment
+        run: |
+          sudo apt-get update
+
+      - name: Report rust toolchain
+        run: rustup show
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Setup SSH access
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ inputs.ssh }}
+        timeout-minutes: 30
+
+      - name: Install Air
+        run: |
+          cargo install --path "crates/air"
+
+      - name: Install X Virtual Framebuffer
+        run: |
+          sudo apt-get install xvfb
+
+      - name: Run tests
+        env:
+          AIR_LOG_LEVEL: trace
+        run: |
+          export PATH="~/.cargo/bin/:$PATH"
+          cd editors/code
+          npm ci
+          xvfb-run npm run test
