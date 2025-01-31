@@ -13,7 +13,14 @@ export function activate(context: vscode.ExtensionContext) {
 	registerCommands(ctx);
 
 	return {
-		// For unit tests
+		// API for our own unit tests.
+		//
+		// It's important to access state this way and not by simply importing
+		// files in `src` from the `test` folder (as suggested in the test file
+		// template) because the tests live in a different environment than the
+		// one where VS Code instantiates extensions. So if you try to activate
+		// the extension in this way you'll just end up with a duplicate
+		// instance and get in trouble.
 		__private: {
 			ctx: ctx,
 		},

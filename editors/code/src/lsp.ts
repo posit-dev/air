@@ -20,6 +20,9 @@ enum State {
 
 export class Lsp {
 	public client: lc.LanguageClient | null = null;
+
+	// We've received and processed an `air.toml` settings synchronization
+	// notification. Used to synchronize unit tests with the LSP.
 	public onSettingsNotification: vscode.Event<void>;
 
 	// We use the same output channel for all LSP instances (e.g. a new instance
