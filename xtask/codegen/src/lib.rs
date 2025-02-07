@@ -14,6 +14,7 @@ mod grit_kinds_src;
 mod js_kinds_src;
 mod json_kinds_src;
 mod markdown_kinds_src;
+mod r_json_schema;
 mod r_kinds_src;
 mod yaml_kinds_src;
 
@@ -34,6 +35,7 @@ pub use self::ast::generate_ast;
 pub use self::formatter::generate_formatters;
 pub use self::generate_crate::generate_crate;
 pub use self::parser_tests::generate_parser_tests;
+pub use self::r_json_schema::generate_json_schema;
 pub use self::unicode::generate_tables;
 
 pub enum UpdateResult {
@@ -98,4 +100,6 @@ pub enum TaskCommand {
         #[bpaf(long("name"), argument("STRING"))]
         name: String,
     },
+    #[bpaf(command, long("json-schema"))]
+    JsonSchema,
 }

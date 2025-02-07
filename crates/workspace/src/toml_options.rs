@@ -25,6 +25,7 @@ use settings::PersistentLineBreaks;
 /// All other options are nested within their own `[table]`.
 #[derive(Clone, Debug, PartialEq, Eq, Default, serde::Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct TomlOptions {
     /// Global options affecting multiple commands.
     #[serde(flatten)]
@@ -37,11 +38,13 @@ pub struct TomlOptions {
 // NOTE: Just a placeholder for now, we don't currently have any global settings
 #[derive(Clone, Debug, PartialEq, Eq, Default, serde::Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct GlobalTomlOptions {}
 
 /// Configures the way air formats your code.
 #[derive(Clone, Debug, PartialEq, Eq, Default, serde::Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct FormatTomlOptions {
     /// The line width at which the formatter prefers to wrap lines.
     ///

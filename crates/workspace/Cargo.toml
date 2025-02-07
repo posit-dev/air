@@ -11,6 +11,10 @@ license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
 
+[features]
+default = []
+schemars = ["dep:schemars", "settings/schemars"]
+
 [dependencies]
 air_r_formatter = { workspace = true }
 biome_formatter = { workspace = true, features = ["serde"] }
@@ -19,6 +23,7 @@ ignore = { workspace = true }
 line_ending = { workspace = true }
 rustc-hash = { workspace = true }
 thiserror = { workspace = true }
+schemars = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"] }
 settings = { workspace = true, features = ["serde"] }
 toml = { workspace = true }

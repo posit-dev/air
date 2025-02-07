@@ -1,21 +1,27 @@
 [package]
 edition = "2021"
-name    = "xtask_codegen"
+name = "xtask_codegen"
 publish = false
 version = "0.0.0"
 
 [dependencies]
-anyhow         = { workspace = true }
-bpaf           = { version = "0.9.15", features = ["derive"] }
-git2           = { version = "0.19.0", default-features = false }
-proc-macro2    = { workspace = true, features = ["span-locations"] }
-quote          = "1.0.37"
-ureq           = "2.10.1"
-walkdir        = "2.5.0"
-xtask          = { path = '../', version = "0.0" }
+anyhow = { workspace = true }
+bpaf = { version = "0.9.15", features = ["derive"] }
+git2 = { version = "0.19.0", default-features = false }
+proc-macro2 = { workspace = true, features = ["span-locations"] }
+quote = "1.0.37"
+serde_json = "1.0.113"
+ureq = "2.10.1"
+walkdir = "2.5.0"
+xtask = { path = '../', version = "0.0" }
 
-biome_string_case     = { workspace = true }
-biome_ungrammar       = { workspace = true }
+biome_string_case = { workspace = true }
+biome_ungrammar = { workspace = true }
+schemars = { workspace = true }
+workspace = { workspace = true, features = ["schemars"] }
+
+[dev-dependencies]
+insta = { workspace = true }
 
 [lints]
 workspace = true

@@ -1,0 +1,144 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TomlOptions",
+  "description": "The Rust representation of `air.toml`\n\nThe names and types of the fields in this struct determine the names and types that can be specified in the `air.toml`.\n\nEvery field is optional at this point, nothing is \"finalized\". Finalization is done in [TomlOptions::into_settings].\n\nGlobal options are specified at top level in the TOML file. All other options are nested within their own `[table]`.",
+  "type": "object",
+  "properties": {
+    "format": {
+      "description": "Options to configure code formatting.",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/FormatTomlOptions"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "FormatTomlOptions": {
+      "description": "Configures the way air formats your code.",
+      "type": "object",
+      "properties": {
+        "indent-style": {
+          "description": "Whether to use spaces or tabs for indentation.\n\n`indent-style = \"space\"` (default):\n\n```r fn <- function() { cat(\"Hello\") # Spaces indent the `cat()` call. } ```\n\n`indent-style = \"tab\"`:\n\n```r fn <- function() { cat(\"Hello\") # A tab `\\t` indents the `cat()` call. } ```\n\nAir defaults to spaces due to the overwhelming amount of existing R code written in this style, but consider using tabs for new projects to improve accessibility.\n\nSee `indent-width` to configure the number of spaces per indentation and the tab width.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/IndentStyle"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "indent-width": {
+          "description": "The number of spaces per indentation level (tab).\n\nThe value must be greater than or equal to `1` and less than or equal to `24`. The default value is `2`.\n\nUsed by the formatter to determine the visual width of a tab.\n\nThis option changes the number of spaces the formatter inserts when using `indent-style = \"space\"`. It also represents the width of a tab when `indent-style = \"tab\"` for the purposes of computing the `line-width`.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/IndentWidth"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "line-ending": {
+          "description": "The character air uses at the end of a line.\n\n* `auto`: The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to `\\n` for files that contain no line endings. * `lf`: Line endings will be converted to `\\n`. The default line ending on Unix. * `crlf`: Line endings will be converted to `\\r\\n`. The default line ending on Windows. * `native`: Line endings will be converted to `\\n` on Unix and `\\r\\n` on Windows.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/LineEnding"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "line-width": {
+          "description": "The line width at which the formatter prefers to wrap lines.\n\nThe value must be greater than or equal to `1` and less than or equal to `320`.\n\nNote: While the formatter will attempt to format lines such that they remain within the `line-width`, it isn't a hard upper bound, and formatted lines may exceed the `line-width`.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/LineWidth"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "persistent-line-breaks": {
+          "description": "Air respects a small set of persistent line breaks as an indication that certain function calls or function signatures should be left expanded. If this option is set to `false`, persistent line breaks are ignored.\n\nIt may be preferable to ignore persistent line breaks if you prefer that `line-width` should be the only value that influences line breaks.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "IndentStyle": {
+      "oneOf": [
+        {
+          "description": "Tab",
+          "type": "string",
+          "enum": [
+            "tab"
+          ]
+        },
+        {
+          "description": "Space",
+          "type": "string",
+          "enum": [
+            "space"
+          ]
+        }
+      ]
+    },
+    "IndentWidth": {
+      "description": "Validated value for the `indent-width` formatter options\n\nThe allowed range of values is 1..=24",
+      "type": "integer",
+      "format": "uint8",
+      "maximum": 24.0,
+      "minimum": 1.0
+    },
+    "LineEnding": {
+      "oneOf": [
+        {
+          "description": "The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to [`LineEnding::Lf`] for a files that contain no line endings.",
+          "type": "string",
+          "enum": [
+            "auto"
+          ]
+        },
+        {
+          "description": "Line endings will be converted to `\\n` as is common on Unix.",
+          "type": "string",
+          "enum": [
+            "lf"
+          ]
+        },
+        {
+          "description": "Line endings will be converted to `\\r\\n` as is common on Windows.",
+          "type": "string",
+          "enum": [
+            "crlf"
+          ]
+        },
+        {
+          "description": "Line endings will be converted to `\\n` on Unix and `\\r\\n` on Windows.",
+          "type": "string",
+          "enum": [
+            "native"
+          ]
+        }
+      ]
+    },
+    "LineWidth": {
+      "description": "Validated value for the `line-width` formatter options\n\nThe allowed range of values is 1..=320",
+      "type": "integer",
+      "format": "uint16",
+      "maximum": 320.0,
+      "minimum": 1.0
+    }
+  }
+}
