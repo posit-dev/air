@@ -6,9 +6,11 @@
 //
 
 mod ignore_patterns;
+mod include_patterns;
 mod line_ending;
 
 pub use ignore_patterns::IgnorePatterns;
+pub use include_patterns::IncludePatterns;
 pub(crate) use line_ending::LineEnding;
 
 use air_r_formatter::context::RFormatOptions;
@@ -35,6 +37,7 @@ pub struct FormatSettings {
     pub line_width: LineWidth,
     pub persistent_line_breaks: PersistentLineBreaks,
     pub ignore: IgnorePatterns,
+    pub include: IncludePatterns,
 }
 
 impl FormatSettings {

@@ -9,6 +9,7 @@ use std::path::Path;
 
 use crate::settings::FormatSettings;
 use crate::settings::IgnorePatterns;
+use crate::settings::IncludePatterns;
 use crate::settings::LineEnding;
 use crate::settings::Settings;
 use settings::IndentStyle;
@@ -175,6 +176,9 @@ impl TomlOptions {
                 let default_ignore = format.default_ignore.unwrap_or(true);
                 IgnorePatterns::try_from_iter(root, ignore, default_ignore)?
             },
+            // Not currently exposed as a toml option. Theoretically could be for
+            // consistency, but there aren't any motivating use cases right now.
+            include: IncludePatterns::default(),
         };
 
         Ok(Settings { format })

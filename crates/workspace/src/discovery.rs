@@ -82,7 +82,7 @@ type DiscoveredFiles = Vec<Result<PathBuf, ignore::Error>>;
 pub fn discover_r_file_paths<P: AsRef<Path>>(
     paths: &[P],
     resolver: &PathResolver<Settings>,
-    use_format_ignore: bool,
+    use_format_settings: bool,
 ) -> DiscoveredFiles {
     let paths: Vec<PathBuf> = paths.iter().map(fs::normalize_path).collect();
 
@@ -120,7 +120,7 @@ pub fn discover_r_file_paths<P: AsRef<Path>>(
     let walker = builder.build_parallel();
 
     // Run the `WalkParallel` to collect all R files.
-    let state = FilesState::new(resolver, use_format_ignore);
+    let state = FilesState::new(resolver, use_format_settings);
     let mut visitor_builder = FilesVisitorBuilder::new(&state);
     walker.visit(&mut visitor_builder);
 
@@ -131,15 +131,15 @@ pub fn discover_r_file_paths<P: AsRef<Path>>(
 struct FilesState<'resolver> {
     files: std::sync::Mutex<DiscoveredFiles>,
     resolver: &'resolver PathResolver<Settings>,
-    use_format_ignore: bool,
+    use_format_settings: bool,
 }
 
 impl<'resolver> FilesState<'resolver> {
-    fn new(resolver: &'resolver PathResolver<Settings>, use_format_ignore: bool) -> Self {
+    fn new(resolver: &'resolver PathResolver<Settings>, use_format_settings: bool) -> Self {
         Self {
             files: std::sync::Mutex::new(Vec::new()),
             resolver,
-            use_format_ignore,
+            use_format_settings,
         }
     }
 
@@ -227,18 +227,22 @@ impl ignore::ParallelVisitor for FilesVisitor<'_, '_> {
             return ignore::WalkState::Continue;
         }
 
-        if self.is_ignored(path, is_directory) {
+        // Retrieve the settings for this `path`
+        let settings = self.state.resolver.resolve_or_fallback(path);
+
+        if self.is_ignored(path, is_directory, settings) {
             // Skip this file, and if it is a directory skip all of its children!
             return ignore::WalkState::Skip;
         }
 
-        if self.is_included(path, is_directory) {
+        if self.is_included(path, is_directory, settings) {
             // Accept this file
             self.files.push(Ok(entry.into_path()));
             return ignore::WalkState::Continue;
         }
 
         // Didn't accept this file, just keep going
+        tracing::trace!("Excluded file due to fallthrough {path:?}");
         ignore::WalkState::Continue
     }
 }
@@ -259,12 +263,9 @@ impl Drop for FilesVisitor<'_, '_> {
 }
 
 impl FilesVisitor<'_, '_> {
-    fn is_ignored(&self, path: &Path, is_directory: bool) -> bool {
-        // Retrieve the settings for this `path`
-        let settings = self.state.resolver.resolve_or_fallback(path);
-
-        // Consult the format specific ignore patterns if we are in a format context
-        if self.state.use_format_ignore {
+    fn is_ignored(&self, path: &Path, is_directory: bool, settings: &Settings) -> bool {
+        // Consult the format specific patterns if we are in a format context
+        if self.state.use_format_settings {
             if let Some(glob) = settings.format.ignore.matched(path, is_directory) {
                 tracing::trace!(
                     "Ignored file due to '{glob}' in `format.ignore` {path:?}",
@@ -277,19 +278,19 @@ impl FilesVisitor<'_, '_> {
         false
     }
 
-    fn is_included(&self, path: &Path, is_directory: bool) -> bool {
-        if is_directory {
-            tracing::trace!("Ignored file due to being a directory {path:?}");
-            return false;
+    fn is_included(&self, path: &Path, is_directory: bool, settings: &Settings) -> bool {
+        // Consult the format specific patterns if we are in a format context
+        if self.state.use_format_settings {
+            if let Some(glob) = settings.format.include.matched(path, is_directory) {
+                tracing::trace!(
+                    "Included file due to '{glob}' in `format.include` {path:?}",
+                    glob = glob.original()
+                );
+                return true;
+            }
         }
 
-        if !fs::has_r_extension(path) {
-            tracing::trace!("Ignored file due to non-R extension {path:?}");
-            return false;
-        }
-
-        tracing::trace!("Included file {path:?}");
-        true
+        false
     }
 }
 
