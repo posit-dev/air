@@ -32,7 +32,6 @@ tracing = { workspace = true }
 
 [dev-dependencies]
 anyhow = { workspace = true }
-globset = { workspace = true }
 insta = { workspace = true }
 tempfile = { workspace = true }
 
