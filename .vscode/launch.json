@@ -26,14 +26,6 @@
       },
       "args": [],
       "cwd": "${workspaceFolder}"
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Ad hoc: air",
-      "program": "air",
-      "args": ["format", "R"],
-      "cwd": "/Users/davis/files/r/packages/tzdb/"
     }
   ]
 }
