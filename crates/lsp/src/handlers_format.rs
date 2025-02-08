@@ -276,8 +276,16 @@ fn find_expression_lists(node: &RSyntaxNode, offset: TextSize, end: bool) -> Vec
 
 #[cfg(test)]
 mod tests {
+    use crate::documents::Document;
+    use crate::test::new_test_client;
     use crate::test::FileName;
-    use crate::{documents::Document, test::new_test_client, test::TestClientExt};
+    use crate::test::TestClientExt;
+    use biome_lsp_converters::PositionEncoding;
+    use std::path::Path;
+    use tower_lsp::lsp_types::DidChangeWorkspaceFoldersParams;
+    use tower_lsp::lsp_types::WorkspaceFolder;
+    use tower_lsp::lsp_types::WorkspaceFoldersChangeEvent;
+    use url::Url;
 
     #[tokio::test]
     async fn test_format() {
@@ -633,7 +641,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_format_excluded_files() {
+    async fn test_format_default_excluded_files() {
         let mut client = new_test_client().await;
 
         // `cpp11.R` is excluded from formatting by default
@@ -649,5 +657,65 @@ mod tests {
         let doc = Document::doodle(input);
         let output = client.format_document(&doc, filename).await;
         assert_eq!(output, input);
+    }
+
+    #[tokio::test]
+    async fn test_format_excluded_files() {
+        let as_file_url = |path: &Path| format!("file:///{path}", path = path.display());
+
+        let mut client = new_test_client().await;
+
+        // Create a tempdir that will serve as our workspace
+        let tempdir = tempfile::TempDir::new().unwrap();
+        let tempdir = tempdir.path();
+
+        // Note that `test.R` is formatted by default
+        let input = "1+1";
+        let output = "1 + 1\n";
+        let url = as_file_url(tempdir.join("test.R").as_path());
+        let filename = FileName::Url(url);
+        let doc = Document::new(input.to_string(), Some(0), PositionEncoding::Utf8);
+        let result = client.format_document(&doc, filename).await;
+        assert_eq!(result, output);
+
+        // Write the `air.toml` to disk inside the workspace so the server can discover it
+        let air_path = tempdir.join("air.toml");
+        let air_contents = r#"
+[format]
+exclude = ["test.R"]
+default-excludes = false
+"#;
+        std::fs::write(&air_path, air_contents).unwrap();
+
+        // Open the tempdir as the workspace, the server will load in the `air.toml`
+        let workspace_folder = WorkspaceFolder {
+            uri: Url::parse(&as_file_url(tempdir)).unwrap(),
+            name: "workspace".to_string(),
+        };
+        client
+            .did_change_workspace_folders(DidChangeWorkspaceFoldersParams {
+                event: WorkspaceFoldersChangeEvent {
+                    added: vec![workspace_folder],
+                    removed: vec![],
+                },
+            })
+            .await;
+
+        // Now `test.R` should be excluded
+        let input = "1+1";
+        let url = as_file_url(tempdir.join("test.R").as_path());
+        let filename = FileName::Url(url);
+        let doc = Document::new(input.to_string(), Some(0), PositionEncoding::Utf8);
+        let result = client.format_document(&doc, filename).await;
+        assert_eq!(result, input);
+
+        // And `cpp11.R` should now be formatted
+        let input = "1+1";
+        let output = "1 + 1\n";
+        let url = as_file_url(tempdir.join("cpp11.R").as_path());
+        let filename = FileName::Url(url);
+        let doc = Document::new(input.to_string(), Some(0), PositionEncoding::Utf8);
+        let result = client.format_document(&doc, filename).await;
+        assert_eq!(result, output);
     }
 }

@@ -54,6 +54,7 @@ httparse.workspace = true
 insta.workspace = true
 lsp_test.workspace = true
 memchr.workspace = true
+tempfile.workspace = true
 tests_macros.workspace = true
 tokio-util.workspace = true
 
