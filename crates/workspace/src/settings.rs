@@ -5,11 +5,11 @@
 //
 //
 
-mod ignore_patterns;
+mod exclude_patterns;
 mod include_patterns;
 mod line_ending;
 
-pub use ignore_patterns::IgnorePatterns;
+pub use exclude_patterns::ExcludePatterns;
 pub use include_patterns::IncludePatterns;
 pub(crate) use line_ending::LineEnding;
 
@@ -36,7 +36,7 @@ pub struct FormatSettings {
     pub line_ending: LineEnding,
     pub line_width: LineWidth,
     pub persistent_line_breaks: PersistentLineBreaks,
-    pub ignore: IgnorePatterns,
+    pub exclude: ExcludePatterns,
     pub include: IncludePatterns,
 }
 

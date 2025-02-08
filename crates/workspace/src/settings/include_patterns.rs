@@ -8,7 +8,7 @@ use crate::file_patterns::FilePatterns;
 
 /// The set of default include patterns
 ///
-/// See `DEFAULT_IGNORE_PATTERN_NAMES` for details on the exact structure of what can
+/// See `DEFAULT_EXCLUDE_PATTERN_NAMES` for details on the exact structure of what can
 /// be supplied here.
 static DEFAULT_INCLUDE_PATTERN_NAMES: &[&str] = &[
     // R files with any filename at any depth

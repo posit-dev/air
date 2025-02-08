@@ -20,8 +20,8 @@ indent-width = 2
 indent-style = "space"
 line-ending = "auto"
 persistent-line-breaks = true
-ignore = []
-default-ignore = true
+exclude = []
+default-excludes = true
 ```
 
 ## Configuration recommendations
@@ -191,46 +191,46 @@ Alternatively, use a tool such as [codegrip](https://github.com/lionel-/codegrip
 
 It may be preferable to ignore persistent line breaks if you prefer that `line-width` should be the only value that influences line breaks.
 
-### ignore
+### exclude
 
-The set of additional files and folders to ignore.
+The set of additional files and folders to exclude.
 
-A list of strings, i.e. `ignore = ["file.R", "folder/", "files-like-*-this.R"]`.
+A list of strings, i.e. `exclude = ["file.R", "folder/", "files-like-*-this.R"]`.
 
-By default, Air will refuse to format files matched by patterns listed in `default-ignore`.
-Use this option to supply an additional list of ignore patterns.
+By default, Air will refuse to format files matched by patterns listed in `default-excludes`.
+Use this option to supply an additional list of exclude patterns.
 
-Ignore patterns are modeled after what you can provide in a [.gitignore](https://git-scm.com/docs/gitignore), and are resolved relative to the parent directory that your `air.toml` is contained within.
+Exclude patterns are modeled after what you can provide in a [.gitignore](https://git-scm.com/docs/gitignore), and are resolved relative to the parent directory that your `air.toml` is contained within.
 For example, if your `air.toml` was located at `root/air.toml`, then you could provide:
 
--   `ignore.R` to ignore that R file located anywhere below `root`.
-    This is equivalent to `**/ignore.R`.
+-   `file.R` to exclude that R file located anywhere below `root`.
+    This is equivalent to `**/file.R`.
 
--   `ignore/` to ignore that directory located anywhere below `root`.
-    You can also just use `ignore`, but this would technically also match a file named `ignore`, so the trailing slash is preferred when targeting directories.
-    This is equivalent to `**/ignore/`.
+-   `folder/` to exclude that directory located anywhere below `root`.
+    You can also just use `folder`, but this would technically also match a file named `folder`, so the trailing slash is preferred when targeting directories.
+    This is equivalent to `**/folder/`.
 
--   `/ignore/` to ignore a directory at `root/ignore/`, where the leading `/` forces the directory to appear right under `root/`, rather than anywhere.
+-   `/folder/` to exclude a directory at `root/folder/`, where the leading `/` forces the directory to appear right under `root/`, rather than anywhere.
 
--   `ignore-*.R` to ignore R files like `ignore-this.R` and `ignore-that.R` located anywhere below `root`.
+-   `file-*.R` to exclude R files like `file-this.R` and `file-that.R` located anywhere below `root`.
 
--   `ignore/*.R` to ignore all R files in `root/ignore/`, where the `/` in the middle of the pattern forces the directory to appear right under `root/`, rather than anywhere.
-    Note that R files in directories under `ignore/` are not ignored in this case (such as `root/ignore/subdir/file.R`).
+-   `folder/*.R` to exclude all R files in `root/folder/`, where the `/` in the middle of the pattern forces the directory to appear right under `root/`, rather than anywhere.
+    Note that R files in directories under `folder/` are not ignored in this case (such as `root/folder/subfolder/file.R`).
 
--   `ignore/**/*.R` to ignore all R files in any directory under `root/ignore/`, where the `/` in the middle of the pattern forces the directory to appear right under `root/`, rather than anywhere.
+-   `folder/**/*.R` to exclude all R files in any directory under `root/folder/`, where the `/` in the middle of the pattern forces the directory to appear right under `root/`, rather than anywhere.
 
--   `**/ignore/*.R` to ignore all R files inside an `ignore/` directory, where the `ignore/` directory itself can appear anywhere.
+-   `**/folder/*.R` to exclude all R files inside a `folder/` directory, where the `folder/` directory itself can appear anywhere.
 
 See the full [.gitignore](https://git-scm.com/docs/gitignore) documentation for all of the patterns you can provide.
 
-### default-ignore
+### default-excludes
 
-Whether or not the default file ignore patterns are used.
+Whether or not the default file exclude patterns are used.
 
-Either `true` to use the default ignore patterns, or `false` to not use them, with a default of `true`.
+Either `true` to use the default exclude patterns, or `false` to not use them, with a default of `true`.
 
-By default, Air ignores a set of files and folders that you are unlikely to want formatting in.
-The complete list of default ignore patterns is:
+By default, Air excludes a set of files and folders that you are unlikely to want formatting in.
+The complete list of default exclude patterns is:
 
 -   `.git/`
 -   `renv/`

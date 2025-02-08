@@ -11,7 +11,7 @@ use biome_rowan::{AstNode, Language, SyntaxElement};
 use biome_text_size::{TextRange, TextSize};
 use tower_lsp::lsp_types;
 
-use crate::file_patterns::is_document_ignored_during_formatting;
+use crate::file_patterns::is_document_excluded_from_formatting;
 use crate::main_loop::LspState;
 use crate::state::WorldState;
 use crate::{from_proto, to_proto};
@@ -32,7 +32,7 @@ pub(crate) fn document_formatting(
         let language_id = String::from("r");
         let settings = workspace_settings.settings();
 
-        if is_document_ignored_during_formatting(&path, &settings.format, language_id) {
+        if is_document_excluded_from_formatting(&path, &settings.format, language_id) {
             return Ok(None);
         }
     }
@@ -71,7 +71,7 @@ pub(crate) fn document_range_formatting(
         let language_id = String::from("r");
         let settings = workspace_settings.settings();
 
-        if is_document_ignored_during_formatting(&path, &settings.format, language_id) {
+        if is_document_excluded_from_formatting(&path, &settings.format, language_id) {
             return Ok(None);
         }
     }
@@ -561,8 +561,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_format_ignored_files() {
-        // TODO!: Test ignored files behavior, both normal and with custom ignores
-        // and with `default-ignore` turned off
+    async fn test_format_excluded_files() {
+        // TODO!: Test excluded files behavior, both normal and with custom excludes
+        // and with `default-excludes` turned off
     }
 }

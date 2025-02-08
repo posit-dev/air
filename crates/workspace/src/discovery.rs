@@ -191,12 +191,12 @@ impl ignore::ParallelVisitor for FilesVisitor<'_, '_> {
     ///
     /// ## Importance of `WalkState::Skip`
     ///
-    /// We only return `WalkState::Skip` when we reject a file due to our `ignore`
+    /// We only return `WalkState::Skip` when we reject a file due to our `exclude`
     /// criteria, but this case is extremely important. It is a nice optimization because
     /// if we reject `renv/` then we never look at `renv/activate.R` at all, but it also
-    /// affects the behavior of `ignore` in general. With `ignore = ["renv/"]`,
+    /// affects the behavior of `exclude` in general. With `exclude = ["renv/"]`,
     /// `matches("renv")` of course returns `true`, but `matches("renv/activate.R")`
-    /// returns `false`. This means that in order to correctly implement the `ignore`
+    /// returns `false`. This means that in order to correctly implement the `exclude`
     /// behavior, we absolutely cannot recurse into `renv/` after we reject it, otherwise
     /// we will blindly accept its children unless we run `matches()` on each parent
     /// directory of `"renv/activate.R"` as well, which would be wasteful and expensive.
@@ -221,7 +221,7 @@ impl ignore::ParallelVisitor for FilesVisitor<'_, '_> {
             // Accept explicitly provided files, regardless of exclusion/inclusion
             // criteria (including extension). This is the user supplying `air format
             // file.R`. Note we don't do this for directories, i.e. `air format renv`
-            // should do nothing since we have a default `ignore` for `renv/`.
+            // should do nothing since we have a default `exclude` for `renv/`.
             tracing::trace!("Included file due to explicit provision {path:?}");
             self.files.push(Ok(entry.into_path()));
             return ignore::WalkState::Continue;
@@ -230,7 +230,7 @@ impl ignore::ParallelVisitor for FilesVisitor<'_, '_> {
         // Retrieve the settings for this `path`
         let settings = self.state.resolver.resolve_or_fallback(path);
 
-        if self.is_ignored(path, is_directory, settings) {
+        if self.is_excluded(path, is_directory, settings) {
             // Skip this file, and if it is a directory skip all of its children!
             return ignore::WalkState::Skip;
         }
@@ -263,12 +263,12 @@ impl Drop for FilesVisitor<'_, '_> {
 }
 
 impl FilesVisitor<'_, '_> {
-    fn is_ignored(&self, path: &Path, is_directory: bool, settings: &Settings) -> bool {
+    fn is_excluded(&self, path: &Path, is_directory: bool, settings: &Settings) -> bool {
         // Consult the format specific patterns if we are in a format context
         if self.state.use_format_settings {
-            if let Some(glob) = settings.format.ignore.matched(path, is_directory) {
+            if let Some(glob) = settings.format.exclude.matched(path, is_directory) {
                 tracing::trace!(
-                    "Ignored file due to '{glob}' in `format.ignore` {path:?}",
+                    "Excluded file due to '{glob}' in `format.exclude` {path:?}",
                     glob = glob.original()
                 );
                 return true;
@@ -336,7 +336,7 @@ mod test {
     }
 
     #[test]
-    fn test_default_ignore_patterns() -> anyhow::Result<()> {
+    fn test_default_exclude_patterns() -> anyhow::Result<()> {
         let tempdir = TempDir::new()?;
         let tempdir = tempdir.path();
 
@@ -349,7 +349,7 @@ mod test {
         let test_path = tempdir.join("R").join("test.R");
         std::fs::write(&test_path, b"")?;
 
-        // Ignore all of these
+        // Exclude all of these
         std::fs::write(tempdir.join("renv").join("activate.R"), b"")?;
         std::fs::write(tempdir.join("revdep").join("pkg").join("foo.R"), b"")?;
         std::fs::write(tempdir.join("R").join("cpp11.R"), b"")?;
@@ -371,24 +371,24 @@ mod test {
     }
 
     #[test]
-    fn test_ignores_directory_children() -> anyhow::Result<()> {
+    fn test_excludes_directory_children() -> anyhow::Result<()> {
         let tempdir = TempDir::new()?;
         let tempdir = tempdir.path();
 
         let air_path = tempdir.join("air.toml");
         let air_contents = r#"
 [format]
-ignore = ["ignore/"]
+exclude = ["exclude/"]
 "#;
         std::fs::write(&air_path, air_contents)?;
 
         std::fs::create_dir(tempdir.join("R"))?;
-        std::fs::create_dir(tempdir.join("ignore"))?;
-        std::fs::create_dir(tempdir.join("ignore").join("subdir"))?;
+        std::fs::create_dir(tempdir.join("exclude"))?;
+        std::fs::create_dir(tempdir.join("exclude").join("subdir"))?;
 
-        // Ignore all of these
-        std::fs::write(tempdir.join("ignore").join("test.R"), b"")?;
-        std::fs::write(tempdir.join("ignore").join("subdir").join("test.R"), b"")?;
+        // Exclude all of these
+        std::fs::write(tempdir.join("exclude").join("test.R"), b"")?;
+        std::fs::write(tempdir.join("exclude").join("subdir").join("test.R"), b"")?;
 
         let mut resolver = PathResolver::new(Settings::default());
 

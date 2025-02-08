@@ -7,8 +7,8 @@
 
 use std::path::Path;
 
+use crate::settings::ExcludePatterns;
 use crate::settings::FormatSettings;
-use crate::settings::IgnorePatterns;
 use crate::settings::IncludePatterns;
 use crate::settings::LineEnding;
 use crate::settings::Settings;
@@ -111,36 +111,36 @@ pub struct FormatTomlOptions {
     /// should be the only value that influences line breaks.
     pub persistent_line_breaks: Option<bool>,
 
-    /// By default, Air will refuse to format files listed in the set of `default_ignore`.
-    /// To add to this list, use this option to supply a list of ignore patterns.
+    /// By default, Air will refuse to format files listed in the set of `default_excludes`.
+    /// To add to this list, use this option to supply a list of exclude patterns.
     ///
-    /// Ignore patterns are modeled after what you can provide in a
+    /// Exclude patterns are modeled after what you can provide in a
     /// [.gitignore](https://git-scm.com/docs/gitignore), and are resolved relative to the
     /// parent directory that your `air.toml` is contained within. For example, if your
     /// `air.toml` was located at `root/air.toml`, then you could provide:
     ///
-    /// - `ignore.R` to ignore that R file located anywhere below `root`.
-    /// - `ignore/` to ignore that directory located anywhere below `root`. You can also
-    ///   just use `ignore`, but this would technically also match a file named `ignore`,
+    /// - `file.R` to exclude that R file located anywhere below `root`.
+    /// - `folder/` to exclude that directory located anywhere below `root`. You can also
+    ///   just use `folder`, but this would technically also match a file named `folder`,
     ///   so the trailing slash is preferred when targeting directories.
-    /// - `/ignore/` to ignore a directory at `root/ignore/`, where the leading `/` forces
+    /// - `/folder/` to exclude a directory at `root/folder/`, where the leading `/` forces
     ///   the directory to appear right under `root/`, rather than anywhere.
-    /// - `ignore-*.R` to ignore R files like `ignore-this.R` and `ignore-that.R` located
+    /// - `file-*.R` to exclude R files like `file-this.R` and `file-that.R` located
     ///   anywhere below `root`.
-    /// - `ignore/*.R` to ignore all R files at `root/ignore/*.R`, where the `/` in the
+    /// - `folder/*.R` to exclude all R files at `root/folder/*.R`, where the `/` in the
     ///   middle of the pattern forces the directory to appear right under `root/`, rather
     ///   than anywhere.
-    /// - `**/ignore/*.R` to ignore all R files below an `ignore/` directory, where the
-    ///   `ignore/` directory itself can appear anywhere.
+    /// - `**/folder/*.R` to exclude all R files below a `folder/` directory, where the
+    ///   `folder/` directory itself can appear anywhere.
     ///
     /// See the full [.gitignore](https://git-scm.com/docs/gitignore) documentation for
     /// all of the patterns you can provide.
-    pub ignore: Option<Vec<String>>,
+    pub exclude: Option<Vec<String>>,
 
-    /// Air automatically ignores a default set of folders and files. If this option is
+    /// Air automatically excludes a default set of folders and files. If this option is
     /// set to `false`, these files will be formatted as well.
     ///
-    /// The default set of ignored patterns are:
+    /// The default set of excluded patterns are:
     /// - `.git/`
     /// - `renv/`
     /// - `revdep/`
@@ -148,7 +148,7 @@ pub struct FormatTomlOptions {
     /// - `RcppExports.R`
     /// - `extendr-wrappers.R`
     /// - `import-standalone-*.R`
-    pub default_ignore: Option<bool>,
+    pub default_excludes: Option<bool>,
 }
 
 impl TomlOptions {
@@ -170,11 +170,11 @@ impl TomlOptions {
                 }
                 None => PersistentLineBreaks::Respect,
             },
-            ignore: {
-                let ignore = format.ignore.unwrap_or_default();
-                let ignore = ignore.iter().map(String::as_str);
-                let default_ignore = format.default_ignore.unwrap_or(true);
-                IgnorePatterns::try_from_iter(root, ignore, default_ignore)?
+            exclude: {
+                let exclude = format.exclude.unwrap_or_default();
+                let exclude = exclude.iter().map(String::as_str);
+                let default_excludes = format.default_excludes.unwrap_or(true);
+                ExcludePatterns::try_from_iter(root, exclude, default_excludes)?
             },
             // Not currently exposed as a toml option. Theoretically could be for
             // consistency, but there aren't any motivating use cases right now.

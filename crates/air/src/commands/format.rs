@@ -288,7 +288,7 @@ mod test {
     }
 
     #[test]
-    fn test_default_ignore_patterns() -> anyhow::Result<()> {
+    fn test_default_exclude_patterns() -> anyhow::Result<()> {
         let tempdir = TempDir::new()?;
 
         let test_path = tempdir.path().join("test.R");
@@ -304,7 +304,7 @@ mod test {
         std::fs::write(&test_path, test_contents)?;
         std::fs::write(&cpp11_path, cpp11_contents)?;
 
-        // Only `test.R` should be formatted, `cpp11.R` is a default ignore
+        // Only `test.R` should be formatted, `cpp11.R` is a default exclude
         let args = Args::parse_from(["", "format", tempdir.path().to_str().unwrap()]);
         let err = run(args)?;
         assert_eq!(err, ExitStatus::Success);
@@ -315,7 +315,7 @@ mod test {
     }
 
     #[test]
-    fn test_modified_ignore_patterns() -> anyhow::Result<()> {
+    fn test_modified_exclude_patterns() -> anyhow::Result<()> {
         let tempdir = TempDir::new()?;
 
         let test_path = tempdir.path().join("test.R");
@@ -331,11 +331,11 @@ mod test {
         let air_path = tempdir.path().join("air.toml");
         let air_contents = r#"
 [format]
-ignore = ["test.R"]
-default-ignore = false
+exclude = ["test.R"]
+default-excludes = false
 "#;
 
-        // Turn off `default-ignore`, turn on the custom `ignore`
+        // Turn off `default-excludes`, turn on the custom `exclude`
         std::fs::write(&test_path, test_contents)?;
         std::fs::write(&cpp11_path, cpp11_contents)?;
         std::fs::write(&air_path, air_contents)?;
