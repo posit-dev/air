@@ -264,6 +264,7 @@ fn find_expression_lists(node: &RSyntaxNode, offset: TextSize, end: bool) -> Vec
 
 #[cfg(test)]
 mod tests {
+    use crate::test::FileName;
     use crate::{documents::Document, test::new_test_client, test::TestClientExt};
 
     #[tokio::test]
@@ -279,7 +280,7 @@ mod tests {
 3",
         );
 
-        let formatted = client.format_document(&doc).await;
+        let formatted = client.format_document(&doc, FileName::Random).await;
         insta::assert_snapshot!(formatted);
     }
 
@@ -296,7 +297,10 @@ mod tests {
 ",
         );
 
-        let edits = client.format_document_edits(&doc).await.unwrap();
+        let edits = client
+            .format_document_edits(&doc, FileName::Random)
+            .await
+            .unwrap();
         assert!(edits.len() == 1);
 
         let edit = &edits[0];
@@ -312,7 +316,9 @@ mod tests {
 "<<>>",
         );
 
-        let output = client.format_document_range(&doc, range).await;
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output);
 
         #[rustfmt::skip]
@@ -321,7 +327,9 @@ mod tests {
 >>",
         );
 
-        let output = client.format_document_range(&doc, range).await;
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output);
 
         #[rustfmt::skip]
@@ -330,7 +338,9 @@ mod tests {
 >>",
         );
 
-        let output = client.format_document_range(&doc, range).await;
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output);
     }
 
@@ -345,7 +355,9 @@ mod tests {
 <<2+2>>
 ",
         );
-        let output = client.format_document_range(&doc, range).await;
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output);
 
         #[rustfmt::skip]
@@ -356,7 +368,9 @@ mod tests {
 ",
         );
 
-        let output = client.format_document_range(&doc, range).await;
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output);
 
         // The element in the braced expression is a logical line
@@ -368,7 +382,9 @@ mod tests {
 ",
         );
 
-        let output = client.format_document_range(&doc, range).await;
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output);
 
         #[rustfmt::skip]
@@ -377,7 +393,9 @@ mod tests {
 <<{2+2}>>
 ",
         );
-        let output = client.format_document_range(&doc, range).await;
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output);
 
         // The deepest element in the braced expression is our target
@@ -393,7 +411,9 @@ mod tests {
 ",
         );
 
-        let output = client.format_document_range(&doc, range).await;
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output);
     }
 
@@ -409,7 +429,9 @@ mod tests {
         );
 
         // We don't change indentation when `2+2` is formatted
-        let output = client.format_document_range(&doc, range).await;
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output);
 
         // Debatable: Should we make an effort to remove unneeded indentation
@@ -420,7 +442,9 @@ mod tests {
 <<  2+2>>
 ",
         );
-        let output_wide = client.format_document_range(&doc, range).await;
+        let output_wide = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         assert_eq!(output, output_wide);
     }
 
@@ -436,7 +460,9 @@ mod tests {
 ",
         );
 
-        let output1 = client.format_document_range(&doc, range).await;
+        let output1 = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output1);
 
         #[rustfmt::skip]
@@ -446,7 +472,9 @@ mod tests {
 2+2>>
 ",
         );
-        let output2 = client.format_document_range(&doc, range).await;
+        let output2 = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output2);
     }
 
@@ -465,7 +493,9 @@ mod tests {
 ",
         );
 
-        let output1 = client.format_document_range(&doc, range).await;
+        let output1 = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output1);
 
         #[rustfmt::skip]
@@ -478,7 +508,9 @@ mod tests {
 3+3
 ",
         );
-        let output2 = client.format_document_range(&doc, range).await;
+        let output2 = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output2);
 
         #[rustfmt::skip]
@@ -491,7 +523,9 @@ mod tests {
 >>3+3
 ",
         );
-        let output3 = client.format_document_range(&doc, range).await;
+        let output3 = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output3);
 
         #[rustfmt::skip]
@@ -504,7 +538,9 @@ mod tests {
 >>3+3
 ",
         );
-        let output4 = client.format_document_range(&doc, range).await;
+        let output4 = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output4);
 
         #[rustfmt::skip]
@@ -514,7 +550,9 @@ mod tests {
 ",
         );
 
-        let output5 = client.format_document_range(&doc, range).await;
+        let output5 = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output5);
 
         #[rustfmt::skip]
@@ -524,7 +562,9 @@ mod tests {
 ",
         );
 
-        let output6 = client.format_document_range(&doc, range).await;
+        let output6 = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output6);
     }
 
@@ -536,11 +576,11 @@ mod tests {
         let mut doc = Document::doodle("{1}");
 
         doc.settings.indent_width = Some(settings::IndentWidth::try_from(8_u8).unwrap());
-        let output_8_spaces = client.format_document(&doc).await;
+        let output_8_spaces = client.format_document(&doc, FileName::Random).await;
         insta::assert_snapshot!(output_8_spaces);
 
         doc.settings.indent_style = Some(settings::IndentStyle::Tab);
-        let output_tab = client.format_document(&doc).await;
+        let output_tab = client.format_document(&doc, FileName::Random).await;
         insta::assert_snapshot!(output_tab);
     }
 
@@ -552,11 +592,15 @@ mod tests {
         let (mut doc, range) = Document::doodle_and_range("<<{1}>>");
 
         doc.settings.indent_width = Some(settings::IndentWidth::try_from(8_u8).unwrap());
-        let output_8_spaces = client.format_document_range(&doc, range).await;
+        let output_8_spaces = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output_8_spaces);
 
         doc.settings.indent_style = Some(settings::IndentStyle::Tab);
-        let output_tab = client.format_document_range(&doc, range).await;
+        let output_tab = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output_tab);
     }
 
