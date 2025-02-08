@@ -27,13 +27,19 @@ pub(crate) fn document_formatting(
 
     let workspace_settings = lsp_state.workspace_document_settings(uri);
 
-    if let Ok(path) = uri.to_file_path() {
-        // TODO: `language_id` should be a property of the `Document` stored in `did_open()`
-        let language_id = String::from("r");
-        let settings = workspace_settings.settings();
+    match uri.to_file_path() {
+        Ok(path) => {
+            // TODO: `language_id` should be a property of the `Document` stored in `did_open()`
+            let language_id = String::from("r");
+            let settings = workspace_settings.settings();
 
-        if is_document_excluded_from_formatting(&path, &settings.format, language_id) {
-            return Ok(None);
+            if is_document_excluded_from_formatting(&path, &settings.format, language_id) {
+                return Ok(None);
+            }
+        }
+        Err(_) => {
+            // `untitled:Untitled-1` with an 'r' `language_id` comes through here, as an example
+            tracing::trace!("Can't convert uri to file path, assuming we can format it: {uri}")
         }
     }
 
@@ -66,13 +72,19 @@ pub(crate) fn document_range_formatting(
 
     let workspace_settings = lsp_state.workspace_document_settings(uri);
 
-    if let Ok(path) = uri.to_file_path() {
-        // TODO: `language_id` should be a property of the `Document` stored in `did_open()`
-        let language_id = String::from("r");
-        let settings = workspace_settings.settings();
+    match uri.to_file_path() {
+        Ok(path) => {
+            // TODO: `language_id` should be a property of the `Document` stored in `did_open()`
+            let language_id = String::from("r");
+            let settings = workspace_settings.settings();
 
-        if is_document_excluded_from_formatting(&path, &settings.format, language_id) {
-            return Ok(None);
+            if is_document_excluded_from_formatting(&path, &settings.format, language_id) {
+                return Ok(None);
+            }
+        }
+        Err(_) => {
+            // `untitled:Untitled-1` with an 'r' `language_id` comes through here, as an example
+            tracing::trace!("Can't convert uri to file path, assuming we can format it: {uri}")
         }
     }
 
@@ -605,8 +617,37 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_format_untitled_files() {
+        let mut client = new_test_client().await;
+
+        // `untitled:Untitled-1` is what VS Code gives us for an untitled file
+        // that has its language id set to 'r'
+        let filename = FileName::Url(String::from("untitled:Untitled-1"));
+
+        let input = "1+1";
+        let expect = "1 + 1\n";
+        let doc = Document::doodle(input);
+        let output = client.format_document(&doc, filename).await;
+
+        assert_eq!(output, expect);
+    }
+
+    #[tokio::test]
     async fn test_format_excluded_files() {
-        // TODO!: Test excluded files behavior, both normal and with custom excludes
-        // and with `default-excludes` turned off
+        let mut client = new_test_client().await;
+
+        // `cpp11.R` is excluded from formatting by default
+        let filename = FileName::Url(String::from("file:///cpp11.R"));
+        let input = "1+1";
+        let doc = Document::doodle(input);
+        let output = client.format_document(&doc, filename).await;
+        assert_eq!(output, input);
+
+        // `renv/` is excluded from formatting by default
+        let filename = FileName::Url(String::from("file:///renv/activate.R"));
+        let input = "1+1";
+        let doc = Document::doodle(input);
+        let output = client.format_document(&doc, filename).await;
+        assert_eq!(output, input);
     }
 }
