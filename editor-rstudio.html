@@ -38,7 +38,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-018089954d508eae8a473f0b7f0491f0.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-d3687ddc60d9d509890019b632583de7.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-72de9cfb85b3ee58d1abdf6744228893.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -205,19 +205,6 @@ ul.task-list li input[type="checkbox"] {
 <p>RStudio does not support the <a href="https://microsoft.github.io/language-server-protocol/">Language Server Protocol</a>, but you can still use Air as an <em>external formatter</em>.</p>
 <section id="installation" class="level1">
 <h1>Installation</h1>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Air is currently only supported on macOS and Windows. Linux support is coming soon!
-</div>
-</div>
-<div class="callout-body-container callout-body">
-
-</div>
-</div>
 <p>Ensure you have at least RStudio version 2024.12.0, which you can download from <a href="https://posit.co/download/rstudio-desktop/">here</a>. Additionally, you’ll need to install the Air <a href="./cli.html">command line tool</a>.</p>
 <p>Open <code>Tools -&gt; Global Options -&gt; Code</code> and change the option to use an <code>External</code> formatter. Then set the <code>Reformat command</code> to {<code>path/to/air} format</code>.</p>
 <p>The easiest way to figure out <code>{path/to/air}</code> for yourself is to run <code>which air</code> from a Terminal on Unix, and <code>where air</code> from the Command Prompt on Windows.</p>
