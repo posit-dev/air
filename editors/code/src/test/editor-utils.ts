@@ -98,3 +98,19 @@ export const type = async (
 	await onChange;
 	return document;
 };
+
+export async function stripWhitespace(
+	editor: vscode.TextEditor,
+	doc: vscode.TextDocument,
+) {
+	const stripped = doc.getText().replace(/ +/g, "");
+	await editor.edit((editBuilder) => {
+		editBuilder.replace(
+			new vscode.Range(
+				doc.positionAt(0),
+				doc.positionAt(doc.getText().length),
+			),
+			stripped,
+		);
+	});
+}

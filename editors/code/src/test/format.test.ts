@@ -3,7 +3,7 @@ import * as assert from "assert";
 import * as fs from "fs";
 import { before } from "mocha";
 
-import { withFileEditor } from "./editor-utils";
+import { stripWhitespace, withFileEditor } from "./editor-utils";
 import { snapshotPath, testPath, waitLsp, withToml } from "./extension";
 
 before(async () => {
@@ -24,6 +24,9 @@ suite("Format Test Suite", () => {
 	test("Format document with forward propagation of settings", async () => {
 		await withFileEditor(snapshotPath("format.R"), async (editor, doc) => {
 			const old = doc.getText();
+
+			// To ensure something happens (e.g. add whitespace back)
+			await stripWhitespace(editor, doc);
 
 			assert.strictEqual(editor.options.insertSpaces, true);
 			assert.strictEqual(editor.options.indentSize, 8);
@@ -49,6 +52,9 @@ indent-width = 6
 				snapshotPath("format-toml.R"),
 				async (editor, doc) => {
 					const old = doc.getText();
+
+					// To ensure something happens (e.g. add whitespace back)
+					await stripWhitespace(editor, doc);
 
 					assert.strictEqual(editor.options.insertSpaces, false);
 					assert.strictEqual(editor.options.indentSize, 6);
