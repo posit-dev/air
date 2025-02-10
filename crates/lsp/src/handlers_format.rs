@@ -642,17 +642,29 @@ mod tests {
 
     #[tokio::test]
     async fn test_format_default_excluded_files() {
+        let as_file_url = |path: &str| {
+            #[cfg(not(windows))]
+            let prefix = "/";
+            #[cfg(windows)]
+            let prefix = "C:/";
+
+            // file://<hostname>/<path>
+            // - <hostname> is the empty string for us
+            // - <path> must start with the right OS specific prefix
+            format!("file:///{prefix}{path}")
+        };
+
         let mut client = new_test_client().await;
 
         // `cpp11.R` is excluded from formatting by default
-        let filename = FileName::Url(String::from("file:///cpp11.R"));
+        let filename = FileName::Url(as_file_url("cpp11.R"));
         let input = "1+1";
         let doc = Document::doodle(input);
         let output = client.format_document(&doc, filename).await;
         assert_eq!(output, input);
 
         // `renv/` is excluded from formatting by default
-        let filename = FileName::Url(String::from("file:///renv/activate.R"));
+        let filename = FileName::Url(as_file_url("renv/activate.R"));
         let input = "1+1";
         let doc = Document::doodle(input);
         let output = client.format_document(&doc, filename).await;
