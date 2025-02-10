@@ -217,6 +217,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#indent-style" id="toc-indent-style" class="nav-link" data-scroll-target="#indent-style">indent-style</a></li>
   <li><a href="#line-ending" id="toc-line-ending" class="nav-link" data-scroll-target="#line-ending">line-ending</a></li>
   <li><a href="#persistent-line-breaks" id="toc-persistent-line-breaks" class="nav-link" data-scroll-target="#persistent-line-breaks">persistent-line-breaks</a></li>
+  <li><a href="#exclude" id="toc-exclude" class="nav-link" data-scroll-target="#exclude">exclude</a></li>
+  <li><a href="#default-exclude" id="toc-default-exclude" class="nav-link" data-scroll-target="#default-exclude">default-exclude</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -252,7 +254,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">indent-width</span> <span class="op">=</span> <span class="dv">2</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dt">indent-style</span> <span class="op">=</span> <span class="st">"space"</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">line-ending</span> <span class="op">=</span> <span class="st">"auto"</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">persistent-line-breaks</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">persistent-line-breaks</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="dt">exclude</span> <span class="op">=</span> <span class="op">[]</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="dt">default-exclude</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="configuration-recommendations" class="level2">
 <h2 class="anchored" data-anchor-id="configuration-recommendations">Configuration recommendations</h2>
@@ -365,6 +369,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>dictionary <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">apple =</span> <span class="fl">0.75</span>, <span class="at">banana =</span> <span class="fl">0.25</span>, <span class="at">cherry =</span> <span class="fl">0.50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Alternatively, use a tool such as <a href="https://github.com/lionel-/codegrip">codegrip</a> bound to a keyboard shortcut to flatten the code, and Air will keep it flattened as long as it fits within the <code>line-width</code>.</p>
 <p>It may be preferable to ignore persistent line breaks if you prefer that <code>line-width</code> should be the only value that influences line breaks.</p>
+</section>
+<section id="exclude" class="level3">
+<h3 class="anchored" data-anchor-id="exclude">exclude</h3>
+<p>The set of additional files and folders to exclude.</p>
+<p>A list of strings, i.e.&nbsp;<code>exclude = ["file.R", "folder/", "files-like-*-this.R"]</code>.</p>
+<p>By default, Air will refuse to format files matched by patterns listed in <code>default-exclude</code>. Use this option to supply an additional list of exclude patterns.</p>
+<p>Exclude patterns are modeled after what you can provide in a <a href="https://git-scm.com/docs/gitignore">.gitignore</a>, and are resolved relative to the parent directory that your <code>air.toml</code> is contained within. For example, if your <code>air.toml</code> was located at <code>root/air.toml</code>, then:</p>
+<ul>
+<li><p><code>file.R</code> excludes a file named <code>file.R</code> located anywhere below <code>root/</code>. This is equivalent to <code>**/file.R</code>.</p></li>
+<li><p><code>folder/</code> excludes a directory named <code>folder</code> (and all of its children) located anywhere below <code>root/</code>. You can also just use <code>folder</code>, but this would technically also match a file named <code>folder</code>, so the trailing slash is preferred when targeting directories. This is equivalent to <code>**/folder/</code>.</p></li>
+<li><p><code>/file.R</code> excludes a file named <code>file.R</code> located at <code>root/file.R</code>.</p></li>
+<li><p><code>/folder/</code> excludes a directory named <code>folder</code> (and all of its children) located at <code>root/folder/</code>.</p></li>
+<li><p><code>file-*.R</code> excludes R files named like <code>file-this.R</code> and <code>file-that.R</code> located anywhere below <code>root/</code>.</p></li>
+<li><p><code>folder/*.R</code> excludes all R files located at <code>root/folder/</code>. Note that R files in directories under <code>folder/</code> are not excluded in this case (such as <code>root/folder/subfolder/file.R</code>).</p></li>
+<li><p><code>folder/**/*.R</code> excludes all R files located anywhere below <code>root/folder/</code>.</p></li>
+<li><p><code>**/folder/*.R</code> excludes all R files located directly inside a <code>folder/</code> directory, where the <code>folder/</code> directory itself can appear anywhere.</p></li>
+</ul>
+<p>See the full <a href="https://git-scm.com/docs/gitignore">.gitignore</a> documentation for all of the patterns you can provide.</p>
+</section>
+<section id="default-exclude" class="level3">
+<h3 class="anchored" data-anchor-id="default-exclude">default-exclude</h3>
+<p>Whether or not the default file exclude patterns are used.</p>
+<p>Either <code>true</code> to use the default exclude patterns, or <code>false</code> to not use them, with a default of <code>true</code>.</p>
+<p>By default, Air excludes a set of files and folders that you are unlikely to want formatting in. The complete list of default exclude patterns is:</p>
+<ul>
+<li><code>.git/</code></li>
+<li><code>renv/</code></li>
+<li><code>revdep/</code></li>
+<li><code>cpp11.R</code></li>
+<li><code>RcppExports.R</code></li>
+<li><code>extendr-wrappers.R</code></li>
+<li><code>import-standalone-*.R</code></li>
+</ul>
 
 
 </section>
