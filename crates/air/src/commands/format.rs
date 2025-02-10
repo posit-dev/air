@@ -315,6 +315,50 @@ mod test {
     }
 
     #[test]
+    fn test_default_exclude_patterns_with_explicit_format_file_request() -> anyhow::Result<()> {
+        let tempdir = TempDir::new()?;
+
+        let cpp11_path = tempdir.path().join("cpp11.R");
+        let cpp11_contents = r#"
+1+1
+"#;
+        std::fs::write(&cpp11_path, cpp11_contents)?;
+
+        // Formatting on `cpp11.R` is explicitly requested, since this does not require
+        // any file discovery, we format it even though it matches a default `exclude`.
+        let args = Args::parse_from(["", "format", cpp11_path.to_str().unwrap()]);
+        let err = run(args)?;
+        assert_eq!(err, ExitStatus::Success);
+        assert!(cpp11_contents != std::fs::read_to_string(&cpp11_path)?);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_default_exclude_patterns_with_explicit_format_folder_request() -> anyhow::Result<()> {
+        let tempdir = TempDir::new()?;
+
+        let renv = tempdir.path().join("renv");
+        std::fs::create_dir(&renv)?;
+
+        let activate_path = renv.join("activate.R");
+        let activate_contents = r#"
+1+1
+"#;
+        std::fs::write(&activate_path, activate_contents)?;
+
+        // Formatting on `air format renv` is explicitly requested. We don't auto
+        // accept folders provided on the command line, so this goes through the standard
+        // path and ends up excluding everything in `renv/`.
+        let args = Args::parse_from(["", "format", renv.to_str().unwrap()]);
+        let err = run(args)?;
+        assert_eq!(err, ExitStatus::Success);
+        assert_eq!(activate_contents, std::fs::read_to_string(&activate_path)?);
+
+        Ok(())
+    }
+
+    #[test]
     fn test_modified_exclude_patterns() -> anyhow::Result<()> {
         let tempdir = TempDir::new()?;
 
