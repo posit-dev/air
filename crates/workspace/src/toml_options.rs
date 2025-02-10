@@ -7,9 +7,10 @@
 
 use std::path::Path;
 
+use crate::settings::DefaultExcludePatterns;
+use crate::settings::DefaultIncludePatterns;
 use crate::settings::ExcludePatterns;
 use crate::settings::FormatSettings;
-use crate::settings::IncludePatterns;
 use crate::settings::LineEnding;
 use crate::settings::Settings;
 use settings::IndentStyle;
@@ -170,15 +171,21 @@ impl TomlOptions {
                 }
                 None => PersistentLineBreaks::Respect,
             },
-            exclude: {
-                let exclude = format.exclude.unwrap_or_default();
-                let exclude = exclude.iter().map(String::as_str);
-                let default_excludes = format.default_excludes.unwrap_or(true);
-                ExcludePatterns::try_from_iter(root, exclude, default_excludes)?
+            exclude: match format.exclude {
+                Some(exclude) => {
+                    let exclude = exclude.iter().map(String::as_str);
+                    Some(ExcludePatterns::try_from_iter(root, exclude)?)
+                }
+                None => None,
             },
-            // Not currently exposed as a toml option. Theoretically could be for
-            // consistency, but there aren't any motivating use cases right now.
-            include: IncludePatterns::default(),
+            default_exclude: match format.default_excludes.unwrap_or(true) {
+                true => Some(DefaultExcludePatterns::default()),
+                false => None,
+            },
+            // `include` and `default_include` are not currently exposed as toml options.
+            // Theoretically could be for consistency, but there aren't any motivating use
+            // cases right now.
+            default_include: Some(DefaultIncludePatterns::default()),
         };
 
         Ok(Settings { format })

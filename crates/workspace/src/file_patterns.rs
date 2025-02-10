@@ -1,4 +1,5 @@
 use std::path::Path;
+use std::path::PathBuf;
 
 use ignore::gitignore::Gitignore;
 use ignore::gitignore::GitignoreBuilder;
@@ -14,6 +15,28 @@ use ignore::Match;
 /// not also `{root}/subdir/special.R`.
 #[derive(Clone, Debug)]
 pub struct FilePatterns {
+    matcher: Gitignore,
+}
+
+/// Matcher for a default set of globs
+///
+/// Compared to [FilePatterns], [DefaultFilePatterns] is special because it does not
+/// allow specification of a `root` path. When constructing [crate::settings::Settings]
+/// for a "virtual" `air.toml`, there is no `root` path, but we still want to respect
+/// default includes and excludes. To ensure this works correctly, we have to make two
+/// main changes:
+///
+/// - All `patterns` must start with `**/` so they don't depend on the `root`, this is
+///   enforced by [DefaultFilePatterns::try_from_iter] at creation time.
+///
+/// - [DefaultFilePatterns::matched_path_or_any_parents] is custom, rather than relying
+///   on [Gitignore] directly. The reason we do this is because [Gitignore]'s version
+///   will panic if the `path` we provide contains a root component after `root` stripping
+///   has occurred (like a leading `/` on Unix, or leading `C:/` on Windows). We don't
+///   have a `root` to strip, and our globs don't depend on `root`, so we don't need this
+///   restriction.
+#[derive(Clone, Debug)]
+pub struct DefaultFilePatterns {
     matcher: Gitignore,
 }
 
@@ -66,6 +89,70 @@ impl FilePatterns {
             Match::Whitelist(_) => None,
             Match::Ignore(glob) => Some(glob),
         }
+    }
+}
+
+impl DefaultFilePatterns {
+    /// Construct [DefaultFilePatterns] from an iterator of patterns
+    ///
+    /// Note:
+    /// - Uses an empty string for the `root`.
+    /// - Enforces that all patterns start with `**/`, since we don't have a `root`.
+    pub(crate) fn try_from_iter<'str, I>(patterns: I) -> anyhow::Result<Self>
+    where
+        I: IntoIterator<Item = &'str str>,
+    {
+        // For the *default* case, the `root` path is always the empty string
+        let root = PathBuf::new();
+
+        let mut builder = GitignoreBuilder::new(root);
+
+        for pattern in patterns {
+            debug_assert!(pattern.starts_with("**/"));
+            builder.add_line(None, pattern)?;
+        }
+
+        Ok(Self {
+            matcher: builder.build()?,
+        })
+    }
+
+    /// Returns the glob that matches this `path`, or `None` if no glob matches
+    pub(crate) fn matched<P>(&self, path: P, is_directory: bool) -> Option<&Glob>
+    where
+        P: AsRef<Path>,
+    {
+        match self.matcher.matched(path, is_directory) {
+            Match::None => None,
+            Match::Whitelist(_) => None,
+            Match::Ignore(glob) => Some(glob),
+        }
+    }
+
+    /// Returns the glob that matches this `path` or any parent, or `None` if no glob
+    /// matches
+    ///
+    /// Implementation is based on [ignore::gitignore::Gitignore::matched_path_or_any_parents],
+    /// excluding the `assert!(!path.has_root())` check since default patterns don't
+    /// depend on the `root`.
+    pub fn matched_path_or_any_parents<P>(&self, path: P, is_directory: bool) -> Option<&Glob>
+    where
+        P: AsRef<Path>,
+    {
+        let mut path = path.as_ref();
+
+        match self.matched(path, is_directory) {
+            None => (), // walk up
+            a_match => return a_match,
+        }
+        while let Some(parent) = path.parent() {
+            match self.matched(parent, /* is_directory */ true) {
+                None => path = parent, // walk up
+                a_match => return a_match,
+            }
+        }
+
+        None
     }
 }
 

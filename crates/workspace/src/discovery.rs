@@ -266,9 +266,27 @@ impl FilesVisitor<'_, '_> {
     fn is_excluded(&self, path: &Path, is_directory: bool, settings: &Settings) -> bool {
         // Consult the format specific patterns if we are in a format context
         if self.state.use_format_settings {
-            if let Some(glob) = settings.format.exclude.matched(path, is_directory) {
+            if let Some(glob) = settings
+                .format
+                .exclude
+                .as_ref()
+                .and_then(|exclude| exclude.matched(path, is_directory))
+            {
                 tracing::trace!(
                     "Excluded file due to '{glob}' in `format.exclude` {path:?}",
+                    glob = glob.original()
+                );
+                return true;
+            }
+
+            if let Some(glob) = settings
+                .format
+                .default_exclude
+                .as_ref()
+                .and_then(|default_exclude| default_exclude.matched(path, is_directory))
+            {
+                tracing::trace!(
+                    "Excluded file due to '{glob}' in `format.default_exclude` {path:?}",
                     glob = glob.original()
                 );
                 return true;
@@ -281,9 +299,14 @@ impl FilesVisitor<'_, '_> {
     fn is_included(&self, path: &Path, is_directory: bool, settings: &Settings) -> bool {
         // Consult the format specific patterns if we are in a format context
         if self.state.use_format_settings {
-            if let Some(glob) = settings.format.include.matched(path, is_directory) {
+            if let Some(glob) = settings
+                .format
+                .default_include
+                .as_ref()
+                .and_then(|default_include| default_include.matched(path, is_directory))
+            {
                 tracing::trace!(
-                    "Included file due to '{glob}' in `format.include` {path:?}",
+                    "Included file due to '{glob}' in `format.default_include` {path:?}",
                     glob = glob.original()
                 );
                 return true;
