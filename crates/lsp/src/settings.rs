@@ -1,3 +1,4 @@
+use air_r_formatter::context::RFormatOptions;
 use serde::Deserialize;
 use serde_json::Value;
 
@@ -33,20 +34,20 @@ pub(crate) struct InitializationOptions {
 
 impl DocumentSettings {
     pub(crate) fn merge(
-        &self,
-        mut settings: workspace::settings::Settings,
-    ) -> workspace::settings::Settings {
-        if let Some(indent_style) = self.indent_style {
-            settings.format.indent_style = indent_style;
+        mut format_options: RFormatOptions,
+        document_settings: &DocumentSettings,
+    ) -> RFormatOptions {
+        if let Some(indent_style) = document_settings.indent_style {
+            format_options.set_indent_style(indent_style);
         }
-        if let Some(indent_width) = self.indent_width {
-            settings.format.indent_width = indent_width;
+        if let Some(indent_width) = document_settings.indent_width {
+            format_options.set_indent_width(indent_width);
         }
-        if let Some(line_width) = self.line_width {
-            settings.format.line_width = line_width;
+        if let Some(line_width) = document_settings.line_width {
+            format_options.set_line_width(line_width);
         }
 
-        settings
+        format_options
     }
 }
 

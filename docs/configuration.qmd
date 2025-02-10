@@ -20,6 +20,8 @@ indent-width = 2
 indent-style = "space"
 line-ending = "auto"
 persistent-line-breaks = true
+exclude = []
+default-exclude = true
 ```
 
 ## Configuration recommendations
@@ -188,3 +190,54 @@ dictionary <- list(apple = 0.75, banana = 0.25, cherry = 0.50)
 Alternatively, use a tool such as [codegrip](https://github.com/lionel-/codegrip) bound to a keyboard shortcut to flatten the code, and Air will keep it flattened as long as it fits within the `line-width`.
 
 It may be preferable to ignore persistent line breaks if you prefer that `line-width` should be the only value that influences line breaks.
+
+### exclude
+
+The set of additional files and folders to exclude.
+
+A list of strings, i.e. `exclude = ["file.R", "folder/", "files-like-*-this.R"]`.
+
+By default, Air will refuse to format files matched by patterns listed in `default-exclude`.
+Use this option to supply an additional list of exclude patterns.
+
+Exclude patterns are modeled after what you can provide in a [.gitignore](https://git-scm.com/docs/gitignore), and are resolved relative to the parent directory that your `air.toml` is contained within.
+For example, if your `air.toml` was located at `root/air.toml`, then:
+
+-   `file.R` excludes a file named `file.R` located anywhere below `root/`.
+    This is equivalent to `**/file.R`.
+
+-   `folder/` excludes a directory named `folder` (and all of its children) located anywhere below `root/`.
+    You can also just use `folder`, but this would technically also match a file named `folder`, so the trailing slash is preferred when targeting directories.
+    This is equivalent to `**/folder/`.
+
+-   `/file.R` excludes a file named `file.R` located at `root/file.R`.
+
+-   `/folder/` excludes a directory named `folder` (and all of its children) located at `root/folder/`.
+
+-   `file-*.R` excludes R files named like `file-this.R` and `file-that.R` located anywhere below `root/`.
+
+-   `folder/*.R` excludes all R files located at `root/folder/`.
+    Note that R files in directories under `folder/` are not excluded in this case (such as `root/folder/subfolder/file.R`).
+
+-   `folder/**/*.R` excludes all R files located anywhere below `root/folder/`.
+
+-   `**/folder/*.R` excludes all R files located directly inside a `folder/` directory, where the `folder/` directory itself can appear anywhere.
+
+See the full [.gitignore](https://git-scm.com/docs/gitignore) documentation for all of the patterns you can provide.
+
+### default-exclude
+
+Whether or not the default file exclude patterns are used.
+
+Either `true` to use the default exclude patterns, or `false` to not use them, with a default of `true`.
+
+By default, Air excludes a set of files and folders that you are unlikely to want formatting in.
+The complete list of default exclude patterns is:
+
+-   `.git/`
+-   `renv/`
+-   `revdep/`
+-   `cpp11.R`
+-   `RcppExports.R`
+-   `extendr-wrappers.R`
+-   `import-standalone-*.R`

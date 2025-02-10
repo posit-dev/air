@@ -10,7 +10,8 @@
       },
       "windows": {
         "program": "air.exe"
-      }
+      },
+      "sourceLanguages": ["rust"]
     },
     {
       "type": "lldb",

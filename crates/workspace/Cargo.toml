@@ -17,6 +17,7 @@ schemars = ["dep:schemars", "settings/schemars"]
 
 [dependencies]
 air_r_formatter = { workspace = true }
+anyhow = { workspace = true }
 biome_formatter = { workspace = true, features = ["serde"] }
 fs = { workspace = true }
 ignore = { workspace = true }
@@ -27,6 +28,7 @@ schemars = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"] }
 settings = { workspace = true, features = ["serde"] }
 toml = { workspace = true }
+tracing = { workspace = true }
 
 [dev-dependencies]
 anyhow = { workspace = true }

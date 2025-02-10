@@ -6,6 +6,7 @@ pub use tower_lsp::start_lsp;
 pub mod capabilities;
 pub mod documents;
 pub mod encoding;
+pub mod file_patterns;
 pub mod from_proto;
 pub mod handlers;
 pub mod handlers_ext;

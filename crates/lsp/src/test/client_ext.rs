@@ -5,21 +5,48 @@ use tower_lsp::lsp_types;
 use crate::{documents::Document, from_proto, to_proto};
 
 pub(crate) trait TestClientExt {
-    async fn open_document(&mut self, doc: &Document) -> lsp_types::TextDocumentItem;
+    async fn open_document(
+        &mut self,
+        doc: &Document,
+        filename: FileName,
+    ) -> lsp_types::TextDocumentItem;
 
-    async fn format_document(&mut self, doc: &Document) -> String;
-    async fn format_document_range(&mut self, doc: &Document, range: TextRange) -> String;
-    async fn format_document_edits(&mut self, doc: &Document) -> Option<Vec<lsp_types::TextEdit>>;
+    async fn format_document(&mut self, doc: &Document, filename: FileName) -> String;
+    async fn format_document_range(
+        &mut self,
+        doc: &Document,
+        filename: FileName,
+        range: TextRange,
+    ) -> String;
+    async fn format_document_edits(
+        &mut self,
+        doc: &Document,
+        filename: FileName,
+    ) -> Option<Vec<lsp_types::TextEdit>>;
     async fn format_document_range_edits(
         &mut self,
         doc: &Document,
+        filename: FileName,
         range: TextRange,
     ) -> Option<Vec<lsp_types::TextEdit>>;
 }
 
+pub(crate) enum FileName {
+    Random,
+    Url(String),
+}
+
 impl TestClientExt for TestClient {
-    async fn open_document(&mut self, doc: &Document) -> lsp_types::TextDocumentItem {
-        let path = format!("test://{}", uuid::Uuid::new_v4());
+    async fn open_document(
+        &mut self,
+        doc: &Document,
+        filename: FileName,
+    ) -> lsp_types::TextDocumentItem {
+        let path = match filename {
+            FileName::Random => format!("test://{}", uuid::Uuid::new_v4()),
+            FileName::Url(filename) => filename,
+        };
+
         let uri = url::Url::parse(&path).unwrap();
 
         let text_document = lsp_types::TextDocumentItem {
@@ -37,20 +64,31 @@ impl TestClientExt for TestClient {
         text_document
     }
 
-    async fn format_document(&mut self, doc: &Document) -> String {
-        let edits = self.format_document_edits(doc).await.unwrap();
-        from_proto::apply_text_edits(doc, edits).unwrap()
+    async fn format_document(&mut self, doc: &Document, filename: FileName) -> String {
+        match self.format_document_edits(doc, filename).await {
+            Some(edits) => from_proto::apply_text_edits(doc, edits).unwrap(),
+            None => doc.contents.clone(),
+        }
     }
 
-    async fn format_document_range(&mut self, doc: &Document, range: TextRange) -> String {
-        let Some(edits) = self.format_document_range_edits(doc, range).await else {
+    async fn format_document_range(
+        &mut self,
+        doc: &Document,
+        filename: FileName,
+        range: TextRange,
+    ) -> String {
+        let Some(edits) = self.format_document_range_edits(doc, filename, range).await else {
             return doc.contents.clone();
         };
         from_proto::apply_text_edits(doc, edits).unwrap()
     }
 
-    async fn format_document_edits(&mut self, doc: &Document) -> Option<Vec<lsp_types::TextEdit>> {
-        let lsp_doc = self.open_document(doc).await;
+    async fn format_document_edits(
+        &mut self,
+        doc: &Document,
+        filename: FileName,
+    ) -> Option<Vec<lsp_types::TextEdit>> {
+        let lsp_doc = self.open_document(doc, filename).await;
 
         self.formatting(lsp_types::DocumentFormattingParams {
             text_document: lsp_types::TextDocumentIdentifier {
@@ -78,9 +116,10 @@ impl TestClientExt for TestClient {
     async fn format_document_range_edits(
         &mut self,
         doc: &Document,
+        filename: FileName,
         range: TextRange,
     ) -> Option<Vec<lsp_types::TextEdit>> {
-        let lsp_doc = self.open_document(doc).await;
+        let lsp_doc = self.open_document(doc, filename).await;
 
         let range = to_proto::range(&doc.line_index.index, range, doc.line_index.encoding).unwrap();
 

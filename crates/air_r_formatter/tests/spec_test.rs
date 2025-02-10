@@ -52,9 +52,14 @@ fn format_options_from_code(code: &str) -> RFormatOptions {
 
     let contents = lines.join("\n");
 
+    // Root directory isn't important here as long as we don't supply `exclude`,
+    // which would not make sense anyways
+    let root = Path::new("");
+
     let settings = workspace::toml::parse_air_inline_toml(&contents)
         .expect("Can parse inline TOML")
-        .into_settings();
+        .into_settings(root)
+        .unwrap();
 
     settings.format.to_format_options(code)
 }

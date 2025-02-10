@@ -11,6 +11,7 @@ use biome_rowan::{AstNode, Language, SyntaxElement};
 use biome_text_size::{TextRange, TextSize};
 use tower_lsp::lsp_types;
 
+use crate::file_patterns::is_document_excluded_from_formatting;
 use crate::main_loop::LspState;
 use crate::state::WorldState;
 use crate::{from_proto, to_proto};
@@ -21,10 +22,26 @@ pub(crate) fn document_formatting(
     lsp_state: &LspState,
     state: &WorldState,
 ) -> anyhow::Result<Option<Vec<lsp_types::TextEdit>>> {
-    let doc = state.get_document(&params.text_document.uri)?;
+    let uri = &params.text_document.uri;
+    let doc = state.get_document(uri)?;
 
-    let settings = lsp_state.document_settings(&params.text_document.uri, &doc.settings);
-    let format_options = settings.format.to_format_options(&doc.contents);
+    let workspace_settings = lsp_state.workspace_document_settings(uri);
+
+    match uri.to_file_path() {
+        Ok(path) => {
+            // TODO: `language_id` should be a property of the `Document` stored in `did_open()`
+            let language_id = String::from("r");
+            let settings = workspace_settings.settings();
+
+            if is_document_excluded_from_formatting(&path, &settings.format, language_id) {
+                return Ok(None);
+            }
+        }
+        Err(_) => {
+            // `untitled:Untitled-1` with an 'r' `language_id` comes through here, as an example
+            tracing::trace!("Can't convert uri to file path, assuming we can format it: {uri}")
+        }
+    }
 
     if doc.parse.has_errors() {
         // Refuse to format in the face of parse errors, but only log a warning
@@ -36,12 +53,9 @@ pub(crate) fn document_formatting(
         return Ok(None);
     }
 
+    let format_options = workspace_settings.to_format_options(&doc.contents, &doc.settings);
     let formatted = format_node(format_options, &doc.parse.syntax())?;
     let output = formatted.print()?.into_code();
-
-    // Do we need to check that `doc` is indeed an R file? What about special
-    // files that don't have extensions like `NAMESPACE`, do we hard-code a
-    // list? What about unnamed temporary files?
 
     let edits = to_proto::replace_all_edit(&doc.line_index, &doc.contents, &output)?;
     Ok(Some(edits))
@@ -53,7 +67,26 @@ pub(crate) fn document_range_formatting(
     lsp_state: &LspState,
     state: &WorldState,
 ) -> anyhow::Result<Option<Vec<lsp_types::TextEdit>>> {
-    let doc = state.get_document(&params.text_document.uri)?;
+    let uri = &params.text_document.uri;
+    let doc = state.get_document(uri)?;
+
+    let workspace_settings = lsp_state.workspace_document_settings(uri);
+
+    match uri.to_file_path() {
+        Ok(path) => {
+            // TODO: `language_id` should be a property of the `Document` stored in `did_open()`
+            let language_id = String::from("r");
+            let settings = workspace_settings.settings();
+
+            if is_document_excluded_from_formatting(&path, &settings.format, language_id) {
+                return Ok(None);
+            }
+        }
+        Err(_) => {
+            // `untitled:Untitled-1` with an 'r' `language_id` comes through here, as an example
+            tracing::trace!("Can't convert uri to file path, assuming we can format it: {uri}")
+        }
+    }
 
     if doc.parse.has_errors() {
         // Refuse to format in the face of parse errors, but only log a warning
@@ -67,9 +100,6 @@ pub(crate) fn document_range_formatting(
 
     let range =
         from_proto::text_range(&doc.line_index.index, params.range, doc.line_index.encoding)?;
-
-    let settings = lsp_state.document_settings(&params.text_document.uri, &doc.settings);
-    let format_options = settings.format.to_format_options(&doc.contents);
 
     let logical_lines = find_deepest_enclosing_logical_lines(doc.parse.syntax(), range);
     if logical_lines.is_empty() {
@@ -104,6 +134,8 @@ pub(crate) fn document_range_formatting(
     let list = air_r_factory::r_expression_list(exprs);
     let eof = air_r_syntax::RSyntaxToken::new_detached(RSyntaxKind::EOF, "", vec![], vec![]);
     let root = air_r_factory::r_root(list, eof).build();
+
+    let format_options = workspace_settings.to_format_options(&doc.contents, &doc.settings);
 
     let format_info = biome_formatter::format_sub_tree(
         root.syntax(),
@@ -244,7 +276,16 @@ fn find_expression_lists(node: &RSyntaxNode, offset: TextSize, end: bool) -> Vec
 
 #[cfg(test)]
 mod tests {
-    use crate::{documents::Document, test::new_test_client, test::TestClientExt};
+    use crate::documents::Document;
+    use crate::test::new_test_client;
+    use crate::test::FileName;
+    use crate::test::TestClientExt;
+    use biome_lsp_converters::PositionEncoding;
+    use std::path::Path;
+    use tower_lsp::lsp_types::DidChangeWorkspaceFoldersParams;
+    use tower_lsp::lsp_types::WorkspaceFolder;
+    use tower_lsp::lsp_types::WorkspaceFoldersChangeEvent;
+    use url::Url;
 
     #[tokio::test]
     async fn test_format() {
@@ -259,7 +300,7 @@ mod tests {
 3",
         );
 
-        let formatted = client.format_document(&doc).await;
+        let formatted = client.format_document(&doc, FileName::Random).await;
         insta::assert_snapshot!(formatted);
     }
 
@@ -276,7 +317,10 @@ mod tests {
 ",
         );
 
-        let edits = client.format_document_edits(&doc).await.unwrap();
+        let edits = client
+            .format_document_edits(&doc, FileName::Random)
+            .await
+            .unwrap();
         assert!(edits.len() == 1);
 
         let edit = &edits[0];
@@ -292,7 +336,9 @@ mod tests {
 "<<>>",
         );
 
-        let output = client.format_document_range(&doc, range).await;
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output);
 
         #[rustfmt::skip]
@@ -301,7 +347,9 @@ mod tests {
 >>",
         );
 
-        let output = client.format_document_range(&doc, range).await;
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output);
 
         #[rustfmt::skip]
@@ -310,7 +358,9 @@ mod tests {
 >>",
         );
 
-        let output = client.format_document_range(&doc, range).await;
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output);
     }
 
@@ -325,7 +375,9 @@ mod tests {
 <<2+2>>
 ",
         );
-        let output = client.format_document_range(&doc, range).await;
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output);
 
         #[rustfmt::skip]
@@ -336,7 +388,9 @@ mod tests {
 ",
         );
 
-        let output = client.format_document_range(&doc, range).await;
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output);
 
         // The element in the braced expression is a logical line
@@ -348,7 +402,9 @@ mod tests {
 ",
         );
 
-        let output = client.format_document_range(&doc, range).await;
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output);
 
         #[rustfmt::skip]
@@ -357,7 +413,9 @@ mod tests {
 <<{2+2}>>
 ",
         );
-        let output = client.format_document_range(&doc, range).await;
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output);
 
         // The deepest element in the braced expression is our target
@@ -373,7 +431,9 @@ mod tests {
 ",
         );
 
-        let output = client.format_document_range(&doc, range).await;
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output);
     }
 
@@ -389,7 +449,9 @@ mod tests {
         );
 
         // We don't change indentation when `2+2` is formatted
-        let output = client.format_document_range(&doc, range).await;
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output);
 
         // Debatable: Should we make an effort to remove unneeded indentation
@@ -400,7 +462,9 @@ mod tests {
 <<  2+2>>
 ",
         );
-        let output_wide = client.format_document_range(&doc, range).await;
+        let output_wide = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         assert_eq!(output, output_wide);
     }
 
@@ -416,7 +480,9 @@ mod tests {
 ",
         );
 
-        let output1 = client.format_document_range(&doc, range).await;
+        let output1 = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output1);
 
         #[rustfmt::skip]
@@ -426,7 +492,9 @@ mod tests {
 2+2>>
 ",
         );
-        let output2 = client.format_document_range(&doc, range).await;
+        let output2 = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output2);
     }
 
@@ -445,7 +513,9 @@ mod tests {
 ",
         );
 
-        let output1 = client.format_document_range(&doc, range).await;
+        let output1 = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output1);
 
         #[rustfmt::skip]
@@ -458,7 +528,9 @@ mod tests {
 3+3
 ",
         );
-        let output2 = client.format_document_range(&doc, range).await;
+        let output2 = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output2);
 
         #[rustfmt::skip]
@@ -471,7 +543,9 @@ mod tests {
 >>3+3
 ",
         );
-        let output3 = client.format_document_range(&doc, range).await;
+        let output3 = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output3);
 
         #[rustfmt::skip]
@@ -484,7 +558,9 @@ mod tests {
 >>3+3
 ",
         );
-        let output4 = client.format_document_range(&doc, range).await;
+        let output4 = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output4);
 
         #[rustfmt::skip]
@@ -494,7 +570,9 @@ mod tests {
 ",
         );
 
-        let output5 = client.format_document_range(&doc, range).await;
+        let output5 = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output5);
 
         #[rustfmt::skip]
@@ -504,7 +582,9 @@ mod tests {
 ",
         );
 
-        let output6 = client.format_document_range(&doc, range).await;
+        let output6 = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output6);
     }
 
@@ -516,11 +596,11 @@ mod tests {
         let mut doc = Document::doodle("{1}");
 
         doc.settings.indent_width = Some(settings::IndentWidth::try_from(8_u8).unwrap());
-        let output_8_spaces = client.format_document(&doc).await;
+        let output_8_spaces = client.format_document(&doc, FileName::Random).await;
         insta::assert_snapshot!(output_8_spaces);
 
         doc.settings.indent_style = Some(settings::IndentStyle::Tab);
-        let output_tab = client.format_document(&doc).await;
+        let output_tab = client.format_document(&doc, FileName::Random).await;
         insta::assert_snapshot!(output_tab);
     }
 
@@ -532,11 +612,122 @@ mod tests {
         let (mut doc, range) = Document::doodle_and_range("<<{1}>>");
 
         doc.settings.indent_width = Some(settings::IndentWidth::try_from(8_u8).unwrap());
-        let output_8_spaces = client.format_document_range(&doc, range).await;
+        let output_8_spaces = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output_8_spaces);
 
         doc.settings.indent_style = Some(settings::IndentStyle::Tab);
-        let output_tab = client.format_document_range(&doc, range).await;
+        let output_tab = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
         insta::assert_snapshot!(output_tab);
+    }
+
+    #[tokio::test]
+    async fn test_format_untitled_files() {
+        let mut client = new_test_client().await;
+
+        // `untitled:Untitled-1` is what VS Code gives us for an untitled file
+        // that has its language id set to 'r'
+        let filename = FileName::Url(String::from("untitled:Untitled-1"));
+
+        let input = "1+1";
+        let expect = "1 + 1\n";
+        let doc = Document::doodle(input);
+        let output = client.format_document(&doc, filename).await;
+
+        assert_eq!(output, expect);
+    }
+
+    #[tokio::test]
+    async fn test_format_default_excluded_files() {
+        let as_file_url = |path: &str| {
+            #[cfg(not(windows))]
+            let prefix = "/";
+            #[cfg(windows)]
+            let prefix = "C:/";
+
+            // file://<hostname>/<path>
+            // - <hostname> is the empty string for us
+            // - <path> must start with the right OS specific prefix
+            format!("file:///{prefix}{path}")
+        };
+
+        let mut client = new_test_client().await;
+
+        // `cpp11.R` is excluded from formatting by default
+        let filename = FileName::Url(as_file_url("cpp11.R"));
+        let input = "1+1";
+        let doc = Document::doodle(input);
+        let output = client.format_document(&doc, filename).await;
+        assert_eq!(output, input);
+
+        // `renv/` is excluded from formatting by default
+        let filename = FileName::Url(as_file_url("renv/activate.R"));
+        let input = "1+1";
+        let doc = Document::doodle(input);
+        let output = client.format_document(&doc, filename).await;
+        assert_eq!(output, input);
+    }
+
+    #[tokio::test]
+    async fn test_format_excluded_files() {
+        let as_file_url = |path: &Path| format!("file:///{path}", path = path.display());
+
+        let mut client = new_test_client().await;
+
+        // Create a tempdir that will serve as our workspace
+        let tempdir = tempfile::TempDir::new().unwrap();
+        let tempdir = tempdir.path();
+
+        // Note that `test.R` is formatted by default
+        let input = "1+1";
+        let output = "1 + 1\n";
+        let url = as_file_url(tempdir.join("test.R").as_path());
+        let filename = FileName::Url(url);
+        let doc = Document::new(input.to_string(), Some(0), PositionEncoding::Utf8);
+        let result = client.format_document(&doc, filename).await;
+        assert_eq!(result, output);
+
+        // Write the `air.toml` to disk inside the workspace so the server can discover it
+        let air_path = tempdir.join("air.toml");
+        let air_contents = r#"
+[format]
+exclude = ["test.R"]
+default-exclude = false
+"#;
+        std::fs::write(&air_path, air_contents).unwrap();
+
+        // Open the tempdir as the workspace, the server will load in the `air.toml`
+        let workspace_folder = WorkspaceFolder {
+            uri: Url::parse(&as_file_url(tempdir)).unwrap(),
+            name: "workspace".to_string(),
+        };
+        client
+            .did_change_workspace_folders(DidChangeWorkspaceFoldersParams {
+                event: WorkspaceFoldersChangeEvent {
+                    added: vec![workspace_folder],
+                    removed: vec![],
+                },
+            })
+            .await;
+
+        // Now `test.R` should be excluded
+        let input = "1+1";
+        let url = as_file_url(tempdir.join("test.R").as_path());
+        let filename = FileName::Url(url);
+        let doc = Document::new(input.to_string(), Some(0), PositionEncoding::Utf8);
+        let result = client.format_document(&doc, filename).await;
+        assert_eq!(result, input);
+
+        // And `cpp11.R` should now be formatted
+        let input = "1+1";
+        let output = "1 + 1\n";
+        let url = as_file_url(tempdir.join("cpp11.R").as_path());
+        let filename = FileName::Url(url);
+        let doc = Document::new(input.to_string(), Some(0), PositionEncoding::Utf8);
+        let result = client.format_document(&doc, filename).await;
+        assert_eq!(result, output);
     }
 }

@@ -5,6 +5,11 @@
 //
 //
 
+use std::path::Path;
+
+use crate::settings::DefaultExcludePatterns;
+use crate::settings::DefaultIncludePatterns;
+use crate::settings::ExcludePatterns;
 use crate::settings::FormatSettings;
 use crate::settings::LineEnding;
 use crate::settings::Settings;
@@ -93,10 +98,10 @@ pub struct FormatTomlOptions {
 
     /// The character air uses at the end of a line.
     ///
-    /// * `auto`: The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to `\n` for files that contain no line endings.
-    /// * `lf`: Line endings will be converted to `\n`. The default line ending on Unix.
-    /// * `crlf`: Line endings will be converted to `\r\n`. The default line ending on Windows.
-    /// * `native`: Line endings will be converted to `\n` on Unix and `\r\n` on Windows.
+    /// - `auto`: The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to `\n` for files that contain no line endings.
+    /// - `lf`: Line endings will be converted to `\n`. The default line ending on Unix.
+    /// - `crlf`: Line endings will be converted to `\r\n`. The default line ending on Windows.
+    /// - `native`: Line endings will be converted to `\n` on Unix and `\r\n` on Windows.
     pub line_ending: Option<LineEnding>,
 
     /// Air respects a small set of persistent line breaks as an indication that certain
@@ -106,10 +111,61 @@ pub struct FormatTomlOptions {
     /// It may be preferable to ignore persistent line breaks if you prefer that `line-width`
     /// should be the only value that influences line breaks.
     pub persistent_line_breaks: Option<bool>,
+
+    /// By default, Air will refuse to format files matched by patterns listed in
+    /// `default-exclude`. Use this option to supply an additional list of exclude
+    /// patterns.
+    ///
+    /// Exclude patterns are modeled after what you can provide in a
+    /// [.gitignore](https://git-scm.com/docs/gitignore), and are resolved relative to the
+    /// parent directory that your `air.toml` is contained within. For example, if your
+    /// `air.toml` was located at `root/air.toml`, then:
+    ///
+    /// - `file.R` excludes a file named `file.R` located anywhere below `root/`. This is
+    ///   equivalent to `**/file.R`.
+    ///
+    /// - `folder/` excludes a directory named `folder` (and all of its children) located
+    ///   anywhere below `root/`. You can also just use `folder`, but this would
+    ///   technically also match a file named `folder`, so the trailing slash is preferred
+    ///   when targeting directories. This is equivalent to `**/folder/`.
+    ///
+    /// - `/file.R` excludes a file named `file.R` located at `root/file.R`.
+    ///
+    /// - `/folder/` excludes a directory named `folder` (and all of its children) located
+    ///   at `root/folder/`.
+    ///
+    /// - `file-*.R` excludes R files named like `file-this.R` and `file-that.R` located
+    ///   anywhere below `root/`.
+    ///
+    /// - `folder/*.R` excludes all R files located at `root/folder/`. Note that R files
+    ///   in directories under `folder/` are not excluded in this case (such as
+    ///   `root/folder/subfolder/file.R`).
+    ///
+    /// - `folder/**/*.R` excludes all R files located anywhere below `root/folder/`.
+    ///
+    /// - `**/folder/*.R` excludes all R files located directly inside a `folder/`
+    ///   directory, where the `folder/` directory itself can /// appear anywhere.
+    ///
+    /// See the full [.gitignore](https://git-scm.com/docs/gitignore) documentation for
+    /// all of the patterns you can provide.
+    pub exclude: Option<Vec<String>>,
+
+    /// Air automatically excludes a default set of folders and files. If this option is
+    /// set to `false`, these files will be formatted as well.
+    ///
+    /// The default set of excluded patterns are:
+    /// - `.git/`
+    /// - `renv/`
+    /// - `revdep/`
+    /// - `cpp11.R`
+    /// - `RcppExports.R`
+    /// - `extendr-wrappers.R`
+    /// - `import-standalone-*.R`
+    pub default_exclude: Option<bool>,
 }
 
 impl TomlOptions {
-    pub fn into_settings(self) -> Settings {
+    pub fn into_settings(self, root: &Path) -> anyhow::Result<Settings> {
         let format = self.format.unwrap_or_default();
 
         let format = FormatSettings {
@@ -127,8 +183,23 @@ impl TomlOptions {
                 }
                 None => PersistentLineBreaks::Respect,
             },
+            exclude: match format.exclude {
+                Some(exclude) => {
+                    let exclude = exclude.iter().map(String::as_str);
+                    Some(ExcludePatterns::try_from_iter(root, exclude)?)
+                }
+                None => None,
+            },
+            default_exclude: match format.default_exclude.unwrap_or(true) {
+                true => Some(DefaultExcludePatterns::default()),
+                false => None,
+            },
+            // `include` and `default_include` are not currently exposed as toml options.
+            // Theoretically could be for consistency, but there aren't any motivating use
+            // cases right now.
+            default_include: Some(DefaultIncludePatterns::default()),
         };
 
-        Settings { format }
+        Ok(Settings { format })
     }
 }

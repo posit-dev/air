@@ -26,6 +26,23 @@ expression: schema
       "description": "Configures the way air formats your code.",
       "type": "object",
       "properties": {
+        "default-exclude": {
+          "description": "Air automatically excludes a default set of folders and files. If this option is set to `false`, these files will be formatted as well.\n\nThe default set of excluded patterns are: - `.git/` - `renv/` - `revdep/` - `cpp11.R` - `RcppExports.R` - `extendr-wrappers.R` - `import-standalone-*.R`",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "exclude": {
+          "description": "By default, Air will refuse to format files matched by patterns listed in `default-exclude`. Use this option to supply an additional list of exclude patterns.\n\nExclude patterns are modeled after what you can provide in a [.gitignore](https://git-scm.com/docs/gitignore), and are resolved relative to the parent directory that your `air.toml` is contained within. For example, if your `air.toml` was located at `root/air.toml`, then:\n\n- `file.R` excludes a file named `file.R` located anywhere below `root/`. This is equivalent to `**/file.R`.\n\n- `folder/` excludes a directory named `folder` (and all of its children) located anywhere below `root/`. You can also just use `folder`, but this would technically also match a file named `folder`, so the trailing slash is preferred when targeting directories. This is equivalent to `**/folder/`.\n\n- `/file.R` excludes a file named `file.R` located at `root/file.R`.\n\n- `/folder/` excludes a directory named `folder` (and all of its children) located at `root/folder/`.\n\n- `file-*.R` excludes R files named like `file-this.R` and `file-that.R` located anywhere below `root/`.\n\n- `folder/*.R` excludes all R files located at `root/folder/`. Note that R files in directories under `folder/` are not excluded in this case (such as `root/folder/subfolder/file.R`).\n\n- `folder/**/*.R` excludes all R files located anywhere below `root/folder/`.\n\n- `**/folder/*.R` excludes all R files located directly inside a `folder/` directory, where the `folder/` directory itself can /// appear anywhere.\n\nSee the full [.gitignore](https://git-scm.com/docs/gitignore) documentation for all of the patterns you can provide.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
         "indent-style": {
           "description": "Whether to use spaces or tabs for indentation.\n\n`indent-style = \"space\"` (default):\n\n```r fn <- function() { cat(\"Hello\") # Spaces indent the `cat()` call. } ```\n\n`indent-style = \"tab\"`:\n\n```r fn <- function() { cat(\"Hello\") # A tab `\\t` indents the `cat()` call. } ```\n\nAir defaults to spaces due to the overwhelming amount of existing R code written in this style, but consider using tabs for new projects to improve accessibility.\n\nSee `indent-width` to configure the number of spaces per indentation and the tab width.",
           "anyOf": [
@@ -49,7 +66,7 @@ expression: schema
           ]
         },
         "line-ending": {
-          "description": "The character air uses at the end of a line.\n\n* `auto`: The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to `\\n` for files that contain no line endings. * `lf`: Line endings will be converted to `\\n`. The default line ending on Unix. * `crlf`: Line endings will be converted to `\\r\\n`. The default line ending on Windows. * `native`: Line endings will be converted to `\\n` on Unix and `\\r\\n` on Windows.",
+          "description": "The character air uses at the end of a line.\n\n- `auto`: The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to `\\n` for files that contain no line endings. - `lf`: Line endings will be converted to `\\n`. The default line ending on Unix. - `crlf`: Line endings will be converted to `\\r\\n`. The default line ending on Windows. - `native`: Line endings will be converted to `\\n` on Unix and `\\r\\n` on Windows.",
           "anyOf": [
             {
               "$ref": "#/definitions/LineEnding"

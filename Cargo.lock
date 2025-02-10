@@ -1359,6 +1359,7 @@ dependencies = [
  "settings",
  "struct-field-names-as-array",
  "strum",
+ "tempfile",
  "tests_macros",
  "time",
  "tokio",
@@ -2746,6 +2747,7 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.5",
  "toml",
+ "tracing",
 ]
 
 [[package]]

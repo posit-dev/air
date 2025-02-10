@@ -157,6 +157,14 @@ impl TestClient {
             .await
     }
 
+    pub async fn did_change_workspace_folders(
+        &mut self,
+        params: lsp_types::DidChangeWorkspaceFoldersParams,
+    ) {
+        self.notify::<lsp_types::notification::DidChangeWorkspaceFolders>(params)
+            .await
+    }
+
     pub async fn formatting(&mut self, params: lsp_types::DocumentFormattingParams) -> jsonrpc::Id {
         self.request::<lsp_types::request::Formatting>(params).await
     }

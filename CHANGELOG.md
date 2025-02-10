@@ -2,6 +2,18 @@
 
 # Development version
 
+- Air has gained support for excluding files and folders (#128).
+
+  - Air now excludes a set of default R files and folders by default. These
+    include generated files such as `cpp11.R` and `RcppExports.R`, as well as
+    folders that may contain such files, like `renv/` and `revdep/`. If you'd
+    prefer to have Air format these files as well, set the new
+    `default-exclude` option to `false`.
+
+  - To add additional files or folders to exclude, use the new `exclude` option.
+    This accepts a list of `.gitignore` style patterns, such as
+    `exclude = ["file.R", "folder/", "files-like-*-this.R"]`.
+
 - Linux binaries are now available. Note that your Linux distribution must
   support glibc 2.31+ for the binary to work (#71).
 
