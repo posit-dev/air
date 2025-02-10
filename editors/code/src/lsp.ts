@@ -34,7 +34,7 @@ export class Lsp {
 
 	private fileSettings: FileSettingsState;
 
-	public onSettingsNotificationEmitter: vscode.EventEmitter<void>;
+	private onSettingsNotificationEmitter: vscode.EventEmitter<void>;
 
 	constructor(context: vscode.ExtensionContext) {
 		this.channel = vscode.window.createOutputChannel("Air Language Server");
@@ -44,6 +44,8 @@ export class Lsp {
 		this.fileSettings = new FileSettingsState(context);
 
 		this.onSettingsNotificationEmitter = new vscode.EventEmitter<void>();
+		context.subscriptions.push(this.onSettingsNotificationEmitter);
+
 		this.onSettingsNotification = this.onSettingsNotificationEmitter.event;
 	}
 

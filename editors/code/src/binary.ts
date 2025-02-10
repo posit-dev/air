@@ -27,7 +27,9 @@ export async function resolveAirBinaryPath(
 		}
 
 		// Fallthrough
-		output.log(`Bundled executable not found: ${BUNDLED_AIR_EXECUTABLE}`);
+		output.log(
+			`Bundled executable not found, falling back to environment: ${BUNDLED_AIR_EXECUTABLE}`,
+		);
 	}
 
 	// User requested `"environment"` or there is no bundled binary.
