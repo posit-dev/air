@@ -112,27 +112,39 @@ pub struct FormatTomlOptions {
     /// should be the only value that influences line breaks.
     pub persistent_line_breaks: Option<bool>,
 
-    /// By default, Air will refuse to format files listed in `default_exclude`.
-    /// To add to this list, use this option to supply a list of exclude patterns.
+    /// By default, Air will refuse to format files matched by patterns listed in
+    /// `default-exclude`. Use this option to supply an additional list of exclude
+    /// patterns.
     ///
     /// Exclude patterns are modeled after what you can provide in a
     /// [.gitignore](https://git-scm.com/docs/gitignore), and are resolved relative to the
     /// parent directory that your `air.toml` is contained within. For example, if your
-    /// `air.toml` was located at `root/air.toml`, then you could provide:
+    /// `air.toml` was located at `root/air.toml`, then:
     ///
-    /// - `file.R` to exclude that R file located anywhere below `root`.
-    /// - `folder/` to exclude that directory located anywhere below `root`. You can also
-    ///   just use `folder`, but this would technically also match a file named `folder`,
-    ///   so the trailing slash is preferred when targeting directories.
-    /// - `/folder/` to exclude a directory at `root/folder/`, where the leading `/` forces
-    ///   the directory to appear right under `root/`, rather than anywhere.
-    /// - `file-*.R` to exclude R files like `file-this.R` and `file-that.R` located
-    ///   anywhere below `root`.
-    /// - `folder/*.R` to exclude all R files at `root/folder/*.R`, where the `/` in the
-    ///   middle of the pattern forces the directory to appear right under `root/`, rather
-    ///   than anywhere.
-    /// - `**/folder/*.R` to exclude all R files below a `folder/` directory, where the
-    ///   `folder/` directory itself can appear anywhere.
+    /// - `file.R` excludes a file named `file.R` located anywhere below `root/`. This is
+    ///   equivalent to `**/file.R`.
+    ///
+    /// - `folder/` excludes a directory named `folder` (and all of its children) located
+    ///   anywhere below `root/`. You can also just use `folder`, but this would
+    ///   technically also match a file named `folder`, so the trailing slash is preferred
+    ///   when targeting directories. This is equivalent to `**/folder/`.
+    ///
+    /// - `/file.R` excludes a file named `file.R` located at `root/file.R`.
+    ///
+    /// - `/folder/` excludes a directory named `folder` (and all of its children) located
+    ///   at `root/folder/`.
+    ///
+    /// - `file-*.R` excludes R files named like `file-this.R` and `file-that.R` located
+    ///   anywhere below `root/`.
+    ///
+    /// - `folder/*.R` excludes all R files located at `root/folder/`. Note that R files
+    ///   in directories under `folder/` are not excluded in this case (such as
+    ///   `root/folder/subfolder/file.R`).
+    ///
+    /// - `folder/**/*.R` excludes all R files located anywhere below `root/folder/`.
+    ///
+    /// - `**/folder/*.R` excludes all R files located directly inside a `folder/`
+    ///   directory, where the `folder/` directory itself can /// appear anywhere.
     ///
     /// See the full [.gitignore](https://git-scm.com/docs/gitignore) documentation for
     /// all of the patterns you can provide.
