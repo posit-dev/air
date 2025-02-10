@@ -10,10 +10,6 @@ Air provides first class support for both VS Code and Positron, which both suppo
 
 # Installation
 
-::: callout-note
-## Air is currently only supported on macOS and Windows. Linux support is coming soon!
-:::
-
 Air is available [as an Extension](https://marketplace.visualstudio.com/items?itemName=Posit.air-vscode) for both VS Code and Positron.
 The extension comes pre-bundled with an Air binary, so you don't need anything else to get going!
 The Air extension is hosted in the VS Code Marketplace and on OpenVSX.
