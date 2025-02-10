@@ -2,7 +2,10 @@ import * as vscode from "vscode";
 import * as lc from "vscode-languageclient/node";
 import { default as PQueue } from "p-queue";
 import { getInitializationOptions, getWorkspaceSettings } from "./settings";
-import { FileSettingsState } from "./notification/sync-file-settings";
+import {
+	FileSettingsState,
+	SyncFileSettingsParams,
+} from "./notification/sync-file-settings";
 import { Middleware, ResponseError } from "vscode-languageclient/node";
 import { SYNC_FILE_SETTINGS } from "./notification/sync-file-settings";
 import { registerLogger } from "./output";
@@ -21,6 +24,10 @@ enum State {
 export class Lsp {
 	public client: lc.LanguageClient | null = null;
 
+	// We've received and processed an `air.toml` settings synchronization
+	// notification. Used to synchronize unit tests with the LSP.
+	public onSettingsNotification: vscode.Event<SyncFileSettingsParams>;
+
 	// We use the same output channel for all LSP instances (e.g. a new instance
 	// after a restart) to avoid having multiple channels in the Output viewpane.
 	private channel: vscode.OutputChannel;
@@ -30,11 +37,24 @@ export class Lsp {
 
 	private fileSettings: FileSettingsState;
 
+	private onSettingsNotificationEmitter: vscode.EventEmitter<SyncFileSettingsParams>;
+
 	constructor(context: vscode.ExtensionContext) {
 		this.channel = vscode.window.createOutputChannel("Air Language Server");
 		context.subscriptions.push(this.channel, registerLogger(this.channel));
+
 		this.stateQueue = new PQueue({ concurrency: 1 });
 		this.fileSettings = new FileSettingsState(context);
+
+		this.onSettingsNotificationEmitter =
+			new vscode.EventEmitter<SyncFileSettingsParams>();
+		context.subscriptions.push(this.onSettingsNotificationEmitter);
+
+		this.onSettingsNotification = this.onSettingsNotificationEmitter.event;
+
+		this.onSettingsNotification((settings) =>
+			this.fileSettings.handleSettingsNotification(settings),
+		);
 	}
 
 	public getClient(): lc.LanguageClient {
@@ -42,6 +62,15 @@ export class Lsp {
 			throw new Error("LSP must be started");
 		}
 		return this.client;
+	}
+
+	public waitForSettingsNotification(): Promise<void> {
+		return new Promise((resolve, _) => {
+			const disposable = this.onSettingsNotification(() => {
+				disposable.dispose();
+				resolve();
+			});
+		});
 	}
 
 	public async start() {
@@ -136,9 +165,10 @@ export class Lsp {
 			serverOptions,
 			clientOptions,
 		);
-		client.onNotification(SYNC_FILE_SETTINGS, (settings) =>
-			this.fileSettings.handleSettingsNotification(settings),
-		);
+
+		client.onNotification(SYNC_FILE_SETTINGS, (settings) => {
+			this.onSettingsNotificationEmitter.fire(settings);
+		});
 
 		await client.start();
 

@@ -3,6 +3,12 @@ import * as path from "path";
 const folderName = path.basename(__dirname);
 
 /**
+ * ID of the extension on the marketplaces.
+ * Needed to access the extension from the `vscode` API.
+ */
+export const AIR_EXTENSION_ID = "Posit.air-vscode";
+
+/**
  * Path to the root directory of this extension.
  * https://github.com/microsoft/vscode-python-tools-extension-template/blob/main/src/common/constants.ts
  */

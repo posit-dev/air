@@ -1,0 +1,12 @@
+{
+	"workbench.localHistory.enabled": false,
+	"editor.detectIndentation": false,
+	"[r]": {
+		"editor.insertSpaces": true,
+		// We use an unlikely size to make sure local configuration doesn't
+		// accidentally match ours, and in turn ensure we are actually testing
+		// against this workspace configuration.
+		"editor.indentSize": 8,
+		"editor.tabSize": 8
+	}
+}
