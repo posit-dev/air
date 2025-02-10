@@ -6,6 +6,10 @@ gen-formatter:
 gen-grammar:
     cargo run -p xtask_codegen -- grammar r
 
+# Generates the `air.schema.json`
+gen-schema:
+    cargo run -p xtask_codegen -- json-schema
+
 # Run the tests
 test:
   cargo nextest run

@@ -14,6 +14,7 @@ use std::str::FromStr;
     derive(serde::Serialize, serde::Deserialize),
     serde(rename_all = "kebab-case")
 )]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub enum IndentStyle {
     /// Tab
     Tab,

@@ -13,7 +13,10 @@ use std::num::NonZeroU16;
 /// The allowed range of values is 1..=320
 #[derive(Clone, Copy, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
-pub struct LineWidth(NonZeroU16);
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+pub struct LineWidth(
+    #[cfg_attr(feature = "schemars", schemars(range(min = 1, max = 320)))] NonZeroU16,
+);
 
 impl LineWidth {
     /// Default value for [LineWidth]

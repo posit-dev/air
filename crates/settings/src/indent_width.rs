@@ -13,7 +13,10 @@ use std::num::NonZeroU8;
 /// The allowed range of values is 1..=24
 #[derive(Clone, Copy, Eq, Hash, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
-pub struct IndentWidth(NonZeroU8);
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+pub struct IndentWidth(
+    #[cfg_attr(feature = "schemars", schemars(range(min = 1, max = 24)))] NonZeroU8,
+);
 
 impl IndentWidth {
     /// Default value for [IndentWidth]

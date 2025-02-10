@@ -9,6 +9,7 @@ use std::fmt;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub enum LineEnding {
     /// The newline style is detected automatically on a file per file basis.
     /// Files with mixed line endings will be converted to the first detected line ending.
