@@ -22,6 +22,23 @@
       "description": "Configures the way air formats your code.",
       "type": "object",
       "properties": {
+        "default-excludes": {
+          "description": "Air automatically excludes a default set of folders and files. If this option is set to `false`, these files will be formatted as well.\n\nThe default set of excluded patterns are: - `.git/` - `renv/` - `revdep/` - `cpp11.R` - `RcppExports.R` - `extendr-wrappers.R` - `import-standalone-*.R`",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "exclude": {
+          "description": "By default, Air will refuse to format files listed in the set of `default_excludes`. To add to this list, use this option to supply a list of exclude patterns.\n\nExclude patterns are modeled after what you can provide in a [.gitignore](https://git-scm.com/docs/gitignore), and are resolved relative to the parent directory that your `air.toml` is contained within. For example, if your `air.toml` was located at `root/air.toml`, then you could provide:\n\n- `file.R` to exclude that R file located anywhere below `root`. - `folder/` to exclude that directory located anywhere below `root`. You can also just use `folder`, but this would technically also match a file named `folder`, so the trailing slash is preferred when targeting directories. - `/folder/` to exclude a directory at `root/folder/`, where the leading `/` forces the directory to appear right under `root/`, rather than anywhere. - `file-*.R` to exclude R files like `file-this.R` and `file-that.R` located anywhere below `root`. - `folder/*.R` to exclude all R files at `root/folder/*.R`, where the `/` in the middle of the pattern forces the directory to appear right under `root/`, rather than anywhere. - `**/folder/*.R` to exclude all R files below a `folder/` directory, where the `folder/` directory itself can appear anywhere.\n\nSee the full [.gitignore](https://git-scm.com/docs/gitignore) documentation for all of the patterns you can provide.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
         "indent-style": {
           "description": "Whether to use spaces or tabs for indentation.\n\n`indent-style = \"space\"` (default):\n\n```r fn <- function() { cat(\"Hello\") # Spaces indent the `cat()` call. } ```\n\n`indent-style = \"tab\"`:\n\n```r fn <- function() { cat(\"Hello\") # A tab `\\t` indents the `cat()` call. } ```\n\nAir defaults to spaces due to the overwhelming amount of existing R code written in this style, but consider using tabs for new projects to improve accessibility.\n\nSee `indent-width` to configure the number of spaces per indentation and the tab width.",
           "anyOf": [
@@ -45,7 +62,7 @@
           ]
         },
         "line-ending": {
-          "description": "The character air uses at the end of a line.\n\n* `auto`: The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to `\\n` for files that contain no line endings. * `lf`: Line endings will be converted to `\\n`. The default line ending on Unix. * `crlf`: Line endings will be converted to `\\r\\n`. The default line ending on Windows. * `native`: Line endings will be converted to `\\n` on Unix and `\\r\\n` on Windows.",
+          "description": "The character air uses at the end of a line.\n\n- `auto`: The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to `\\n` for files that contain no line endings. - `lf`: Line endings will be converted to `\\n`. The default line ending on Unix. - `crlf`: Line endings will be converted to `\\r\\n`. The default line ending on Windows. - `native`: Line endings will be converted to `\\n` on Unix and `\\r\\n` on Windows.",
           "anyOf": [
             {
               "$ref": "#/definitions/LineEnding"
