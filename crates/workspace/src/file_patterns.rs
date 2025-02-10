@@ -158,6 +158,7 @@ impl DefaultFilePatterns {
 
 #[cfg(test)]
 mod test {
+    use crate::file_patterns::DefaultFilePatterns;
     use crate::file_patterns::FilePatterns;
     use std::path::Path;
 
@@ -288,5 +289,23 @@ mod test {
         ignored!(root, pattern, "import-standalone-types.R");
         ignored!(root, pattern, "import-standalone-type-check.R");
         ignored!(root, pattern, "R/import-standalone-type-check.R");
+    }
+
+    #[test]
+    fn test_default_file_pattern_works_with_rooted_paths() -> anyhow::Result<()> {
+        let patterns = DefaultFilePatterns::try_from_iter(vec!["**/cpp11.R"])?;
+
+        // These look like they have a `root`, which `Gitignore::matched_path_or_any_parents()`
+        // would typically panic on, so we have our own version to avoid this, since all
+        // of our default patterns include `**/` and are root agnostic.
+        assert!(patterns
+            .matched_path_or_any_parents("/etc/cpp11.R", false)
+            .is_some());
+
+        assert!(patterns
+            .matched_path_or_any_parents("C:/etc/cpp11.R", false)
+            .is_some());
+
+        Ok(())
     }
 }
