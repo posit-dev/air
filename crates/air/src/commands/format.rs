@@ -376,10 +376,10 @@ mod test {
         let air_contents = r#"
 [format]
 exclude = ["test.R"]
-default-excludes = false
+default-exclude = false
 "#;
 
-        // Turn off `default-excludes`, turn on the custom `exclude`
+        // Turn off `default-exclude`, turn on the custom `exclude`
         std::fs::write(&test_path, test_contents)?;
         std::fs::write(&cpp11_path, cpp11_contents)?;
         std::fs::write(&air_path, air_contents)?;

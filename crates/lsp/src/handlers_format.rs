@@ -695,7 +695,7 @@ mod tests {
         let air_contents = r#"
 [format]
 exclude = ["test.R"]
-default-excludes = false
+default-exclude = false
 "#;
         std::fs::write(&air_path, air_contents).unwrap();
 

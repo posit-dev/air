@@ -112,7 +112,7 @@ pub struct FormatTomlOptions {
     /// should be the only value that influences line breaks.
     pub persistent_line_breaks: Option<bool>,
 
-    /// By default, Air will refuse to format files listed in the set of `default_excludes`.
+    /// By default, Air will refuse to format files listed in `default_exclude`.
     /// To add to this list, use this option to supply a list of exclude patterns.
     ///
     /// Exclude patterns are modeled after what you can provide in a
@@ -149,7 +149,7 @@ pub struct FormatTomlOptions {
     /// - `RcppExports.R`
     /// - `extendr-wrappers.R`
     /// - `import-standalone-*.R`
-    pub default_excludes: Option<bool>,
+    pub default_exclude: Option<bool>,
 }
 
 impl TomlOptions {
@@ -178,7 +178,7 @@ impl TomlOptions {
                 }
                 None => None,
             },
-            default_exclude: match format.default_excludes.unwrap_or(true) {
+            default_exclude: match format.default_exclude.unwrap_or(true) {
                 true => Some(DefaultExcludePatterns::default()),
                 false => None,
             },

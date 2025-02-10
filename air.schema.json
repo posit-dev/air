@@ -22,7 +22,7 @@
       "description": "Configures the way air formats your code.",
       "type": "object",
       "properties": {
-        "default-excludes": {
+        "default-exclude": {
           "description": "Air automatically excludes a default set of folders and files. If this option is set to `false`, these files will be formatted as well.\n\nThe default set of excluded patterns are: - `.git/` - `renv/` - `revdep/` - `cpp11.R` - `RcppExports.R` - `extendr-wrappers.R` - `import-standalone-*.R`",
           "type": [
             "boolean",
@@ -30,7 +30,7 @@
           ]
         },
         "exclude": {
-          "description": "By default, Air will refuse to format files listed in the set of `default_excludes`. To add to this list, use this option to supply a list of exclude patterns.\n\nExclude patterns are modeled after what you can provide in a [.gitignore](https://git-scm.com/docs/gitignore), and are resolved relative to the parent directory that your `air.toml` is contained within. For example, if your `air.toml` was located at `root/air.toml`, then you could provide:\n\n- `file.R` to exclude that R file located anywhere below `root`. - `folder/` to exclude that directory located anywhere below `root`. You can also just use `folder`, but this would technically also match a file named `folder`, so the trailing slash is preferred when targeting directories. - `/folder/` to exclude a directory at `root/folder/`, where the leading `/` forces the directory to appear right under `root/`, rather than anywhere. - `file-*.R` to exclude R files like `file-this.R` and `file-that.R` located anywhere below `root`. - `folder/*.R` to exclude all R files at `root/folder/*.R`, where the `/` in the middle of the pattern forces the directory to appear right under `root/`, rather than anywhere. - `**/folder/*.R` to exclude all R files below a `folder/` directory, where the `folder/` directory itself can appear anywhere.\n\nSee the full [.gitignore](https://git-scm.com/docs/gitignore) documentation for all of the patterns you can provide.",
+          "description": "By default, Air will refuse to format files listed in `default_exclude`. To add to this list, use this option to supply a list of exclude patterns.\n\nExclude patterns are modeled after what you can provide in a [.gitignore](https://git-scm.com/docs/gitignore), and are resolved relative to the parent directory that your `air.toml` is contained within. For example, if your `air.toml` was located at `root/air.toml`, then you could provide:\n\n- `file.R` to exclude that R file located anywhere below `root`. - `folder/` to exclude that directory located anywhere below `root`. You can also just use `folder`, but this would technically also match a file named `folder`, so the trailing slash is preferred when targeting directories. - `/folder/` to exclude a directory at `root/folder/`, where the leading `/` forces the directory to appear right under `root/`, rather than anywhere. - `file-*.R` to exclude R files like `file-this.R` and `file-that.R` located anywhere below `root`. - `folder/*.R` to exclude all R files at `root/folder/*.R`, where the `/` in the middle of the pattern forces the directory to appear right under `root/`, rather than anywhere. - `**/folder/*.R` to exclude all R files below a `folder/` directory, where the `folder/` directory itself can appear anywhere.\n\nSee the full [.gitignore](https://git-scm.com/docs/gitignore) documentation for all of the patterns you can provide.",
           "type": [
             "array",
             "null"

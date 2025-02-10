@@ -21,7 +21,7 @@ indent-style = "space"
 line-ending = "auto"
 persistent-line-breaks = true
 exclude = []
-default-excludes = true
+default-exclude = true
 ```
 
 ## Configuration recommendations
@@ -197,7 +197,7 @@ The set of additional files and folders to exclude.
 
 A list of strings, i.e. `exclude = ["file.R", "folder/", "files-like-*-this.R"]`.
 
-By default, Air will refuse to format files matched by patterns listed in `default-excludes`.
+By default, Air will refuse to format files matched by patterns listed in `default-exclude`.
 Use this option to supply an additional list of exclude patterns.
 
 Exclude patterns are modeled after what you can provide in a [.gitignore](https://git-scm.com/docs/gitignore), and are resolved relative to the parent directory that your `air.toml` is contained within.
@@ -223,7 +223,7 @@ For example, if your `air.toml` was located at `root/air.toml`, then you could p
 
 See the full [.gitignore](https://git-scm.com/docs/gitignore) documentation for all of the patterns you can provide.
 
-### default-excludes
+### default-exclude
 
 Whether or not the default file exclude patterns are used.
 

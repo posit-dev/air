@@ -8,7 +8,7 @@
     include generated files such as `cpp11.R` and `RcppExports.R`, as well as
     folders that may contain such files, like `renv/` and `revdep/`. If you'd
     prefer to have Air format these files as well, set the new
-    `default-excludes` option to `false`.
+    `default-exclude` option to `false`.
 
   - To add additional files or folders to exclude, use the new `exclude` option.
     This accepts a list of `.gitignore` style patterns, such as
