@@ -1,5 +1,0 @@
-[format]
-exclude = [
-    "crates/air_r_formatter/tests/specs/**/*.R",
-    "crates/air_r_parser/tests/snapshots/**/*.R",
-]
