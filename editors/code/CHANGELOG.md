@@ -6,6 +6,10 @@
 
 ## Development version
 
+## 0.4.0
+
+- [Air 0.3.0](https://github.com/posit-dev/air/blob/main/CHANGELOG.md) is now bundled with the extension.
+
 - The extension is now available on Linux (#71).
 
 - The extension is now available on ARM Windows (#170).
