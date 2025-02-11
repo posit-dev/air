@@ -14,7 +14,7 @@ When you want to cut a release:
 
     - Run `cargo check` to sync `Cargo.lock`.
 
-    - In `editors/code/package.json`, bump the minor version to the next even number for standard releases, or to the next odd number for odd releases.
+    - In `editors/code/package.json`, bump the minor version to the next even number for standard releases, or to the next odd number for preview releases.
 
     - Open a PR with these changes.
 
