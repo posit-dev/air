@@ -16,7 +16,9 @@ fn json_schema() -> anyhow::Result<String> {
 }
 
 fn schema_path() -> PathBuf {
-    PathBuf::from(ROOT_DIR).join("air.schema.json")
+    PathBuf::from(ROOT_DIR)
+        .join("artifacts")
+        .join("air.schema.json")
 }
 
 #[cfg(test)]

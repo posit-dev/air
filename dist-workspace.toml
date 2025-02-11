@@ -54,5 +54,5 @@ aarch64-unknown-linux-gnu = "ubuntu-20.04"
 [[dist.extra-artifacts]]
 # We always keep `air.schema.json` up to date, so there is no command required to build it,
 # instead we just provide a dummy `echo` call
-artifacts = ["air.schema.json"]
+artifacts = ["artifacts/air.schema.json"]
 build = ["echo"]
