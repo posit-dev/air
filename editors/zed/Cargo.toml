@@ -1,0 +1,17 @@
+[package]
+name = "zed_air"
+version = "0.1.0"
+edition = "2021"
+publish = false
+license = "MIT"
+
+[lib]
+path = "src/air.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+zed_extension_api = "0.1.0"
+
+# Empty `[workspace]` table to keep this separate from the air workspace,
+# even though the folder structure is nested
+[workspace]
