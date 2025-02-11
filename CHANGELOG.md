@@ -2,6 +2,8 @@
 
 # Development version
 
+# 0.3.0
+
 - Air has gained support for excluding files and folders (#128).
 
   - Air now excludes a set of default R files and folders by default. These
