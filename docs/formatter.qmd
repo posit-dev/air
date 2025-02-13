@@ -6,7 +6,8 @@ editor:
     canonical: true
 ---
 
-Air is first and foremost a formatter of R code. On this page, you'll find details about what a formatter is, why you'd want to use one, and you'll learn about how Air makes decisions on how to format your R code.
+Air is first and foremost a formatter of R code.
+On this page, you'll find details about what a formatter is, why you'd want to use one, and you'll learn about how Air makes decisions on how to format your R code.
 
 # What's a formatter?
 
@@ -172,6 +173,48 @@ list(foo, bar)
 ```
 
 The goal of this feature is to strike a balance between being opinionated and recognizing that users often know when taking up more vertical space results in more readable output.
+
+# Disabling formatting
+
+Air supports two special comments to disable formatting, `# fmt: skip` and `# fmt: skip file`.
+
+`# fmt: skip` skips formatting for the following syntax node (including all of its children).
+
+``` r
+# This skips formatting for `list()` and its arguments, retaining the manual alignment
+# fmt: skip
+list(
+  dollar = "USA",
+  yen    = "Japan",
+  yuan   = "China"
+)
+
+# This skips formatting for `tribble()` and its arguments
+# fmt: skip
+tribble(
+  ~x, ~y,
+   1,  2,
+)
+```
+
+`# fmt: skip file` skips the entire file.
+This must be placed at the top of the file before the first non-comment R code, otherwise the comment is ignored.
+Use this for generated files, or as an alternative to `exclude` for individual files that you know you'd like to exclude from formatting.
+
+``` r
+# Generated file - Don't modify by hand!
+# fmt: skip file
+
+# This won't be formatted
+generated_function_signature <- function(which, might, overflow, the, line, width, but, we, dont, really, care) {
+    body
+}
+
+# Neither will this
+another_generated_function_signature <- function(which, might, overflow, the, line, width, but, we, dont, really, care) {
+    body
+}
+```
 
 # When does a formatter run?
 
