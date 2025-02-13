@@ -85,6 +85,7 @@ dependencies = [
  "biome_formatter",
  "biome_parser",
  "biome_rowan",
+ "comments",
  "itertools",
  "line_ending",
  "settings",
@@ -614,6 +615,10 @@ checksum = "fde0e0ec90c9dfb3b4b1a0891a7dcd0e2bffde2f7efed5fe7c9bb00e5bfb915e"
 dependencies = [
  "windows-sys 0.59.0",
 ]
+
+[[package]]
+name = "comments"
+version = "0.0.0"
 
 [[package]]
 name = "console"
