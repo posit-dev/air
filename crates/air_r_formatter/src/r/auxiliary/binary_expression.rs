@@ -25,7 +25,9 @@ pub(crate) enum ChainAlignment {
 
 #[derive(Default, Debug, Clone)]
 pub(crate) struct FormatRBinaryExpression {
-    /// Whether to indent the pipeline. Used to prevent "double-indenting" an
+    /// Alignment to use with chained expressions
+    ///
+    /// Left alignment is used to prevent "double-indenting" an
     /// assigned pipeline, e.g.:
     ///
     /// ```r
