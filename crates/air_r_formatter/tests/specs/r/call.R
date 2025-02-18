@@ -641,3 +641,67 @@ fn(
   a,
   b
 )
+
+# ------------------------------------------------------------------------
+# Hugging calls - https://github.com/posit-dev/air/issues/21
+
+# Single line
+c(list(1))
+
+# Persistent newline
+c(
+    list(1)
+)
+
+# Symbol: Line length expansion
+c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz))
+
+# Call: Hugging case
+c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz()))
+
+# Another hugging case
+c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz(
+    1,
+    2
+)))
+
+# Sanity checks for comments
+
+c(
+    #foo
+    list(
+        1
+    )
+    #foo
+)
+
+c(list(
+    #foo
+    1
+))
+
+c(list(
+    #foo
+    x = 1
+))
+
+c(list(
+    x =
+    #foo
+         1
+))
+
+c(list(
+    #foo
+))
+
+c(list(
+    1
+) #foo
+)
+
+c(
+    list(
+        1
+    ) #foo
+)

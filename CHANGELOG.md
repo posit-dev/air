@@ -4,6 +4,19 @@
 
 - Assigned pipelines no longer double-indent when a persistent line break is used (#220).
 
+- Hugging calls like:
+
+  ```r
+  list(c(
+    1,
+    2
+  ))
+  ```
+
+  are no longer expanded (#21).
+
+- Assigned pipelines no longer double-indent (#220).
+
 
 # 0.3.0
 

@@ -4,6 +4,7 @@ use std::cell::Cell;
 
 use crate::comments::RComments;
 use crate::context::RFormatOptions;
+use crate::either::Either;
 use crate::prelude::*;
 use crate::r::auxiliary::braced_expressions::as_curly_curly;
 use crate::r::auxiliary::function_definition::FormatFunctionOptions;
@@ -944,18 +945,51 @@ impl Format<RFormatContext> for FormatAllArgsBrokenOut<'_> {
             Ok(())
         });
 
+        let args = if !self.expand && is_hugging_call(self.args)? {
+            Either::Left(args)
+        } else {
+            Either::Right(soft_block_indent(&args))
+        };
+
         write!(
             f,
             [group(&format_args![
                 self.l_token,
                 format_with(|f| f.join().entries(self.leading_holes.iter()).finish()),
                 maybe_space(!self.leading_holes.is_empty() && !self.args.is_empty()),
-                soft_block_indent(&args),
+                &args,
                 self.r_token,
             ])
             .should_expand(self.expand)]
         )
     }
+}
+
+fn is_hugging_call(items: &[FormatCallArgument]) -> SyntaxResult<bool> {
+    // We only consider calls with one argument
+    let Some(item) = items.first() else {
+        return Ok(false);
+    };
+    if items.len() != 1 {
+        return Ok(false);
+    }
+
+    // Unwrap the value to get the `AnyRExpression`
+    let Some(arg) = item.element().node.clone()?.value() else {
+        return Ok(false);
+    };
+
+    // Bail on hugging if the argument has comments attached. In practice only
+    // trailing comments get reordered so we don't need to check for comments on
+    // the argument name.
+    if arg.syntax().has_comments_direct() {
+        return Ok(false);
+    }
+
+    Ok(matches!(
+        arg,
+        AnyRExpression::RCall(_) | AnyRExpression::RSubset(_) | AnyRExpression::RSubset2(_)
+    ))
 }
 
 #[derive(Copy, Clone, Debug)]
