@@ -191,19 +191,18 @@ fn fmt_binary_assignment(
 ) -> FormatResult<()> {
     let right = format_with(|f| {
         if binary_assignment_has_persistent_line_break(&operator, &right, f.options()) {
-            let right = if let AnyRExpression::RBinaryExpression(ref binary_expr) = right {
-                let options = FormatRBinaryExpressionOptions {
-                    alignment: ChainAlignment::LeftAligned,
-                };
-                Either::Left(binary_expr.format().with_options(options))
-            } else {
-                Either::Right(right.format())
+            let right = match &right {
+                AnyRExpression::RBinaryExpression(right) => {
+                    Either::Left(right.format().with_options(FormatRBinaryExpressionOptions {
+                        alignment: ChainAlignment::LeftAligned,
+                    }))
+                }
+                right => Either::Right(right.format()),
             };
-
-            return write!(f, [indent(&format_args![hard_line_break(), right])]);
+            write!(f, [indent(&format_args![hard_line_break(), right])])
+        } else {
+            write!(f, [space(), right.format()])
         }
-
-        write!(f, [space(), right.format()])
     });
 
     write!(
