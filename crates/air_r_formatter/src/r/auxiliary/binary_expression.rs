@@ -1,4 +1,5 @@
 use crate::context::RFormatOptions;
+use crate::either::Either;
 use crate::prelude::*;
 use air_r_syntax::AnyRExpression;
 use air_r_syntax::RBinaryExpression;
@@ -8,12 +9,42 @@ use air_r_syntax::RSyntaxKind;
 use biome_formatter::format_args;
 use biome_formatter::write;
 use biome_formatter::CstFormatContext;
+use biome_formatter::FormatRefWithRule;
 use biome_rowan::AstNode;
 use biome_rowan::SyntaxResult;
 use biome_rowan::SyntaxToken;
 
-#[derive(Debug, Clone, Default)]
-pub(crate) struct FormatRBinaryExpression;
+#[derive(Debug, Clone)]
+pub(crate) struct FormatRBinaryExpression {
+    /// Whether to indent the pipeline. Used to prevent "double-indenting" an
+    /// assigned pipeline, e.g.:
+    ///
+    /// ```r
+    /// foo <-
+    ///   bar |>
+    ///   baz()
+    ///
+    /// foo <-
+    ///   bar +
+    ///   baz()
+    /// ```
+    ///
+    /// See https://github.com/posit-dev/air/issues/220.
+    indent: bool,
+}
+
+impl FormatRBinaryExpression {
+    pub(crate) fn new(indent: bool) -> Self {
+        Self { indent }
+    }
+}
+
+impl Default for FormatRBinaryExpression {
+    fn default() -> Self {
+        Self { indent: true }
+    }
+}
+
 impl FormatNodeRule<RBinaryExpression> for FormatRBinaryExpression {
     fn fmt_fields(&self, node: &RBinaryExpression, f: &mut RFormatter) -> FormatResult<()> {
         let RBinaryExpressionFields {
@@ -42,7 +73,7 @@ impl FormatNodeRule<RBinaryExpression> for FormatRBinaryExpression {
             | RSyntaxKind::SUPER_ASSIGN_RIGHT => fmt_binary_assignment(left, operator, right, f),
 
             // Chainable (pipes, logical, arithmetic)
-            kind if is_chainable_binary_operator(kind)  => fmt_binary_chain(left, operator, right, f),
+            kind if is_chainable_binary_operator(kind)  => fmt_binary_chain(left, operator, right, self.indent, f),
 
             // Not chainable
             // Formulas (debatable)
@@ -147,13 +178,17 @@ fn fmt_binary_assignment(
 ) -> FormatResult<()> {
     let right = format_with(|f| {
         if binary_assignment_has_persistent_line_break(&operator, &right, f.options()) {
-            write!(
-                f,
-                [indent(&format_args![hard_line_break(), right.format()])]
-            )
-        } else {
-            write!(f, [space(), right.format()])
+            if let Some(right) = format_chainable_rhs_unindented(&right)? {
+                return write!(f, [indent(&format_args![hard_line_break(), right])]);
+            } else {
+                return write!(
+                    f,
+                    [indent(&format_args![hard_line_break(), right.format()])]
+                );
+            }
         }
+
+        write!(f, [space(), right.format()])
     });
 
     write!(
@@ -185,6 +220,26 @@ fn binary_assignment_has_persistent_line_break(
     }
 
     right.syntax().has_leading_newline()
+}
+
+fn format_chainable_rhs_unindented(
+    right: &AnyRExpression,
+) -> FormatResult<Option<FormatRefWithRule<RBinaryExpression, FormatRBinaryExpression>>> {
+    let AnyRExpression::RBinaryExpression(expr) = right else {
+        return Ok(None);
+    };
+
+    let RBinaryExpressionFields { operator, .. } = expr.as_fields();
+    let operator = operator?;
+
+    if !is_chainable_binary_operator(operator.kind()) {
+        return Ok(None);
+    }
+
+    Ok(Some(FormatRefWithRule::new(
+        expr,
+        FormatRBinaryExpression::new(false),
+    )))
 }
 
 /// Format a binary expression
@@ -424,6 +479,7 @@ fn fmt_binary_chain(
     mut left: AnyRExpression,
     operator: SyntaxToken<RLanguage>,
     right: AnyRExpression,
+    need_indent: bool,
     f: &mut Formatter<RFormatContext>,
 ) -> FormatResult<()> {
     // For the lead node in a binary chain, comments are handled by the standard
@@ -529,9 +585,15 @@ fn fmt_binary_chain(
         Ok(())
     });
 
+    let chain = if need_indent {
+        Either::Left(indent(&chain))
+    } else {
+        Either::Right(chain)
+    };
+
     write!(
         f,
-        [group(&format_args![left.format(), indent(&chain)])
+        [group(&format_args![left.format(), &chain])
             .should_expand(has_persistent_line_break(&tail, f.options()))]
     )
 }
