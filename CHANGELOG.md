@@ -2,6 +2,9 @@
 
 # Development version
 
+- Assigned pipelines no longer double-indent (#220).
+
+
 # 0.3.0
 
 - Air has gained support for excluding files and folders (#128).
@@ -20,6 +23,7 @@
   support glibc 2.31+ for the binary to work (#71).
 
 - ARM Windows binaries are now available (#170).
+
 
 # 0.2.0
 
