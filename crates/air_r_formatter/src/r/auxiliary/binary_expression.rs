@@ -41,19 +41,19 @@ pub(crate) struct FormatRBinaryExpression {
     /// ```
     ///
     /// See https://github.com/posit-dev/air/issues/220.
-    pub(crate) indent: ChainAlignment,
+    pub(crate) alignment: ChainAlignment,
 }
 
 #[derive(Default, Debug, Clone)]
 pub(crate) struct FormatRBinaryExpressionOptions {
-    pub(crate) indent: ChainAlignment,
+    pub(crate) alignment: ChainAlignment,
 }
 
 impl FormatRuleWithOptions<RBinaryExpression> for FormatRBinaryExpression {
     type Options = FormatRBinaryExpressionOptions;
 
     fn with_options(mut self, options: Self::Options) -> Self {
-        self.indent = options.indent;
+        self.alignment = options.alignment;
         self
     }
 }
@@ -86,7 +86,7 @@ impl FormatNodeRule<RBinaryExpression> for FormatRBinaryExpression {
             | RSyntaxKind::SUPER_ASSIGN_RIGHT => fmt_binary_assignment(left, operator, right, f),
 
             // Chainable (pipes, logical, arithmetic)
-            kind if is_chainable_binary_operator(kind)  => fmt_binary_chain(left, operator, right, self.indent, f),
+            kind if is_chainable_binary_operator(kind)  => fmt_binary_chain(left, operator, right, self.alignment, f),
 
             // Not chainable
             // Formulas (debatable)
@@ -193,7 +193,7 @@ fn fmt_binary_assignment(
         if binary_assignment_has_persistent_line_break(&operator, &right, f.options()) {
             let right = if let AnyRExpression::RBinaryExpression(ref binary_expr) = right {
                 let options = FormatRBinaryExpressionOptions {
-                    indent: rhs_alignment(binary_expr)?,
+                    alignment: rhs_alignment(binary_expr)?,
                 };
                 Either::Left(binary_expr.format().with_options(options))
             } else {
