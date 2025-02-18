@@ -193,7 +193,7 @@ fn fmt_binary_assignment(
         if binary_assignment_has_persistent_line_break(&operator, &right, f.options()) {
             let right = if let AnyRExpression::RBinaryExpression(ref binary_expr) = right {
                 let options = FormatRBinaryExpressionOptions {
-                    alignment: rhs_alignment(binary_expr)?,
+                    alignment: ChainAlignment::LeftAligned,
                 };
                 Either::Left(binary_expr.format().with_options(options))
             } else {
@@ -235,19 +235,6 @@ fn binary_assignment_has_persistent_line_break(
     }
 
     right.syntax().has_leading_newline()
-}
-
-// Should this be implemented in an extension trait of `RBinaryExpression` owned
-// by the formatter?
-fn rhs_alignment(expr: &RBinaryExpression) -> FormatResult<ChainAlignment> {
-    let RBinaryExpressionFields { operator, .. } = expr.as_fields();
-    let operator = operator?;
-
-    Ok(if is_chainable_binary_operator(operator.kind()) {
-        ChainAlignment::LeftAligned
-    } else {
-        ChainAlignment::Indented
-    })
 }
 
 /// Format a binary expression
