@@ -9,7 +9,7 @@ use air_r_syntax::RSyntaxKind;
 use biome_formatter::format_args;
 use biome_formatter::write;
 use biome_formatter::CstFormatContext;
-use biome_formatter::FormatRefWithRule;
+use biome_formatter::FormatRuleWithOptions;
 use biome_rowan::AstNode;
 use biome_rowan::SyntaxResult;
 use biome_rowan::SyntaxToken;
@@ -30,18 +30,32 @@ pub(crate) struct FormatRBinaryExpression {
     /// ```
     ///
     /// See https://github.com/posit-dev/air/issues/220.
-    indent: bool,
-}
-
-impl FormatRBinaryExpression {
-    pub(crate) fn new(indent: bool) -> Self {
-        Self { indent }
-    }
+    pub(crate) indent: bool,
 }
 
 impl Default for FormatRBinaryExpression {
     fn default() -> Self {
         Self { indent: true }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct FormatRBinaryExpressionOptions {
+    pub(crate) indent: bool,
+}
+
+impl Default for FormatRBinaryExpressionOptions {
+    fn default() -> Self {
+        Self { indent: true }
+    }
+}
+
+impl FormatRuleWithOptions<RBinaryExpression> for FormatRBinaryExpression {
+    type Options = FormatRBinaryExpressionOptions;
+
+    fn with_options(mut self, options: Self::Options) -> Self {
+        self.indent = options.indent;
+        self
     }
 }
 
@@ -178,14 +192,16 @@ fn fmt_binary_assignment(
 ) -> FormatResult<()> {
     let right = format_with(|f| {
         if binary_assignment_has_persistent_line_break(&operator, &right, f.options()) {
-            if let Some(right) = format_chainable_rhs_unindented(&right)? {
-                return write!(f, [indent(&format_args![hard_line_break(), right])]);
+            let right = if let AnyRExpression::RBinaryExpression(ref binary_expr) = right {
+                let options = FormatRBinaryExpressionOptions {
+                    indent: !is_chainable_rhs(binary_expr)?,
+                };
+                Either::Left(binary_expr.format().with_options(options))
             } else {
-                return write!(
-                    f,
-                    [indent(&format_args![hard_line_break(), right.format()])]
-                );
-            }
+                Either::Right(right.format())
+            };
+
+            return write!(f, [indent(&format_args![hard_line_break(), right])]);
         }
 
         write!(f, [space(), right.format()])
@@ -222,24 +238,13 @@ fn binary_assignment_has_persistent_line_break(
     right.syntax().has_leading_newline()
 }
 
-fn format_chainable_rhs_unindented(
-    right: &AnyRExpression,
-) -> FormatResult<Option<FormatRefWithRule<RBinaryExpression, FormatRBinaryExpression>>> {
-    let AnyRExpression::RBinaryExpression(expr) = right else {
-        return Ok(None);
-    };
-
+// Should this be implemented in an extension trait of `RBinaryExpression` owned
+// by the formatter?
+fn is_chainable_rhs(expr: &RBinaryExpression) -> FormatResult<bool> {
     let RBinaryExpressionFields { operator, .. } = expr.as_fields();
     let operator = operator?;
 
-    if !is_chainable_binary_operator(operator.kind()) {
-        return Ok(None);
-    }
-
-    Ok(Some(FormatRefWithRule::new(
-        expr,
-        FormatRBinaryExpression::new(false),
-    )))
+    Ok(is_chainable_binary_operator(operator.kind()))
 }
 
 /// Format a binary expression
