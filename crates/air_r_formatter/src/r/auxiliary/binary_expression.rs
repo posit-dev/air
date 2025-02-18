@@ -593,10 +593,9 @@ fn fmt_binary_chain(
         Ok(())
     });
 
-    let chain = if let ChainAlignment::Indented = alignment {
-        Either::Left(indent(&chain))
-    } else {
-        Either::Right(chain)
+    let chain = match alignment {
+        ChainAlignment::Indented => Either::Left(indent(&chain)),
+        ChainAlignment::LeftAligned => Either::Right(chain),
     };
 
     write!(
