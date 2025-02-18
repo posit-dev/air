@@ -14,7 +14,16 @@ use biome_rowan::AstNode;
 use biome_rowan::SyntaxResult;
 use biome_rowan::SyntaxToken;
 
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone, Copy)]
+pub(crate) enum ChainAlignment {
+    #[default]
+    Indented,
+
+    /// Used in the RHS of assign operators to align pipelines.
+    LeftAligned,
+}
+
+#[derive(Default, Debug, Clone)]
 pub(crate) struct FormatRBinaryExpression {
     /// Whether to indent the pipeline. Used to prevent "double-indenting" an
     /// assigned pipeline, e.g.:
@@ -30,24 +39,12 @@ pub(crate) struct FormatRBinaryExpression {
     /// ```
     ///
     /// See https://github.com/posit-dev/air/issues/220.
-    pub(crate) indent: bool,
+    pub(crate) indent: ChainAlignment,
 }
 
-impl Default for FormatRBinaryExpression {
-    fn default() -> Self {
-        Self { indent: true }
-    }
-}
-
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub(crate) struct FormatRBinaryExpressionOptions {
-    pub(crate) indent: bool,
-}
-
-impl Default for FormatRBinaryExpressionOptions {
-    fn default() -> Self {
-        Self { indent: true }
-    }
+    pub(crate) indent: ChainAlignment,
 }
 
 impl FormatRuleWithOptions<RBinaryExpression> for FormatRBinaryExpression {
@@ -194,7 +191,7 @@ fn fmt_binary_assignment(
         if binary_assignment_has_persistent_line_break(&operator, &right, f.options()) {
             let right = if let AnyRExpression::RBinaryExpression(ref binary_expr) = right {
                 let options = FormatRBinaryExpressionOptions {
-                    indent: !is_chainable_rhs(binary_expr)?,
+                    indent: rhs_alignment(binary_expr)?,
                 };
                 Either::Left(binary_expr.format().with_options(options))
             } else {
@@ -240,11 +237,15 @@ fn binary_assignment_has_persistent_line_break(
 
 // Should this be implemented in an extension trait of `RBinaryExpression` owned
 // by the formatter?
-fn is_chainable_rhs(expr: &RBinaryExpression) -> FormatResult<bool> {
+fn rhs_alignment(expr: &RBinaryExpression) -> FormatResult<ChainAlignment> {
     let RBinaryExpressionFields { operator, .. } = expr.as_fields();
     let operator = operator?;
 
-    Ok(is_chainable_binary_operator(operator.kind()))
+    Ok(if is_chainable_binary_operator(operator.kind()) {
+        ChainAlignment::LeftAligned
+    } else {
+        ChainAlignment::Indented
+    })
 }
 
 /// Format a binary expression
@@ -484,7 +485,7 @@ fn fmt_binary_chain(
     mut left: AnyRExpression,
     operator: SyntaxToken<RLanguage>,
     right: AnyRExpression,
-    need_indent: bool,
+    alignment: ChainAlignment,
     f: &mut Formatter<RFormatContext>,
 ) -> FormatResult<()> {
     // For the lead node in a binary chain, comments are handled by the standard
@@ -590,7 +591,7 @@ fn fmt_binary_chain(
         Ok(())
     });
 
-    let chain = if need_indent {
+    let chain = if let ChainAlignment::Indented = alignment {
         Either::Left(indent(&chain))
     } else {
         Either::Right(chain)
