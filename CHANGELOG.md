@@ -2,6 +2,8 @@
 
 # Development version
 
+- Semicolons at the very start or very end of a file no longer cause the parser to panic (#238).
+
 - Assigned pipelines no longer double-indent when a persistent line break is used (#220).
 
 - Hugging calls like:
