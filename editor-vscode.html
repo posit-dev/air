@@ -215,6 +215,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#format-on-save-1" id="toc-format-on-save-1" class="nav-link" data-scroll-target="#format-on-save-1">Format on save</a></li>
   <li><a href="#format-cell" id="toc-format-cell" class="nav-link" data-scroll-target="#format-cell">Format cell</a></li>
   </ul></li>
+  <li><a href="#configuration-autocompletion-and-validation" id="toc-configuration-autocompletion-and-validation" class="nav-link" data-scroll-target="#configuration-autocompletion-and-validation">Configuration autocompletion and validation</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -284,9 +285,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="format-cell">Format cell</h3>
 <p>When inside an R cell in a Quarto document, use the chorded key combination <code>Cmd+K Cmd+F</code> or the command <code>Quarto: Format Cell</code> to format a single cell.</p>
 <!--# Come back and add video -->
-
-
 </section>
+</section>
+<section id="configuration-autocompletion-and-validation" class="level2">
+<h2 class="anchored" data-anchor-id="configuration-autocompletion-and-validation">Configuration autocompletion and validation</h2>
+<p>Installing the <a href="https://marketplace.visualstudio.com/items?itemName=tamasfe.even-better-toml">Even Better TOML</a> extension activates autocompletion and validation while inside an <code>air.toml</code> file. There is a <a href="https://github.com/tamasfe/taplo/issues/514">known issue</a> regarding autocompletion duplication, but we still find this extension very useful!</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/autocomplete-persistent-line-breaks.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/autocomplete-line-ending.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+
+
 </section>
 </section>
 

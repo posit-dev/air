@@ -77,6 +77,17 @@
     ]
   },
   {
+    "objectID": "editor-vscode.html#configuration-autocompletion-and-validation",
+    "href": "editor-vscode.html#configuration-autocompletion-and-validation",
+    "title": "VS Code and Positron",
+    "section": "Configuration autocompletion and validation",
+    "text": "Configuration autocompletion and validation\nInstalling the Even Better TOML extension activates autocompletion and validation while inside an air.toml file. There is a known issue regarding autocompletion duplication, but we still find this extension very useful!",
+    "crumbs": [
+      "Editors",
+      "VS Code and Positron"
+    ]
+  },
+  {
     "objectID": "formatter.html",
     "href": "formatter.html",
     "title": "Formatter",
