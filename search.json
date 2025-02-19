@@ -1,32 +1,35 @@
 [
   {
-    "objectID": "cli.html",
-    "href": "cli.html",
-    "title": "Command line interface",
+    "objectID": "editor-rstudio.html",
+    "href": "editor-rstudio.html",
+    "title": "RStudio",
     "section": "",
-    "text": "Installation\nIf you’d like to use Air at the command line, you can use one of our standalone installers.\nOn macOS and Linux:\ncurl -LsSf https://github.com/posit-dev/air/releases/latest/download/air-installer.sh | sh\nOn Windows:\npowershell -c \"irm https://github.com/posit-dev/air/releases/latest/download/air-installer.ps1 | iex\"\nFor a specific version:\ncurl -LsSf https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.sh | sh\npowershell -c \"irm https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.ps1 | iex\"\nThe installer scripts will automatically add Air to your PATH. The very first time you install Air, for the PATH modifications to be applied you’ll need to restart your terminal.\nNote that if you’d like to use Air inside VS Code or Positron, then the Extension for those editors comes pre-bundled with an Air binary, so there’s nothing you need to do besides download the Extension.",
+    "text": "RStudio does not support the Language Server Protocol, but you can still use Air as an external formatter.",
     "crumbs": [
-      "Command line"
+      "Editors",
+      "RStudio"
     ]
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Air",
-    "section": "",
-    "text": "Air is currently in alpha. Expect breaking changes both in the API and in formatting results. We also recommend that you use a version control system like git so you can easily see the changes that Air makes.\n\n\n\n\n\n\nAir is an R formatter and language server, written in Rust.\n\nIntegrates with your favorite editor with support for\n\nFormat on save\nFormat selection\n\nUsable from the command line with support for\n\nFormatting individual files\nRecursively formatting entire directories\n--check mode, suitable for a git pre-commit hook or a GitHub Actions workflow\n\n\nIf you’d like to use Air from the command line, read our installation guide. If you’d like to use Air inside a code editor, read our editors guide.",
+    "objectID": "editor-rstudio.html#format-on-save",
+    "href": "editor-rstudio.html#format-on-save",
+    "title": "RStudio",
+    "section": "Format on save",
+    "text": "Format on save\nAfter you’ve set Air as an external formatter, you can either tell RStudio to format all documents on save, or set this on a per document basis.\nTo format all documents on save, open Tools -&gt; Global Options -&gt; Code -&gt; Saving and check Reformat documents on save.\n\n\n\n\n\nTo format individual documents on save, open the file specific settings and check Reformat Document on Save.",
     "crumbs": [
-      "Air"
+      "Editors",
+      "RStudio"
     ]
   },
   {
-    "objectID": "formatter.html",
-    "href": "formatter.html",
-    "title": "Formatter",
-    "section": "",
-    "text": "Air is first and foremost a formatter of R code. On this page, you’ll find details about what a formatter is, why you’d want to use one, and you’ll learn about how Air makes decisions on how to format your R code.\n\nWhat’s a formatter?\nA formatter is in charge of the layout of your R code. Formatters do not change the meaning of code; instead they ensure that whitespace, newlines, and other punctuation conform to a set of rules and standards, such as:\n\nMaking sure your code is indented with the appropriate amount of leading whitespace depending on the context. By default, Air uses an indentation of 2 spaces. You will see this indentation in pipelines:\ndata |&gt;\n  ggplot(aes(x, y)) +\n  geom_point()\nAs well as expanded (i.e. vertically laid out) function calls:\nlist(\n  foo = 1,\n  bar = 2\n)\nPreventing your code from overflowing a given line width. By default, we use a line width of 80 characters. It does so by splitting lines of code that have become too long over multiple lines. For instance, let’s say that we’ve set the line width to be extremely small and these expressions would overflow:\ndata |&gt; select(foo)\n\nfoo &lt;- function(bar = 1, baz = 2) {\n  list(bar, baz)\n}\nTo respect the very small line width, Air would switch these expressions from a horizontal layout (called “flat”) to a vertical one (called “expanded”):\ndata |&gt;\n  select(foo)\n\nfoo &lt;- function(\n  bar = 1,\n  baz = 2\n) {\n  list(\n    bar,\n    baz\n  )\n}\nStandardizing the whitespace around code elements. Have you ever had difficulties deciphering very dense code?\n1+2:3*(4/5)\nAir reformats this expression to:\n1 + 2:3 * (4 / 5)\n\nIn general, a formatter takes over the whitespace in your code and moves elements around to respect style conventions and maximize readability.\n\n\nHow does a formatter help your workflow?\nBy using a formatter it might seem like you’re rescinding control over the layout of your code. And indeed you are! However, putting Air in charge of styling your code has substantial advantages.\nFirst, it automatically forces you to write legible code that is neither too wide nor too narrow, with proper breathing room around syntactic elements. Having a formatter as a companion significantly improves the process of writing code as you no longer have to think about style as much - the formatter does that for you!\nSecond, it reduces friction when working in a team. By agreeing to use a formatter in a project, collaborators no longer have to discuss styling and layout issues. Code sent to you by a colleague will adhere to the standards that you’re used to. Code review no longer has to be about style nitpicks and can focus on the substance of the changes instead.\n\n\nHow does Air decide how to format your code?\nAir tries to strike a balance between enforcing rigid rules and allowing authors some control over the layout. Our main source of styling rules is the Tidyverse style guide, but we occasionally deviate from these.\nThere is a trend among modern formatters of being opinionated. Air certainly fits this trend and provides very few configuration options, mostly the indent style (spaces versus tabs), the indent width, and the line width. However, Air also puts code authors in charge of certain aspects of the layout through the notion of persistent line breaks.\nIn general, Air is in control of deciding where to put vertical space (line breaks) in your code. For instance if you write:\nlist(foo,\nbar)\nAir will figure out that this expression fits on a single line without exceeding the line width. It will discard the line break and reformat to:\nlist(foo, bar)\nHowever there are very specific places at which you can enforce a line break, i.e. make it persistent.\n\nBefore the very first argument in a function call. This:\nlist(\nfoo, bar)\ngets formatted as:\nlist(\n  foo,\n  bar\n)\nBefore the very first right-hand side expression in a pipeline. This:\ndata |&gt;\nselect(foo) |&gt; filter(!bar)\ngets formatted as:\ndata |&gt;\n  select(foo) |&gt;\n  filter(!bar)\n\nA persistent line break will never be removed by Air. But you can remove it manually. Taking the last example, if you join the first lines like this:\nlist(foo,\n  bar\n)\n\n1 + 2 +\n  3\nAir will recognize that you’ve removed the persistent line break, and reformat as:\nlist(foo, bar)\n\n1 + 2 + 3\nThe goal of this feature is to strike a balance between being opinionated and recognizing that users often know when taking up more vertical space results in more readable output.\n\n\nWhen does a formatter run?\nThe most convenient way to run a formatter is when you save a file. Most editors don’t enable this by default, so check out the Editors section to learn how to configure your editor to format on save. Once enabled, your code will be reformatted every time you save! This prevents your code from ever diverging from the standards set by Air.\nAir also provides a CLI tool. It makes it easy to reformat whole directories such as an R project or package. If you’re incorporating Air into an existing project, you may want to use the CLI tool to run air format once on the entire project, commit those results, and then rely on per-file format on save from there on out.\nNote that in all of these cases, the formatter will only run if your code is syntactically correct. If the formatter is seemingly no longer working, check your code for syntax errors.",
+    "objectID": "editor-rstudio.html#quarto",
+    "href": "editor-rstudio.html#quarto",
+    "title": "RStudio",
+    "section": "Quarto",
+    "text": "Quarto\nThere is currently no way to use Air in RStudio with Quarto documents.",
     "crumbs": [
-      "Formatter"
+      "Editors",
+      "RStudio"
     ]
   },
   {
@@ -74,46 +77,13 @@
     ]
   },
   {
-    "objectID": "editor-rstudio.html",
-    "href": "editor-rstudio.html",
-    "title": "RStudio",
+    "objectID": "formatter.html",
+    "href": "formatter.html",
+    "title": "Formatter",
     "section": "",
-    "text": "RStudio does not support the Language Server Protocol, but you can still use Air as an external formatter.",
+    "text": "Air is first and foremost a formatter of R code. On this page, you’ll find details about what a formatter is, why you’d want to use one, and you’ll learn about how Air makes decisions on how to format your R code.\n\nWhat’s a formatter?\nA formatter is in charge of the layout of your R code. Formatters do not change the meaning of code; instead they ensure that whitespace, newlines, and other punctuation conform to a set of rules and standards, such as:\n\nMaking sure your code is indented with the appropriate amount of leading whitespace depending on the context. By default, Air uses an indentation of 2 spaces. You will see this indentation in pipelines:\ndata |&gt;\n  ggplot(aes(x, y)) +\n  geom_point()\nAs well as expanded (i.e. vertically laid out) function calls:\nlist(\n  foo = 1,\n  bar = 2\n)\nPreventing your code from overflowing a given line width. By default, we use a line width of 80 characters. It does so by splitting lines of code that have become too long over multiple lines. For instance, let’s say that we’ve set the line width to be extremely small and these expressions would overflow:\ndata |&gt; select(foo)\n\nfoo &lt;- function(bar = 1, baz = 2) {\n  list(bar, baz)\n}\nTo respect the very small line width, Air would switch these expressions from a horizontal layout (called “flat”) to a vertical one (called “expanded”):\ndata |&gt;\n  select(foo)\n\nfoo &lt;- function(\n  bar = 1,\n  baz = 2\n) {\n  list(\n    bar,\n    baz\n  )\n}\nStandardizing the whitespace around code elements. Have you ever had difficulties deciphering very dense code?\n1+2:3*(4/5)\nAir reformats this expression to:\n1 + 2:3 * (4 / 5)\n\nIn general, a formatter takes over the whitespace in your code and moves elements around to respect style conventions and maximize readability.\n\n\nHow does a formatter help your workflow?\nBy using a formatter it might seem like you’re rescinding control over the layout of your code. And indeed you are! However, putting Air in charge of styling your code has substantial advantages.\nFirst, it automatically forces you to write legible code that is neither too wide nor too narrow, with proper breathing room around syntactic elements. Having a formatter as a companion significantly improves the process of writing code as you no longer have to think about style as much - the formatter does that for you!\nSecond, it reduces friction when working in a team. By agreeing to use a formatter in a project, collaborators no longer have to discuss styling and layout issues. Code sent to you by a colleague will adhere to the standards that you’re used to. Code review no longer has to be about style nitpicks and can focus on the substance of the changes instead.\n\n\nHow does Air decide how to format your code?\nAir tries to strike a balance between enforcing rigid rules and allowing authors some control over the layout. Our main source of styling rules is the Tidyverse style guide, but we occasionally deviate from these.\nThere is a trend among modern formatters of being opinionated. Air certainly fits this trend and provides very few configuration options, mostly the indent style (spaces versus tabs), the indent width, and the line width. However, Air also puts code authors in charge of certain aspects of the layout through the notion of persistent line breaks.\nIn general, Air is in control of deciding where to put vertical space (line breaks) in your code. For instance if you write:\nlist(foo,\nbar)\nAir will figure out that this expression fits on a single line without exceeding the line width. It will discard the line break and reformat to:\nlist(foo, bar)\nHowever there are very specific places at which you can enforce a line break, i.e. make it persistent.\n\nBefore the very first argument in a function call. This:\nlist(\nfoo, bar)\ngets formatted as:\nlist(\n  foo,\n  bar\n)\nBefore the very first right-hand side expression in a pipeline. This:\ndata |&gt;\nselect(foo) |&gt; filter(!bar)\ngets formatted as:\ndata |&gt;\n  select(foo) |&gt;\n  filter(!bar)\n\nA persistent line break will never be removed by Air. But you can remove it manually. Taking the last example, if you join the first lines like this:\nlist(foo,\n  bar\n)\n\n1 + 2 +\n  3\nAir will recognize that you’ve removed the persistent line break, and reformat as:\nlist(foo, bar)\n\n1 + 2 + 3\nThe goal of this feature is to strike a balance between being opinionated and recognizing that users often know when taking up more vertical space results in more readable output.\n\n\nWhen does a formatter run?\nThe most convenient way to run a formatter is when you save a file. Most editors don’t enable this by default, so check out the Editors section to learn how to configure your editor to format on save. Once enabled, your code will be reformatted every time you save! This prevents your code from ever diverging from the standards set by Air.\nAir also provides a CLI tool. It makes it easy to reformat whole directories such as an R project or package. If you’re incorporating Air into an existing project, you may want to use the CLI tool to run air format once on the entire project, commit those results, and then rely on per-file format on save from there on out.\nNote that in all of these cases, the formatter will only run if your code is syntactically correct. If the formatter is seemingly no longer working, check your code for syntax errors.",
     "crumbs": [
-      "Editors",
-      "RStudio"
-    ]
-  },
-  {
-    "objectID": "editor-rstudio.html#format-on-save",
-    "href": "editor-rstudio.html#format-on-save",
-    "title": "RStudio",
-    "section": "Format on save",
-    "text": "Format on save\nAfter you’ve set Air as an external formatter, you can either tell RStudio to format all documents on save, or set this on a per document basis.\nTo format all documents on save, open Tools -&gt; Global Options -&gt; Code -&gt; Saving and check Reformat documents on save.\n\n\n\n\n\nTo format individual documents on save, open the file specific settings and check Reformat Document on Save.",
-    "crumbs": [
-      "Editors",
-      "RStudio"
-    ]
-  },
-  {
-    "objectID": "editor-rstudio.html#quarto",
-    "href": "editor-rstudio.html#quarto",
-    "title": "RStudio",
-    "section": "Quarto",
-    "text": "Quarto\nThere is currently no way to use Air in RStudio with Quarto documents.",
-    "crumbs": [
-      "Editors",
-      "RStudio"
-    ]
-  },
-  {
-    "objectID": "editors.html",
-    "href": "editors.html",
-    "title": "Editor support",
-    "section": "",
-    "text": "Air provides excellent support for code editors that support the Language Server Protocol. Many do, including Positron, VS Code, and Zed. Air also provides some support for code editors that allow for external formatters, such as RStudio. Follow one of our editor specific guides to get set up with Air in your preferred editor:\n\nVS Code\nPositron\nRStudio",
-    "crumbs": [
-      "Editors"
+      "Formatter"
     ]
   },
   {
@@ -184,6 +154,36 @@
     "text": "Format options\nAll formatting options are specified under the [format] table.\n\nline-width\nThe preferred maximum line length.\nAn integer value between 1 and 320, with a default of 80.\nWhile the formatter will attempt to format lines such that they remain within the line-width, it isn’t a hard upper bound, and formatted lines may exceed the line-width.\n\n\nindent-width\nThe number of spaces per indentation level.\nAn integer value between 1 and 24, with a default of 2.\nThis option changes the number of spaces the formatter inserts when using indent-style = \"space\". It also represents the width of a tab when indent-style = \"tab\" for the purposes of computing the line-width.\n\n\nindent-style\nWhether to use spaces or tabs for indentation.\nOne of the following values, with a default of \"space\":\n\n\"space\": Use spaces for indentation.\n\"tab\": Use tabs for indentation.\n\nAir defaults to spaces due to the overwhelming amount of existing R code written in this style, but consider using tabs for new projects to improve accessibility. See indent-width to configure the number of spaces per indentation and the tab width.\n\n\nline-ending\nThe character air uses at the end of a line.\nOne of the following values, with a default of \"auto\":\n\n\"auto\": The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to \\n for files that contain no line endings.\n\"lf\": Line endings will be converted to \\n. The typical line ending on Unix.\n\"crlf\": Line endings will be converted to \\r\\n. The typical line ending on Windows.\n\"native\": Line endings will be converted to \\n on Unix and \\r\\n on Windows.\n\n\n\npersistent-line-breaks\nWhether or not persistent line breaks are allowed.\nEither true to respect persistent line breaks, or false to ignore them, with a default of true.\nAir respects a small set of persistent line breaks as an indication that certain function calls or function signatures should be left expanded. For example, the following list could be flattened to one line and would still fit within a line-width of 80, however, it remains expanded due to the persistent line break between the opening ( and the first argument, apple.\ndictionary &lt;- list(\n  apple = 0.75,\n  banana = 0.25,\n  cherry = 0.50\n)\nSimilarly, this function signature could also be flattened, but is not, due to the persistent line break between the opening ( and the first parameter, ....\ncase_when &lt;- function(\n  ...,\n  .default = NULL,\n  .ptype = NULL,\n  .size = NULL\n) {\n  body\n}\nTo request flattening in these cases, just remove the persistent line break. For example:\n# If you started here,\ndictionary &lt;- list(\n  apple = 0.75,\n  banana = 0.25,\n  cherry = 0.50\n)\n\n# then do this, and run air,\ndictionary &lt;- list(apple = 0.75,\n  banana = 0.25,\n  cherry = 0.50\n)\n\n# to get this.\ndictionary &lt;- list(apple = 0.75, banana = 0.25, cherry = 0.50)\nAlternatively, use a tool such as codegrip bound to a keyboard shortcut to flatten the code, and Air will keep it flattened as long as it fits within the line-width.\nIt may be preferable to ignore persistent line breaks if you prefer that line-width should be the only value that influences line breaks.\n\n\nexclude\nThe set of additional files and folders to exclude.\nA list of strings, i.e. exclude = [\"file.R\", \"folder/\", \"files-like-*-this.R\"].\nBy default, Air will refuse to format files matched by patterns listed in default-exclude. Use this option to supply an additional list of exclude patterns.\nExclude patterns are modeled after what you can provide in a .gitignore, and are resolved relative to the parent directory that your air.toml is contained within. For example, if your air.toml was located at root/air.toml, then:\n\nfile.R excludes a file named file.R located anywhere below root/. This is equivalent to **/file.R.\nfolder/ excludes a directory named folder (and all of its children) located anywhere below root/. You can also just use folder, but this would technically also match a file named folder, so the trailing slash is preferred when targeting directories. This is equivalent to **/folder/.\n/file.R excludes a file named file.R located at root/file.R.\n/folder/ excludes a directory named folder (and all of its children) located at root/folder/.\nfile-*.R excludes R files named like file-this.R and file-that.R located anywhere below root/.\nfolder/*.R excludes all R files located at root/folder/. Note that R files in directories under folder/ are not excluded in this case (such as root/folder/subfolder/file.R).\nfolder/**/*.R excludes all R files located anywhere below root/folder/.\n**/folder/*.R excludes all R files located directly inside a folder/ directory, where the folder/ directory itself can appear anywhere.\n\nSee the full .gitignore documentation for all of the patterns you can provide.\n\n\ndefault-exclude\nWhether or not the default file exclude patterns are used.\nEither true to use the default exclude patterns, or false to not use them, with a default of true.\nBy default, Air excludes a set of files and folders that you are unlikely to want formatting in. The complete list of default exclude patterns is:\n\n.git/\nrenv/\nrevdep/\ncpp11.R\nRcppExports.R\nextendr-wrappers.R\nimport-standalone-*.R",
     "crumbs": [
       "Configuration"
+    ]
+  },
+  {
+    "objectID": "cli.html",
+    "href": "cli.html",
+    "title": "Command line interface",
+    "section": "",
+    "text": "Installation\nIf you’d like to use Air at the command line, you can use one of our standalone installers.\nOn macOS and Linux:\ncurl -LsSf https://github.com/posit-dev/air/releases/latest/download/air-installer.sh | sh\nOn Windows:\npowershell -c \"irm https://github.com/posit-dev/air/releases/latest/download/air-installer.ps1 | iex\"\nFor a specific version:\ncurl -LsSf https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.sh | sh\npowershell -c \"irm https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.ps1 | iex\"\nThe installer scripts will automatically add Air to your PATH. The very first time you install Air, for the PATH modifications to be applied you’ll need to restart your terminal.\nNote that if you’d like to use Air inside VS Code or Positron, then the Extension for those editors comes pre-bundled with an Air binary, so there’s nothing you need to do besides download the Extension.",
+    "crumbs": [
+      "Command line"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Air",
+    "section": "",
+    "text": "Air is currently in alpha. Expect breaking changes both in the API and in formatting results. We also recommend that you use a version control system like git so you can easily see the changes that Air makes.\n\n\n\n\n\n\nAir is an R formatter and language server, written in Rust.\n\nIntegrates with your favorite editor with support for\n\nFormat on save\nFormat selection\n\nUsable from the command line with support for\n\nFormatting individual files\nRecursively formatting entire directories\n--check mode, suitable for a git pre-commit hook or a GitHub Actions workflow\n\n\nIf you’d like to use Air from the command line, read our installation guide. If you’d like to use Air inside a code editor, read our editors guide.",
+    "crumbs": [
+      "Air"
+    ]
+  },
+  {
+    "objectID": "editors.html",
+    "href": "editors.html",
+    "title": "Editor support",
+    "section": "",
+    "text": "Air provides excellent support for code editors that support the Language Server Protocol. Many do, including Positron, VS Code, and Zed. Air also provides some support for code editors that allow for external formatters, such as RStudio. Follow one of our editor specific guides to get set up with Air in your preferred editor:\n\nVS Code\nPositron\nRStudio",
+    "crumbs": [
+      "Editors"
     ]
   }
 ]
