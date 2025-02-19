@@ -222,7 +222,10 @@ impl ignore::ParallelVisitor for FilesVisitor<'_, '_> {
             // criteria (including extension). This is the user supplying `air format
             // file.R`. Note we don't do this for directories, i.e. `air format renv`
             // should do nothing since we have a default `exclude` for `renv/`.
-            tracing::trace!("Included file due to explicit provision {path:?}");
+            tracing::trace!(
+                "Included file due to explicit provision {path}",
+                path = path.display()
+            );
             self.files.push(Ok(entry.into_path()));
             return ignore::WalkState::Continue;
         }
@@ -242,7 +245,10 @@ impl ignore::ParallelVisitor for FilesVisitor<'_, '_> {
         }
 
         // Didn't accept this file, just keep going
-        tracing::trace!("Excluded file due to fallthrough {path:?}");
+        tracing::trace!(
+            "Excluded file due to fallthrough {path}",
+            path = path.display()
+        );
         ignore::WalkState::Continue
     }
 }
@@ -273,8 +279,9 @@ impl FilesVisitor<'_, '_> {
                 .and_then(|exclude| exclude.matched(path, is_directory))
             {
                 tracing::trace!(
-                    "Excluded file due to '{glob}' in `format.exclude` {path:?}",
-                    glob = glob.original()
+                    "Excluded file due to '{glob}' in `format.exclude` {path}",
+                    glob = glob.original(),
+                    path = path.display()
                 );
                 return true;
             }
@@ -286,8 +293,9 @@ impl FilesVisitor<'_, '_> {
                 .and_then(|default_exclude| default_exclude.matched(path, is_directory))
             {
                 tracing::trace!(
-                    "Excluded file due to '{glob}' in `format.default_exclude` {path:?}",
-                    glob = glob.original()
+                    "Excluded file due to '{glob}' in `format.default_exclude` {path}",
+                    glob = glob.original(),
+                    path = path.display()
                 );
                 return true;
             }
@@ -306,8 +314,9 @@ impl FilesVisitor<'_, '_> {
                 .and_then(|default_include| default_include.matched(path, is_directory))
             {
                 tracing::trace!(
-                    "Included file due to '{glob}' in `format.default_include` {path:?}",
-                    glob = glob.original()
+                    "Included file due to '{glob}' in `format.default_include` {path}",
+                    glob = glob.original(),
+                    path = path.display()
                 );
                 return true;
             }
