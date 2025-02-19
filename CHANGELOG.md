@@ -2,7 +2,7 @@
 
 # Development version
 
-- Assigned pipelines no longer double-indent (#220).
+- Assigned pipelines no longer double-indent when a persistent line break is used (#220).
 
 
 # 0.3.0
