@@ -1,0 +1,38 @@
+---
+source: crates/air_r_parser/tests/spec_test.rs
+expression: snapshot
+---
+## Input
+
+```R
+# https://github.com/posit-dev/air/issues/238
+1;
+
+```
+
+
+## AST
+
+```
+RRoot {
+    bom_token: missing (optional),
+    expressions: RExpressionList [
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@0..47 "1" [Comments("# https://github.com/ ..."), Newline("\n")] [],
+        },
+    ],
+    eof_token: EOF@47..49 "" [Whitespace(";"), Newline("\n")] [],
+}
+```
+
+## CST
+
+```
+0: R_ROOT@0..49
+  0: (empty)
+  1: R_EXPRESSION_LIST@0..47
+    0: R_DOUBLE_VALUE@0..47
+      0: R_DOUBLE_LITERAL@0..47 "1" [Comments("# https://github.com/ ..."), Newline("\n")] []
+  2: EOF@47..49 "" [Whitespace(";"), Newline("\n")] []
+
+```
