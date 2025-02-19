@@ -645,6 +645,10 @@ fn(
 # ------------------------------------------------------------------------
 # Hugging calls - https://github.com/posit-dev/air/issues/21
 
+# Motivating hugging cases
+abort(glue::glue("Length implied by `dim`, {n_elements}, must match the length of `x`, {n_x}."))
+abort(paste0("This is a section", and, "this is another section", "and this is a final section"))
+
 # Single line
 c(list(1))
 
@@ -704,13 +708,75 @@ c(list(
     #foo
 ))
 
+# Trailing comment of inner paren
 c(list(
     1
 ) #foo
+)
+
+# Leading comment of outer paren
+c(list(
+  1
+)
+#foo
 )
 
 c(
     list(
         1
     ) #foo
+)
+
+# Leading holes
+fn(,, paste0("This is a section", and, "this is another section", "and this is a final section"))
+
+fn[,, paste0("This is a section", and, "this is another section", "and this is a final section")]
+
+# Subsetting
+foo(bar[
+  1,
+  2
+])
+
+foo[[bar(
+  1,
+  2
+)]]
+
+# Fits on one line
+foo[[bar(1, 2)]]
+
+# Persistent line
+foo[[
+bar(
+  1,
+  2
+)]]
+
+foo(
+  #foo
+  bar[
+  1,
+  2
+])
+
+foo(bar[
+  1,
+  2
+]
+#foo
+)
+
+foo(bar[
+  1,
+  2
+  #foo
+]
+)
+
+foo( bar[
+  #foo
+  1,
+  2
+]
 )

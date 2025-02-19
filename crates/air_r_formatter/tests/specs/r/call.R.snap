@@ -652,6 +652,10 @@ fn(
 # ------------------------------------------------------------------------
 # Hugging calls - https://github.com/posit-dev/air/issues/21
 
+# Motivating hugging cases
+abort(glue::glue("Length implied by `dim`, {n_elements}, must match the length of `x`, {n_x}."))
+abort(paste0("This is a section", and, "this is another section", "and this is a final section"))
+
 # Single line
 c(list(1))
 
@@ -663,19 +667,28 @@ c(
 # Symbol: Line length expansion
 c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz))
 
-# Call: Hugging case
+# Call: Recursive hugging case, no breaks
 c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz()))
 
-# Another hugging case
-c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz(
-    1,
-    2
+# Call: Recursive hugging case, inner arguments break
+c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz(1, 2)))
+
+# Call: Recursive hugging case, persistent newlines
+c(list(foobar(
+  1,
+  2
 )))
 
 # Sanity checks for comments
 
 c(
     #foo
+    list(
+        1
+    )
+)
+
+c(
     list(
         1
     )
@@ -702,15 +715,77 @@ c(list(
     #foo
 ))
 
+# Trailing comment of inner paren
 c(list(
     1
 ) #foo
+)
+
+# Leading comment of outer paren
+c(list(
+  1
+)
+#foo
 )
 
 c(
     list(
         1
     ) #foo
+)
+
+# Leading holes
+fn(,, paste0("This is a section", and, "this is another section", "and this is a final section"))
+
+fn[,, paste0("This is a section", and, "this is another section", "and this is a final section")]
+
+# Subsetting
+foo(bar[
+  1,
+  2
+])
+
+foo[[bar(
+  1,
+  2
+)]]
+
+# Fits on one line
+foo[[bar(1, 2)]]
+
+# Persistent line
+foo[[
+bar(
+  1,
+  2
+)]]
+
+foo(
+  #foo
+  bar[
+  1,
+  2
+])
+
+foo(bar[
+  1,
+  2
+]
+#foo
+)
+
+foo(bar[
+  1,
+  2
+  #foo
+]
+)
+
+foo( bar[
+  #foo
+  1,
+  2
+]
 )
 
 ```
@@ -1410,6 +1485,17 @@ fn(
 # ------------------------------------------------------------------------
 # Hugging calls - https://github.com/posit-dev/air/issues/21
 
+# Motivating hugging cases
+abort(glue::glue(
+  "Length implied by `dim`, {n_elements}, must match the length of `x`, {n_x}."
+))
+abort(paste0(
+  "This is a section",
+  and,
+  "this is another section",
+  "and this is a final section"
+))
+
 # Single line
 c(list(1))
 
@@ -1423,11 +1509,17 @@ c(list(
   foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz
 ))
 
-# Call: Hugging case
+# Call: Recursive hugging case, no breaks
 c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz()))
 
-# Another hugging case
+# Call: Recursive hugging case, inner arguments break
 c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz(
+  1,
+  2
+)))
+
+# Call: Recursive hugging case, persistent newlines
+c(list(foobar(
   1,
   2
 )))
@@ -1436,6 +1528,12 @@ c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbaz
 
 c(
   #foo
+  list(
+    1
+  )
+)
+
+c(
   list(
     1
   )
@@ -1461,23 +1559,93 @@ c(list(
   #foo
 ))
 
+# Trailing comment of inner paren
 c(
   list(
     1
   ) #foo
 )
 
+# Leading comment of outer paren
+c(list(
+  1
+))
+#foo
+
 c(
   list(
     1
   ) #foo
 )
+
+# Leading holes
+fn(,, paste0(
+  "This is a section",
+  and,
+  "this is another section",
+  "and this is a final section"
+))
+
+fn[,, paste0(
+  "This is a section",
+  and,
+  "this is another section",
+  "and this is a final section"
+)]
+
+# Subsetting
+foo(bar[
+  1,
+  2
+])
+
+foo[[bar(
+  1,
+  2
+)]]
+
+# Fits on one line
+foo[[bar(1, 2)]]
+
+# Persistent line
+foo[[
+  bar(
+    1,
+    2
+  )
+]]
+
+foo(
+  #foo
+  bar[
+    1,
+    2
+  ]
+)
+
+foo(bar[
+  1,
+  2
+])
+#foo
+
+foo(bar[
+  1,
+  2
+  #foo
+])
+
+foo(bar[
+  #foo
+  1,
+  2
+])
 ```
 
 # Lines exceeding max width of 80 characters
 ```
   307:   my_long_list_my_long_list_my_long_list_my_long_list_long_long_long_long_long_list,
-  690:   foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz
-  694: c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz()))
-  697: c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz(
+  701:   foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz
+  705: c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz()))
+  708: c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz(
 ```
