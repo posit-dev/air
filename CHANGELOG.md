@@ -2,6 +2,8 @@
 
 # Development version
 
+- Unary formulas (i.e. anonymous functions) like `~ .x + 1` now add a space between the `~` and the right-hand side, unless the right-hand side is a simple identifier, like `~foo` (#235).
+
 - Semicolons at the very start or very end of a file no longer cause the parser to panic (#238).
 
 - Assigned pipelines no longer double-indent when a persistent line break is used (#220).
