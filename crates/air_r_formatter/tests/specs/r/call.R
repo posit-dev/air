@@ -672,6 +672,19 @@ c(list(foobar(
   2
 )))
 
+# Named arguments prevent hugging
+fn(name = foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz(1, 2))
+
+# Named arguments prevent hugging - motivating example
+# - With the `mutate()`, we expect multiple key/value pairs so hugging
+#   after the first one doesn't feel quite right, and actually makes it
+#   a little difficult to add additional key/value pairs
+# - With the `filter()`, we accept hugging here and justify it by saying
+#   that you end up reading this as `filterany`, which is kind of nice
+storms <- storms %>%
+  mutate(name = if_else(str_sub(name, 1, 3) %in% c("AL0", "AL1"), name, str_to_title(name))) %>%
+  filter(any(status %in% c("hurricane", "tropical storm", "tropical depression")))
+
 # Sanity checks for comments
 
 c(

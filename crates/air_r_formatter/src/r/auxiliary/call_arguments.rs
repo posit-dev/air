@@ -991,8 +991,15 @@ fn is_hugging_call(
         return Ok(false);
     }
 
-    // Unwrap the value to get the `AnyRExpression`
-    let Some(arg) = item.element().node()?.value() else {
+    let arg = item.element().node()?;
+
+    // We only consider hugging for an unnamed argument
+    // (Particularly meaningful for `mutate(key = value)` where you don't expect hugging)
+    if arg.name_clause().is_some() {
+        return Ok(false);
+    }
+
+    let Some(arg) = arg.value() else {
         return Ok(false);
     };
 
