@@ -1567,10 +1567,12 @@ c(
 )
 
 # Leading comment of outer paren
-c(list(
-  1
-))
-#foo
+c(
+  list(
+    1
+  )
+  #foo
+)
 
 c(
   list(
@@ -1623,11 +1625,13 @@ foo(
   ]
 )
 
-foo(bar[
-  1,
-  2
-])
-#foo
+foo(
+  bar[
+    1,
+    2
+  ]
+  #foo
+)
 
 foo(bar[
   1,

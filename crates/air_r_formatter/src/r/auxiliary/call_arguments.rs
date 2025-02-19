@@ -76,6 +76,326 @@ impl RCallLikeArguments {
             Self::Subset2(node) => node.syntax(),
         }
     }
+
+    /// Writes the function arguments
+    ///
+    /// The "grouped" argument is either the first or last argument depending on the
+    /// `group_layout`, but currently it is always the last one.
+    ///
+    /// - If any arguments that aren't the grouped argument *force* a break, then we
+    ///   print in fully expanded mode.
+    ///
+    /// - If the grouped argument is an inline function with `parameters` that would
+    ///   *force* a break, then we print in fully expanded mode. We only want to
+    ///   allow forced breaks in a braced expression body.
+    ///
+    /// If neither of those trigger fully expanded mode, we best-fit between three
+    /// possible forms:
+    ///
+    /// ## Most expanded
+    ///
+    /// The `(`, `)`, and all arguments are within a single `group()`, and that
+    /// group is marked with `should_expand(true)`. The arguments are wrapped in
+    /// `soft_block_indent()`, and each argument is separated by a
+    /// `soft_line_break_or_space()`. Due to the forced expansion, these all
+    /// become hard indents / line breaks, i.e. the "most expanded" form.
+    ///
+    /// Example:
+    ///
+    /// ```r
+    /// map(
+    ///   xs,
+    ///   function(x) {
+    ///     x + 1
+    ///   }
+    /// )
+    /// ```
+    ///
+    /// ## Most flat
+    ///
+    /// Arguments are not grouped, each argument is separated by a
+    /// `soft_line_break_or_space()`, no forced expansion is done.
+    ///
+    /// Special formatting is done for a grouped argument that is an inline
+    /// function. We remove any soft line breaks in the `parameters`, which
+    /// practically means the only place it is allowed to break is in the function
+    /// body (but the break is not forced).
+    ///
+    /// Example:
+    ///
+    /// ```r
+    /// # NOTE: Not currently possible, as the `{}` always force a break right now,
+    /// # but this would be an example if `{}` didn't force a break.
+    /// map(xs, function(x) {})
+    /// ```
+    ///
+    /// This variant is removed from the set if we detect that the grouped argument
+    /// contains a forced break in the body (if a forced break is found in the
+    /// parameters, we bail entirely and use the most expanded form, as noted
+    /// at the beginning of this documentation page).
+    ///
+    /// Note that because `{}` currently unconditionally force a break, and because
+    /// we only go down this path when we have a `{}` to begin with, that means that
+    /// currently the most flat variant is always removed. There is an
+    /// `unreachable!()` in the code to assert this. We can't simply remove the
+    /// `most_flat` code path though, because it is also where we detect if a
+    /// parameter forces a break, triggering one of our early exists. Additionally,
+    /// in the future we may allow `{}` to not force a break, meaning this variant
+    /// may come back into play.
+    ///
+    /// ```r
+    /// # NOTE: We explicitly disallow curly-curly as a groupable argument,
+    /// # so this case is never considered grouped, and is therefore not an
+    /// # example of "most flat".
+    /// group_by(df, {{ by }})
+    /// ```
+    ///
+    /// ## Middle variant
+    ///
+    /// Exactly the same as "most flat", except that the grouped argument is put
+    /// in its own `group()` marked with `should_expand(true)`. The soft line breaks
+    /// are removed from any grouped argument parameters, like with most flat.
+    ///
+    /// Example:
+    ///
+    /// ```r
+    /// map(xs, function(x) {
+    ///   x + 1
+    /// })
+    /// ```
+    ///
+    /// ```r
+    /// # The soft line breaks are removed from the `parameters`, meaning that this...
+    /// map(xs, function(x, a_long_secondary_argument = "with a default", and_another_one_here) {
+    ///   x + 1
+    /// })
+    ///
+    /// # ...is not allowed to be formatted as...
+    /// map(xs, function(
+    ///   x,
+    ///   a_long_secondary_argument = "with a default",
+    ///   and_another_one_here
+    /// ) {
+    ///   x + 1
+    /// })
+    ///
+    /// # ...and instead the most expanded form is chosen by best-fitting:
+    /// map(
+    ///   xs,
+    ///   function(
+    ///     x,
+    ///     a_long_secondary_argument = "with a default",
+    ///     and_another_one_here
+    ///   ) {
+    ///     x + 1
+    ///   }
+    /// )
+    /// ```
+    fn write_grouped_arguments(
+        &self,
+        l_token: RSyntaxToken,
+        leading_holes: Vec<FormatCallArgumentHole>,
+        mut arguments: Vec<FormatCallArgument>,
+        r_token: RSyntaxToken,
+        group_layout: GroupedCallArgumentLayout,
+        f: &mut RFormatter,
+    ) -> FormatResult<()> {
+        let grouped_breaks = {
+            let (grouped_arg, other_args) = match group_layout {
+                GroupedCallArgumentLayout::GroupedFirstArgument => {
+                    let (first, tail) = arguments.split_at_mut(1);
+                    (&mut first[0], tail)
+                }
+                GroupedCallArgumentLayout::GroupedLastArgument => {
+                    let end_index = arguments.len().saturating_sub(1);
+                    let (head, last) = arguments.split_at_mut(end_index);
+                    (&mut last[0], head)
+                }
+            };
+
+            let non_grouped_breaks = other_args.iter_mut().any(|arg| arg.will_break(f));
+
+            // If any of the not grouped elements break, then fall back to the variant where
+            // all arguments are printed in expanded mode.
+            if non_grouped_breaks {
+                return write!(
+                    f,
+                    [FormatAllArgsBrokenOut {
+                        call: self,
+                        l_token: &l_token.format(),
+                        leading_holes: &leading_holes,
+                        args: &arguments,
+                        r_token: &r_token.format(),
+                        expand: true,
+                    }]
+                );
+            }
+
+            grouped_arg.will_break(f)
+        };
+
+        // We now cache the delimiters tokens. This is needed because `[biome_formatter::best_fitting]` will try to
+        // print each version first
+        // tokens on the left
+        let l_token = l_token.format().memoized();
+
+        // tokens on the right
+        let r_token = r_token.format().memoized();
+
+        // First write the most expanded variant because it needs `arguments`.
+        let most_expanded = {
+            let mut buffer = VecBuffer::new(f.state_mut());
+            buffer.write_element(FormatElement::Tag(Tag::StartEntry))?;
+
+            write!(
+                buffer,
+                [FormatAllArgsBrokenOut {
+                    call: self,
+                    l_token: &l_token,
+                    leading_holes: &leading_holes,
+                    args: &arguments,
+                    r_token: &r_token,
+                    expand: true,
+                }]
+            )?;
+
+            buffer.write_element(FormatElement::Tag(Tag::EndEntry))?;
+            buffer.into_vec()
+        };
+
+        // Now reformat the first or last argument if they happen to be an inline function.
+        // Inline functions in this context apply a custom formatting that removes soft line breaks
+        // from the parameters.
+        //
+        // TODO: The JS approach caches the function body of the "normal" (before soft line breaks
+        // are removed) formatted function to avoid quadratic complexity if the function's body contains
+        // another call expression with an inline function as first or last argument. We may want to
+        // consider this if we have issues here.
+        let last_index = arguments.len() - 1;
+        let grouped = arguments
+            .into_iter()
+            .enumerate()
+            .map(|(index, argument)| {
+                let layout = match group_layout {
+                    GroupedCallArgumentLayout::GroupedFirstArgument if index == 0 => {
+                        Some(GroupedCallArgumentLayout::GroupedFirstArgument)
+                    }
+                    GroupedCallArgumentLayout::GroupedLastArgument if index == last_index => {
+                        Some(GroupedCallArgumentLayout::GroupedLastArgument)
+                    }
+                    _ => None,
+                };
+
+                FormatGroupedArgument {
+                    argument,
+                    single_argument_list: last_index == 0,
+                    layout,
+                }
+                .memoized()
+            })
+            .collect::<Vec<_>>();
+
+        // Write the most flat variant with the first or last argument grouped
+        // (but not forcibly expanded)
+        let _most_flat = {
+            let snapshot = f.state_snapshot();
+            let mut buffer = VecBuffer::new(f.state_mut());
+            buffer.write_element(FormatElement::Tag(Tag::StartEntry))?;
+
+            let result = write!(
+                buffer,
+                [
+                    l_token,
+                    format_with(|f| { f.join().entries(leading_holes.iter()).finish() }),
+                    maybe_space(!leading_holes.is_empty() && !grouped.is_empty()),
+                    format_with(|f| {
+                        f.join_with(soft_line_break_or_space())
+                            .entries(grouped.iter())
+                            .finish()
+                    }),
+                    r_token
+                ]
+            );
+
+            // Turns out, using the grouped layout isn't a good fit because some parameters of the
+            // grouped inline function break. In that case, fall back to the all args expanded
+            // formatting.
+            // This back tracking is required because testing if the grouped argument breaks in general
+            // would also return `true` if any content of the function BODY breaks. But, as far as this
+            // is concerned, it's only interested if any content in just the function SIGNATURE breaks.
+            if matches!(result, Err(FormatError::PoorLayout)) {
+                drop(buffer);
+                f.restore_state_snapshot(snapshot);
+
+                let mut most_expanded_iter = most_expanded.into_iter();
+                // Skip over the Start/EndEntry items.
+                most_expanded_iter.next();
+                most_expanded_iter.next_back();
+
+                return f.write_elements(most_expanded_iter);
+            }
+
+            buffer.write_element(FormatElement::Tag(Tag::EndEntry))?;
+            buffer.into_vec().into_boxed_slice()
+        };
+
+        // Write the second most flat variant that now forces the group of the first/last argument to expand.
+        let middle_variant = {
+            let mut buffer = VecBuffer::new(f.state_mut());
+            buffer.write_element(FormatElement::Tag(Tag::StartEntry))?;
+
+            write!(
+                buffer,
+                [
+                    l_token,
+                    format_with(|f| { f.join().entries(leading_holes.iter()).finish() }),
+                    maybe_space(!leading_holes.is_empty() && !grouped.is_empty()),
+                    format_with(|f| {
+                        let mut joiner = f.join_with(soft_line_break_or_space());
+
+                        match group_layout {
+                            GroupedCallArgumentLayout::GroupedFirstArgument => {
+                                joiner.entry(&group(&grouped[0]).should_expand(true));
+                                joiner.entries(&grouped[1..]).finish()
+                            }
+                            GroupedCallArgumentLayout::GroupedLastArgument => {
+                                let last_index = grouped.len() - 1;
+                                joiner.entries(&grouped[..last_index]);
+                                joiner
+                                    .entry(&group(&grouped[last_index]).should_expand(true))
+                                    .finish()
+                            }
+                        }
+                    }),
+                    r_token
+                ]
+            )?;
+
+            buffer.write_element(FormatElement::Tag(Tag::EndEntry))?;
+            buffer.into_vec().into_boxed_slice()
+        };
+
+        // If the grouped content breaks, then we can skip the most_flat variant,
+        // since we already know that it won't be fitting on a single line.
+        let variants = if grouped_breaks {
+            write!(f, [expand_parent()])?;
+            vec![middle_variant, most_expanded.into_boxed_slice()]
+        } else {
+            unreachable!("`grouped_breaks` is currently always `true`.");
+            // vec![most_flat, middle_variant, most_expanded.into_boxed_slice()]
+        };
+
+        // SAFETY: Safe because variants is guaranteed to contain >=2 entries:
+        // * most flat (optional)
+        // * middle
+        // * most expanded
+        // ... and best fitting only requires the most flat/and expanded.
+        unsafe {
+            f.write_element(FormatElement::BestFitting(
+                format_element::BestFittingElement::from_vec_unchecked(variants),
+            ))
+        }
+    }
 }
 
 impl Format<RFormatContext> for RCallLikeArguments {
@@ -167,6 +487,7 @@ impl Format<RFormatContext> for RCallLikeArguments {
             return write!(
                 f,
                 [FormatAllArgsBrokenOut {
+                    call: self,
                     l_token: &l_token.format(),
                     leading_holes: &leading_holes,
                     args: &arguments,
@@ -182,6 +503,7 @@ impl Format<RFormatContext> for RCallLikeArguments {
             return write!(
                 f,
                 [FormatAllArgsBrokenOut {
+                    call: self,
                     l_token: &l_token.format(),
                     leading_holes: &leading_holes,
                     args: &arguments,
@@ -192,11 +514,19 @@ impl Format<RFormatContext> for RCallLikeArguments {
         }
 
         if let Some(group_layout) = arguments_grouped_layout(&items, comments) {
-            write_grouped_arguments(l_token, leading_holes, arguments, r_token, group_layout, f)
+            self.write_grouped_arguments(
+                l_token,
+                leading_holes,
+                arguments,
+                r_token,
+                group_layout,
+                f,
+            )
         } else {
             write!(
                 f,
                 [FormatAllArgsBrokenOut {
+                    call: self,
                     l_token: &l_token.format(),
                     leading_holes: &leading_holes,
                     args: &arguments,
@@ -494,323 +824,6 @@ impl Format<RFormatContext> for FormatCallArgument {
     }
 }
 
-/// Writes the function arguments
-///
-/// The "grouped" argument is either the first or last argument depending on the
-/// `group_layout`, but currently it is always the last one.
-///
-/// - If any arguments that aren't the grouped argument *force* a break, then we
-///   print in fully expanded mode.
-///
-/// - If the grouped argument is an inline function with `parameters` that would
-///   *force* a break, then we print in fully expanded mode. We only want to
-///   allow forced breaks in a braced expression body.
-///
-/// If neither of those trigger fully expanded mode, we best-fit between three
-/// possible forms:
-///
-/// ## Most expanded
-///
-/// The `(`, `)`, and all arguments are within a single `group()`, and that
-/// group is marked with `should_expand(true)`. The arguments are wrapped in
-/// `soft_block_indent()`, and each argument is separated by a
-/// `soft_line_break_or_space()`. Due to the forced expansion, these all
-/// become hard indents / line breaks, i.e. the "most expanded" form.
-///
-/// Example:
-///
-/// ```r
-/// map(
-///   xs,
-///   function(x) {
-///     x + 1
-///   }
-/// )
-/// ```
-///
-/// ## Most flat
-///
-/// Arguments are not grouped, each argument is separated by a
-/// `soft_line_break_or_space()`, no forced expansion is done.
-///
-/// Special formatting is done for a grouped argument that is an inline
-/// function. We remove any soft line breaks in the `parameters`, which
-/// practically means the only place it is allowed to break is in the function
-/// body (but the break is not forced).
-///
-/// Example:
-///
-/// ```r
-/// # NOTE: Not currently possible, as the `{}` always force a break right now,
-/// # but this would be an example if `{}` didn't force a break.
-/// map(xs, function(x) {})
-/// ```
-///
-/// This variant is removed from the set if we detect that the grouped argument
-/// contains a forced break in the body (if a forced break is found in the
-/// parameters, we bail entirely and use the most expanded form, as noted
-/// at the beginning of this documentation page).
-///
-/// Note that because `{}` currently unconditionally force a break, and because
-/// we only go down this path when we have a `{}` to begin with, that means that
-/// currently the most flat variant is always removed. There is an
-/// `unreachable!()` in the code to assert this. We can't simply remove the
-/// `most_flat` code path though, because it is also where we detect if a
-/// parameter forces a break, triggering one of our early exists. Additionally,
-/// in the future we may allow `{}` to not force a break, meaning this variant
-/// may come back into play.
-///
-/// ```r
-/// # NOTE: We explicitly disallow curly-curly as a groupable argument,
-/// # so this case is never considered grouped, and is therefore not an
-/// # example of "most flat".
-/// group_by(df, {{ by }})
-/// ```
-///
-/// ## Middle variant
-///
-/// Exactly the same as "most flat", except that the grouped argument is put
-/// in its own `group()` marked with `should_expand(true)`. The soft line breaks
-/// are removed from any grouped argument parameters, like with most flat.
-///
-/// Example:
-///
-/// ```r
-/// map(xs, function(x) {
-///   x + 1
-/// })
-/// ```
-///
-/// ```r
-/// # The soft line breaks are removed from the `parameters`, meaning that this...
-/// map(xs, function(x, a_long_secondary_argument = "with a default", and_another_one_here) {
-///   x + 1
-/// })
-///
-/// # ...is not allowed to be formatted as...
-/// map(xs, function(
-///   x,
-///   a_long_secondary_argument = "with a default",
-///   and_another_one_here
-/// ) {
-///   x + 1
-/// })
-///
-/// # ...and instead the most expanded form is chosen by best-fitting:
-/// map(
-///   xs,
-///   function(
-///     x,
-///     a_long_secondary_argument = "with a default",
-///     and_another_one_here
-///   ) {
-///     x + 1
-///   }
-/// )
-/// ```
-fn write_grouped_arguments(
-    l_token: RSyntaxToken,
-    leading_holes: Vec<FormatCallArgumentHole>,
-    mut arguments: Vec<FormatCallArgument>,
-    r_token: RSyntaxToken,
-    group_layout: GroupedCallArgumentLayout,
-    f: &mut RFormatter,
-) -> FormatResult<()> {
-    let grouped_breaks = {
-        let (grouped_arg, other_args) = match group_layout {
-            GroupedCallArgumentLayout::GroupedFirstArgument => {
-                let (first, tail) = arguments.split_at_mut(1);
-                (&mut first[0], tail)
-            }
-            GroupedCallArgumentLayout::GroupedLastArgument => {
-                let end_index = arguments.len().saturating_sub(1);
-                let (head, last) = arguments.split_at_mut(end_index);
-                (&mut last[0], head)
-            }
-        };
-
-        let non_grouped_breaks = other_args.iter_mut().any(|arg| arg.will_break(f));
-
-        // If any of the not grouped elements break, then fall back to the variant where
-        // all arguments are printed in expanded mode.
-        if non_grouped_breaks {
-            return write!(
-                f,
-                [FormatAllArgsBrokenOut {
-                    l_token: &l_token.format(),
-                    leading_holes: &leading_holes,
-                    args: &arguments,
-                    r_token: &r_token.format(),
-                    expand: true,
-                }]
-            );
-        }
-
-        grouped_arg.will_break(f)
-    };
-
-    // We now cache the delimiters tokens. This is needed because `[biome_formatter::best_fitting]` will try to
-    // print each version first
-    // tokens on the left
-    let l_token = l_token.format().memoized();
-
-    // tokens on the right
-    let r_token = r_token.format().memoized();
-
-    // First write the most expanded variant because it needs `arguments`.
-    let most_expanded = {
-        let mut buffer = VecBuffer::new(f.state_mut());
-        buffer.write_element(FormatElement::Tag(Tag::StartEntry))?;
-
-        write!(
-            buffer,
-            [FormatAllArgsBrokenOut {
-                l_token: &l_token,
-                leading_holes: &leading_holes,
-                args: &arguments,
-                r_token: &r_token,
-                expand: true,
-            }]
-        )?;
-
-        buffer.write_element(FormatElement::Tag(Tag::EndEntry))?;
-        buffer.into_vec()
-    };
-
-    // Now reformat the first or last argument if they happen to be an inline function.
-    // Inline functions in this context apply a custom formatting that removes soft line breaks
-    // from the parameters.
-    //
-    // TODO: The JS approach caches the function body of the "normal" (before soft line breaks
-    // are removed) formatted function to avoid quadratic complexity if the function's body contains
-    // another call expression with an inline function as first or last argument. We may want to
-    // consider this if we have issues here.
-    let last_index = arguments.len() - 1;
-    let grouped = arguments
-        .into_iter()
-        .enumerate()
-        .map(|(index, argument)| {
-            let layout = match group_layout {
-                GroupedCallArgumentLayout::GroupedFirstArgument if index == 0 => {
-                    Some(GroupedCallArgumentLayout::GroupedFirstArgument)
-                }
-                GroupedCallArgumentLayout::GroupedLastArgument if index == last_index => {
-                    Some(GroupedCallArgumentLayout::GroupedLastArgument)
-                }
-                _ => None,
-            };
-
-            FormatGroupedArgument {
-                argument,
-                single_argument_list: last_index == 0,
-                layout,
-            }
-            .memoized()
-        })
-        .collect::<Vec<_>>();
-
-    // Write the most flat variant with the first or last argument grouped
-    // (but not forcibly expanded)
-    let _most_flat = {
-        let snapshot = f.state_snapshot();
-        let mut buffer = VecBuffer::new(f.state_mut());
-        buffer.write_element(FormatElement::Tag(Tag::StartEntry))?;
-
-        let result = write!(
-            buffer,
-            [
-                l_token,
-                format_with(|f| { f.join().entries(leading_holes.iter()).finish() }),
-                maybe_space(!leading_holes.is_empty() && !grouped.is_empty()),
-                format_with(|f| {
-                    f.join_with(soft_line_break_or_space())
-                        .entries(grouped.iter())
-                        .finish()
-                }),
-                r_token
-            ]
-        );
-
-        // Turns out, using the grouped layout isn't a good fit because some parameters of the
-        // grouped inline function break. In that case, fall back to the all args expanded
-        // formatting.
-        // This back tracking is required because testing if the grouped argument breaks in general
-        // would also return `true` if any content of the function BODY breaks. But, as far as this
-        // is concerned, it's only interested if any content in just the function SIGNATURE breaks.
-        if matches!(result, Err(FormatError::PoorLayout)) {
-            drop(buffer);
-            f.restore_state_snapshot(snapshot);
-
-            let mut most_expanded_iter = most_expanded.into_iter();
-            // Skip over the Start/EndEntry items.
-            most_expanded_iter.next();
-            most_expanded_iter.next_back();
-
-            return f.write_elements(most_expanded_iter);
-        }
-
-        buffer.write_element(FormatElement::Tag(Tag::EndEntry))?;
-        buffer.into_vec().into_boxed_slice()
-    };
-
-    // Write the second most flat variant that now forces the group of the first/last argument to expand.
-    let middle_variant = {
-        let mut buffer = VecBuffer::new(f.state_mut());
-        buffer.write_element(FormatElement::Tag(Tag::StartEntry))?;
-
-        write!(
-            buffer,
-            [
-                l_token,
-                format_with(|f| { f.join().entries(leading_holes.iter()).finish() }),
-                maybe_space(!leading_holes.is_empty() && !grouped.is_empty()),
-                format_with(|f| {
-                    let mut joiner = f.join_with(soft_line_break_or_space());
-
-                    match group_layout {
-                        GroupedCallArgumentLayout::GroupedFirstArgument => {
-                            joiner.entry(&group(&grouped[0]).should_expand(true));
-                            joiner.entries(&grouped[1..]).finish()
-                        }
-                        GroupedCallArgumentLayout::GroupedLastArgument => {
-                            let last_index = grouped.len() - 1;
-                            joiner.entries(&grouped[..last_index]);
-                            joiner
-                                .entry(&group(&grouped[last_index]).should_expand(true))
-                                .finish()
-                        }
-                    }
-                }),
-                r_token
-            ]
-        )?;
-
-        buffer.write_element(FormatElement::Tag(Tag::EndEntry))?;
-        buffer.into_vec().into_boxed_slice()
-    };
-
-    // If the grouped content breaks, then we can skip the most_flat variant,
-    // since we already know that it won't be fitting on a single line.
-    let variants = if grouped_breaks {
-        write!(f, [expand_parent()])?;
-        vec![middle_variant, most_expanded.into_boxed_slice()]
-    } else {
-        unreachable!("`grouped_breaks` is currently always `true`.");
-        // vec![most_flat, middle_variant, most_expanded.into_boxed_slice()]
-    };
-
-    // SAFETY: Safe because variants is guaranteed to contain >=2 entries:
-    // * most flat (optional)
-    // * middle
-    // * most expanded
-    // ... and best fitting only requires the most flat/and expanded.
-    unsafe {
-        f.write_element(FormatElement::BestFitting(
-            format_element::BestFittingElement::from_vec_unchecked(variants),
-        ))
-    }
-}
-
 /// Helper for formatting the first grouped argument (see [should_group_first_argument]).
 struct FormatGroupedFirstArgument<'a> {
     argument: &'a FormatCallArgument,
@@ -919,6 +932,7 @@ impl Format<RFormatContext> for FormatGroupedArgument {
 }
 
 struct FormatAllArgsBrokenOut<'a> {
+    call: &'a RCallLikeArguments,
     l_token: &'a dyn Format<RFormatContext>,
     leading_holes: &'a [FormatCallArgumentHole],
     args: &'a [FormatCallArgument],
@@ -945,7 +959,7 @@ impl Format<RFormatContext> for FormatAllArgsBrokenOut<'_> {
             Ok(())
         });
 
-        let args = if !self.expand && is_hugging_call(self.args)? {
+        let args = if !self.expand && is_hugging_call(self.args, self.call.r_token())? {
             Either::Left(args)
         } else {
             Either::Right(soft_block_indent(&args))
@@ -965,7 +979,10 @@ impl Format<RFormatContext> for FormatAllArgsBrokenOut<'_> {
     }
 }
 
-fn is_hugging_call(items: &[FormatCallArgument]) -> SyntaxResult<bool> {
+fn is_hugging_call(
+    items: &[FormatCallArgument],
+    r_token: SyntaxResult<RSyntaxToken>,
+) -> SyntaxResult<bool> {
     // We only consider calls with one argument
     let Some(item) = items.first() else {
         return Ok(false);
@@ -985,7 +1002,7 @@ fn is_hugging_call(items: &[FormatCallArgument]) -> SyntaxResult<bool> {
     // Bail on hugging if the argument has comments attached. In practice only
     // trailing comments get reordered so we don't need to check for comments on
     // the argument name.
-    if arg.syntax().has_comments_direct() {
+    if arg.syntax().has_comments_direct() || r_token.is_ok_and(|tok| tok.has_leading_comments()) {
         return Ok(false);
     }
 
