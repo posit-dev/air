@@ -992,10 +992,7 @@ fn is_hugging_call(
     }
 
     // Unwrap the value to get the `AnyRExpression`
-    let Some(arg) = item.element().node.as_ref().ok() else {
-        return Ok(false);
-    };
-    let Some(arg) = arg.value() else {
+    let Some(arg) = item.element().node()?.value() else {
         return Ok(false);
     };
 
