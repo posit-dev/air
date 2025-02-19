@@ -84,6 +84,15 @@ The goal of this synchronization mechanism is for the IDE to work in lockstep wi
 Air supports both `air.toml` and `.air.toml`.
 If both are present in the same directory, then `air.toml` is preferred (but we don't recommend this).
 
+## Configuration autocompletion and validation
+
+With VS Code and Positron, downloading the [Even Better TOML](https://marketplace.visualstudio.com/items?itemName=tamasfe.even-better-toml) extension activates autocompletion and validation while inside an `air.toml` file.
+There is a [known issue](https://github.com/tamasfe/taplo/issues/514) regarding autocompletion duplication, but we still find this extension very useful!
+
+{{< video videos/air-toml-autocompletions.mov >}}
+
+If your IDE supports [schemastore](https://github.com/SchemaStore/schemastore), then it may also support autocompletion and validation of `air.toml` files.
+
 ## Format options
 
 All formatting options are specified under the `[format]` table.
