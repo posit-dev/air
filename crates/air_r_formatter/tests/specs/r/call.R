@@ -656,19 +656,28 @@ c(
 # Symbol: Line length expansion
 c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz))
 
-# Call: Hugging case
+# Call: Recursive hugging case, no breaks
 c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz()))
 
-# Another hugging case
-c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz(
-    1,
-    2
+# Call: Recursive hugging case, inner arguments break
+c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz(1, 2)))
+
+# Call: Recursive hugging case, persistent newlines
+c(list(foobar(
+  1,
+  2
 )))
 
 # Sanity checks for comments
 
 c(
     #foo
+    list(
+        1
+    )
+)
+
+c(
     list(
         1
     )

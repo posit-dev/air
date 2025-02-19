@@ -13,7 +13,7 @@
   ))
   ```
 
-  are no longer expanded (#21).
+  are no longer fully expanded (#21).
 
 - Assigned pipelines no longer double-indent (#220).
 
