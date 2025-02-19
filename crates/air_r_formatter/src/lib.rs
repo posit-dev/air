@@ -22,8 +22,6 @@ pub mod comments;
 pub mod context;
 mod cst;
 pub mod either;
-pub mod formatter;
-pub mod joiner;
 mod prelude;
 mod r;
 pub(crate) mod separated;
