@@ -1,4 +1,5 @@
 use crate::context::RFormatOptions;
+use crate::either::Either;
 use crate::prelude::*;
 use air_r_syntax::AnyRExpression;
 use air_r_syntax::RBinaryExpression;
@@ -8,12 +9,55 @@ use air_r_syntax::RSyntaxKind;
 use biome_formatter::format_args;
 use biome_formatter::write;
 use biome_formatter::CstFormatContext;
+use biome_formatter::FormatRuleWithOptions;
 use biome_rowan::AstNode;
 use biome_rowan::SyntaxResult;
 use biome_rowan::SyntaxToken;
 
-#[derive(Debug, Clone, Default)]
-pub(crate) struct FormatRBinaryExpression;
+#[derive(Default, Debug, Clone, Copy)]
+pub(crate) enum ChainAlignment {
+    #[default]
+    Indented,
+
+    /// Used in the RHS of assign operators to align pipelines.
+    LeftAligned,
+}
+
+#[derive(Default, Debug, Clone)]
+pub(crate) struct FormatRBinaryExpression {
+    /// Alignment to use with chained expressions
+    ///
+    /// Left alignment is used to prevent "double-indenting" an
+    /// assigned pipeline, e.g.:
+    ///
+    /// ```r
+    /// foo <-
+    ///   bar |>
+    ///   baz()
+    ///
+    /// foo <-
+    ///   bar +
+    ///   baz()
+    /// ```
+    ///
+    /// See https://github.com/posit-dev/air/issues/220.
+    pub(crate) alignment: ChainAlignment,
+}
+
+#[derive(Default, Debug, Clone)]
+pub(crate) struct FormatRBinaryExpressionOptions {
+    pub(crate) alignment: ChainAlignment,
+}
+
+impl FormatRuleWithOptions<RBinaryExpression> for FormatRBinaryExpression {
+    type Options = FormatRBinaryExpressionOptions;
+
+    fn with_options(mut self, options: Self::Options) -> Self {
+        self.alignment = options.alignment;
+        self
+    }
+}
+
 impl FormatNodeRule<RBinaryExpression> for FormatRBinaryExpression {
     fn fmt_fields(&self, node: &RBinaryExpression, f: &mut RFormatter) -> FormatResult<()> {
         let RBinaryExpressionFields {
@@ -42,7 +86,7 @@ impl FormatNodeRule<RBinaryExpression> for FormatRBinaryExpression {
             | RSyntaxKind::SUPER_ASSIGN_RIGHT => fmt_binary_assignment(left, operator, right, f),
 
             // Chainable (pipes, logical, arithmetic)
-            kind if is_chainable_binary_operator(kind)  => fmt_binary_chain(left, operator, right, f),
+            kind if is_chainable_binary_operator(kind)  => fmt_binary_chain(left, operator, right, self.alignment, f),
 
             // Not chainable
             // Formulas (debatable)
@@ -147,10 +191,15 @@ fn fmt_binary_assignment(
 ) -> FormatResult<()> {
     let right = format_with(|f| {
         if binary_assignment_has_persistent_line_break(&operator, &right, f.options()) {
-            write!(
-                f,
-                [indent(&format_args![hard_line_break(), right.format()])]
-            )
+            let right = match &right {
+                AnyRExpression::RBinaryExpression(right) => {
+                    Either::Left(right.format().with_options(FormatRBinaryExpressionOptions {
+                        alignment: ChainAlignment::LeftAligned,
+                    }))
+                }
+                right => Either::Right(right.format()),
+            };
+            write!(f, [indent(&format_args![hard_line_break(), right])])
         } else {
             write!(f, [space(), right.format()])
         }
@@ -424,6 +473,7 @@ fn fmt_binary_chain(
     mut left: AnyRExpression,
     operator: SyntaxToken<RLanguage>,
     right: AnyRExpression,
+    alignment: ChainAlignment,
     f: &mut Formatter<RFormatContext>,
 ) -> FormatResult<()> {
     // For the lead node in a binary chain, comments are handled by the standard
@@ -529,9 +579,14 @@ fn fmt_binary_chain(
         Ok(())
     });
 
+    let chain = match alignment {
+        ChainAlignment::Indented => Either::Left(indent(&chain)),
+        ChainAlignment::LeftAligned => Either::Right(chain),
+    };
+
     write!(
         f,
-        [group(&format_args![left.format(), indent(&chain)])
+        [group(&format_args![left.format(), &chain])
             .should_expand(has_persistent_line_break(&tail, f.options()))]
     )
 }

@@ -508,3 +508,26 @@ base_version <-
   b_get(brand, "defaults", "shiny", "theme", "version") %||%
   b_get(brand, "defaults", "bootstrap", "version") %||%
   version_default()
+
+
+# https://github.com/posit-dev/air/issues/220
+data <-
+  starwars |>
+  filter(height > 172) |>
+  select(1:3)
+
+plot <-
+  ggplot() +
+  geom_point()
+
+foo <-
+  1 +
+  2
+
+foo <-
+  TRUE ||
+  FALSE
+
+# Persistent assign-newline and unbroken pipeline
+data <-
+  ggplot() + geom_point()
