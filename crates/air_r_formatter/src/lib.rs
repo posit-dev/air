@@ -194,7 +194,7 @@ where
     // This is the method that actually starts the formatting
     fn fmt(&self, node: &N, f: &mut RFormatter) -> FormatResult<()> {
         if self.is_suppressed(node, f) {
-            return write!(f, [format_suppressed_node(node.syntax())]);
+            return self.fmt_suppressed(node, f);
         }
 
         self.fmt_leading_comments(node, f)?;
@@ -208,6 +208,10 @@ where
     /// Returns `true` if the node has a suppression comment and should use the same formatting as in the source document.
     fn is_suppressed(&self, node: &N, f: &RFormatter) -> bool {
         f.context().comments().is_suppressed(node.syntax())
+    }
+
+    fn fmt_suppressed(&self, node: &N, f: &mut RFormatter) -> FormatResult<()> {
+        write!(f, [format_suppressed_node(node.syntax())])
     }
 
     /// Formats the [leading comments](biome_formatter::comments#leading-comments) of the node.
