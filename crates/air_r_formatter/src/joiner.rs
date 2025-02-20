@@ -1,22 +1,30 @@
 use biome_formatter::{prelude::*, write, Format, FormatResult};
 use biome_rowan::{Language, SyntaxNode};
 
+/// How many lines are allowed between elements
+#[derive(Debug, Clone, Copy, Default)]
+pub enum EmptyLines {
+    #[default]
+    Single,
+    Double,
+}
+
 /// Version of `JoinNodesBuilder` that can be configured to respect maximum n lines between inputs.
 /// From https://github.com/biomejs/biome/blob/main/crates/biome_formatter/src/comments/builder.rs
 #[must_use = "must eventually call `finish()` on Format builders"]
-pub struct StretchyJoinNodesBuilder<'fmt, 'buf, Separator, Context> {
+pub struct AirJoinNodesBuilder<'fmt, 'buf, Separator, Context> {
     result: FormatResult<()>,
     /// The separator to insert between nodes. Either a soft or hard line break
     separator: Separator,
     fmt: &'fmt mut Formatter<'buf, Context>,
     has_elements: bool,
-    stretchy: bool,
+    empty_lines: EmptyLines,
 }
 
-impl<'fmt, 'buf, Separator, Context> StretchyJoinNodesBuilder<'fmt, 'buf, Separator, Context> {
+impl<'fmt, 'buf, Separator, Context> AirJoinNodesBuilder<'fmt, 'buf, Separator, Context> {
     pub(crate) fn new(
         separator: Separator,
-        stretchy: bool,
+        empty_lines: EmptyLines,
         fmt: &'fmt mut Formatter<'buf, Context>,
     ) -> Self {
         Self {
@@ -24,12 +32,12 @@ impl<'fmt, 'buf, Separator, Context> StretchyJoinNodesBuilder<'fmt, 'buf, Separa
             separator,
             fmt,
             has_elements: false,
-            stretchy,
+            empty_lines,
         }
     }
 }
 
-impl<Separator, Context> StretchyJoinNodesBuilder<'_, '_, Separator, Context>
+impl<Separator, Context> AirJoinNodesBuilder<'_, '_, Separator, Context>
 where
     Separator: Format<Context>,
 {
@@ -39,8 +47,10 @@ where
         self.result = self.result.and_then(|_| {
             if self.has_elements {
                 let n_lines = get_lines_before(node);
-                if self.stretchy && n_lines > 2 {
-                    // AIR: This branch is the main difference with the upstream variant
+                if n_lines > 2 && matches!(self.empty_lines, EmptyLines::Double) {
+                    // AIR: This branch is the main difference with the upstream variant.
+                    // We use Biome's `empty_line()` to compress an arbitrary number of
+                    // empty lines down to one, and then we force one more newline in.
                     write!(self.fmt, [empty_line(), text("\n")])?;
                 } else if n_lines > 1 {
                     write!(self.fmt, [empty_line()])?;

@@ -1,5 +1,5 @@
+use crate::joiner::EmptyLines;
 use crate::prelude::*;
-use crate::r::lists::expression_list::ExpressionListKind;
 use crate::r::lists::expression_list::FormatRExpressionListOptions;
 use air_r_syntax::RRoot;
 use air_r_syntax::RRootFields;
@@ -31,7 +31,7 @@ impl FormatNodeRule<RRoot> for FormatRRoot {
         } = node.as_fields();
 
         let options = FormatRExpressionListOptions {
-            kind: ExpressionListKind::Program,
+            empty_lines: EmptyLines::Double,
         };
 
         write!(
