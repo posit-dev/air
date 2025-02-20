@@ -5,10 +5,10 @@ import which from "which";
 import * as output from "./output";
 import { AIR_BINARY_NAME, BUNDLED_AIR_EXECUTABLE } from "./constants";
 
-export type ExecutableLocation = "environment" | "bundled";
+export type ExecutableStrategy = "bundled" | "environment";
 
 export async function resolveAirBinaryPath(
-	executableLocation: ExecutableLocation,
+	executableStrategy: ExecutableStrategy,
 ): Promise<string> {
 	if (!vscode.workspace.isTrusted) {
 		output.log(
@@ -18,10 +18,10 @@ export async function resolveAirBinaryPath(
 	}
 
 	// User requested the `"bundled"` air binary
-	if (executableLocation === "bundled") {
+	if (executableStrategy === "bundled") {
 		if (fs.existsSync(BUNDLED_AIR_EXECUTABLE)) {
 			output.log(
-				`Using bundled executable as requested by \`air.executableLocation\`: ${BUNDLED_AIR_EXECUTABLE}`,
+				`Using bundled executable as requested by \`air.executableStrategy\`: ${BUNDLED_AIR_EXECUTABLE}`,
 			);
 			return BUNDLED_AIR_EXECUTABLE;
 		}

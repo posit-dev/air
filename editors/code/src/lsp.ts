@@ -97,7 +97,7 @@ export class Lsp {
 		const initializationOptions = getInitializationOptions("air");
 
 		const command = await resolveAirBinaryPath(
-			workspaceSettings.executableLocation,
+			workspaceSettings.executableStrategy,
 		);
 
 		let serverOptions: lc.ServerOptions = {

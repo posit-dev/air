@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { ExecutableLocation } from "./binary";
+import { ExecutableStrategy } from "./binary";
 
 type LogLevel = "error" | "warn" | "info" | "debug" | "trace";
 
@@ -13,7 +13,7 @@ export type InitializationOptions = {
 };
 
 export type WorkspaceSettings = {
-	executableLocation: ExecutableLocation;
+	executableStrategy: ExecutableStrategy;
 };
 
 export function getInitializationOptions(
@@ -37,8 +37,8 @@ export function getWorkspaceSettings(
 	const config = getConfiguration(namespace, workspace);
 
 	return {
-		executableLocation:
-			config.get<ExecutableLocation>("executableLocation") ?? "bundled",
+		executableStrategy:
+			config.get<ExecutableStrategy>("executableStrategy") ?? "bundled",
 	};
 }
 
