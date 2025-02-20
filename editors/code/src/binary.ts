@@ -5,52 +5,124 @@ import which from "which";
 import * as output from "./output";
 import { AIR_BINARY_NAME, BUNDLED_AIR_EXECUTABLE } from "./constants";
 
-export type ExecutableStrategy = "bundled" | "environment";
+export type ExecutableStrategy = "bundled" | "environment" | "path";
 
 export async function resolveAirBinaryPath(
 	executableStrategy: ExecutableStrategy,
+	executablePath?: string,
 ): Promise<string> {
 	if (!vscode.workspace.isTrusted) {
 		output.log(
 			`Workspace is not trusted, using bundled executable: ${BUNDLED_AIR_EXECUTABLE}`,
 		);
-		return BUNDLED_AIR_EXECUTABLE;
-	}
 
-	// User requested the `"bundled"` air binary
-	if (executableStrategy === "bundled") {
-		if (fs.existsSync(BUNDLED_AIR_EXECUTABLE)) {
-			output.log(
-				`Using bundled executable as requested by \`air.executableStrategy\`: ${BUNDLED_AIR_EXECUTABLE}`,
-			);
-			return BUNDLED_AIR_EXECUTABLE;
+		const bundledPath = airBinaryFromBundled();
+
+		if (bundledPath) {
+			output.log(`Using bundled executable: ${bundledPath}`);
+			return bundledPath;
 		}
 
-		// Fallthrough
-		output.log(
-			`Bundled executable not found, falling back to environment: ${BUNDLED_AIR_EXECUTABLE}`,
+		throw new Error(
+			"Workspace is not trusted and failed to find executable in bundled location",
 		);
+	} else if (executableStrategy === "bundled") {
+		const bundledPath = airBinaryFromBundled();
+
+		if (bundledPath) {
+			output.log(`Using bundled executable: ${bundledPath}`);
+			return bundledPath;
+		}
+
+		output.log(
+			"Bundled executable not found, falling back to environment executable",
+		);
+		const environmentPath = await airBinaryFromEnvironment();
+
+		if (environmentPath) {
+			output.log(`Using environment executable: ${environmentPath}`);
+			return environmentPath;
+		}
+
+		throw new Error(
+			"Failed to find bundled executable and fallback environment executable",
+		);
+	} else if (executableStrategy === "environment") {
+		const environmentPath = await airBinaryFromEnvironment();
+
+		if (environmentPath) {
+			output.log(`Using environment executable: ${environmentPath}`);
+			return environmentPath;
+		}
+
+		output.log(
+			"Environment executable not found, falling back to bundled executable",
+		);
+		const bundledPath = airBinaryFromBundled();
+
+		if (bundledPath) {
+			output.log(`Using bundled executable: ${bundledPath}`);
+			return bundledPath;
+		}
+
+		throw new Error(
+			"Failed to find environment executable and fallback bundled executable",
+		);
+	} else if (executableStrategy === "path") {
+		const path = airBinaryFromPath(executablePath);
+
+		if (path) {
+			output.log(`Using executable from \`air.executablePath\`: ${path}`);
+			return path;
+		}
+
+		throw new Error("Failed to find executable at `air.executablePath`");
+	} else {
+		throw new Error("Unreachable");
+	}
+}
+
+function airBinaryFromBundled(): string | undefined {
+	if (!fs.existsSync(BUNDLED_AIR_EXECUTABLE)) {
+		output.log(
+			`Failed to find bundled executable: ${BUNDLED_AIR_EXECUTABLE}`,
+		);
+		return undefined;
 	}
 
-	// User requested `"environment"` or there is no bundled binary.
-	// First check the `PATH`.
+	output.log(`Found bundled executable: ${BUNDLED_AIR_EXECUTABLE}`);
+	return BUNDLED_AIR_EXECUTABLE;
+}
+
+async function airBinaryFromEnvironment(): Promise<string | undefined> {
 	const environmentPath = await which(AIR_BINARY_NAME, { nothrow: true });
 
-	if (environmentPath) {
-		output.log(`Using environment executable: ${environmentPath}`);
-		return environmentPath;
+	if (!environmentPath) {
+		output.log("Failed to find environment executable");
+		return undefined;
 	}
 
-	// We couldn't find a binary on the `PATH`, use the bundled
-	// binary if it exists.
-	if (fs.existsSync(BUNDLED_AIR_EXECUTABLE)) {
-		output.log(`Using bundled executable: ${BUNDLED_AIR_EXECUTABLE}`);
-		return BUNDLED_AIR_EXECUTABLE;
+	output.log(`Found environment executable: ${environmentPath}`);
+	return environmentPath;
+}
+
+function airBinaryFromPath(executablePath?: string): string | undefined {
+	if (!executablePath) {
+		output.log(
+			"Failed to find executable from path, no `air.executablePath` provided",
+		);
+		return undefined;
 	}
 
-	// Run away and go live in the woods
-	output.log(`No suitable executable found`);
-	throw new Error(
-		"No suitable executable found in environment or bundled location",
+	if (!fs.existsSync(executablePath)) {
+		output.log(
+			"Failed to find executable from path, provided `air.executablePath` does not exist",
+		);
+		return undefined;
+	}
+
+	output.log(
+		`Found executable from \`air.executablePath\`: ${executablePath}`,
 	);
+	return executablePath;
 }

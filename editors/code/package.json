@@ -82,12 +82,20 @@
 					"markdownDescription": "Strategy used to locate the `air` executable to start the language server with.",
 					"enum": [
 						"bundled",
-						"environment"
+						"environment",
+						"path"
 					],
 					"enumDescriptions": [
 						"Always use the bundled `air` executable.",
-						"Look for an `air` executable using the `PATH` environment variable, falling back to the bundled version."
+						"Look for an `air` executable using the `PATH` environment variable, falling back to the bundled version.",
+						"Look for an `air` executable at the fixed path provided by `air.executablePath`."
 					],
+					"scope": "window",
+					"type": "string"
+				},
+				"air.executablePath": {
+					"default": null,
+					"markdownDescription": "The path to an `air` executable. Only utilized when `air.executableStrategy` is set to \"path\".",
 					"scope": "window",
 					"type": "string"
 				}
