@@ -51,8 +51,10 @@ where
                     // AIR: This branch is the main difference with the upstream variant.
                     // We use Biome's `empty_line()` to compress an arbitrary number of
                     // empty lines down to one, and then we force one more newline in.
+                    // Note that if empty lines follow the element rather than
+                    // precede it, this compression will not work as expected.
                     write!(self.fmt, [empty_line(), text("\n")])?;
-                } else if n_lines > 1 {
+                } else if n_lines == 2 {
                     write!(self.fmt, [empty_line()])?;
                 } else {
                     self.separator.fmt(self.fmt)?;
