@@ -50,6 +50,13 @@ foo
 ~
 1
 
+# Chained formulas
+~~foo
+~~1 + 2
+1~2
+1~~2
+1~~foo
+
 ```
 
 
@@ -112,6 +119,13 @@ Persistent line breaks: Respect
 # Removes line break
 ~foo
 ~ 1
+
+# Chained formulas
+~ ~foo
+~ ~ 1 + 2
+1 ~ 2
+1 ~ ~ 2
+1 ~ ~foo
 ```
 
 # Lines exceeding max width of 80 characters

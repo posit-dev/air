@@ -42,3 +42,10 @@
 foo
 ~
 1
+
+# Chained formulas
+~~foo
+~~1 + 2
+1~2
+1~~2
+1~~foo
