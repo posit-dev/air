@@ -133,6 +133,8 @@ fn format_file(
     mode: FormatMode,
     settings: &FormatSettings,
 ) -> Result<FormatFileAction, FormatCommandError> {
+    tracing::trace!("Formatting {path}", path = path.display());
+
     let source = std::fs::read_to_string(&path)
         .map_err(|err| FormatCommandError::Read(path.clone(), err))?;
 

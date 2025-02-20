@@ -44,8 +44,9 @@ fn is_document_excluded(
         exclude.and_then(|exclude| exclude.matched_path_or_any_parents(path, IS_DIRECTORY))
     {
         tracing::trace!(
-            "Excluded file due to '{glob}' {path:?}",
-            glob = glob.original()
+            "Excluded file due to '{glob}' {path}",
+            glob = glob.original(),
+            path = path.display()
         );
         return true;
     }
@@ -54,8 +55,9 @@ fn is_document_excluded(
         .and_then(|default_exclude| default_exclude.matched_path_or_any_parents(path, IS_DIRECTORY))
     {
         tracing::trace!(
-            "Excluded file due to '{glob}' {path:?}",
-            glob = glob.original()
+            "Excluded file due to '{glob}' {path}",
+            glob = glob.original(),
+            path = path.display()
         );
         return true;
     }
@@ -65,18 +67,25 @@ fn is_document_excluded(
         .and_then(|default_include| default_include.matched_path_or_any_parents(path, IS_DIRECTORY))
     {
         tracing::trace!(
-            "Included file due to '{glob}' {path:?}",
-            glob = glob.original()
+            "Included file due to '{glob}' {path}",
+            glob = glob.original(),
+            path = path.display()
         );
         return false;
     }
 
     // Then check if `r` is the language id, which is a feature unique to LSPs
     if language_id == "r" {
-        tracing::trace!("Included file due to client provided R language id {path:?}");
+        tracing::trace!(
+            "Included file due to client provided R language id {path}",
+            path = path.display()
+        );
         return false;
     }
 
-    tracing::trace!("Excluded file due to fallthrough {path:?}");
+    tracing::trace!(
+        "Excluded file due to fallthrough {path}",
+        path = path.display()
+    );
     true
 }
