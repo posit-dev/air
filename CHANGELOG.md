@@ -2,7 +2,7 @@
 
 # Development version
 
-- Unary formulas (i.e. anonymous functions) like `~ .x + 1` now add a space between the `~` and the right-hand side, unless the right-hand side is a simple identifier, like `~foo` (#235).
+- Unary formulas (i.e. anonymous functions) like `~ .x + 1` now add a space between the `~` and the right-hand side, unless the right-hand side is very simple, like `~foo` or `~1` (#235).
 
 - Semicolons at the very start or very end of a file no longer cause the parser to panic (#238).
 

@@ -14,7 +14,7 @@ impl FormatNodeRule<RUnaryExpression> for FormatRUnaryExpression {
         let operator = operator?;
         let argument = argument?;
 
-        let needs_space = is_complex_anonymous_function(&operator, &argument);
+        let needs_space = is_complex_unary_formula(&operator, &argument);
 
         let argument = format_with(|f| {
             if f.comments().has_comments(argument.syntax())
@@ -33,19 +33,49 @@ impl FormatNodeRule<RUnaryExpression> for FormatRUnaryExpression {
     }
 }
 
-/// Is this an anonymous function like `~ .x + 1`?
+/// Is this a complex unary formula, like `~ .x + 1`?
 ///
-/// Simple unary formulas like `~foo` don't have a space between the `~` and the
-/// argument (often used in tribble calls), but "complex" unary formulas do.
+/// Simple unary formulas like `~foo` and `~1` don't have a space between the `~` and the
+/// argument (often used in `tribble()` calls, ggvis, the survey package, etc), but
+/// "complex" unary formulas do.
 ///
-/// We define "complex" as anything except a simple identifier, so even `~ "foo"` results
-/// in a space.
-fn is_complex_anonymous_function(operator: &RSyntaxToken, argument: &AnyRExpression) -> bool {
-    // Must be a `~`
-    if !matches!(operator.kind(), RSyntaxKind::TILDE) {
-        return false;
-    }
+/// We say a unary formula is "complex" if the `argument` is non-terminal.
+fn is_complex_unary_formula(operator: &RSyntaxToken, argument: &AnyRExpression) -> bool {
+    matches!(operator.kind(), RSyntaxKind::TILDE) && !is_terminal(argument)
+}
 
-    // "Complex" is anything except identifiers
-    !matches!(argument, AnyRExpression::RIdentifier(_))
+/// Is this [AnyRExpression] considered terminal (or leaf-like)?
+///
+/// This is a bit hand wavy, but we consider a node to be terminal if we format it
+/// verbatim. The goal is for anything that looks something like a call to get a space,
+/// i.e. `~ x + 1`, but for very simple tokens to not get a space, i.e. `~foo` or `~1` or
+/// `~NULL`.
+fn is_terminal(node: &AnyRExpression) -> bool {
+    match node {
+        // Identifiers
+        AnyRExpression::RIdentifier(_) => true,
+
+        // Integer, double, complex, and string literals
+        AnyRExpression::AnyRValue(_) => true,
+
+        // `TRUE` and `FALSE`
+        AnyRExpression::RTrueExpression(_) | AnyRExpression::RFalseExpression(_) => true,
+
+        // `NA` variants, `NaN`, and `NULL`
+        AnyRExpression::RNaExpression(_)
+        | AnyRExpression::RNanExpression(_)
+        | AnyRExpression::RNullExpression(_) => true,
+
+        // `Inf`
+        AnyRExpression::RInfExpression(_) => true,
+
+        // `...` and `..i`
+        AnyRExpression::RDots(_) | AnyRExpression::RDotDotI(_) => true,
+
+        // `next` and `break`
+        AnyRExpression::RNextExpression(_) | AnyRExpression::RBreakExpression(_) => true,
+
+        // Anything else is non-terminal
+        _ => false,
+    }
 }

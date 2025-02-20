@@ -25,23 +25,43 @@
 # ----------------------------------------------------------------------------
 # Unary formulas (i.e. anonymous functions)
 
-# Simple identifiers don't have a space between `~` and `foo`
+# "Terminal" arguments don't have a space between `~` and the argument itself
 ~foo
+~.
+~1L
+~1.5
+~1i
+~"foo"
+~TRUE
+~FALSE
+~NA
+~NA_integer_
+~NA_real_
+~NA_character_
+~NA_complex_
+~NaN
+~NULL
+~Inf
+~...
+~..1
+~next
+~break
 
 # But anything else does have a space
-~1
 ~.x + .y
-~"foo"
-~NULL
-
-# This counts as an identifier
-~.
+~function(x) x
+~identity(.x)
+~{
+  1
+}
 
 # Removes line break
 ~
 foo
 ~
 1
+~
+.x + .y
 
 # Chained formulas
 ~~foo
