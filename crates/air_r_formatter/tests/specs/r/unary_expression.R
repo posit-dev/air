@@ -1,6 +1,5 @@
 +1
 -1
-~1
 ?1
 !1
 
@@ -22,3 +21,51 @@
 1 + ++1
 
 ++argument_that_is_really_really_really_really_really_really_really_really_really_long
+
+# ----------------------------------------------------------------------------
+# Unary formulas (i.e. anonymous functions)
+
+# "Terminal" arguments don't have a space between `~` and the argument itself
+~foo
+~.
+~1L
+~1.5
+~1i
+~"foo"
+~TRUE
+~FALSE
+~NA
+~NA_integer_
+~NA_real_
+~NA_character_
+~NA_complex_
+~NaN
+~NULL
+~Inf
+~...
+~..1
+~next
+~break
+
+# But anything else does have a space
+~.x + .y
+~function(x) x
+~identity(.x)
+~{
+  1
+}
+
+# Removes line break
+~
+foo
+~
+1
+~
+.x + .y
+
+# Chained formulas
+~~foo
+~~1 + 2
+1~2
+1~~2
+1~~foo
