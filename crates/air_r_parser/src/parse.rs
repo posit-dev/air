@@ -1117,6 +1117,12 @@ impl RParse {
     ///
     /// Derive the implied stream of trivia that exists in that gap
     ///
+    /// TODO(semicolon): tree-sitter-r does not emit semicolons in the parse tree, so they
+    /// technically also appear here in `text`. We hackily patch over this for now by
+    /// consuming semicolons as whitespace, which ends up getting ignored by the
+    /// formatter. It would be nice to have official semicolon handling, and then in the
+    /// formatter we'd just use `format_removed()` to officially remove semicolons.
+    ///
     /// SAFETY: `last_end <= next_start`
     /// SAFETY: `last_end` and `next_start` must define a range within `text`
     fn derive_trivia(&mut self, text: &str, mut start: TextSize, between_two_tokens: bool) {
@@ -1153,6 +1159,8 @@ impl RParse {
                 let _ = iter.next();
             }
 
+            // Push the range of whitespace
+            // TODO(semicolon): This currently includes semicolons as whitespace
             if start != end {
                 let range = TextRange::new(start, end);
                 self.push_trivia(Trivia::new(TriviaPieceKind::Whitespace, range, trailing));
@@ -1215,6 +1223,8 @@ impl RParse {
         // `WHS` maps newlines as "whitespace" but we handle that specially
         match biome_unicode_table::lookup_byte(byte) {
             Dispatch::WHS => byte != b'\r' && byte != b'\n',
+            // TODO(semicolon): Mapping semicolons as whitespace until we handle them officially
+            Dispatch::SEM => true,
             _ => false,
         }
     }
