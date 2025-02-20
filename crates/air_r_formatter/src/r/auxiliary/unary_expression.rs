@@ -20,10 +20,11 @@ impl FormatNodeRule<RUnaryExpression> for FormatRUnaryExpression {
             if f.comments().has_comments(argument.syntax())
                 && !f.comments().is_suppressed(argument.syntax())
             {
-                // We never line break between the operator and its argument except if an
-                // existing comment separates them
+                // If an existing comment separates the operator and its argument, we are
+                // forced to line break
                 write!(f, [soft_block_indent(&argument.format())])
             } else {
+                // Otherwise we never line break
                 write!(f, [argument.format()])
             }
         });
