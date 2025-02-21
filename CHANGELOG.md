@@ -2,7 +2,7 @@
 
 # Development version
 
-- We now allow up to 2 lines between top-level elements of a file. This makes it possible to cut long scripts with visually distincts sections (#40).
+- We now allow up to 2 lines between top-level elements of a file. This makes it possible to separate long scripts into visually distinct sections (#40).
 
 - Unary formulas (i.e. anonymous functions) like `~ .x + 1` now add a space between the `~` and the right-hand side, unless the right-hand side is very simple, like `~foo` or `~1` (#235).
 
