@@ -4,7 +4,7 @@ Air <img src="docs/images/air.png" align="right" height=160 />
 [![Actions status](https://github.com/posit-dev/air/actions/workflows/test.yml/badge.svg)](https://github.com/posit-dev/air/actions)
 
 > [!NOTE]
-> Air is currently in alpha. Expect breaking changes both in the API and in formatting results. We also recommend that you use a version control system like git so you can easily see the changes that Air makes.
+> Air is currently in beta. Expect breaking changes both in the API and in formatting results. We also recommend that you use a version control system like git so you can easily see the changes that Air makes.
 
 An R formatter and language server, written in Rust.
 
