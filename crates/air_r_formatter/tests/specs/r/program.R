@@ -12,6 +12,18 @@
 2
 
 
+
+# Up to two lines between elements
+
+fn <- function() {
+    1
+
+
+    # Up to one line between elements
+    2
+}
+
+
 # Up to two lines between elements
 # Currently failing but that doesn't seem too bad: It makes it so that a comment
 # is required to stick to its node with at most one empty line.
