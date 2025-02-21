@@ -1,7 +1,7 @@
 use biome_formatter::{prelude::*, write, Format, FormatResult};
 use biome_rowan::{Language, SyntaxNode};
 
-/// How many lines are allowed between elements
+/// The maximum number of empty lines allowed between elements
 #[derive(Debug, Clone, Copy, Default)]
 pub enum EmptyLines {
     #[default]
@@ -9,7 +9,7 @@ pub enum EmptyLines {
     Double,
 }
 
-/// Version of `JoinNodesBuilder` that can be configured to respect maximum n lines between inputs.
+/// Version of `JoinNodesBuilder` that can be configured to respect up to two lines between inputs.
 /// From https://github.com/biomejs/biome/blob/main/crates/biome_formatter/src/comments/builder.rs
 #[must_use = "must eventually call `finish()` on Format builders"]
 pub struct JoinNodesBuilderExt<'fmt, 'buf, Separator, Context> {
