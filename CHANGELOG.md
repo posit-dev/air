@@ -2,6 +2,9 @@
 
 # Development version
 
+
+# 0.4.0
+
 - Parenthesized expressions now tightly hug (#248).
 
 - We now allow up to 2 lines between top-level elements of a file. This makes it possible to separate long scripts into visually distinct sections (#40).
@@ -27,8 +30,7 @@
 
 - Added support for special "skip" comments.
 
-  Use `# fmt: skip` to avoid formatting the following node and all of its
-  children. In this case, the `tribble()` call and all of its arguments (#52).
+  Use `# fmt: skip` to avoid formatting the following node and all of its children. In this case, the `tribble()` call and all of its arguments (#52).
 
   ```r
   # fmt: skip
@@ -38,8 +40,8 @@
   )
   ```
 
-  Use `# fmt: skip file` to avoid formatting an entire file. This comment must
-  appear at the top of the file before any non-comment R code (#219).
+  Use `# fmt: skip file` to avoid formatting an entire file. This comment must appear at the top of the file before any non-comment R code (#219).
+
 
 # 0.3.0
 
