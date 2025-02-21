@@ -13,15 +13,6 @@ use comments::FormatDirective;
 #[derive(Debug, Clone, Default)]
 pub(crate) struct FormatRRoot;
 
-impl FormatRRoot {
-    fn is_suppression_comment(text: &str) -> bool {
-        matches!(
-            parse_comment_directive(text),
-            Some(Directive::Format(FormatDirective::SkipFile))
-        )
-    }
-}
-
 impl FormatNodeRule<RRoot> for FormatRRoot {
     fn fmt_fields(&self, node: &RRoot, f: &mut RFormatter) -> FormatResult<()> {
         let RRootFields {
@@ -42,18 +33,22 @@ impl FormatNodeRule<RRoot> for FormatRRoot {
     }
 
     fn is_suppressed(&self, node: &RRoot, f: &RFormatter) -> bool {
+        let comments = f.context().comments();
+        comments.mark_suppression_checked(node.syntax());
+
         let Some(child) = node.expressions().first() else {
             return false;
         };
-
-        let comments = f.context().comments();
 
         // Only consider very first comment in the file
         let Some(comment) = comments.leading_comments(child.syntax()).first() else {
             return false;
         };
 
-        Self::is_suppression_comment(comment.piece().text())
+        matches!(
+            parse_comment_directive(comment.piece().text()),
+            Some(Directive::Format(FormatDirective::SkipFile))
+        )
     }
 
     // The default handling of suppressed nodes in `FormatNodeRule::fmt()`
