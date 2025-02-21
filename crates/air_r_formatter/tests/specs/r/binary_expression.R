@@ -345,7 +345,7 @@ x[df
 x[[df
 |> foo()]]
 
-# This does retain the break, because it comes after the pipe
+# This does retain the persistent line break, because it comes after the pipe
 (df |>
 foo())
 
