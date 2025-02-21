@@ -1188,6 +1188,7 @@ base_version <-
   b_get(brand, "defaults", "bootstrap", "version") %||%
   version_default()
 
+
 # https://github.com/posit-dev/air/issues/220
 data <-
   starwars |>
