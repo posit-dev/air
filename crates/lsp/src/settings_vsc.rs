@@ -27,9 +27,9 @@ pub(crate) struct VscGlobalSettings {
 #[derive(Clone, Debug, FieldNamesAsArray, serde::Serialize, serde::Deserialize)]
 pub(crate) struct VscDocumentSettings {
     // DEV NOTE: Update `section_from_key()` method after adding a field
-    pub insert_spaces: bool,
-    pub indent_size: VscIndentSize,
-    pub tab_size: usize,
+    pub insert_spaces: Option<bool>,
+    pub indent_size: Option<VscIndentSize>,
+    pub tab_size: Option<usize>,
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -42,7 +42,7 @@ pub(crate) enum VscIndentSize {
 #[derive(Clone, Debug, FieldNamesAsArray, serde::Serialize, serde::Deserialize)]
 pub(crate) struct VscDiagnosticsSettings {
     // DEV NOTE: Update `section_from_key()` method after adding a field
-    pub enable: bool,
+    pub enable: Option<bool>,
 }
 
 impl From<VscGlobalSettings> for GlobalSettings {
@@ -70,12 +70,20 @@ impl VscDocumentSettings {
 /// representation. Currently one-to-one.
 impl From<VscDocumentSettings> for DocumentSettings {
     fn from(value: VscDocumentSettings) -> Self {
-        let indent_style = indent_style_from_vsc(value.insert_spaces);
-        let indent_width = indent_width_from_vsc(&value);
+        // Conversion is all or nothing to avoid sending, say, the `indent_size` without
+        // also sending the `tab_size`
+        let (indent_style, indent_width) =
+            match (value.insert_spaces, value.indent_size, value.tab_size) {
+                (Some(insert_spaces), Some(indent_size), Some(tab_size)) => (
+                    Some(indent_style_from_vsc(insert_spaces)),
+                    Some(indent_width_from_vsc(indent_size, tab_size)),
+                ),
+                _ => (None, None),
+            };
 
         Self {
-            indent_style: Some(indent_style),
-            indent_width: Some(indent_width),
+            indent_style,
+            indent_width,
             line_width: None, // We don't currently watch this setting
         }
     }
@@ -101,15 +109,18 @@ impl VscGlobalSettings {
     }
 }
 
-pub(crate) fn indent_width_from_vsc(settings: &VscDocumentSettings) -> settings::IndentWidth {
-    let indent_width = match settings.indent_size {
+pub(crate) fn indent_width_from_vsc(
+    indent_size: VscIndentSize,
+    tab_size: usize,
+) -> settings::IndentWidth {
+    let indent_width = match indent_size {
         VscIndentSize::Size(ref size) => *size,
         VscIndentSize::Alias(ref var) => {
             if var != "tabSize" {
                 tracing::warn!("Unknown indent alias {var}, using default");
                 return settings::IndentWidth::default();
             }
-            settings.tab_size
+            tab_size
         }
     };
 
