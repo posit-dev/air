@@ -13,13 +13,19 @@ impl FormatNodeRule<RParenthesizedExpression> for FormatRParenthesizedExpression
             r_paren_token,
         } = node.as_fields();
 
-        write!(
-            f,
-            [
-                l_paren_token.format(),
-                group(&soft_block_indent(&body.format())),
-                r_paren_token.format()
-            ]
-        )
+        let l_paren_token = l_paren_token?;
+        let body = body?;
+        let r_paren_token = r_paren_token?;
+
+        let body = format_with(|f| {
+            if body.syntax().has_comments_direct() {
+                // Fully expand the parentheses to allow placement of comments
+                write!(f, [block_indent(&body.format())])
+            } else {
+                write!(f, [body.format()])
+            }
+        });
+
+        write!(f, [l_paren_token.format(), body, r_paren_token.format()])
     }
 }

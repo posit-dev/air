@@ -7,14 +7,11 @@ info: r/parenthesized_expression.R
 ```R
 (1)
 
-# TODO: Should we keep it simple and say that fully expanding here (due to the
-# braced expression) is the best that we want to do?
+# Parentheses always tightly hug
 ({ 1 + 1 })
 (function() { 1 + 1 })
 
-# Shouldn't automatically break in the function call
 (fn(a, b, c))
-
 (fn_call_that_is_really_long(with_really_long, arguments_like_this, and_this_one_too))
 
 ((1))
@@ -48,29 +45,20 @@ Persistent line breaks: Respect
 ```R
 (1)
 
-# TODO: Should we keep it simple and say that fully expanding here (due to the
-# braced expression) is the best that we want to do?
-(
-  {
-    1 + 1
-  }
-)
-(
-  function() {
-    1 + 1
-  }
-)
+# Parentheses always tightly hug
+({
+  1 + 1
+})
+(function() {
+  1 + 1
+})
 
-# Shouldn't automatically break in the function call
 (fn(a, b, c))
-
-(
-  fn_call_that_is_really_long(
-    with_really_long,
-    arguments_like_this,
-    and_this_one_too
-  )
-)
+(fn_call_that_is_really_long(
+  with_really_long,
+  arguments_like_this,
+  and_this_one_too
+))
 
 ((1))
 
