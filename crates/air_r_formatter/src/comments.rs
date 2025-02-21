@@ -17,6 +17,8 @@ use biome_formatter::comments::DecoratedComment;
 use biome_formatter::comments::SourceComment;
 use biome_formatter::write;
 use biome_rowan::SyntaxTriviaPieceComments;
+use comments::Directive;
+use comments::FormatDirective;
 
 pub type RComments = Comments<RLanguage>;
 
@@ -43,9 +45,9 @@ pub struct RCommentStyle;
 impl CommentStyle for RCommentStyle {
     type Language = RLanguage;
 
-    fn is_suppression(_text: &str) -> bool {
-        // TODO: Implement ark format suppression
-        false
+    fn is_suppression(text: &str) -> bool {
+        comments::parse_comment_directive(text)
+            .is_some_and(|directive| matches!(directive, Directive::Format(FormatDirective::Skip)))
     }
 
     fn get_comment_kind(_comment: &SyntaxTriviaPieceComments<RLanguage>) -> CommentKind {

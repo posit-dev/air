@@ -21,6 +21,21 @@
 
 - Assigned pipelines no longer double-indent (#220).
 
+- Added support for special "skip" comments.
+
+  Use `# fmt: skip` to avoid formatting the following node and all of its
+  children. In this case, the `tribble()` call and all of its arguments (#52).
+
+  ```r
+  # fmt: skip
+  tribble(
+    ~a, ~b,
+     1,  2
+  )
+  ```
+
+  Use `# fmt: skip file` to avoid formatting an entire file. This comment must
+  appear at the top of the file before any non-comment R code (#219).
 
 # 0.3.0
 
