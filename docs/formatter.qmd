@@ -199,7 +199,7 @@ tribble(
 
 `# fmt: skip file` skips the entire file.
 This must be placed at the top of the file before the first non-comment R code, otherwise the comment is ignored.
-Use this for generated files, or as an alternative to `exclude` for individual files that you know you'd like to exclude from formatting.
+This is useful for generated files, or as an alternative to `exclude` for individual files that you know you'd like to exclude from formatting.
 
 ``` r
 # Generated file - Don't modify by hand!
