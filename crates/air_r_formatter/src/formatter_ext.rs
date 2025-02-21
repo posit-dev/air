@@ -1,6 +1,6 @@
 use biome_formatter::prelude::{hard_line_break, Formatter, Line};
 
-use crate::joiner::{EmptyLines, JoinNodesBuilderExt};
+use crate::joiner_ext::{EmptyLines, JoinNodesBuilderExt};
 
 pub trait FormatterExt<'buf, Context> {
     /// Specialized version of `join_nodes_with_hardline()` that allows up to 2
