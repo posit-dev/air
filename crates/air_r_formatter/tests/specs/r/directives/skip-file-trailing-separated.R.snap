@@ -1,0 +1,73 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/directives/skip-file-trailing-separated.R
+---
+# Input
+
+```R
+
+
+
+# Some leading comment
+
+
+# This is in a second comment block but we allow it for convenience.
+# fmt: skip file
+
+1 + 1
+
+
+
+# bar
+
+
+
+2
+
+
+
+#foo
+
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Space
+Indent width: 2
+Line ending: LF
+Line width: 80
+Persistent line breaks: Respect
+-----
+
+```R
+
+
+
+# Some leading comment
+
+
+# This is in a second comment block but we allow it for convenience.
+# fmt: skip file
+
+1 + 1
+
+
+
+# bar
+
+
+
+2
+
+
+
+#foo
+
+```
