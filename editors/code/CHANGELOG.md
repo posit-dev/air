@@ -6,6 +6,10 @@
 
 ## Development version
 
+- New `air.executablePath` configuration option for specifying a fixed path to an air executable. You must also set `air.executableStrategy` to `"path"` for this to have any affect. This is mostly useful for debug builds of air (#243).
+
+- `air.executableLocation` has been renamed to `air.executableStrategy`.
+
 ## 0.4.0
 
 - [Air 0.3.0](https://github.com/posit-dev/air/blob/main/CHANGELOG.md) is now bundled with the extension.
