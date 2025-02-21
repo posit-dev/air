@@ -55,9 +55,6 @@ impl FormatNodeRule<RRoot> for FormatRRoot {
     // does not work out well for `RRoot` because it doesn't format
     // trivia verbatim. So we use a custom implementation instead.
     fn fmt_suppressed(&self, node: &RRoot, f: &mut RFormatter) -> FormatResult<()> {
-        let RRootFields { bom_token, .. } = node.as_fields();
-        write!(f, [bom_token.format()])?;
-
         // Mark everything as visited so the formatter doesn't panic
         // thinking we've missed elements. We're going to print each element
         // manually with `dynamic_text()`.
