@@ -210,6 +210,10 @@ where
         f.context().comments().is_suppressed(node.syntax())
     }
 
+    /// Formats a suppressed node
+    ///
+    /// You may want to override this method if you need to manually handle
+    /// formatting of a suppressed node. This should be extremely rare.
     fn fmt_suppressed(&self, node: &N, f: &mut RFormatter) -> FormatResult<()> {
         write!(f, [format_suppressed_node(node.syntax())])
     }
