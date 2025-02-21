@@ -12,7 +12,7 @@ pub enum EmptyLines {
 /// Version of `JoinNodesBuilder` that can be configured to respect maximum n lines between inputs.
 /// From https://github.com/biomejs/biome/blob/main/crates/biome_formatter/src/comments/builder.rs
 #[must_use = "must eventually call `finish()` on Format builders"]
-pub struct AirJoinNodesBuilder<'fmt, 'buf, Separator, Context> {
+pub struct JoinNodesBuilderExt<'fmt, 'buf, Separator, Context> {
     result: FormatResult<()>,
     /// The separator to insert between nodes. Either a soft or hard line break
     separator: Separator,
@@ -21,7 +21,7 @@ pub struct AirJoinNodesBuilder<'fmt, 'buf, Separator, Context> {
     empty_lines: EmptyLines,
 }
 
-impl<'fmt, 'buf, Separator, Context> AirJoinNodesBuilder<'fmt, 'buf, Separator, Context> {
+impl<'fmt, 'buf, Separator, Context> JoinNodesBuilderExt<'fmt, 'buf, Separator, Context> {
     pub(crate) fn new(
         separator: Separator,
         empty_lines: EmptyLines,
@@ -37,7 +37,7 @@ impl<'fmt, 'buf, Separator, Context> AirJoinNodesBuilder<'fmt, 'buf, Separator, 
     }
 }
 
-impl<Separator, Context> AirJoinNodesBuilder<'_, '_, Separator, Context>
+impl<Separator, Context> JoinNodesBuilderExt<'_, '_, Separator, Context>
 where
     Separator: Format<Context>,
 {
