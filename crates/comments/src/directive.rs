@@ -29,7 +29,14 @@ pub enum FormatDirective {
 /// ```
 ///
 /// Note that directives are applied to the node they are attached to.
+///
+/// `text` should be single line but we don't check for this. A potential usage
+/// of this function is to iterate over a document line by line to scan for a
+/// directive.
 pub fn parse_comment_directive(text: &str) -> Option<Directive> {
+    // This returns `None` if `text` is not a comment
+    let text = text.strip_prefix('#')?;
+
     let text = text.trim_start_matches('#');
     let text = text.trim_start();
 
@@ -88,6 +95,9 @@ mod test {
     fn test_format_directive() {
         let format_skip = Some(Directive::Format(crate::FormatDirective::Skip));
         let format_skip_file = Some(Directive::Format(crate::FormatDirective::SkipFile));
+
+        // Must have leading `#`
+        assert!(parse_comment_directive("fmt: skip").is_none());
 
         // Must have `:`
         assert!(parse_comment_directive("# fmt skip").is_none());
