@@ -19,7 +19,7 @@ impl AirExtension {
     ) -> Result<AirBinary> {
         // Pull `BinarySettings`, if they exist. This includes user specified path to the
         // binary and any user specified arguments for the binary.
-        let binary_settings = LspSettings::for_worktree("air", worktree)
+        let binary_settings = LspSettings::for_worktree(language_server_id.as_ref(), worktree)
             .ok()
             .and_then(|lsp_settings| lsp_settings.binary);
 
@@ -89,8 +89,8 @@ impl AirExtension {
         let asset_name = format!(
             "{asset_stem}.{suffix}",
             suffix = match platform {
+                zed::Os::Mac | zed::Os::Linux => "tar.gz",
                 zed::Os::Windows => "zip",
-                _ => "tar.gz",
             }
         );
 
@@ -98,12 +98,12 @@ impl AirExtension {
             .assets
             .iter()
             .find(|asset| asset.name == asset_name)
-            .ok_or_else(|| format!("no asset found matching {:?}", asset_name))?;
+            .ok_or_else(|| format!("No asset found matching {asset_name:?}"))?;
 
         let version_dir = format!("air-{}", release.version);
         let binary_path = match platform {
+            zed::Os::Mac | zed::Os::Linux => format!("{version_dir}/{asset_stem}/air"),
             zed::Os::Windows => format!("{version_dir}/air.exe"),
-            _ => format!("{version_dir}/{asset_stem}/air"),
         };
 
         if !fs::metadata(&binary_path).map_or(false, |stat| stat.is_file()) {
@@ -111,17 +111,23 @@ impl AirExtension {
                 language_server_id,
                 &zed::LanguageServerInstallationStatus::Downloading,
             );
-            let file_kind = match platform {
-                zed::Os::Windows => zed::DownloadedFileType::Zip,
-                _ => zed::DownloadedFileType::GzipTar,
-            };
-            zed::download_file(&asset.download_url, &version_dir, file_kind)
-                .map_err(|e| format!("failed to download file: {e}"))?;
 
-            let entries =
-                fs::read_dir(".").map_err(|e| format!("failed to list working directory {e}"))?;
+            let file_kind = match platform {
+                zed::Os::Mac | zed::Os::Linux => zed::DownloadedFileType::GzipTar,
+                zed::Os::Windows => zed::DownloadedFileType::Zip,
+            };
+
+            zed::download_file(&asset.download_url, &version_dir, file_kind)
+                .map_err(|error| format!("Failed to download file: {error}"))?;
+
+            // Clean out other entries in our personal extension directory, this may
+            // include outdated versions of the extension, so it is good hygiene
+            let entries = fs::read_dir(".")
+                .map_err(|error| format!("Failed to list working directory: {error}"))?;
+
             for entry in entries {
-                let entry = entry.map_err(|e| format!("failed to load directory entry {e}"))?;
+                let entry =
+                    entry.map_err(|error| format!("Failed to load directory entry: {error}"))?;
                 if entry.file_name().to_str() != Some(&version_dir) {
                     fs::remove_dir_all(entry.path()).ok();
                 }

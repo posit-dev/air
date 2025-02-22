@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/*", "xtask/codegen"]
+members = ["crates/*", "xtask/codegen", "editors/zed"]
 resolver = "2"
 
 [workspace.package]
