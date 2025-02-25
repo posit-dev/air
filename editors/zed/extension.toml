@@ -7,5 +7,5 @@ authors = ["Posit Software, PBC"]
 repository = "https://github.com/posit-dev/air"
 
 [language_servers.air]
-name = "Air"
+name = "Air Language Server"
 languages = ["R"]
