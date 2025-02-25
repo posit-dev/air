@@ -1,0 +1,11 @@
+id = "air"
+name = "Air"
+description = "Air extension for Zed"
+version = "0.1.0"
+schema_version = 1
+authors = ["Posit Software, PBC"]
+repository = "https://github.com/posit-dev/air"
+
+[language_servers.air]
+name = "Air Language Server"
+languages = ["R"]
