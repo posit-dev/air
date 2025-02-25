@@ -21,4 +21,5 @@ expression: AIR_CRATE_NAMES
     "workspace",
     "xtask",
     "xtask_codegen",
+    "zed_air",
 ]
