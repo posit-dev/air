@@ -58,7 +58,20 @@ For a new release:
 
 -   Create a release branch in `zed-industries/extensions` called `update-air/x.y.z`
 
-    -   Update the Air submodule in `extensions/` to point to the commit of the newly merged PR from the Air Zed extension release.
+    -   Update the Air submodule in `extensions/` to point to the commit of the newly merged PR from the Air Zed extension release. This looks something like:
+
+        ``` bash
+        # Move into the submodule so `git` commands work on the submodule
+        cd extensions/air
+        # Fetch latest changes to Air
+        git fetch origin
+        # Checkout the Air sha you want to pin Zed to
+        git checkout <commit-sha>
+        # Move back to top level
+        cd ../..
+        # Commit the Air sha update
+        git add extensions/air
+        ```
 
     -   Update the Air `version` in `extensions.toml`. Double check that this `version` matches the `version` set in the Air Zed extension.
 
