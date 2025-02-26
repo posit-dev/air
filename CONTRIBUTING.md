@@ -1,8 +1,12 @@
-# Release
+# Contributing to Air
 
-The release process of Air has some manual steps. One complication is that for each release of the CLI binary, we create a new release of the VS Code extension as this is our primary way of distributing Air. The version numbers between the CLI binary and the VS Code extension are not required to be the same.
+Welcome! We really appreciate that you'd like to contribute to Air, thanks in advance!
 
-When you want to cut a release:
+# Release process
+
+The release process of Air has some manual steps. One complication is that for each release of the CLI binary, we create a new release of the VS Code / OpenVSX extension as this is our primary way of distributing Air. The version numbers between the CLI binary and the VS Code / OpenVSX extension will end up being different.
+
+When you want to cut a release of the Air binary and Air VS Code / OpenVSX extension:
 
 -   Create a release branch
 
@@ -34,13 +38,13 @@ When you want to cut a release:
 
 -   Manually run the [extension release workflow](https://github.com/posit-dev/air/actions/workflows/release-vscode.yml)
 
-    -   It runs on `workflow_dispatch`, and automatically pulls in the latest release binary of Air from the binary release workflow above.
+    -   It runs on `workflow_dispatch`, and automatically pulls in the latest release binary of Air from the binary release workflow above. It will release to both the VS Code marketplace and the OpenVSX marketplace.
 
 -   Merge the release branch
 
     -   There is no need to bump to an intermediate "dev version" after a release.
 
-# Release Zed extension
+# Zed extension release process
 
 It is rare to need to do a Zed extension release because that code is fairly static. It knows how to download the latest version of Air, so we only need to change something there if we alter the way the extension itself works.
 
@@ -81,25 +85,27 @@ If you have any questions about the process, refer to [Zed's update guide](https
 
 # VS Code Extension development installation
 
-Install the dev version of the Air cli with:
+-   Build the development version of the Air CLI with:
 
-``` sh
-cargo install --path crates/air --debug
-```
+    ``` bash
+    cargo build
+    ```
 
-This installs it to `~/.cargo/bin` (which must be on your `PATH`), and can be removed with `cargo uninstall air`.
+    This does not install the CLI, but instead builds it to `target/debug/air` (or `target/debug/air.exe` on Windows).
 
-Install the dev version of the VS Code extension:
+-   Install the development version of the VS Code or Positron extension:
 
-``` sh
-# Install for Positron
-(cd editors/code && (rm -rf *.vsix || true) && npx @vscode/vsce package && positron --install-extension *.vsix)
+    ``` bash
+    # Install for Positron
+    (cd editors/code && (rm -rf *.vsix || true) && npx @vscode/vsce package && positron --install-extension *.vsix)
 
-# Install for VS Code
-(cd editors/code && (rm -rf *.vsix || true) && npx @vscode/vsce package && code --install-extension *.vsix)
-```
+    # Install for VS Code
+    (cd editors/code && (rm -rf *.vsix || true) && npx @vscode/vsce package && code --install-extension *.vsix)
+    ```
 
-The CLI tools for Positron or VS Code need to be installed on your path using the command palette command `Shell Command: Install 'code'/'positron' command in PATH`.
+    The CLI tools for Positron or VS Code need to be installed on your path using the command palette command `Shell Command: Install 'code'/'positron' command in PATH`.
+
+-   In your `settings.json`, set `air.executablePath` to the full path to the debug Air CLI binary you created in step one. Then set `air.executableStrategy` to `"path"` and restart the extension. At this point you can now swap between `"path"` and `"bundled"` to turn the debug binary on and off.
 
 # Zed Extension development installation
 
