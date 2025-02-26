@@ -1,5 +1,6 @@
 .vscode/**
 .vscode-test/**
+.zed/**
 out/**
 node_modules/**
 src/**
