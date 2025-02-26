@@ -2,6 +2,8 @@
 
 # Development version
 
+# 0.4.1
+
 - Language server configuration variables are now fully optional, avoiding issues in editors like Zed or Helix (#246).
 
 
