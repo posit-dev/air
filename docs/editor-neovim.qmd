@@ -1,0 +1,74 @@
+---
+title: "Neovim"
+editor:
+  markdown:
+    wrap: sentence
+    canonical: true
+---
+
+# Installing the air client
+
+First, install the Air client by following the instructions on the [Air CLI documentation](https://posit-dev.github.io/air/cli.html).
+
+# Configuration
+
+Air can be configured as a Language Server Protocol (LSP) client via [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig) or as a formatter plugin via [conform.nvim](https://github.com/stevearc/conform.nvim).
+
+## LSP Configuration with nvim-lspconfig
+
+To configure Air as an LSP client, add the following to your `nvim/lua/plugins/lspconfig.lua`:
+
+```lua
+-- Custom server configuration for 'air'
+require("lspconfig.configs").air = {
+    default_config = {
+        cmd = { vim.fn.expand("$HOME/.local/bin/air"), "language-server" },
+        filetypes = { "r" },
+        root_dir = function(fname)
+            local git_dir = vim.fs.find(".git", { path = fname, upward = true })[1]
+            return git_dir and vim.fs.dirname(git_dir) or vim.loop.os_homedir()
+        end,
+        settings = {},
+    },
+}
+```
+
+To enable automatic formatting on save, add the following to your `nvim/after/plugin/lsp.lua` (or other appropriate location):
+
+```lua
+vim.api.nvim_create_autocmd("BufWritePre", {
+    pattern = { "*.R", "*.r" },
+    callback = function()
+        vim.lsp.buf.format({
+            async = true,
+            filter = function(client)
+                return client.name == "air"
+            end,
+        })
+    end,
+})
+```
+
+## conform.nvim configuration
+
+Air can be configured as a formatter plugin via [conform.nvim](https://github.com/stevearc/conform.nvim). This allows you to format R code with Air inside code chunks in Quarto and RMarkdown documents. It can be configured by adding the following to your `nvim/lua/plugins/conform.lua`:
+
+```lua
+return {
+    "stevearc/conform.nvim",
+    enabled = true,
+    config = function()
+        local conform = require("conform")
+
+        conform.setup({
+            notify_on_error = true,
+            format_on_save = {
+                lsp_fallback = true,
+            },
+            formatters_by_ft = {
+                r = { "air" },
+            },
+        })
+    end,
+}
+```
