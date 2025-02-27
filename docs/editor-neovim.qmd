@@ -19,18 +19,7 @@ Air can be configured as a Language Server Protocol (LSP) client via [nvim-lspco
 To configure Air as an LSP client, add the following to your `nvim/lua/plugins/lspconfig.lua`:
 
 ```lua
--- Custom server configuration for 'air'
-require("lspconfig.configs").air = {
-    default_config = {
-        cmd = { vim.fn.expand("$HOME/.local/bin/air"), "language-server" },
-        filetypes = { "r" },
-        root_dir = function(fname)
-            local git_dir = vim.fs.find(".git", { path = fname, upward = true })[1]
-            return git_dir and vim.fs.dirname(git_dir) or vim.loop.os_homedir()
-        end,
-        settings = {},
-    },
-}
+require("lspconfig").air.setup({})
 ```
 
 To enable automatic formatting on save, add the following to your `nvim/after/plugin/lsp.lua` (or other appropriate location):
