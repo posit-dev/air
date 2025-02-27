@@ -22,7 +22,7 @@ To configure Air's language server, add the following to your config:
 require("lspconfig").air.setup({})
 ```
 
-To enable automatic formatting on save, add the following to your `nvim/after/plugin/lsp.lua` (or other appropriate location):
+To format files with Air on save, add the following to your configuration:
 
 ```lua
 vim.api.nvim_create_autocmd("BufWritePre", {
