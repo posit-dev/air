@@ -42,21 +42,11 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 Air can be configured as a formatter plugin via [conform.nvim](https://github.com/stevearc/conform.nvim). This allows you to format R code with Air inside code chunks in Quarto and RMarkdown documents. It can be configured by adding the following to your `nvim/lua/plugins/conform.lua`:
 
 ```lua
-return {
-    "stevearc/conform.nvim",
-    enabled = true,
-    config = function()
-        local conform = require("conform")
-
-        conform.setup({
-            notify_on_error = true,
-            format_on_save = {
-                lsp_fallback = true,
-            },
-            formatters_by_ft = {
-                r = { "air" },
-            },
-        })
-    end,
-}
+require("conform").setup({
+    formatters_by_ft = {
+        r = { "air" },
+    },
+})
 ```
+
+See the [conform.nvim documentation](https://github.com/stevearc/conform.nvim?tab=readme-ov-file#installation) for more information on how to configure conform.nvim with your favorite plugin manager.
