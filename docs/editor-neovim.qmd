@@ -12,7 +12,7 @@ First, install Air by following the instructions on the [Air CLI documentation](
 
 # Configuration
 
-Air can be configured as a Language Server Protocol (LSP) client via [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig) or as a formatter plugin via [conform.nvim](https://github.com/stevearc/conform.nvim).
+Air can be configured as a Language Server Protocol (LSP) server via [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig) or as a formatter plugin via [conform.nvim](https://github.com/stevearc/conform.nvim).
 
 ## LSP Configuration with nvim-lspconfig
 
