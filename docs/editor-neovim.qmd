@@ -6,7 +6,7 @@ editor:
     canonical: true
 ---
 
-# Installing the air client
+# Installing the Air server
 
 First, install the Air client by following the instructions on the [Air CLI documentation](https://posit-dev.github.io/air/cli.html).
 
