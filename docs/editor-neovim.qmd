@@ -16,7 +16,7 @@ Air can be configured as a Language Server Protocol (LSP) server via [nvim-lspco
 
 ## LSP Configuration with nvim-lspconfig
 
-To configure Air's language server, add the following to your config:
+To configure the client side to use Air's language server, add the following to your config:
 
 ```lua
 require("lspconfig").air.setup({})
