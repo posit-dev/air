@@ -8,7 +8,7 @@ editor:
 
 # Installing the Air server
 
-First, install the Air client by following the instructions on the [Air CLI documentation](https://posit-dev.github.io/air/cli.html).
+First, install Air by following the instructions on the [Air CLI documentation](https://posit-dev.github.io/air/cli.html). The CLI binary bundles the Air server as well as a command line formatting tool.
 
 # Configuration
 
