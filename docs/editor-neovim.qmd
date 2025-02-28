@@ -22,6 +22,8 @@ To configure the client side to use Air's language server, add the following to 
 require("lspconfig").air.setup({})
 ```
 
+This is the recommended way to use Air. While the language server currently only supports formatting, it will gain more features in future.
+
 To format files with Air on save, add the following to your configuration:
 
 ```lua
