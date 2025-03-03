@@ -29,7 +29,7 @@ require("lspconfig").air.setup({
 })
 ```
 
-This ensures that Air automatically formats R code when you save a file.
+While not required, the `BufWritePre` command ensures that Air automatically formats your R code when you save a file.
 
 ## languageserver
 
