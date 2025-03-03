@@ -24,6 +24,7 @@ website:
         contents:
           - editor-rstudio.qmd
           - editor-vscode.qmd
+          - editor-neovim.qmd
 
       - text: "Configuration"
         href: configuration.qmd

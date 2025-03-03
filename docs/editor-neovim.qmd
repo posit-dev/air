@@ -1,0 +1,69 @@
+---
+title: "Neovim"
+editor:
+  markdown:
+    wrap: sentence
+    canonical: true
+---
+
+Air provides first class support for Neovim, which supports the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/).
+
+# Installation
+
+First, install the Air [command line tool](cli.qmd).
+
+We recommend configuring Air as an LSP server via [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig).
+While the Air language server currently only supports formatting, it will gain more features in future.
+Add the following to your `init.lua`:
+
+``` lua
+require("lspconfig").air.setup({
+    on_attach = function(_, bufnr)
+        vim.api.nvim_create_autocmd("BufWritePre", {
+            buffer = bufnr,
+            callback = function()
+                vim.lsp.buf.format()
+            end,
+        })
+    end,
+})
+```
+
+While not required, the `BufWritePre` command ensures that Air automatically formats your R code when you save a file.
+
+## languageserver
+
+If both Air and `languageserver` are installed, you can use the following configuration to disable `languageserver` formatting, ensuring that only Air handles formatting:
+
+``` lua
+require("lspconfig").r_language_server.setup({
+    on_attach = function(client, _)
+        client.server_capabilities.documentFormattingProvider = false
+        client.server_capabilities.documentRangeFormattingProvider = false
+    end,
+})
+```
+
+# Features
+
+## Format on save
+
+With the `BufWritePre` hook recommended in the configuration step, Air will format your R files on every save.
+
+<!--# Come back and add video -->
+
+## Quarto
+
+As an LSP, Air itself does not provide direct support for Quarto or RMarkdown documents.
+However, Air can additionally be configured as a formatter plugin for [conform.nvim](https://github.com/stevearc/conform.nvim), which supports ["injected language formatting"](https://github.com/stevearc/conform.nvim/blob/master/doc/advanced_topics.md#injected-language-formatting-code-blocks) for code blocks in Markdown, Quarto, and RMarkdown.
+Conform can be configured by adding the following to your `nvim/lua/plugins/conform.lua`:
+
+``` lua
+require("conform").setup({
+    formatters_by_ft = {
+        r = { "air" },
+    },
+})
+```
+
+See the [conform.nvim documentation](https://github.com/stevearc/conform.nvim?tab=readme-ov-file#installation) for more information on how to configure conform.nvim with your favorite plugin manager.
