@@ -21,14 +21,14 @@ curl -LsSf https://github.com/posit-dev/air/releases/latest/download/air-install
 On Windows:
 
 ```shell
-powershell -c "irm https://github.com/posit-dev/air/releases/latest/download/air-installer.ps1 | iex"
+powershell -ExecutionPolicy Bypass -c "irm https://github.com/posit-dev/air/releases/latest/download/air-installer.ps1 | iex"
 ```
 
 For a specific version:
 
 ```shell
 curl -LsSf https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.sh | sh
-powershell -c "irm https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.ps1 | iex"
+powershell -ExecutionPolicy Bypass -c "irm https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.ps1 | iex"
 ```
 
 The installer scripts will automatically add Air to your `PATH`. The very first time you install Air, you'll need to restart your shell for the `PATH` modifications to be applied.
