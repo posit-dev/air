@@ -8,7 +8,8 @@ editor:
 
 # Installing the Air server
 
-First, install Air by following the instructions on the [Air CLI documentation](https://posit-dev.github.io/air/cli.html). The CLI binary bundles the Air server as well as a command line formatting tool.
+First, install Air by following the instructions on the [Air CLI documentation](https://posit-dev.github.io/air/cli.html).
+The CLI binary bundles the Air server as well as a command line formatting tool.
 
 # Configuration
 
@@ -16,9 +17,10 @@ Air can be configured as a Language Server Protocol (LSP) server via [nvim-lspco
 
 ## LSP Configuration with nvim-lspconfig
 
-To configure the client side to use Air's language server, add the following to your configuration. This ensures that Air automatically formats R code when you save a file:
+To configure the client side to use Air's language server, add the following to your configuration.
+This ensures that Air automatically formats R code when you save a file:
 
-```lua
+``` lua
 require("lspconfig").air.setup({
     on_attach = function(_, bufnr)
         vim.api.nvim_create_autocmd("BufWritePre", {
@@ -31,11 +33,12 @@ require("lspconfig").air.setup({
 })
 ```
 
-This is the recommended way to use Air. While the language server currently only supports formatting, it will gain more features in future.
+This is the recommended way to use Air.
+While the language server currently only supports formatting, it will gain more features in future.
 
 If both `Air` and `languageserver` are installed, you can use the following configuration to disable languageserver formatting, ensuring that only Air handles formatting:
 
-```lua
+``` lua
 require("lspconfig").r_language_server.setup({
     on_attach = function(client, _)
         client.server_capabilities.documentFormattingProvider = false
@@ -46,9 +49,11 @@ require("lspconfig").r_language_server.setup({
 
 ## conform.nvim configuration
 
-Air can be configured as a formatter plugin via [conform.nvim](https://github.com/stevearc/conform.nvim). This allows you to format R code with Air inside code chunks in Quarto and RMarkdown documents. It can be configured by adding the following to your `nvim/lua/plugins/conform.lua`:
+Air can be configured as a formatter plugin via [conform.nvim](https://github.com/stevearc/conform.nvim).
+This allows you to format R code with Air inside code chunks in Quarto and RMarkdown documents.
+It can be configured by adding the following to your `nvim/lua/plugins/conform.lua`:
 
-```lua
+``` lua
 require("conform").setup({
     formatters_by_ft = {
         r = { "air" },

@@ -11,10 +11,10 @@ Many do, including [Positron](https://positron.posit.co/), [VS Code](https://cod
 Air also provides some support for code editors that allow for external formatters, such as [RStudio](https://posit.co/products/open-source/rstudio/).
 Follow one of our editor specific guides to get set up with Air in your preferred editor:
 
-- [VS Code](editor-vscode.qmd)
+-   [VS Code](editor-vscode.qmd)
 
-- [Positron](editor-vscode.qmd)
+-   [Positron](editor-vscode.qmd)
 
-- [RStudio](editor-rstudio.qmd)
+-   [RStudio](editor-rstudio.qmd)
 
-- [neovim](editor-neovim.qmd)
+-   [neovim](editor-neovim.qmd)
