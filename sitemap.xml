@@ -1,31 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://posit-dev.github.io/air/editor-vscode.html</loc>
-    <lastmod>2025-02-26T16:03:22.081Z</lastmod>
-  </url>
-  <url>
-    <loc>https://posit-dev.github.io/air/cli.html</loc>
-    <lastmod>2025-02-26T16:03:22.081Z</lastmod>
-  </url>
-  <url>
-    <loc>https://posit-dev.github.io/air/configuration.html</loc>
-    <lastmod>2025-02-26T16:03:22.081Z</lastmod>
-  </url>
-  <url>
-    <loc>https://posit-dev.github.io/air/index.html</loc>
-    <lastmod>2025-02-26T16:03:22.087Z</lastmod>
-  </url>
-  <url>
-    <loc>https://posit-dev.github.io/air/formatter.html</loc>
-    <lastmod>2025-02-26T16:03:22.081Z</lastmod>
-  </url>
-  <url>
-    <loc>https://posit-dev.github.io/air/editors.html</loc>
-    <lastmod>2025-02-26T16:03:22.081Z</lastmod>
+    <loc>https://posit-dev.github.io/air/editor-neovim.html</loc>
+    <lastmod>2025-03-03T22:17:24.898Z</lastmod>
   </url>
   <url>
     <loc>https://posit-dev.github.io/air/editor-rstudio.html</loc>
-    <lastmod>2025-02-26T16:03:22.081Z</lastmod>
+    <lastmod>2025-03-03T22:17:24.898Z</lastmod>
+  </url>
+  <url>
+    <loc>https://posit-dev.github.io/air/editors.html</loc>
+    <lastmod>2025-03-03T22:17:24.898Z</lastmod>
+  </url>
+  <url>
+    <loc>https://posit-dev.github.io/air/formatter.html</loc>
+    <lastmod>2025-03-03T22:17:24.898Z</lastmod>
+  </url>
+  <url>
+    <loc>https://posit-dev.github.io/air/index.html</loc>
+    <lastmod>2025-03-03T22:17:24.904Z</lastmod>
+  </url>
+  <url>
+    <loc>https://posit-dev.github.io/air/configuration.html</loc>
+    <lastmod>2025-03-03T22:17:24.898Z</lastmod>
+  </url>
+  <url>
+    <loc>https://posit-dev.github.io/air/cli.html</loc>
+    <lastmod>2025-03-03T22:17:24.897Z</lastmod>
+  </url>
+  <url>
+    <loc>https://posit-dev.github.io/air/editor-vscode.html</loc>
+    <lastmod>2025-03-03T22:17:24.898Z</lastmod>
   </url>
 </urlset>
