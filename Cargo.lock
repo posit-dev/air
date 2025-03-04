@@ -1380,6 +1380,7 @@ dependencies = [
  "line_ending",
  "lsp_test",
  "memchr",
+ "regex",
  "serde",
  "serde_json",
  "settings",
