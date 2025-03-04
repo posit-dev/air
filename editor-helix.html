@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>RStudio – Air</title>
+<title>Helix – Air</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +19,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -92,7 +126,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./editors.html">Editors</a></li><li class="breadcrumb-item"><a href="./editor-rstudio.html">RStudio</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./editors.html">Editors</a></li><li class="breadcrumb-item"><a href="./editor-helix.html">Helix</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -141,7 +175,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./editor-rstudio.html" class="sidebar-item-text sidebar-link active">
+  <a href="./editor-rstudio.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">RStudio</span></a>
   </div>
 </li>
@@ -159,7 +193,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./editor-helix.html" class="sidebar-item-text sidebar-link">
+  <a href="./editor-helix.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Helix</span></a>
   </div>
 </li>
@@ -183,11 +217,13 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#installation" id="toc-installation" class="nav-link active" data-scroll-target="#installation">Installation</a></li>
+  <li><a href="#installation" id="toc-installation" class="nav-link active" data-scroll-target="#installation">Installation</a>
+  <ul class="collapse">
+  <li><a href="#languageserver" id="toc-languageserver" class="nav-link" data-scroll-target="#languageserver"><code>languageserver</code></a></li>
+  </ul></li>
   <li><a href="#features" id="toc-features" class="nav-link" data-scroll-target="#features">Features</a>
   <ul class="collapse">
   <li><a href="#format-on-save" id="toc-format-on-save" class="nav-link" data-scroll-target="#format-on-save">Format on save</a></li>
-  <li><a href="#quarto" id="toc-quarto" class="nav-link" data-scroll-target="#quarto">Quarto</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -195,9 +231,9 @@ ul.task-list li input[type="checkbox"] {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./editors.html">Editors</a></li><li class="breadcrumb-item"><a href="./editor-rstudio.html">RStudio</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./editors.html">Editors</a></li><li class="breadcrumb-item"><a href="./editor-helix.html">Helix</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">RStudio</h1>
+<h1 class="title">Helix</h1>
 </div>
 
 
@@ -214,40 +250,48 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>RStudio does not support the <a href="https://microsoft.github.io/language-server-protocol/">Language Server Protocol</a>, but you can still use Air as an <em>external formatter</em>.</p>
+<p><a href="https://helix-editor.com/">Helix</a> is a modal editor with builtin support for the <a href="https://microsoft.github.io/language-server-protocol/">Language Server Protocol</a>.</p>
 <section id="installation" class="level1">
 <h1>Installation</h1>
-<p>Ensure you have at least RStudio version 2024.12.0, which you can download from <a href="https://posit.co/download/rstudio-desktop/">here</a>. Additionally, you’ll need to install the Air <a href="./cli.html">command line tool</a>.</p>
-<p>Open <code>Tools -&gt; Global Options -&gt; Code</code>, choose the <code>Formatting</code> tab at the top, and change the option to use an <code>External</code> formatter. Then set the <code>Reformat command</code> to <code>{path/to/air} format</code>.</p>
-<p>The easiest way to figure out <code>{path/to/air}</code> for yourself is to run <code>which air</code> from a Terminal on Unix, and <code>where air</code> from the Command Prompt on Windows.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="./images/rstudio-external-formatter.png" class="img-fluid quarto-figure quarto-figure-center figure-img" alt="Setting Air as an external formatter with Tools -> Global Options -> Code -> Formatting"></p>
-</figure>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
 </div>
+<div class="callout-title-container flex-fill">
+Air ≥0.4.1 is needed for proper Helix support.
+</div>
+</div>
+<div class="callout-body-container callout-body">
+
+</div>
+</div>
+<p>First, install the Air <a href="https://posit-dev.github.io/air/cli.html">command line tool</a>.</p>
+<p>Add the following to your Helix <a href="https://docs.helix-editor.com/languages.html">languages.toml</a>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[language-server.air]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">command</span> <span class="op">=</span> <span class="st">"air"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">args</span> <span class="op">=</span> <span class="op">[</span><span class="st">"language-server"</span><span class="op">]</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[[language]]</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"r"</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="dt">language-servers</span> <span class="op">=</span> <span class="op">[</span><span class="st">"air"</span><span class="op">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="languageserver" class="level2">
+<h2 class="anchored" data-anchor-id="languageserver"><code>languageserver</code></h2>
+<p>Currently, Air only supports formatting. It’s possible to use Air and <a href="https://github.com/REditorSupport/languageserver"><code>languageserver</code></a> simultaneously for a better editing experience. Use the following configuration to enable both language servers (make sure that the <code>languageserver</code> R package is installed, Helix is able to use it without any additional configuration).</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[[language]]</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"r"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">language-servers</span> <span class="op">=</span> <span class="op">[</span><span class="st">"air"</span><span class="op">,</span> <span class="st">"r"</span><span class="op">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
 </section>
 <section id="features" class="level1">
 <h1>Features</h1>
 <section id="format-on-save" class="level2">
 <h2 class="anchored" data-anchor-id="format-on-save">Format on save</h2>
-<p>After you’ve set Air as an external formatter, you can either tell RStudio to format all documents on save, or set this on a per document basis.</p>
-<p>To format all documents on save, open <code>Tools -&gt; Global Options -&gt; Code -&gt; Saving</code> and check <code>Reformat documents on save</code>.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="images/rstudio-format-on-save.png" class="img-fluid quarto-figure quarto-figure-center figure-img" alt="Setting RStudio to format all documents on save in Tools -> Global Options -> Code -> Saving"></p>
-</figure>
-</div>
-<p>To format individual documents on save, open the file specific settings and check <code>Reformat Document on Save</code>.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="images/rstudio-reformat-document-on-save.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
-</figure>
-</div>
-<!--# Come back and add video of formatting in action -->
-</section>
-<section id="quarto" class="level2">
-<h2 class="anchored" data-anchor-id="quarto">Quarto</h2>
-<p>There is currently no way to use Air in RStudio with Quarto documents.</p>
+<p>Add <code>auto-format = true</code> to your R language configuration block to enable formatting on save.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[[language]]</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"r"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">language-servers</span> <span class="op">=</span> <span class="op">[</span><span class="st">"air"</span><span class="op">]</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="dt">auto-format</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 </section>

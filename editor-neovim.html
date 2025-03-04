@@ -191,6 +191,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">Neovim</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./editor-helix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Helix</span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item">
@@ -213,7 +219,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#installation" id="toc-installation" class="nav-link active" data-scroll-target="#installation">Installation</a>
   <ul class="collapse">
-  <li><a href="#languageserver" id="toc-languageserver" class="nav-link" data-scroll-target="#languageserver">languageserver</a></li>
+  <li><a href="#languageserver" id="toc-languageserver" class="nav-link" data-scroll-target="#languageserver"><code>languageserver</code></a></li>
   </ul></li>
   <li><a href="#features" id="toc-features" class="nav-link" data-scroll-target="#features">Features</a>
   <ul class="collapse">
@@ -262,7 +268,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="op">})</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>While not required, the <code>BufWritePre</code> command ensures that Air automatically formats your R code when you save a file.</p>
 <section id="languageserver" class="level2">
-<h2 class="anchored" data-anchor-id="languageserver">languageserver</h2>
+<h2 class="anchored" data-anchor-id="languageserver"><code>languageserver</code></h2>
 <p>If both Air and <code>languageserver</code> are installed, you can use the following configuration to disable <code>languageserver</code> formatting, ensuring that only Air handles formatting:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode lua code-with-copy"><code class="sourceCode lua"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span><span class="op">(</span><span class="st">"lspconfig"</span><span class="op">).</span><span class="va">r_language_server</span><span class="op">.</span>setup<span class="op">({</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">on_attach</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">client</span><span class="op">,</span> <span class="cn">_</span><span class="op">)</span></span>
