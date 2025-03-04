@@ -31,7 +31,7 @@ require("lspconfig").air.setup({
 
 While not required, the `BufWritePre` command ensures that Air automatically formats your R code when you save a file.
 
-## languageserver
+## `languageserver`
 
 If both Air and `languageserver` are installed, you can use the following configuration to disable `languageserver` formatting, ensuring that only Air handles formatting:
 
