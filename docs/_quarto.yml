@@ -25,6 +25,7 @@ website:
           - editor-rstudio.qmd
           - editor-vscode.qmd
           - editor-neovim.qmd
+          - editor-helix.qmd
 
       - text: "Configuration"
         href: configuration.qmd
