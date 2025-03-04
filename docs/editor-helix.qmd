@@ -7,14 +7,16 @@ editor:
 ---
 
 [Helix](https://helix-editor.com/) is a modal editor with builtin support for the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/).
-Adding support for new language servers is relatively easy via a .toml configuration file.
 
 # Installation
 
-First, install the Air [command line tool](https://posit-dev.github.io/air/cli.html).
-Version `≥0.4.1` of Air is needed for proper Helix support ([#246](https://github.com/posit-dev/air/issues/246)).
+::: callout-note
+## Air ≥0.4.1 is needed for proper Helix support.
+:::
 
-Add the following to your `languages.toml` file:
+First, install the Air [command line tool](https://posit-dev.github.io/air/cli.html).
+
+Add the following to your Helix [languages.toml](https://docs.helix-editor.com/languages.html):
 
 ``` toml
 [language-server.air]
@@ -28,9 +30,9 @@ language-servers = ["air"]
 
 ## `languageserver`
 
-Currently Air only supports formatting.
+Currently, Air only supports formatting.
 It's possible to use Air and [`languageserver`](https://github.com/REditorSupport/languageserver) simultaneously for a better editing experience.
-Use the following configuration to enable both language servers (make sure that `languageserver` is installed, Helix is able to use it without any additional configuration).
+Use the following configuration to enable both language servers (make sure that the `languageserver` R package is installed, Helix is able to use it without any additional configuration).
 
 ``` toml
 [[language]]
@@ -42,7 +44,7 @@ language-servers = ["air", "r"]
 
 ## Format on save
 
-Add `auto-format = true` to your R language configuration block.
+Add `auto-format = true` to your R language configuration block to enable formatting on save.
 
 ``` toml
 [[language]]
