@@ -6,11 +6,13 @@ editor:
     canonical: true
 ---
 
-[Helix](https://helix-editor.com/) is a modal editor with builtin support for the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/). Adding support for new language servers is relatively easy via a .toml configuration file. 
+[Helix](https://helix-editor.com/) is a modal editor with builtin support for the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/).
+Adding support for new language servers is relatively easy via a .toml configuration file.
 
 # Installation
 
-First, install the Air [command line tool](https://posit-dev.github.io/air/cli.html). Version `≥0.4.1` of Air is needed for proper Helix support ([#246](https://github.com/posit-dev/air/issues/246)). 
+First, install the Air [command line tool](https://posit-dev.github.io/air/cli.html).
+Version `≥0.4.1` of Air is needed for proper Helix support ([#246](https://github.com/posit-dev/air/issues/246)).
 
 Add the following to your `languages.toml` file:
 
@@ -26,7 +28,10 @@ language-servers = ["air"]
 
 ## `languageserver`
 
-Currently Air only supports formatting. It's possible to use Air and [`languageserver`](https://github.com/REditorSupport/languageserver) simultaneously for a better editing experience. Use the following configuration to enable both language servers (make sure that `languageserver` is installed, Helix is able to use it without any additional configuration).
+Currently Air only supports formatting.
+It's possible to use Air and [`languageserver`](https://github.com/REditorSupport/languageserver) simultaneously for a better editing experience.
+Use the following configuration to enable both language servers (make sure that `languageserver` is installed, Helix is able to use it without any additional configuration).
+
 ``` toml
 [[language]]
 name = "r"
@@ -39,7 +44,7 @@ language-servers = ["air", "r"]
 
 Add `auto-format = true` to your R language configuration block.
 
-```toml 
+``` toml
 [[language]]
 name = "r"
 language-servers = ["air"]
