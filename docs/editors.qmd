@@ -18,3 +18,5 @@ Follow one of our editor specific guides to get set up with Air in your preferre
 -   [RStudio](editor-rstudio.qmd)
 
 -   [Neovim](editor-neovim.qmd)
+
+-   [Helix](editor-helix.qmd)
