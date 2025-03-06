@@ -241,3 +241,22 @@ The complete list of default exclude patterns is:
 -   `RcppExports.R`
 -   `extendr-wrappers.R`
 -   `import-standalone-*.R`
+
+### skip {#configuration-skip}
+
+The set of function names to skip formatting for, even without a `# fmt: skip` comment.
+
+A list of strings, i.e. `skip = ["tribble", "graph_from_literal"]`.
+
+Air typically formats every function call it comes across.
+To skip formatting of a single function call, you can use a `# fmt: skip` comment.
+However, if you know of particular functions that you use a lot that are part of a custom domain specific language that doesn't follow conventional formatting rules, you can entirely opt out of formatting for those functions by providing them here.
+
+For example, using `skip = ["graph_from_literal"]` would automatically skip formatting of:
+
+``` r
+igraph::graph_from_literal(A +-+ B +---+ C ++ D + E)
+```
+
+In the short term, we also anticipate that this will be useful to avoid formatting of `tibble::tribble()` calls.
+In the long term, Air may have more sophisticated features for automatically formatting using a specified alignment.
