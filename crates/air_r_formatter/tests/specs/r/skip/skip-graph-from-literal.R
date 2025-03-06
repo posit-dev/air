@@ -1,0 +1,21 @@
+#' [format]
+#' skip = ["graph_from_literal"]
+
+# Skips formatting
+graph_from_literal(A +-+ B +---+ C ++ D + E)
+
+# Line length does not get respected!
+graph_from_literal(A +-+ B +---+ C ++ D + E + SomeOtherLongThing + ThatOneAsWellThatIsLong)
+
+# Stays expanded
+graph_from_literal(
+    A +-+ B +---+ C ++ D + E
+)
+
+# Nothing protects the user from doing this, but that's what they signed up for
+graph_from_literal(A
++-+
+B
++---+
+C ++ D + E
+)

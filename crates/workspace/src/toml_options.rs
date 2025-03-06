@@ -17,6 +17,7 @@ use settings::IndentStyle;
 use settings::IndentWidth;
 use settings::LineWidth;
 use settings::PersistentLineBreaks;
+use settings::Skip;
 
 /// The Rust representation of `air.toml`
 ///
@@ -162,6 +163,24 @@ pub struct FormatTomlOptions {
     /// - `extendr-wrappers.R`
     /// - `import-standalone-*.R`
     pub default_exclude: Option<bool>,
+
+    /// Air typically formats every function call it comes across. To skip formatting of
+    /// a single one-off function call, you can use a `# fmt: skip` comment. However, if
+    /// you know of particular functions that you use a lot that are part of a custom
+    /// domain specific language that doesn't follow conventional formatting rules, you
+    /// can entirely opt out of formatting for those functions by providing them here.
+    ///
+    /// For example, using `skip = ["graph_from_literal"]` would automatically skip
+    /// formatting of:
+    ///
+    /// ```r
+    /// igraph::graph_from_literal(Alice +--+ Bob)
+    /// ```
+    ///
+    /// In the short term, we also anticipate that this will be useful to avoid formatting
+    /// of `tibble::tribble()` calls. In the long term, we may have more sophisticated
+    /// features for automatically formatting using a specified alignment.
+    pub skip: Option<Skip>,
 }
 
 impl TomlOptions {
@@ -198,6 +217,7 @@ impl TomlOptions {
             // Theoretically could be for consistency, but there aren't any motivating use
             // cases right now.
             default_include: Some(DefaultIncludePatterns::default()),
+            skip: format.skip,
         };
 
         Ok(Settings { format })

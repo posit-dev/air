@@ -207,9 +207,9 @@ where
 
     fn fmt_fields(&self, node: &N, f: &mut RFormatter) -> FormatResult<()>;
 
-    /// Returns `true` if the node has a suppression comment and should use the same formatting as in the source document.
+    /// Returns `true` if the node is suppressed and should use the same formatting as in the source document.
     fn is_suppressed(&self, node: &N, f: &RFormatter) -> bool {
-        f.context().comments().is_suppressed(node.syntax())
+        is_suppressed_by_comment(node, f)
     }
 
     /// Formats a suppressed node
@@ -248,6 +248,17 @@ where
     fn fmt_trailing_comments(&self, node: &N, f: &mut RFormatter) -> FormatResult<()> {
         format_trailing_comments(node.syntax()).fmt(f)
     }
+}
+
+/// Returns `true` if the node has a suppression comment and should use the same formatting as in the source document.
+///
+/// Calls [biome_formatter::comments::Comments::mark_suppression_checked] on `node`.
+#[inline]
+pub(crate) fn is_suppressed_by_comment<N>(node: &N, f: &RFormatter) -> bool
+where
+    N: AstNode<Language = RLanguage>,
+{
+    f.context().comments().is_suppressed(node.syntax())
 }
 
 /// Rule for formatting an bogus node.
