@@ -732,6 +732,73 @@ default-exclude = false
     }
 
     #[tokio::test]
+    async fn test_format_skip_functions() {
+        let as_file_url = |path: &Path| format!("file:///{path}", path = path.display());
+
+        let mut client = new_test_client().await;
+
+        // Create a tempdir that will serve as our workspace
+        let tempdir = tempfile::TempDir::new().unwrap();
+        let tempdir = tempdir.path();
+
+        // Note that `graph_from_literal()` is formatted by default
+        let input = r#"
+igraph::graph_from_literal(Alice +--+ Jerry)
+1+1
+"#
+        .trim_start();
+        let output = r#"
+igraph::graph_from_literal(Alice + --+Jerry)
+1 + 1
+"#
+        .trim_start();
+        let url = as_file_url(tempdir.join("test.R").as_path());
+        let filename = FileName::Url(url);
+        let doc = Document::new(input.to_string(), Some(0), PositionEncoding::Utf8);
+        let result = client.format_document(&doc, filename).await;
+        assert_eq!(result, output);
+
+        // Write the `air.toml` to disk inside the workspace so the server can discover it
+        let air_path = tempdir.join("air.toml");
+        let air_contents = r#"
+[format]
+skip = ["graph_from_literal"]
+"#;
+        std::fs::write(&air_path, air_contents).unwrap();
+
+        // Open the tempdir as the workspace, the server will load in the `air.toml`
+        let workspace_folder = WorkspaceFolder {
+            uri: Url::parse(&as_file_url(tempdir)).unwrap(),
+            name: "workspace".to_string(),
+        };
+        client
+            .did_change_workspace_folders(DidChangeWorkspaceFoldersParams {
+                event: WorkspaceFoldersChangeEvent {
+                    added: vec![workspace_folder],
+                    removed: vec![],
+                },
+            })
+            .await;
+
+        // Now `graph_from_literal()` should be skipped, but `1+1` is still formatted
+        let input = r#"
+igraph::graph_from_literal(Alice +--+ Jerry)
+1+1
+"#
+        .trim_start();
+        let output = r#"
+igraph::graph_from_literal(Alice +--+ Jerry)
+1 + 1
+"#
+        .trim_start();
+        let url = as_file_url(tempdir.join("test.R").as_path());
+        let filename = FileName::Url(url);
+        let doc = Document::new(input.to_string(), Some(0), PositionEncoding::Utf8);
+        let result = client.format_document(&doc, filename).await;
+        assert_eq!(result, output);
+    }
+
+    #[tokio::test]
     async fn test_files_outside_the_workspace_dont_get_workspace_settings() {
         // https://github.com/posit-dev/air/issues/294
 

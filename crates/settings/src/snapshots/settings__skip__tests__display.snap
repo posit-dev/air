@@ -1,0 +1,5 @@
+---
+source: crates/settings/src/skip.rs
+expression: options.skip.unwrap()
+---
+my_function, my_other_function
