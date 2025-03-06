@@ -1,0 +1,9 @@
+---
+source: crates/settings/src/skip.rs
+expression: error
+---
+TOML parse error at line 2, column 8
+  |
+2 | skip = 400
+  |        ^^^
+invalid type: integer `400`, expected a sequence

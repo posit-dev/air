@@ -14,6 +14,7 @@ use settings::IndentWidth;
 use settings::LineEnding;
 use settings::LineWidth;
 use settings::PersistentLineBreaks;
+use settings::Skip;
 
 use crate::comments::FormatRLeadingComment;
 use crate::comments::RCommentStyle;
@@ -81,6 +82,9 @@ pub struct RFormatOptions {
 
     /// The behavior of persistent line breaks.
     persistent_line_breaks: PersistentLineBreaks,
+
+    /// The set of functions that are skipped without requiring a `# fmt: skip` comment.
+    skip: Option<Skip>,
 }
 
 impl RFormatOptions {
@@ -118,6 +122,11 @@ impl RFormatOptions {
         self
     }
 
+    pub fn with_skip(mut self, skip: Option<Skip>) -> Self {
+        self.skip = skip;
+        self
+    }
+
     pub fn set_indent_style(&mut self, indent_style: IndentStyle) {
         self.indent_style = indent_style;
     }
@@ -138,8 +147,16 @@ impl RFormatOptions {
         self.persistent_line_breaks = persistent_line_breaks;
     }
 
+    pub fn set_skip(&mut self, skip: Option<Skip>) {
+        self.skip = skip;
+    }
+
     pub fn persistent_line_breaks(&self) -> PersistentLineBreaks {
         self.persistent_line_breaks
+    }
+
+    pub fn skip(&self) -> Option<&Skip> {
+        self.skip.as_ref()
     }
 }
 
