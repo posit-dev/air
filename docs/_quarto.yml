@@ -3,6 +3,9 @@ project:
 
 website:
   title: "Air"
+  repo-url: https://github.com/posit-dev/air/
+  repo-subdir: docs
+  repo-actions: [edit, source, issue]
   navbar:
     background: primary
     search: true
