@@ -1,0 +1,54 @@
+---
+title: "Helix"
+editor:
+  markdown:
+    wrap: sentence
+    canonical: true
+---
+
+[Helix](https://helix-editor.com/) is a modal editor with builtin support for the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/).
+
+# Installation
+
+::: callout-note
+## Air ≥0.4.1 is needed for proper Helix support.
+:::
+
+First, install the Air [command line tool](https://posit-dev.github.io/air/cli.html).
+
+Add the following to your Helix [languages.toml](https://docs.helix-editor.com/languages.html):
+
+``` toml
+[language-server.air]
+command = "air"
+args = ["language-server"]
+
+[[language]]
+name = "r"
+language-servers = ["air"]
+```
+
+## `languageserver`
+
+Currently, Air only supports formatting.
+It's possible to use Air and [`languageserver`](https://github.com/REditorSupport/languageserver) simultaneously for a better editing experience.
+Use the following configuration to enable both language servers (make sure that the `languageserver` R package is installed, Helix is able to use it without any additional configuration).
+
+``` toml
+[[language]]
+name = "r"
+language-servers = ["air", "r"]
+```
+
+# Features
+
+## Format on save
+
+Add `auto-format = true` to your R language configuration block to enable formatting on save.
+
+``` toml
+[[language]]
+name = "r"
+language-servers = ["air"]
+auto-format = true
+```

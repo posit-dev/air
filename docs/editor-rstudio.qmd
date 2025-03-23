@@ -13,8 +13,8 @@ RStudio does not support the [Language Server Protocol](https://microsoft.github
 Ensure you have at least RStudio version 2024.12.0, which you can download from [here](https://posit.co/download/rstudio-desktop/).
 Additionally, you'll need to install the Air [command line tool](cli.qmd).
 
-Open `Tools -> Global Options -> Code` and change the option to use an `External` formatter.
-Then set the `Reformat command` to {`path/to/air} format`.
+Open `Tools -> Global Options -> Code`, choose the `Formatting` tab at the top, and change the option to use an `External` formatter.
+Then set the `Reformat command` to `{path/to/air} format`.
 
 The easiest way to figure out `{path/to/air}` for yourself is to run `which air` from a Terminal on Unix, and `where air` from the Command Prompt on Windows.
 
