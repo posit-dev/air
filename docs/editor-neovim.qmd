@@ -10,7 +10,8 @@ Air provides first class support for Neovim, which supports the [Language Server
 
 # Installation
 
-First, install the Air [command line tool](cli.qmd).
+First you should ensure you have an appropriate Air binary which Neovim can locate.
+You can achieve this using a package manager such as [mason.nvim](https://github.com/williamboman/mason.nvim), e.g. with `:MasonInstall air`, or by [manually installing](cli.qmd) Air as a standalone command line tool.
 
 We recommend configuring Air as an LSP server via [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig).
 While the Air language server currently only supports formatting, it will gain more features in future.
