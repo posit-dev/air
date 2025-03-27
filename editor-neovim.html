@@ -254,7 +254,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Air provides first class support for Neovim, which supports the <a href="https://microsoft.github.io/language-server-protocol/">Language Server Protocol</a>.</p>
 <section id="installation" class="level1">
 <h1>Installation</h1>
-<p>First, install the Air <a href="./cli.html">command line tool</a>.</p>
+<p>First you should ensure you have an appropriate Air binary which Neovim can locate. You can achieve this using a package manager such as <a href="https://github.com/williamboman/mason.nvim">mason.nvim</a>, e.g.&nbsp;with <code>:MasonInstall air</code>, or by <a href="./cli.html">manually installing</a> Air as a standalone command line tool.</p>
 <p>We recommend configuring Air as an LSP server via <a href="https://github.com/neovim/nvim-lspconfig">nvim-lspconfig</a>. While the Air language server currently only supports formatting, it will gain more features in future. Add the following to your <code>init.lua</code>:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode lua code-with-copy"><code class="sourceCode lua"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span><span class="op">(</span><span class="st">"lspconfig"</span><span class="op">).</span><span class="va">air</span><span class="op">.</span>setup<span class="op">({</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">on_attach</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="cn">_</span><span class="op">,</span> <span class="va">bufnr</span><span class="op">)</span></span>
