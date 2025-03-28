@@ -20,6 +20,7 @@ use settings::IndentStyle;
 use settings::IndentWidth;
 use settings::LineWidth;
 use settings::PersistentLineBreaks;
+use settings::Skip;
 
 /// Resolved configuration settings used within air
 ///
@@ -41,6 +42,7 @@ pub struct FormatSettings {
     pub exclude: Option<ExcludePatterns>,
     pub default_exclude: Option<DefaultExcludePatterns>,
     pub default_include: Option<DefaultIncludePatterns>,
+    pub skip: Option<Skip>,
 }
 
 impl Default for FormatSettings {
@@ -58,12 +60,13 @@ impl Default for FormatSettings {
             exclude: Default::default(),
             default_exclude: Some(Default::default()),
             default_include: Some(Default::default()),
+            skip: Default::default(),
         }
     }
 }
 
 impl FormatSettings {
-    // Finalize `RFormatOptions` in preparation for a formatting operation on `source`
+    /// Finalize `RFormatOptions` in preparation for a formatting operation on `source`
     pub fn to_format_options(&self, source: &str) -> RFormatOptions {
         RFormatOptions::new()
             .with_indent_style(self.indent_style)
@@ -71,5 +74,7 @@ impl FormatSettings {
             .with_line_ending(self.line_ending.finalize(source))
             .with_line_width(self.line_width)
             .with_persistent_line_breaks(self.persistent_line_breaks)
+            // Note that `clone()` here is on an `Arc`
+            .with_skip(self.skip.clone())
     }
 }
