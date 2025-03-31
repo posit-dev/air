@@ -27,6 +27,8 @@
 	"icon": "air.png",
 	"activationEvents": [
 		"onLanguage:r",
+        "workspaceContains:*.r",
+		"workspaceContains:*.R",
 		"workspaceContains:air.toml",
 		"workspaceContains:.air.toml",
 		"workspaceContains:DESCRIPTION",
