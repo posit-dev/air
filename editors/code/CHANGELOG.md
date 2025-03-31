@@ -7,7 +7,7 @@
 
 ## Development version
 
-- The extension now activates automatically when an `air.toml`, `DESCRIPTION`, or `.Rproj` file is detected at the workspace root. Previously, the extension only activated after an R file was opened (#285).
+- The extension now activates automatically when an `air.toml`, `DESCRIPTION`, or `.Rproj` file is detected at the workspace root. Previously, the extension only activated after an R file was opened or when an R file was detected at the workspace root level (but not recursively within any subfolder) (#285).
 
 
 ## 0.8.0
