@@ -42,6 +42,13 @@ install-path = ["$XDG_BIN_HOME/", "$XDG_DATA_HOME/../bin", "~/.local/bin"]
 # Whether to install an updater program
 install-updater = false
 
+[dist.github-custom-runners]
+# Use an `ubuntu-latest` runner for all "global" steps of the release process,
+# rather than cargo-dist's default of using the oldest possible Linux runner.
+# This includes `plan`, `build-global-artifacts`, `host`, and `announce`, none
+# of which actually rely on the specific Linux version.
+global = "ubuntu-latest"
+
 [dist.github-custom-runners.aarch64-apple-darwin]
 # Use ARM Mac runner to build ARM binary (not strictly required, but nice).
 # dist uses `macos-13` (Intel) by default and cross-compiles to ARM.
