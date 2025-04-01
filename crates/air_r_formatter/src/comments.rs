@@ -121,7 +121,7 @@ fn handle_while_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacemen
         // ```
         if comment
             .following_token()
-            .map_or(false, |token| token.kind() == RSyntaxKind::R_PAREN)
+            .is_some_and(|token| token.kind() == RSyntaxKind::R_PAREN)
         {
             return CommentPlacement::trailing(preceding.clone(), comment);
         }
@@ -209,7 +209,7 @@ fn handle_if_statement_comment(
                 // ```
                 if comment
                     .following_token()
-                    .map_or(false, |token| token.kind() == RSyntaxKind::R_PAREN)
+                    .is_some_and(|token| token.kind() == RSyntaxKind::R_PAREN)
                 {
                     return CommentPlacement::trailing(preceding.clone(), comment);
                 }

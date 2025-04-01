@@ -10,7 +10,7 @@ homepage = "https://github.com/posit-dev/air"
 keywords = ["parser", "formatter"]
 license = "MIT"
 repository = "https://github.com/posit-dev/air"
-rust-version = "1.83"
+rust-version = "1.85"
 
 [profile.release-with-debug]
 debug = true

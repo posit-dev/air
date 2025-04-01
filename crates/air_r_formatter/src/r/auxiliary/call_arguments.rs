@@ -456,9 +456,9 @@ impl Format<RFormatContext> for RCallLikeArguments {
         // a leading hole if there isn't a comment attached.
         let leading_holes: Vec<_> = iter_elements
             .take_while_ref(|element| {
-                element.node().map_or(false, |node| {
-                    node.is_hole() && !comments.has_comments(node.syntax())
-                })
+                element
+                    .node()
+                    .is_ok_and(|node| node.is_hole() && !comments.has_comments(node.syntax()))
             })
             .map(FormatCallArgumentHole::new)
             .collect();
@@ -617,7 +617,7 @@ fn has_persistent_line_break(
     // Does the first non-hole argument have leading lines?
     if arguments
         .first()
-        .map_or(false, |argument| argument.leading_lines() > 0)
+        .is_some_and(|argument| argument.leading_lines() > 0)
     {
         return true;
     }
