@@ -685,5 +685,5 @@ fn has_persistent_line_break(tail: &[TailPiece], options: &RFormatOptions) -> bo
     }
 
     tail.first()
-        .map_or(false, |piece| piece.right.syntax().has_leading_newline())
+        .is_some_and(|piece| piece.right.syntax().has_leading_newline())
 }

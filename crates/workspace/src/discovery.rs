@@ -215,7 +215,7 @@ impl ignore::ParallelVisitor for FilesVisitor<'_, '_> {
 
         // An entry is explicit if it was provided directly, not discovered by looking into a directory
         let is_explicit = entry.depth() == 0;
-        let is_directory = entry.file_type().map_or(true, |ft| ft.is_dir());
+        let is_directory = entry.file_type().is_none_or(|ft| ft.is_dir());
 
         if is_explicit && !is_directory {
             // Accept explicitly provided files, regardless of exclusion/inclusion

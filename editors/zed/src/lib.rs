@@ -67,7 +67,7 @@ impl AirExtension {
         // (I'm not sure if this is cached across Zed sessions, or just within a single
         // Zed session when the server restarts)
         if let Some(path) = &self.cached_binary_path {
-            if fs::metadata(path).map_or(false, |stat| stat.is_file()) {
+            if fs::metadata(path).is_ok_and(|stat| stat.is_file()) {
                 return Ok(AirBinary {
                     path: path.clone(),
                     args: binary_args,
@@ -102,9 +102,7 @@ impl AirExtension {
                 )
             })?;
 
-        if !fs::metadata(&release_details.downloaded_binary_path)
-            .map_or(false, |stat| stat.is_file())
-        {
+        if !fs::metadata(&release_details.downloaded_binary_path).is_ok_and(|stat| stat.is_file()) {
             zed::set_language_server_installation_status(
                 language_server_id,
                 &zed::LanguageServerInstallationStatus::Downloading,
