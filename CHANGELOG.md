@@ -2,6 +2,9 @@
 
 # Development version
 
+- Fixed an issue where `air.toml` settings were not being applied to the correct R files (#294).
+
+
 # 0.4.1
 
 - Language server configuration variables are now fully optional, avoiding issues in editors like Zed or Helix (#246).
