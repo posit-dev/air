@@ -139,7 +139,12 @@ impl WorkspaceSettingsResolver {
         // `{workspace_path}/untitled` to provide relevant settings for this workspace.
         if url.scheme() == "untitled" && self.path_to_settings_resolver.len() == 1 {
             tracing::trace!("Using workspace settings for 'untitled' URL: {url}");
-            let workspace_path = self.path_to_settings_resolver.keys().next().unwrap();
+            let workspace_path = self
+                .path_to_settings_resolver
+                .items()
+                .first()
+                .unwrap()
+                .path();
             let path = workspace_path.join("untitled");
             return self.settings_for_path(&path);
         }
@@ -177,11 +182,17 @@ impl WorkspaceSettingsResolver {
 
         let mut changed = false;
 
-        for (workspace_path, settings_resolver) in self.path_to_settings_resolver.matches_mut(&path)
-        {
-            tracing::trace!("Reloading workspace settings: {}", workspace_path.display());
+        for workspace_match in self.path_to_settings_resolver.matches_mut(&path) {
+            // Clear existing settings up front, regardless of what happens when reloading.
+            // Done in a tight scope to avoid simultaneous mutable and immutable borrows.
+            {
+                let workspace_settings_resolver = workspace_match.value_mut();
+                workspace_settings_resolver.clear();
+            }
 
-            settings_resolver.clear();
+            let workspace_path = workspace_match.path();
+
+            tracing::trace!("Reloading workspace settings: {}", workspace_path.display());
 
             let discovered_settings = match discover_settings(&[workspace_path]) {
                 Ok(discovered_settings) => discovered_settings,
@@ -192,13 +203,16 @@ impl WorkspaceSettingsResolver {
                 }
             };
 
+            // Now add in all rediscovered settings
+            let workspace_settings_resolver = workspace_match.value_mut();
+
             for DiscoveredSettings {
                 directory,
                 settings,
             } in discovered_settings
             {
                 changed = true;
-                settings_resolver.add(&directory, settings);
+                workspace_settings_resolver.add(&directory, settings);
             }
         }
 
