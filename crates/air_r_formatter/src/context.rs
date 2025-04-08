@@ -198,6 +198,14 @@ impl fmt::Display for RFormatOptions {
         writeln!(f, "Indent width: {}", self.indent_width.value())?;
         writeln!(f, "Line ending: {}", self.line_ending)?;
         writeln!(f, "Line width: {}", self.line_width.value())?;
-        writeln!(f, "Persistent line breaks: {}", self.persistent_line_breaks)
+        writeln!(f, "Persistent line breaks: {}", self.persistent_line_breaks)?;
+        writeln!(
+            f,
+            "Skip: {}",
+            match &self.skip {
+                Some(skip) => format!("{skip}"),
+                None => String::from("None"),
+            }
+        )
     }
 }
