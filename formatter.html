@@ -220,7 +220,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#whats-a-formatter" id="toc-whats-a-formatter" class="nav-link active" data-scroll-target="#whats-a-formatter">What’s a formatter?</a></li>
   <li><a href="#how-does-a-formatter-help-your-workflow" id="toc-how-does-a-formatter-help-your-workflow" class="nav-link" data-scroll-target="#how-does-a-formatter-help-your-workflow">How does a formatter help your workflow?</a></li>
   <li><a href="#how-does-air-decide-how-to-format-your-code" id="toc-how-does-air-decide-how-to-format-your-code" class="nav-link" data-scroll-target="#how-does-air-decide-how-to-format-your-code">How does Air decide how to format your code?</a></li>
-  <li><a href="#disabling-formatting" id="toc-disabling-formatting" class="nav-link" data-scroll-target="#disabling-formatting">Disabling formatting</a></li>
+  <li><a href="#disabling-formatting" id="toc-disabling-formatting" class="nav-link" data-scroll-target="#disabling-formatting">Disabling formatting</a>
+  <ul class="collapse">
+  <li><a href="#skip-comments" id="toc-skip-comments" class="nav-link" data-scroll-target="#skip-comments">Skip comments</a></li>
+  <li><a href="#skip-configuration" id="toc-skip-configuration" class="nav-link" data-scroll-target="#skip-configuration">Skip configuration</a></li>
+  </ul></li>
   <li><a href="#when-does-a-formatter-run" id="toc-when-does-a-formatter-run" class="nav-link" data-scroll-target="#when-does-a-formatter-run">When does a formatter run?</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/formatter.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -335,6 +339,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="disabling-formatting" class="level1">
 <h1>Disabling formatting</h1>
+<section id="skip-comments" class="level2">
+<h2 class="anchored" data-anchor-id="skip-comments">Skip comments</h2>
 <p>Air supports two special comments to disable formatting, <code># fmt: skip</code> and <code># fmt: skip file</code>.</p>
 <p><code># fmt: skip</code> skips formatting for the following syntax node (including all of its children).</p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># This skips formatting for `list()` and its arguments, retaining the manual alignment</span></span>
@@ -350,7 +356,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="fu">tribble</span>(</span>
 <span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="sc">~</span>x, <span class="sc">~</span>y,</span>
 <span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>   <span class="dv">1</span>,  <span class="dv">2</span>,</span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="co"># This skips formatting for `graph_from_literal()` and its arguments,</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a><span class="co"># retaining the formatting of the domain specific language</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="co"># fmt: skip</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>igraph<span class="sc">::</span><span class="fu">graph_from_literal</span>(Alice <span class="sc">+--+</span> Bob)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><code># fmt: skip file</code> skips the entire file. This must be placed at the top of the file before the first non-comment R code, otherwise the comment is ignored. This is useful for generated files, or as an alternative to <code>exclude</code> for individual files that you know you’d like to exclude from formatting.</p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># This is a generated file. Don't modify by hand!</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co"># fmt: skip file</span></span>
@@ -366,6 +377,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>For generated files we also support the convention of a comment starting with <code>Generated by</code> at the top of the file:</p>
 <pre><code># Generated by myPackage: don't modify by hand</code></pre>
+</section>
+<section id="skip-configuration" class="level2">
+<h2 class="anchored" data-anchor-id="skip-configuration">Skip configuration</h2>
+<p>Skip comments are useful for disabling formatting for one-off function calls, but sometimes you may find yourself repeatedly using functions from a domain specific language (DSL) that doesn’t follow conventional formatting rules. For example, the igraph package contains a DSL for constructing a graph from a literal representation:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>igraph<span class="sc">::</span><span class="fu">graph_from_literal</span>(A <span class="sc">+-+</span> B <span class="sc">+---+</span> C <span class="sc">++</span> D <span class="sc">+</span> E)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Air would format this as:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>igraph<span class="sc">::</span><span class="fu">graph_from_literal</span>(A <span class="sc">+</span> <span class="sc">-+</span>B <span class="sc">+</span> <span class="sc">---+</span>C <span class="sc">+</span> <span class="sc">+</span>D <span class="sc">+</span> E)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>If you use <code>graph_from_literal()</code> often, it would be annoying to add <code># fmt: skip</code> comments at every call site. Instead, <code>air.toml</code> supports a <a href="./configuration.html#configuration-skip"><code>skip</code> field</a> that allows you to specify function names that you never want formatting for. Specifying this would retain the original formatting of the <code>graph_from_literal()</code> call, even without a <code># fmt: skip</code> comment:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="dt">skip</span> <span class="op">=</span> <span class="op">[</span><span class="st">"graph_from_literal"</span><span class="op">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>One particularly common use of this is <code>skip = ["tribble"]</code>, which you can use to avoid formatting of all <code>tibble::tribble()</code> calls. In the long term, Air may provide more sophisticated tooling for formatting using a specified alignment.</p>
+</section>
 </section>
 <section id="when-does-a-formatter-run" class="level1">
 <h1>When does a formatter run?</h1>
