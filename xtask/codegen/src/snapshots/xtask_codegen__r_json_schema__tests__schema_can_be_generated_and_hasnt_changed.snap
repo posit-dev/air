@@ -93,6 +93,17 @@ expression: schema
             "boolean",
             "null"
           ]
+        },
+        "skip": {
+          "description": "Air typically formats every function call it comes across. To skip formatting of a single one-off function call, you can use a `# fmt: skip` comment. However, if you know of particular functions that you use a lot that are part of a custom domain specific language that doesn't follow conventional formatting rules, you can entirely opt out of formatting for those functions by providing them here.\n\nFor example, using `skip = [\"graph_from_literal\"]` would automatically skip formatting of:\n\n```r igraph::graph_from_literal(Alice +--+ Bob) ```\n\nIn the short term, we also anticipate that this will be useful to avoid formatting of `tibble::tribble()` calls. In the long term, we may have more sophisticated features for automatically formatting using a specified alignment.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Skip"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -160,6 +171,13 @@ expression: schema
       "format": "uint16",
       "maximum": 320.0,
       "minimum": 1.0
+    },
+    "Skip": {
+      "description": "Function names that are automatically skipped without the need for a `fmt: skip` comment.\n\n# Notes\n\nInternally wrapped in an [Arc] for cheap cloning, since we know the function names are immutable and can be shared. Must be an [Arc] because settings are shared across threads when doing parallel file discovery.\n\nClippy recommends [Arc] wrapping the immutable `[String]` over the mutable `Vec<String>` because with [Arc] you are basically promising not to mutate the inner object, and [Arc] provides a special `From<Vec<T>> for Arc<[T]>` for exactly this use case, which we invoke in [Skip::new()].\n\n# Safety\n\nThis vector is sorted at creation, for use with binary search during lookups.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   }
 }
