@@ -2,6 +2,9 @@
 
 # Development version
 
+
+# 0.5.0
+
 - Added support for a `skip` field in `air.toml` (#273).
 
   This is an extension of the `# fmt: skip` comment feature that provides a single place for you to list functions you never want formatting for. For example:
