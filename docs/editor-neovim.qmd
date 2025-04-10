@@ -62,8 +62,8 @@ Conform can be configured by adding the following to your `nvim/lua/plugins/conf
 ``` lua
 require("conform").setup({
     formatters_by_ft = {
-        quarto = { "injected", "prettier" },
-        rmd = { "injected", "prettier" },
+        quarto = { "injected" },
+        rmd = { "injected" },
         r = { "air" },
     },
 })
