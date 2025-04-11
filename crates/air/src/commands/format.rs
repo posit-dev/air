@@ -132,17 +132,17 @@ fn format_file(
     path: PathBuf,
     mode: FormatMode,
     settings: &FormatSettings,
-) -> Result<FormatFileAction, FormatCommandError> {
+) -> Result<FormatFileAction, FormatFileError> {
     tracing::trace!("Formatting {path}", path = path.display());
 
-    let source = std::fs::read_to_string(&path)
-        .map_err(|err| FormatCommandError::Read(path.clone(), err))?;
+    let source =
+        std::fs::read_to_string(&path).map_err(|err| FormatFileError::Read(path.clone(), err))?;
 
     let options = settings.to_format_options(&source);
 
     let formatted = match format_source(source.as_str(), options) {
         Ok(formatted) => formatted,
-        Err(err) => return Err(FormatCommandError::Format(path.clone(), err)),
+        Err(err) => return Err(FormatFileError::Format(path.clone(), err)),
     };
 
     match formatted {
@@ -150,7 +150,7 @@ fn format_file(
             match mode {
                 FormatMode::Write => {
                     std::fs::write(&path, new)
-                        .map_err(|err| FormatCommandError::Write(path.clone(), err))?;
+                        .map_err(|err| FormatFileError::Write(path.clone(), err))?;
                 }
                 FormatMode::Check => {}
             }
@@ -202,14 +202,14 @@ pub(crate) fn format_source(
 }
 
 #[derive(Error, Debug)]
-pub(crate) enum FormatCommandError {
+pub(crate) enum FormatFileError {
     Ignore(#[from] ignore::Error),
     Format(PathBuf, FormatSourceError),
     Read(PathBuf, io::Error),
     Write(PathBuf, io::Error),
 }
 
-impl Display for FormatCommandError {
+impl Display for FormatFileError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Ignore(err) => {
