@@ -106,7 +106,7 @@ fn write_changed(actions: &[FormatFileAction], f: &mut impl Write) -> io::Result
     for path in actions
         .iter()
         .filter_map(|result| match result {
-            FormatFileAction::Formatted(path) => Some(path),
+            FormatFileAction::Changed(path) => Some(path),
             FormatFileAction::Unchanged => None,
         })
         .sorted_unstable()
@@ -118,13 +118,13 @@ fn write_changed(actions: &[FormatFileAction], f: &mut impl Write) -> io::Result
 }
 
 pub(crate) enum FormatFileAction {
-    Formatted(PathBuf),
+    Changed(PathBuf),
     Unchanged,
 }
 
 impl FormatFileAction {
     fn is_changed(&self) -> bool {
-        matches!(self, FormatFileAction::Formatted(_))
+        matches!(self, FormatFileAction::Changed(_))
     }
 }
 
@@ -146,7 +146,7 @@ fn format_file(
     };
 
     match formatted {
-        FormattedSource::Formatted(new) => {
+        FormattedSource::Changed(new) => {
             match mode {
                 FormatMode::Write => {
                     std::fs::write(&path, new)
@@ -154,7 +154,7 @@ fn format_file(
                 }
                 FormatMode::Check => {}
             }
-            Ok(FormatFileAction::Formatted(path))
+            Ok(FormatFileAction::Changed(path))
         }
         FormattedSource::Unchanged => Ok(FormatFileAction::Unchanged),
     }
@@ -163,7 +163,7 @@ fn format_file(
 #[derive(Debug)]
 pub(crate) enum FormattedSource {
     /// The source was formatted, and the [`String`] contains the transformed source code.
-    Formatted(String),
+    Changed(String),
     /// The source was unchanged.
     Unchanged,
 }
@@ -197,7 +197,7 @@ pub(crate) fn format_source(
     if source.len() == formatted.len() && source == formatted.as_str() {
         Ok(FormattedSource::Unchanged)
     } else {
-        Ok(FormattedSource::Formatted(formatted))
+        Ok(FormattedSource::Changed(formatted))
     }
 }
 
