@@ -23,7 +23,7 @@ use crate::args::FormatCommand;
 use crate::ExitStatus;
 
 pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
-    let mode = FormatMode::from_command(&command);
+    let mode = FormatFileMode::from_command(&command);
 
     let mut resolver = PathResolver::new(Settings::default());
 
@@ -56,21 +56,21 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
     }
 
     match mode {
-        FormatMode::Write => {}
-        FormatMode::Check => {
+        FormatFileMode::Write => {}
+        FormatFileMode::Check => {
             write_changed(&actions, &mut stderr().lock())?;
         }
     }
 
     match mode {
-        FormatMode::Write => {
+        FormatFileMode::Write => {
             if errors.is_empty() {
                 Ok(ExitStatus::Success)
             } else {
                 Ok(ExitStatus::Error)
             }
         }
-        FormatMode::Check => {
+        FormatFileMode::Check => {
             if errors.is_empty() {
                 let any_changed = actions.iter().any(FormatFileAction::is_changed);
 
@@ -87,17 +87,17 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
 }
 
 #[derive(Copy, Clone, Debug)]
-pub enum FormatMode {
+pub enum FormatFileMode {
     Write,
     Check,
 }
 
-impl FormatMode {
+impl FormatFileMode {
     fn from_command(command: &FormatCommand) -> Self {
         if command.check {
-            FormatMode::Check
+            FormatFileMode::Check
         } else {
-            FormatMode::Write
+            FormatFileMode::Write
         }
     }
 }
@@ -130,7 +130,7 @@ impl FormatFileAction {
 
 fn format_file(
     path: PathBuf,
-    mode: FormatMode,
+    mode: FormatFileMode,
     settings: &FormatSettings,
 ) -> Result<FormatFileAction, FormatFileError> {
     tracing::trace!("Formatting {path}", path = path.display());
@@ -148,11 +148,11 @@ fn format_file(
     match formatted {
         FormatSourceAction::Changed(new) => {
             match mode {
-                FormatMode::Write => {
+                FormatFileMode::Write => {
                     std::fs::write(&path, new)
                         .map_err(|err| FormatFileError::Write(path.clone(), err))?;
                 }
-                FormatMode::Check => {}
+                FormatFileMode::Check => {}
             }
             Ok(FormatFileAction::Changed(path))
         }
