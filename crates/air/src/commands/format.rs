@@ -146,7 +146,7 @@ fn format_file(
     };
 
     match formatted {
-        FormattedSource::Changed(new) => {
+        FormatSourceAction::Changed(new) => {
             match mode {
                 FormatMode::Write => {
                     std::fs::write(&path, new)
@@ -156,12 +156,12 @@ fn format_file(
             }
             Ok(FormatFileAction::Changed(path))
         }
-        FormattedSource::Unchanged => Ok(FormatFileAction::Unchanged),
+        FormatSourceAction::Unchanged => Ok(FormatFileAction::Unchanged),
     }
 }
 
 #[derive(Debug)]
-pub(crate) enum FormattedSource {
+pub(crate) enum FormatSourceAction {
     /// The source was formatted, and the [`String`] contains the transformed source code.
     Changed(String),
     /// The source was unchanged.
@@ -182,7 +182,7 @@ pub(crate) enum FormatSourceError {
 pub(crate) fn format_source(
     source: &str,
     options: RFormatOptions,
-) -> std::result::Result<FormattedSource, FormatSourceError> {
+) -> std::result::Result<FormatSourceAction, FormatSourceError> {
     let parsed = air_r_parser::parse(source, RParserOptions::default());
 
     if parsed.has_errors() {
@@ -195,9 +195,9 @@ pub(crate) fn format_source(
     let formatted = formatted.into_code();
 
     if source.len() == formatted.len() && source == formatted.as_str() {
-        Ok(FormattedSource::Unchanged)
+        Ok(FormatSourceAction::Unchanged)
     } else {
-        Ok(FormattedSource::Changed(formatted))
+        Ok(FormatSourceAction::Changed(formatted))
     }
 }
 
