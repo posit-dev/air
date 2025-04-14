@@ -37,7 +37,7 @@
     "href": "editor-neovim.html#quarto",
     "title": "Neovim",
     "section": "Quarto",
-    "text": "Quarto\nAs an LSP, Air itself does not provide direct support for Quarto or RMarkdown documents. However, Air can additionally be configured as a formatter plugin for conform.nvim, which supports “injected language formatting” for code blocks in Markdown, Quarto, and RMarkdown. Conform can be configured by adding the following to your nvim/lua/plugins/conform.lua:\nrequire(\"conform\").setup({\n    formatters_by_ft = {\n        r = { \"air\" },\n    },\n})\nSee the conform.nvim documentation for more information on how to configure conform.nvim with your favorite plugin manager.",
+    "text": "Quarto\nAs an LSP, Air itself does not provide direct support for Quarto or RMarkdown documents. However, Air can additionally be configured as a formatter plugin for conform.nvim, which supports “injected language formatting” for code blocks in Markdown, Quarto, and RMarkdown. Conform can be configured by adding the following to your nvim/lua/plugins/conform.lua:\nrequire(\"conform\").setup({\n    formatters_by_ft = {\n        quarto = { \"injected\" },\n        rmd = { \"injected\" },\n        r = { \"air\" },\n    },\n})\nSee the conform.nvim documentation for more information on how to configure conform.nvim with your favorite plugin manager.",
     "crumbs": [
       "Editors",
       "Neovim"
