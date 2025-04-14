@@ -3,6 +3,7 @@ use std::fmt::Formatter;
 use std::io;
 use std::io::stderr;
 use std::io::Write;
+use std::path::Path;
 use std::path::PathBuf;
 
 use air_r_formatter::context::RFormatOptions;
@@ -23,7 +24,12 @@ use crate::args::FormatCommand;
 use crate::ExitStatus;
 
 pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
-    let mode = FormatFileMode::from_command(&command);
+    let mode = FormatMode::from_command(&command);
+
+    let on_changed_action = match mode {
+        FormatMode::Write => FormatFileOnChangedAction::Write,
+        FormatMode::Check => FormatFileOnChangedAction::None,
+    };
 
     let mut resolver = PathResolver::new(Settings::default());
 
@@ -35,42 +41,28 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
         resolver.add(&directory, settings);
     }
 
-    let paths = discover_r_file_paths(&command.paths, &resolver, true);
-
-    let (actions, errors): (Vec<_>, Vec<_>) = paths
-        .into_iter()
-        .map(|path| match path {
-            Ok(path) => {
-                let settings = resolver.resolve_or_fallback(&path);
-                format_file(path, mode, &settings.format)
-            }
-            Err(err) => Err(err.into()),
-        })
-        .partition_map(|result| match result {
-            Ok(result) => Either::Left(result),
-            Err(err) => Either::Right(err),
-        });
+    let (actions, errors) = format_paths(&command.paths, &resolver, on_changed_action);
 
     for error in &errors {
         tracing::error!("{error}");
     }
 
     match mode {
-        FormatFileMode::Write => {}
-        FormatFileMode::Check => {
+        FormatMode::Write => {}
+        FormatMode::Check => {
             write_changed(&actions, &mut stderr().lock())?;
         }
     }
 
     match mode {
-        FormatFileMode::Write => {
+        FormatMode::Write => {
             if errors.is_empty() {
                 Ok(ExitStatus::Success)
             } else {
                 Ok(ExitStatus::Error)
             }
         }
-        FormatFileMode::Check => {
+        FormatMode::Check => {
             if errors.is_empty() {
                 let any_changed = actions.iter().any(FormatFileAction::is_changed);
 
@@ -86,18 +78,40 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
     }
 }
 
+fn format_paths<P: AsRef<Path>>(
+    paths: &[P],
+    resolver: &PathResolver<Settings>,
+    on_changed_action: FormatFileOnChangedAction,
+) -> (Vec<FormatFileAction>, Vec<FormatFileError>) {
+    let paths = discover_r_file_paths(paths, resolver, true);
+
+    paths
+        .into_iter()
+        .map(|path| match path {
+            Ok(path) => {
+                let settings = resolver.resolve_or_fallback(&path);
+                format_file(path, on_changed_action, &settings.format)
+            }
+            Err(err) => Err(err.into()),
+        })
+        .partition_map(|result| match result {
+            Ok(result) => Either::Left(result),
+            Err(err) => Either::Right(err),
+        })
+}
+
 #[derive(Copy, Clone, Debug)]
-pub enum FormatFileMode {
+pub enum FormatMode {
     Write,
     Check,
 }
 
-impl FormatFileMode {
+impl FormatMode {
     fn from_command(command: &FormatCommand) -> Self {
         if command.check {
-            FormatFileMode::Check
+            FormatMode::Check
         } else {
-            FormatFileMode::Write
+            FormatMode::Write
         }
     }
 }
@@ -117,6 +131,12 @@ fn write_changed(actions: &[FormatFileAction], f: &mut impl Write) -> io::Result
     Ok(())
 }
 
+#[derive(Debug, Clone, Copy)]
+pub(crate) enum FormatFileOnChangedAction {
+    Write,
+    None,
+}
+
 pub(crate) enum FormatFileAction {
     Changed(PathBuf),
     Unchanged,
@@ -130,29 +150,35 @@ impl FormatFileAction {
 
 fn format_file(
     path: PathBuf,
-    mode: FormatFileMode,
+    on_changed_action: FormatFileOnChangedAction,
     settings: &FormatSettings,
 ) -> Result<FormatFileAction, FormatFileError> {
     tracing::trace!("Formatting {path}", path = path.display());
 
-    let source =
-        std::fs::read_to_string(&path).map_err(|err| FormatFileError::Read(path.clone(), err))?;
+    let source = match std::fs::read_to_string(&path) {
+        Ok(source) => source,
+        Err(err) => {
+            return Err(FormatFileError::Read(path, err));
+        }
+    };
 
     let options = settings.to_format_options(&source);
 
     let formatted = match format_source(source.as_str(), options) {
         Ok(formatted) => formatted,
-        Err(err) => return Err(FormatFileError::Format(path.clone(), err)),
+        Err(err) => return Err(FormatFileError::Format(path, err)),
     };
 
     match formatted {
         FormatSourceAction::Changed(new) => {
-            match mode {
-                FormatFileMode::Write => {
-                    std::fs::write(&path, new)
-                        .map_err(|err| FormatFileError::Write(path.clone(), err))?;
-                }
-                FormatFileMode::Check => {}
+            match on_changed_action {
+                FormatFileOnChangedAction::Write => match std::fs::write(&path, new) {
+                    Ok(()) => (),
+                    Err(err) => {
+                        return Err(FormatFileError::Write(path, err));
+                    }
+                },
+                FormatFileOnChangedAction::None => {}
             }
             Ok(FormatFileAction::Changed(path))
         }
