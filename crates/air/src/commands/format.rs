@@ -2,11 +2,12 @@ use std::io;
 use std::io::stderr;
 use std::io::Write;
 
+use colored::Colorize;
+use fs::relativize_path;
 use itertools::Itertools;
 use workspace::discovery::discover_settings;
 use workspace::discovery::DiscoveredSettings;
 use workspace::format::FormattedFile;
-use workspace::format::OnChangedAction;
 use workspace::resolve::PathResolver;
 use workspace::settings::Settings;
 
@@ -15,11 +16,6 @@ use crate::ExitStatus;
 
 pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
     let mode = FormatMode::from_command(&command);
-
-    let on_changed_action = match mode {
-        FormatMode::Write => OnChangedAction::Write,
-        FormatMode::Check => OnChangedAction::None,
-    };
 
     let mut resolver = PathResolver::new(Settings::default());
 
@@ -31,17 +27,18 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
         resolver.add(&directory, settings);
     }
 
-    let (files, errors) =
-        workspace::format::format_paths(&command.paths, &resolver, on_changed_action);
+    let (files, errors) = workspace::format::format_paths(&command.paths, &resolver);
 
     for error in &errors {
         tracing::error!("{error}");
     }
 
     match mode {
-        FormatMode::Write => {}
+        FormatMode::Write => {
+            write_changed(&files);
+        }
         FormatMode::Check => {
-            write_changed(&files, &mut stderr().lock())?;
+            inform_changed(&files, &mut stderr().lock())?;
         }
     }
 
@@ -85,11 +82,26 @@ impl FormatMode {
     }
 }
 
-fn write_changed(files: &[FormattedFile], f: &mut impl Write) -> io::Result<()> {
+fn write_changed(files: &[FormattedFile]) {
+    for (path, contents) in files.iter().filter_map(|result| match result {
+        FormattedFile::Changed(path, contents) => Some((path, contents)),
+        FormattedFile::Unchanged => None,
+    }) {
+        match std::fs::write(path, contents) {
+            Ok(()) => (),
+            Err(err) => tracing::error!(
+                "Failed to write {path}: {err}",
+                path = relativize_path(path).underline()
+            ),
+        }
+    }
+}
+
+fn inform_changed(files: &[FormattedFile], f: &mut impl Write) -> io::Result<()> {
     for path in files
         .iter()
         .filter_map(|result| match result {
-            FormattedFile::Changed(path) => Some(path),
+            FormattedFile::Changed(path, _contents) => Some(path),
             FormattedFile::Unchanged => None,
         })
         .sorted_unstable()

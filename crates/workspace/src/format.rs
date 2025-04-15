@@ -17,20 +17,12 @@ use crate::resolve::PathResolver;
 use crate::settings::FormatSettings;
 use crate::settings::Settings;
 
-/// Action to take when there are formatting changes for a file
-#[derive(Debug, Clone, Copy)]
-pub enum OnChangedAction {
-    /// Write those changes back to disk
-    Write,
-    /// Do nothing
-    None,
-}
-
 /// Representation of a formatted file
 #[derive(Debug)]
 pub enum FormattedFile {
-    /// The file had formatting changes. Returns a [PathBuf] to the file.
-    Changed(PathBuf),
+    /// The file was formatted. the [`String`] contains the transformed source code,
+    /// and the [PathBuf] contains the file name.
+    Changed(PathBuf, String),
     /// The file was unchanged.
     Unchanged,
 }
@@ -40,12 +32,11 @@ pub enum FormatFileError {
     Ignore(#[from] ignore::Error),
     Format(PathBuf, FormatSourceError),
     Read(PathBuf, io::Error),
-    Write(PathBuf, io::Error),
 }
 
 #[derive(Debug)]
 enum FormattedSource {
-    /// The source was formatted, and the [`String`] contains the transformed source code.
+    /// The source was formatted, the [`String`] contains the transformed source code.
     Changed(String),
     /// The source was unchanged.
     Unchanged,
@@ -64,7 +55,6 @@ pub enum FormatSourceError {
 pub fn format_paths<P: AsRef<Path>>(
     paths: &[P],
     resolver: &PathResolver<Settings>,
-    on_changed_action: OnChangedAction,
 ) -> (Vec<FormattedFile>, Vec<FormatFileError>) {
     let paths = discover_r_file_paths(paths, resolver, true);
 
@@ -73,7 +63,7 @@ pub fn format_paths<P: AsRef<Path>>(
         .map(|path| match path {
             Ok(path) => {
                 let settings = resolver.resolve_or_fallback(&path);
-                format_file(path, on_changed_action, &settings.format)
+                format_file(path, &settings.format)
             }
             Err(err) => Err(err.into()),
         })
@@ -85,7 +75,7 @@ pub fn format_paths<P: AsRef<Path>>(
 
 impl FormattedFile {
     pub fn is_changed(&self) -> bool {
-        matches!(self, FormattedFile::Changed(_))
+        matches!(self, FormattedFile::Changed(_, _))
     }
 }
 
@@ -119,13 +109,6 @@ impl Display for FormatFileError {
                     path = relativize_path(path).underline(),
                 )
             }
-            Self::Write(path, err) => {
-                write!(
-                    f,
-                    "Failed to write {path}: {err}",
-                    path = relativize_path(path).underline(),
-                )
-            }
             Self::Format(path, err) => {
                 write!(
                     f,
@@ -137,11 +120,8 @@ impl Display for FormatFileError {
     }
 }
 
-fn format_file(
-    path: PathBuf,
-    on_changed_action: OnChangedAction,
-    settings: &FormatSettings,
-) -> Result<FormattedFile, FormatFileError> {
+/// Formats a single file
+fn format_file(path: PathBuf, settings: &FormatSettings) -> Result<FormattedFile, FormatFileError> {
     tracing::trace!("Formatting {path}", path = path.display());
 
     let source = match std::fs::read_to_string(&path) {
@@ -159,13 +139,7 @@ fn format_file(
     };
 
     match formatted {
-        FormattedSource::Changed(new) => match on_changed_action {
-            OnChangedAction::Write => match std::fs::write(&path, new) {
-                Ok(()) => Ok(FormattedFile::Changed(path)),
-                Err(err) => Err(FormatFileError::Write(path, err)),
-            },
-            OnChangedAction::None => Ok(FormattedFile::Changed(path)),
-        },
+        FormattedSource::Changed(formatted) => Ok(FormattedFile::Changed(path, formatted)),
         FormattedSource::Unchanged => Ok(FormattedFile::Unchanged),
     }
 }
