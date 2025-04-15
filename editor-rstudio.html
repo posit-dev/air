@@ -186,7 +186,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#installation" id="toc-installation" class="nav-link active" data-scroll-target="#installation">Installation</a></li>
   <li><a href="#features" id="toc-features" class="nav-link" data-scroll-target="#features">Features</a>
   <ul class="collapse">
-  <li><a href="#format-on-save" id="toc-format-on-save" class="nav-link" data-scroll-target="#format-on-save">Format on save</a></li>
+  <li><a href="#rstudio-format-on-save" id="toc-rstudio-format-on-save" class="nav-link" data-scroll-target="#rstudio-format-on-save">Format on save</a></li>
   <li><a href="#quarto" id="toc-quarto" class="nav-link" data-scroll-target="#quarto">Quarto</a></li>
   </ul></li>
   </ul>
@@ -218,8 +218,19 @@ ul.task-list li input[type="checkbox"] {
 <section id="installation" class="level1">
 <h1>Installation</h1>
 <p>Ensure you have at least RStudio version 2024.12.0, which you can download from <a href="https://posit.co/download/rstudio-desktop/">here</a>. Additionally, you’ll need to install the Air <a href="./cli.html">command line tool</a>.</p>
-<p>Open <code>Tools -&gt; Global Options -&gt; Code</code>, choose the <code>Formatting</code> tab at the top, and change the option to use an <code>External</code> formatter. Then set the <code>Reformat command</code> to <code>{path/to/air} format</code>.</p>
-<p>The easiest way to figure out <code>{path/to/air}</code> for yourself is to run <code>which air</code> from a Terminal on Unix, and <code>where air</code> from the Command Prompt on Windows.</p>
+<p>Next, you’ll need to tell RStudio to use Air as an external formatter:</p>
+<ul>
+<li><p>Open <code>Tools -&gt; Global Options -&gt; Code</code></p></li>
+<li><p>Choose the <code>Formatting</code> tab at the top</p></li>
+<li><p>Change the <code>Code formatter:</code> option to <code>External</code></p></li>
+<li><p>Change the <code>Reformat command:</code> to <code>{path/to/air} format</code></p>
+<ul>
+<li><p>Note that you set this to a partially complete command! RStudio will append the name of the file to this partial command, but you <em>must</em> specify <code>format</code> in addition to the path to Air for it to work.</p></li>
+<li><p>The easiest way to figure out <code>{path/to/air}</code> for yourself is to run <code>which air</code> from a Terminal on Unix, and <code>where air</code> from the Command Prompt on Windows.</p></li>
+</ul></li>
+<li><p>Apply the changes and exit the settings.</p></li>
+</ul>
+<p>At this point, explicit calls to <code>Reformat Selection</code> and <code>Reformat Document</code> should use Air. If you’d also like RStudio to invoke Air on save, follow the instructions in <a href="#rstudio-format-on-save">Format on Save</a>.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/rstudio-external-formatter.png" class="img-fluid quarto-figure quarto-figure-center figure-img" alt="Setting Air as an external formatter with Tools -> Global Options -> Code -> Formatting"></p>
@@ -228,8 +239,8 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="features" class="level1">
 <h1>Features</h1>
-<section id="format-on-save" class="level2">
-<h2 class="anchored" data-anchor-id="format-on-save">Format on save</h2>
+<section id="rstudio-format-on-save" class="level2">
+<h2 class="anchored" data-anchor-id="rstudio-format-on-save">Format on save</h2>
 <p>After you’ve set Air as an external formatter, you can either tell RStudio to format all documents on save, or set this on a per document basis.</p>
 <p>To format all documents on save, open <code>Tools -&gt; Global Options -&gt; Code -&gt; Saving</code> and check <code>Reformat documents on save</code>.</p>
 <div class="quarto-figure quarto-figure-center">
