@@ -7,13 +7,9 @@
 use std::ops::Range;
 
 use biome_lsp_converters::line_index;
-use settings::LineEnding;
 use tower_lsp::lsp_types;
-use triomphe::Arc;
 
 use crate::from_proto;
-
-use super::line_index::LineIndex;
 
 pub(crate) fn apply_document_changes(
     encoding: biome_lsp_converters::PositionEncoding,
@@ -36,13 +32,7 @@ pub(crate) fn apply_document_changes(
         return text;
     }
 
-    let mut line_index = LineIndex {
-        // the index will be overwritten in the bottom loop's first iteration
-        index: Arc::new(line_index::LineIndex::new(&text)),
-        // We don't care about line endings here.
-        endings: LineEnding::Lf,
-        encoding,
-    };
+    let mut line_index = line_index::LineIndex::new(&text);
 
     // The changes we got must be applied sequentially, but can cross lines so we
     // have to keep our line index updated.
@@ -54,11 +44,10 @@ pub(crate) fn apply_document_changes(
         // The None case can't happen as we have handled it above already
         if let Some(range) = change.range {
             if index_valid <= range.end.line {
-                *Arc::make_mut(&mut line_index.index) = line_index::LineIndex::new(&text);
+                line_index = line_index::LineIndex::new(&text);
             }
             index_valid = range.start.line;
-            if let Ok(range) = from_proto::text_range(&line_index.index, range, line_index.encoding)
-            {
+            if let Ok(range) = from_proto::text_range(&line_index, range, encoding) {
                 text.replace_range(Range::<usize>::from(range), &change.text);
             }
         }
