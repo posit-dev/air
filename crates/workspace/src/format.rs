@@ -110,8 +110,11 @@ impl Display for FormatFileError {
 
 /// Formats a single file
 ///
-/// Note that this does not normalize line endings, so if you need that you must
-/// call [format_file_with_normalized_line_endings()].
+/// Note that this does not normalize line endings! In the LSP we currently do normalize
+/// line endings in `Document::new()` and on document updates because our protocol
+/// converter functions expect them to be normalized to unix (we should look into relaxing
+/// this). If you need to format an on-disk file from the LSP, think hard about using this
+/// vs calling the pieces yourself so you can also call [line_ending::normalize()].
 pub fn format_file(
     path: PathBuf,
     settings: &FormatSettings,
@@ -133,43 +136,6 @@ pub fn format_file(
     match new {
         FormattedSource::Changed(new) => Ok(FormattedFile::Changed(ChangedFile { path, old, new })),
         FormattedSource::Unchanged => Ok(FormattedFile::Unchanged),
-    }
-}
-
-/// Formats a single file and normalizes line endings
-pub fn format_file_with_normalized_line_endings(
-    path: PathBuf,
-    settings: &FormatSettings,
-) -> Result<(FormattedFile, LineEnding), FormatFileError> {
-    let old = match std::fs::read_to_string(&path) {
-        Ok(old) => old,
-        Err(err) => {
-            return Err(FormatFileError::Read(path, err));
-        }
-    };
-
-    // The original line endings
-    let line_ending = line_ending::infer(&old);
-
-    // Normalize to Unix line endings
-    let old = match line_ending {
-        LineEnding::Lf => old,
-        LineEnding::Crlf => line_ending::normalize(old),
-    };
-
-    let options = settings.to_format_options(&old);
-
-    let new = match format_source(&old, options) {
-        Ok(new) => new,
-        Err(err) => return Err(FormatFileError::Format(path, err)),
-    };
-
-    match new {
-        FormattedSource::Changed(new) => Ok((
-            FormattedFile::Changed(ChangedFile { path, old, new }),
-            line_ending,
-        )),
-        FormattedSource::Unchanged => Ok((FormattedFile::Unchanged, line_ending)),
     }
 }
 
