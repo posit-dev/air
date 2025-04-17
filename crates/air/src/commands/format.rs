@@ -11,6 +11,7 @@ use fs::relativize_path;
 use itertools::Either;
 use itertools::Itertools;
 use thiserror::Error;
+use workspace::discovery::discover_r_file_paths;
 use workspace::discovery::discover_settings;
 use workspace::discovery::DiscoveredSettings;
 use workspace::format::format_file;
@@ -22,7 +23,6 @@ use workspace::settings::Settings;
 
 use crate::args::FormatCommand;
 use crate::ExitStatus;
-use workspace::discovery::discover_r_file_paths;
 
 #[derive(Copy, Clone, Debug)]
 enum FormatMode {
