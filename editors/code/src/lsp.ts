@@ -24,6 +24,8 @@ enum State {
 export class Lsp {
 	private client: lc.LanguageClient | null = null;
 
+	private binaryPath: string | null = null;
+
 	// We've received and processed an `air.toml` settings synchronization
 	// notification. Used to synchronize unit tests with the LSP.
 	private onSettingsNotification: vscode.Event<SyncFileSettingsParams>;
@@ -64,6 +66,13 @@ export class Lsp {
 		return this.client;
 	}
 
+	public getBinaryPath(): string {
+		if (!this.binaryPath) {
+			throw new Error("LSP must be started");
+		}
+		return this.binaryPath;
+	}
+
 	public waitForSettingsNotification(): Promise<void> {
 		return new Promise((resolve, _) => {
 			const disposable = this.onSettingsNotification(() => {
@@ -96,13 +105,13 @@ export class Lsp {
 		const workspaceSettings = getWorkspaceSettings("air", workspaceFolder);
 		const initializationOptions = getInitializationOptions("air");
 
-		const command = await resolveAirBinaryPath(
+		const binaryPath = await resolveAirBinaryPath(
 			workspaceSettings.executableStrategy,
 			workspaceSettings.executablePath,
 		);
 
 		let serverOptions: lc.ServerOptions = {
-			command: command,
+			command: binaryPath,
 			args: ["language-server"],
 		};
 
@@ -175,6 +184,7 @@ export class Lsp {
 
 		// Only update state if no error occurred
 		this.client = client;
+		this.binaryPath = binaryPath;
 		this.state = State.Started;
 	}
 
@@ -192,6 +202,7 @@ export class Lsp {
 			// will put us back in a good place.
 			this.state = State.Stopped;
 			this.client = null;
+			this.binaryPath = null;
 		}
 	}
 
