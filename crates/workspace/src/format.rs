@@ -1,5 +1,4 @@
 use air_r_parser::Parse;
-use settings::LineEnding;
 use std::fmt::Display;
 use std::fmt::Formatter;
 use std::io;
