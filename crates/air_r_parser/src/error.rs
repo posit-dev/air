@@ -19,7 +19,7 @@ impl std::fmt::Display for ParseError {
 }
 
 impl ParseError {
-    pub fn new(message: String) -> Self {
+    pub(crate) fn new(message: String) -> Self {
         Self { message }
     }
 }
