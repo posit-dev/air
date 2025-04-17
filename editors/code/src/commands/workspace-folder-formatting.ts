@@ -1,9 +1,10 @@
-import * as vscode from "vscode";
-import { Cmd, Ctx } from "../context";
 import * as cp from "child_process";
+import * as vscode from "vscode";
+
+import { Cmd, Ctx } from "../context";
 import * as output from "../output";
 
-export function workspaceFolderFormatting2(ctx: Ctx): Cmd {
+export function workspaceFolderFormatting(ctx: Ctx): Cmd {
 	return async () => {
 		const binaryPath = ctx.lsp.getBinaryPath();
 
