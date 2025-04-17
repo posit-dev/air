@@ -1,22 +1,17 @@
 use air_r_parser::Parse;
-use std::fmt::Display;
-use std::fmt::Formatter;
 use std::io;
-use std::path::PathBuf;
+use std::path::Path;
 use thiserror::Error;
 
 use air_r_formatter::context::RFormatOptions;
 use air_r_parser::RParserOptions;
-use colored::Colorize;
-use fs::relativize_path;
 
 use crate::settings::FormatSettings;
 
 /// Representation of a formatted file
 #[derive(Debug)]
 pub enum FormattedFile {
-    /// The file was formatted. the [`String`] contains the transformed source code,
-    /// and the [PathBuf] contains the file name.
+    /// The file was formatted.
     Changed(ChangedFile),
     /// The file was unchanged.
     Unchanged,
@@ -24,15 +19,16 @@ pub enum FormattedFile {
 
 #[derive(Debug)]
 pub struct ChangedFile {
-    path: PathBuf,
     old: String,
     new: String,
 }
 
 #[derive(Error, Debug)]
 pub enum FormatFileError {
-    Format(PathBuf, FormatSourceError),
-    Read(PathBuf, io::Error),
+    #[error(transparent)]
+    Format(#[from] FormatSourceError),
+    #[error(transparent)]
+    Read(#[from] io::Error),
 }
 
 #[derive(Debug)]
@@ -68,10 +64,6 @@ impl FormattedFile {
 }
 
 impl ChangedFile {
-    pub fn path(&self) -> &PathBuf {
-        &self.path
-    }
-
     pub fn old(&self) -> &str {
         &self.old
     }
@@ -79,31 +71,6 @@ impl ChangedFile {
     #[allow(clippy::new_ret_no_self)]
     pub fn new(&self) -> &str {
         &self.new
-    }
-
-    pub fn into_path(self) -> PathBuf {
-        self.path
-    }
-}
-
-impl Display for FormatFileError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Read(path, err) => {
-                write!(
-                    f,
-                    "Failed to read {path}: {err}",
-                    path = relativize_path(path).underline(),
-                )
-            }
-            Self::Format(path, err) => {
-                write!(
-                    f,
-                    "Failed to format {path}: {err}",
-                    path = relativize_path(path).underline(),
-                )
-            }
-        }
     }
 }
 
@@ -114,14 +81,14 @@ impl Display for FormatFileError {
 /// converter functions expect them to be normalized to unix (we should look into relaxing
 /// this). If you need to format an on-disk file from the LSP, think hard about using this
 /// vs calling the pieces yourself so you can also call [line_ending::normalize()].
-pub fn format_file(
-    path: PathBuf,
+pub fn format_file<P: AsRef<Path>>(
+    path: P,
     settings: &FormatSettings,
 ) -> Result<FormattedFile, FormatFileError> {
-    let old = match std::fs::read_to_string(&path) {
+    let old = match std::fs::read_to_string(path.as_ref()) {
         Ok(old) => old,
         Err(err) => {
-            return Err(FormatFileError::Read(path, err));
+            return Err(FormatFileError::Read(err));
         }
     };
 
@@ -129,11 +96,11 @@ pub fn format_file(
 
     let new = match format_source(&old, options) {
         Ok(new) => new,
-        Err(err) => return Err(FormatFileError::Format(path, err)),
+        Err(err) => return Err(FormatFileError::Format(err)),
     };
 
     match new {
-        FormattedSource::Changed(new) => Ok(FormattedFile::Changed(ChangedFile { path, old, new })),
+        FormattedSource::Changed(new) => Ok(FormattedFile::Changed(ChangedFile { old, new })),
         FormattedSource::Unchanged => Ok(FormattedFile::Unchanged),
     }
 }

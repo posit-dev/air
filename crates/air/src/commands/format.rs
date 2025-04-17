@@ -32,7 +32,7 @@ enum FormatMode {
 
 #[derive(Error, Debug)]
 enum FormatPathError {
-    FormatFile(#[from] FormatFileError),
+    FormatFile(PathBuf, FormatFileError),
     Write(PathBuf, io::Error),
     Ignore(#[from] ignore::Error),
 }
@@ -114,9 +114,12 @@ fn format_paths_write<P: AsRef<Path>>(
         .filter_map(|path| match path {
             Ok(path) => {
                 let settings = resolver.resolve_or_fallback(&path);
-                match format_path(path, &settings.format).and_then(write_path) {
-                    Ok(()) => None,
-                    Err(err) => Some(err),
+                match format_path(&path, &settings.format) {
+                    Ok(file) => match write_path(&path, file) {
+                        Ok(()) => None,
+                        Err(err) => Some(FormatPathError::Write(path, err)),
+                    },
+                    Err(err) => Some(FormatPathError::FormatFile(path, err)),
                 }
             }
             Err(err) => Some(err.into()),
@@ -135,9 +138,9 @@ fn format_paths_check<P: AsRef<Path>>(
         .filter_map(|path| match path {
             Ok(path) => {
                 let settings = resolver.resolve_or_fallback(&path);
-                match format_path(path, &settings.format) {
-                    Ok(file) => check_path(file).map(Ok),
-                    Err(err) => Some(Err(err)),
+                match format_path(&path, &settings.format) {
+                    Ok(file) => check_path(path, file).map(Ok),
+                    Err(err) => Some(Err(FormatPathError::FormatFile(path, err))),
                 }
             }
             Err(err) => Some(Err(err.into())),
@@ -148,30 +151,28 @@ fn format_paths_check<P: AsRef<Path>>(
         })
 }
 
-fn format_path(
-    path: PathBuf,
+fn format_path<P: AsRef<Path>>(
+    path: P,
     settings: &FormatSettings,
-) -> std::result::Result<FormattedFile, FormatPathError> {
+) -> std::result::Result<FormattedFile, FormatFileError> {
+    let path = path.as_ref();
     tracing::trace!("Formatting {path}", path = path.display());
-    format_file(path, settings).map_err(Into::into)
+    format_file(path, settings)
 }
 
 /// Returns `Ok(())` if the format results were successfully written back, otherwise
 /// returns an error
-fn write_path(file: FormattedFile) -> std::result::Result<(), FormatPathError> {
+fn write_path<P: AsRef<Path>>(path: P, file: FormattedFile) -> io::Result<()> {
     match file {
-        FormattedFile::Changed(file) => match std::fs::write(file.path(), file.new()) {
-            Ok(()) => Ok(()),
-            Err(err) => Err(FormatPathError::Write(file.into_path(), err)),
-        },
+        FormattedFile::Changed(file) => std::fs::write(path, file.new()),
         FormattedFile::Unchanged => Ok(()),
     }
 }
 
 /// Returns `Some(path)` if a change occurred, otherwise returns `None`
-fn check_path(file: FormattedFile) -> Option<PathBuf> {
+fn check_path(path: PathBuf, file: FormattedFile) -> Option<PathBuf> {
     match file {
-        FormattedFile::Changed(file) => Some(file.into_path()),
+        FormattedFile::Changed(_) => Some(path),
         FormattedFile::Unchanged => None,
     }
 }
@@ -179,7 +180,18 @@ fn check_path(file: FormattedFile) -> Option<PathBuf> {
 impl Display for FormatPathError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::FormatFile(err) => err.fmt(f),
+            Self::FormatFile(path, err) => match err {
+                FormatFileError::Format(err) => write!(
+                    f,
+                    "Failed to format {path}: {err}",
+                    path = relativize_path(path).underline(),
+                ),
+                FormatFileError::Read(err) => write!(
+                    f,
+                    "Failed to read {path}: {err}",
+                    path = relativize_path(path).underline(),
+                ),
+            },
             Self::Write(path, err) => {
                 write!(
                     f,
