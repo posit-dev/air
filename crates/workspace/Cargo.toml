@@ -20,6 +20,7 @@ air_r_formatter = { workspace = true }
 air_r_parser = { workspace = true }
 anyhow = { workspace = true }
 biome_formatter = { workspace = true, features = ["serde"] }
+biome_parser = { workspace = true }
 colored = { workspace = true }
 fs = { workspace = true }
 ignore = { workspace = true }

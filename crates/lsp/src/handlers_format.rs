@@ -5,11 +5,12 @@
 //
 //
 
-use air_r_formatter::format_node;
 use air_r_syntax::{RExpressionList, RSyntaxKind, RSyntaxNode, WalkEvent};
 use biome_rowan::{AstNode, Language, SyntaxElement};
 use biome_text_size::{TextRange, TextSize};
 use tower_lsp::lsp_types;
+use workspace::format::format_source_with_parse;
+use workspace::format::FormattedSource;
 
 use crate::file_patterns::is_document_excluded_from_formatting;
 use crate::main_loop::LspState;
@@ -23,8 +24,7 @@ pub(crate) fn document_formatting(
     state: &WorldState,
 ) -> anyhow::Result<Option<Vec<lsp_types::TextEdit>>> {
     let uri = &params.text_document.uri;
-    let doc = state.get_document(uri)?;
-
+    let doc = state.get_document_or_error(uri)?;
     let workspace_settings = lsp_state.workspace_document_settings(uri);
 
     match uri.to_file_path() {
@@ -43,22 +43,23 @@ pub(crate) fn document_formatting(
         }
     }
 
-    if doc.parse.has_errors() {
+    if doc.parse.has_error() {
         // Refuse to format in the face of parse errors, but only log a warning
         // rather than returning an LSP error, as toast notifications here are distracting.
-        tracing::warn!(
-            "Failed to format {uri}. Can't format when there are parse errors.",
-            uri = params.text_document.uri
-        );
+        tracing::warn!("Failed to format {uri}. Can't format when there are parse errors.",);
         return Ok(None);
     }
 
     let format_options = workspace_settings.to_format_options(&doc.contents, &doc.settings);
-    let formatted = format_node(format_options, &doc.parse.syntax())?;
-    let output = formatted.print()?.into_code();
 
-    let edits = to_proto::replace_all_edit(&doc.line_index, &doc.contents, &output)?;
-    Ok(Some(edits))
+    match format_source_with_parse(&doc.contents, &doc.parse, format_options)? {
+        FormattedSource::Changed(formatted) => Ok(Some(to_proto::replace_all_edit(
+            &doc.line_index,
+            &doc.contents,
+            &formatted,
+        )?)),
+        FormattedSource::Unchanged => Ok(None),
+    }
 }
 
 #[tracing::instrument(level = "info", skip_all)]
@@ -68,7 +69,7 @@ pub(crate) fn document_range_formatting(
     state: &WorldState,
 ) -> anyhow::Result<Option<Vec<lsp_types::TextEdit>>> {
     let uri = &params.text_document.uri;
-    let doc = state.get_document(uri)?;
+    let doc = state.get_document_or_error(uri)?;
 
     let workspace_settings = lsp_state.workspace_document_settings(uri);
 
@@ -88,7 +89,7 @@ pub(crate) fn document_range_formatting(
         }
     }
 
-    if doc.parse.has_errors() {
+    if doc.parse.has_error() {
         // Refuse to format in the face of parse errors, but only log a warning
         // rather than returning an LSP error, as toast notifications here are distracting.
         tracing::warn!(

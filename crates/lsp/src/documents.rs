@@ -28,7 +28,7 @@ pub struct Document {
 
     /// We store the syntax tree in the document for now.
     /// We will think about laziness and incrementality in the future.
-    pub parse: biome_parser::AnyParse,
+    pub parse: air_r_parser::Parse,
 
     /// The version of the document we last synchronized with.
     /// None if the document hasn't been synchronized yet.
@@ -61,10 +61,6 @@ impl Document {
             LineEnding::Crlf => line_ending::normalize(contents),
         };
 
-        // TODO: Handle user requested line ending preference here
-        // by potentially overwriting `endings` if the user didn't
-        // select `LineEndings::Auto`, and then pass that to `LineIndex`.
-
         // Create line index to keep track of newline offsets
         let line_index = LineIndex {
             index: triomphe::Arc::new(line_index::LineIndex::new(&contents)),
@@ -73,7 +69,7 @@ impl Document {
         };
 
         // Parse document immediately for now
-        let parse = air_r_parser::parse(&contents, Default::default()).into();
+        let parse = air_r_parser::parse(&contents, Default::default());
 
         Self {
             contents,
@@ -128,7 +124,7 @@ impl Document {
         );
 
         // No incrementality for now
-        let parse = air_r_parser::parse(&contents, Default::default()).into();
+        let parse = air_r_parser::parse(&contents, Default::default());
 
         self.parse = parse;
         self.contents = contents;

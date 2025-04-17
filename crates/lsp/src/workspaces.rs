@@ -13,6 +13,7 @@ use tower_lsp::lsp_types::Url;
 use tower_lsp::lsp_types::WorkspaceFolder;
 use workspace::discovery::discover_settings;
 use workspace::discovery::DiscoveredSettings;
+use workspace::resolve::PathItem;
 use workspace::resolve::PathResolver;
 use workspace::settings::Settings;
 use workspace::toml::is_air_toml;
@@ -126,6 +127,12 @@ impl WorkspaceSettingsResolver {
 
     pub(crate) fn len(&self) -> usize {
         self.path_to_settings_resolver.len()
+    }
+
+    /// Returns a reference to an array of [PathItem]s, where each path is a workspace
+    /// folder, and each value is the [SettingsResolver] for that workspace.
+    pub(crate) fn workspace_folders(&self) -> &[PathItem<SettingsResolver>] {
+        self.path_to_settings_resolver.items()
     }
 
     /// Return the appropriate [`WorkspaceSettings`] for a given document [`Url`].

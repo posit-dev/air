@@ -29,7 +29,7 @@ fn quick_test() {
         .with_indent_style(IndentStyle::Space)
         .with_line_width(LineWidth::try_from(80).unwrap());
 
-    if parse.has_errors() {
+    if parse.has_error() {
         panic!("Can't format when there are parse errors.");
     }
 

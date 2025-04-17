@@ -17,8 +17,10 @@ clap = { workspace = true, features = ["wrap_help"] }
 colored = { workspace = true }
 crates = { workspace = true }
 fs = { workspace = true }
+ignore = { workspace = true }
 itertools = { workspace = true }
 lsp = { workspace = true }
+thiserror = { workspace = true }
 tokio = "1.41.1"
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }

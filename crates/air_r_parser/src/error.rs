@@ -1,35 +1,32 @@
-use biome_diagnostics::Diagnostic;
 use biome_parser::prelude::ParseDiagnostic;
+use biome_rowan::TextRange;
 
 /// An error that occurs during parsing
 ///
-/// Simply wraps a `ParseDiagnostic`, mainly so we can implement
-/// `std::error::Error` for it, which it oddly does not implement.
+/// Replacement for [biome_parser::ParseDiagnostic], mainly so we can implement
+/// [std::error::Error], which it oddly does not implement.
 #[derive(Debug, Clone)]
 pub struct ParseError {
-    inner: ParseDiagnostic,
+    message: String,
 }
 
 impl std::error::Error for ParseError {}
 
 impl std::fmt::Display for ParseError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        self.diagnostic().description(f)
+        f.write_str(&self.message)
     }
 }
 
 impl ParseError {
-    pub fn diagnostic(&self) -> &ParseDiagnostic {
-        &self.inner
-    }
-
-    pub fn into_diagnostic(self) -> ParseDiagnostic {
-        self.inner
+    pub fn new(message: String) -> Self {
+        Self { message }
     }
 }
 
-impl From<ParseDiagnostic> for ParseError {
-    fn from(diagnostic: ParseDiagnostic) -> Self {
-        Self { inner: diagnostic }
+impl From<ParseError> for ParseDiagnostic {
+    fn from(error: ParseError) -> Self {
+        let span: Option<TextRange> = None;
+        ParseDiagnostic::new(error.message, span)
     }
 }

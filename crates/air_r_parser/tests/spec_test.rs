@@ -1,4 +1,3 @@
-use air_r_parser::ParseError;
 use air_r_parser::{parse, RParserOptions};
 use air_r_syntax::{RRoot, RSyntaxNode};
 use biome_console::fmt::{Formatter, Termcolor};
@@ -54,7 +53,7 @@ pub fn run(test_case: &str, _snapshot_name: &str, test_directory: &str, outcome_
 
     let options = RParserOptions::default();
     let parsed = parse(&content, options);
-    let root = RRoot::unwrap_cast(parsed.syntax());
+    let root = parsed.tree();
     let formatted_ast = format!("{:#?}", root);
 
     let mut snapshot = String::new();
@@ -78,13 +77,11 @@ pub fn run(test_case: &str, _snapshot_name: &str, test_directory: &str, outcome_
     )
     .unwrap();
 
-    if parsed.has_errors() {
-        let diagnostics: Vec<ParseDiagnostic> = parsed
-            .errors()
-            .iter()
-            .map(ParseError::diagnostic)
-            .map(ParseDiagnostic::clone)
-            .collect();
+    if parsed.has_error() {
+        let diagnostics: Vec<ParseDiagnostic> = match parsed.error() {
+            Some(error) => vec![error.clone().into()],
+            None => vec![],
+        };
 
         let mut diagnostics_buffer = termcolor::Buffer::no_color();
 
@@ -135,8 +132,8 @@ pub fn run(test_case: &str, _snapshot_name: &str, test_directory: &str, outcome_
             }
         }
         ExpectedOutcome::Fail => {
-            if !parsed.has_errors() {
-                panic!("Failing test must have diagnostics");
+            if !parsed.has_error() {
+                panic!("Failing test must have an error");
             }
         }
         _ => {}

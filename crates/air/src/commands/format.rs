@@ -1,18 +1,41 @@
+use std::fmt::Display;
+use std::fmt::Formatter;
 use std::io;
 use std::io::stderr;
 use std::io::Write;
+use std::path::Path;
+use std::path::PathBuf;
 
 use colored::Colorize;
 use fs::relativize_path;
+use itertools::Either;
 use itertools::Itertools;
+use thiserror::Error;
 use workspace::discovery::discover_settings;
 use workspace::discovery::DiscoveredSettings;
+use workspace::format::format_file;
+use workspace::format::FormatFileError;
 use workspace::format::FormattedFile;
 use workspace::resolve::PathResolver;
+use workspace::settings::FormatSettings;
 use workspace::settings::Settings;
 
 use crate::args::FormatCommand;
 use crate::ExitStatus;
+use workspace::discovery::discover_r_file_paths;
+
+#[derive(Copy, Clone, Debug)]
+enum FormatMode {
+    Write,
+    Check,
+}
+
+#[derive(Error, Debug)]
+enum FormatPathError {
+    FormatFile(#[from] FormatFileError),
+    Write(PathBuf, io::Error),
+    Ignore(#[from] ignore::Error),
+}
 
 pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
     let mode = FormatMode::from_command(&command);
@@ -27,23 +50,14 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
         resolver.add(&directory, settings);
     }
 
-    let (files, errors) = workspace::format::format_paths(&command.paths, &resolver);
-
-    for error in &errors {
-        tracing::error!("{error}");
-    }
-
     match mode {
         FormatMode::Write => {
-            write_changed(&files);
-        }
-        FormatMode::Check => {
-            inform_changed(&files, &mut stderr().lock())?;
-        }
-    }
+            let errors = format_paths_write(&command.paths, &resolver);
 
-    match mode {
-        FormatMode::Write => {
+            for error in &errors {
+                tracing::error!("{error}");
+            }
+
             if errors.is_empty() {
                 Ok(ExitStatus::Success)
             } else {
@@ -51,25 +65,25 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
             }
         }
         FormatMode::Check => {
-            if errors.is_empty() {
-                let any_changed = files.iter().any(FormattedFile::is_changed);
+            let (paths, errors) = format_paths_check(&command.paths, &resolver);
 
-                if any_changed {
-                    Ok(ExitStatus::Failure)
-                } else {
+            for error in &errors {
+                tracing::error!("{error}");
+            }
+
+            inform_changed(&paths, &mut stderr().lock())?;
+
+            if errors.is_empty() {
+                if paths.is_empty() {
                     Ok(ExitStatus::Success)
+                } else {
+                    Ok(ExitStatus::Failure)
                 }
             } else {
                 Ok(ExitStatus::Error)
             }
         }
     }
-}
-
-#[derive(Copy, Clone, Debug)]
-pub enum FormatMode {
-    Write,
-    Check,
 }
 
 impl FormatMode {
@@ -82,34 +96,119 @@ impl FormatMode {
     }
 }
 
-fn write_changed(files: &[FormattedFile]) {
-    for (path, contents) in files.iter().filter_map(|result| match result {
-        FormattedFile::Changed(path, contents) => Some((path, contents)),
-        FormattedFile::Unchanged => None,
-    }) {
-        match std::fs::write(path, contents) {
-            Ok(()) => (),
-            Err(err) => tracing::error!(
-                "Failed to write {path}: {err}",
-                path = relativize_path(path).underline()
-            ),
-        }
+fn inform_changed(paths: &[PathBuf], f: &mut impl Write) -> io::Result<()> {
+    for path in paths.iter().sorted_unstable() {
+        writeln!(f, "Would reformat: {}", path.display())?;
+    }
+    Ok(())
+}
+
+fn format_paths_write<P: AsRef<Path>>(
+    paths: &[P],
+    resolver: &PathResolver<Settings>,
+) -> Vec<FormatPathError> {
+    let paths = discover_r_file_paths(paths, resolver, true);
+
+    paths
+        .into_iter()
+        .filter_map(|path| match path {
+            Ok(path) => {
+                let settings = resolver.resolve_or_fallback(&path);
+                match format_path(path, &settings.format).and_then(write_path) {
+                    Ok(()) => None,
+                    Err(err) => Some(err),
+                }
+            }
+            Err(err) => Some(err.into()),
+        })
+        .collect()
+}
+
+fn format_paths_check<P: AsRef<Path>>(
+    paths: &[P],
+    resolver: &PathResolver<Settings>,
+) -> (Vec<PathBuf>, Vec<FormatPathError>) {
+    let paths = discover_r_file_paths(paths, resolver, true);
+
+    paths
+        .into_iter()
+        .filter_map(|path| match path {
+            Ok(path) => {
+                let settings = resolver.resolve_or_fallback(&path);
+                match format_path(path, &settings.format) {
+                    Ok(file) => check_path(file).map(Ok),
+                    Err(err) => Some(Err(err)),
+                }
+            }
+            Err(err) => Some(Err(err.into())),
+        })
+        .partition_map(|result| match result {
+            Ok(result) => Either::Left(result),
+            Err(err) => Either::Right(err),
+        })
+}
+
+fn format_path(
+    path: PathBuf,
+    settings: &FormatSettings,
+) -> std::result::Result<FormattedFile, FormatPathError> {
+    tracing::trace!("Formatting {path}", path = path.display());
+    format_file(path, settings).map_err(Into::into)
+}
+
+/// Returns `Ok(())` if the format results were successfully written back, otherwise
+/// returns an error
+fn write_path(file: FormattedFile) -> std::result::Result<(), FormatPathError> {
+    match file {
+        FormattedFile::Changed(file) => match std::fs::write(file.path(), file.new()) {
+            Ok(()) => Ok(()),
+            Err(err) => Err(FormatPathError::Write(file.into_path(), err)),
+        },
+        FormattedFile::Unchanged => Ok(()),
     }
 }
 
-fn inform_changed(files: &[FormattedFile], f: &mut impl Write) -> io::Result<()> {
-    for path in files
-        .iter()
-        .filter_map(|result| match result {
-            FormattedFile::Changed(path, _contents) => Some(path),
-            FormattedFile::Unchanged => None,
-        })
-        .sorted_unstable()
-    {
-        writeln!(f, "Would reformat: {}", path.display())?;
+/// Returns `Some(path)` if a change occurred, otherwise returns `None`
+fn check_path(file: FormattedFile) -> Option<PathBuf> {
+    match file {
+        FormattedFile::Changed(file) => Some(file.into_path()),
+        FormattedFile::Unchanged => None,
     }
+}
 
-    Ok(())
+impl Display for FormatPathError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::FormatFile(err) => err.fmt(f),
+            Self::Write(path, err) => {
+                write!(
+                    f,
+                    "Failed to write {path}: {err}",
+                    path = relativize_path(path).underline(),
+                )
+            }
+            Self::Ignore(err) => {
+                if let ignore::Error::WithPath { path, .. } = err {
+                    write!(
+                        f,
+                        "Failed to format {path}: {err}",
+                        path = relativize_path(path).underline(),
+                        err = err
+                            .io_error()
+                            .map_or_else(|| err.to_string(), std::string::ToString::to_string)
+                    )
+                } else {
+                    write!(
+                        f,
+                        "Encountered error: {err}",
+                        err = err
+                            .io_error()
+                            .map_or_else(|| err.to_string(), std::string::ToString::to_string)
+                    )
+                }
+            }
+        }
+    }
 }
 
 #[cfg(test)]
