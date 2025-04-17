@@ -117,11 +117,6 @@
 				"command": "air.restart"
 			},
 			{
-				"title": "Format Workspace Folder",
-				"category": "Air",
-				"command": "air.workspaceFolderFormatting"
-			},
-			{
 				"title": "Format Workspace Folder2",
 				"category": "Air",
 				"command": "air.workspaceFolderFormatting2"

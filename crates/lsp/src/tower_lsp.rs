@@ -19,8 +19,6 @@ use tower_lsp::LspService;
 use tower_lsp::{jsonrpc, ClientSocket};
 
 use crate::handlers_ext::ViewFileParams;
-use crate::handlers_ext::WorkspaceFolderFormattingParams;
-use crate::handlers_ext::WorkspaceFolderFormattingResult;
 use crate::main_loop::Event;
 use crate::main_loop::GlobalState;
 use crate::main_loop::TokioUnboundedSender;
@@ -65,7 +63,6 @@ pub(crate) enum LspRequest {
     DocumentFormatting(DocumentFormattingParams),
     Shutdown,
     DocumentRangeFormatting(DocumentRangeFormattingParams),
-    AirWorkspaceFolderFormatting(WorkspaceFolderFormattingParams),
     AirViewFile(ViewFileParams),
 }
 
@@ -76,7 +73,6 @@ pub(crate) enum LspResponse {
     DocumentFormatting(Option<Vec<TextEdit>>),
     DocumentRangeFormatting(Option<Vec<TextEdit>>),
     Shutdown(()),
-    AirWorkspaceFolderFormatting(WorkspaceFolderFormattingResult),
     AirViewFile(String),
 }
 
@@ -200,17 +196,6 @@ impl Backend {
             LspResponse::AirViewFile
         )
     }
-
-    async fn air_workspace_folder_formatting(
-        &self,
-        params: WorkspaceFolderFormattingParams,
-    ) -> tower_lsp::jsonrpc::Result<WorkspaceFolderFormattingResult> {
-        cast_response!(
-            self.request(LspRequest::AirWorkspaceFolderFormatting(params))
-                .await,
-            LspResponse::AirWorkspaceFolderFormatting
-        )
-    }
 }
 
 #[tower_lsp::async_trait]
@@ -305,10 +290,6 @@ fn new_lsp() -> (LspService<Backend>, ClientSocket) {
 
     LspService::build(init)
         .custom_method("air/viewFile", Backend::air_view_file)
-        .custom_method(
-            "air/workspaceFolderFormatting",
-            Backend::air_workspace_folder_formatting,
-        )
         .finish()
 }
 
