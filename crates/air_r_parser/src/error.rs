@@ -25,7 +25,6 @@ impl ParseError {
     }
 }
 
-// Just for usage in `spec_test.rs`
 impl From<ParseError> for ParseDiagnostic {
     fn from(error: ParseError) -> Self {
         let span: Option<TextRange> = None;
