@@ -13,7 +13,7 @@ export function workspaceFolderFormatting(ctx: Ctx): Cmd {
 			return;
 		}
 
-		const allTabsClosed = await closeAllTabs();
+		const allTabsClosed = await closeAllTabs(workspaceFolder);
 		if (!allTabsClosed) {
 			return;
 		}
@@ -55,11 +55,11 @@ export function workspaceFolderFormatting(ctx: Ctx): Cmd {
 
 		if (anyErrors) {
 			output.log(
-				`Errors occurred while formatting workspace folder: ${workspaceFolder.name}\n${stderr}`,
+				`Errors occurred while formatting the ${workspaceFolder.name} workspace folder.\n${stderr}`,
 			);
 
 			const answer = await vscode.window.showInformationMessage(
-				`Errors occurred while formatting workspace folder: ${workspaceFolder.name}. View the logs?`,
+				`Errors occurred while formatting the ${workspaceFolder.name} workspace folder. View the logs?`,
 				{ modal: true },
 				"Yes",
 				"No",
@@ -73,7 +73,7 @@ export function workspaceFolderFormatting(ctx: Ctx): Cmd {
 		}
 
 		vscode.window.showInformationMessage(
-			`Successfully formatted workspace folder: ${workspaceFolder.name}.`,
+			`Successfully formatted the ${workspaceFolder.name} workspace folder.`,
 		);
 	};
 }
@@ -114,7 +114,7 @@ async function selectWorkspaceFolderFromQuickPick(
 		workspaceFolderNames,
 		{
 			canPickMany: false,
-			title: "Which workspace should be formatted?",
+			title: "Which workspace folder should be formatted?",
 		},
 	);
 
@@ -132,35 +132,51 @@ async function selectWorkspaceFolderFromQuickPick(
 
 	// Should never get here
 	output.log(
-		`Matched a workspace name, but unexpectedly can't find corresponding workspace folder. Folder path: ${workspaceFolderName}.`,
+		`Matched a workspace folder name, but unexpectedly can't find corresponding workspace folder. Folder name: ${workspaceFolderName}.`,
 	);
 	return undefined;
 }
 
 /**
- * Close all open editor tabs
+ * Close all open editor tabs relevant to the workspace folder
  *
+ * - Filters to only tabs living under the chosen workspace folder
  * - Asks the user if they are okay with us closing the editor tabs
  * - Asks the user to save or discard any dirty editor tabs
  *
- * For safety, we save and close all editor tabs to ensure that all contents
- * have been written to disk before running the CLI, which only pulls from
- * disk and would not have access to any in memory changes. This also helps
- * ensure that the LSP server stays in sync with any changes that are made
- * when the CLI runs and changes contents on disk. Closing the files is a
- * way of saying "the source of truth is disk".
+ * For safety, we save and close all relevant editor tabs to ensure that all
+ * contents have been written to disk before running the CLI, which only pulls
+ * from disk and would not have access to any in memory changes. This also helps
+ * ensure that the LSP server stays in sync with any changes that are made when
+ * the CLI runs and changes contents on disk. Closing the files is a way of
+ * saying "the source of truth is disk".
  */
-async function closeAllTabs(): Promise<boolean> {
+async function closeAllTabs(
+	workspaceFolder: vscode.WorkspaceFolder,
+): Promise<boolean> {
 	// Collect all tabs from all tab groups
 	const allTabs = vscode.window.tabGroups.all.flatMap((group) => group.tabs);
 
-	if (allTabs.length === 0) {
+	// Filter down to only tabs containing a text based resource who's uri
+	// prefix matches the workspace folder we are going to format. This way
+	// we don't have to close anything outside the workspace folder.
+	const allRelevantTabs = allTabs.filter((tab) => {
+		const input = tab.input;
+
+		if (!(input instanceof vscode.TabInputText)) {
+			return false;
+		}
+
+		return input.uri.fsPath.startsWith(workspaceFolder.uri.fsPath);
+	});
+
+	if (allRelevantTabs.length === 0) {
 		// Nothing to close!
 		return true;
 	}
 
 	const answer = await vscode.window.showInformationMessage(
-		"All editors must be closed to format a workspace folder. Proceed with closing all open editors?",
+		`All editors within the ${workspaceFolder.name} workspace folder must be closed before formatting. Proceed with closing these editors?`,
 		{ modal: true },
 		"Yes",
 		"No",
@@ -171,6 +187,6 @@ async function closeAllTabs(): Promise<boolean> {
 		return false;
 	}
 
-	// Close all tabs at once, each dirty tab
-	return await vscode.window.tabGroups.close(allTabs);
+	// Close all tabs at once, each dirty tab will prompt the user to save or discard any changes
+	return await vscode.window.tabGroups.close(allRelevantTabs);
 }
