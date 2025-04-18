@@ -41,19 +41,25 @@ pub(crate) struct WorldState {
 }
 
 impl WorldState {
-    pub(crate) fn get_document(&self, uri: &Url) -> anyhow::Result<&Document> {
-        if let Some(doc) = self.documents.get(uri) {
-            Ok(doc)
-        } else {
-            Err(anyhow!("Can't find document for URI {uri}"))
+    pub(crate) fn get_document(&self, uri: &Url) -> Option<&Document> {
+        self.documents.get(uri)
+    }
+
+    pub(crate) fn get_document_mut(&mut self, uri: &Url) -> Option<&mut Document> {
+        self.documents.get_mut(uri)
+    }
+
+    pub(crate) fn get_document_or_error(&self, uri: &Url) -> anyhow::Result<&Document> {
+        match self.get_document(uri) {
+            Some(doc) => Ok(doc),
+            None => Err(anyhow!("Can't find document for URI {uri}")),
         }
     }
 
-    pub(crate) fn get_document_mut(&mut self, uri: &Url) -> anyhow::Result<&mut Document> {
-        if let Some(doc) = self.documents.get_mut(uri) {
-            Ok(doc)
-        } else {
-            Err(anyhow!("Can't find document for URI {uri}"))
+    pub(crate) fn get_document_mut_or_error(&mut self, uri: &Url) -> anyhow::Result<&mut Document> {
+        match self.get_document_mut(uri) {
+            Some(doc) => Ok(doc),
+            None => Err(anyhow!("Can't find document for URI {uri}")),
         }
     }
 
