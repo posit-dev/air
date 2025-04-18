@@ -185,12 +185,12 @@ pub(crate) fn format_source(
 ) -> std::result::Result<FormattedSource, FormatSourceError> {
     let parsed = air_r_parser::parse(source, RParserOptions::default());
 
-    if parsed.has_errors() {
-        let error = parsed.into_errors().into_iter().next().unwrap();
-        return Err(error.into());
-    }
+    let parsed = match parsed.into_result() {
+        Ok(parsed) => parsed,
+        Err(err) => return Err(err.into()),
+    };
 
-    let formatted = air_r_formatter::format_node(options, &parsed.syntax())?;
+    let formatted = air_r_formatter::format_node(options, &parsed)?;
     let formatted = formatted.print()?;
     let formatted = formatted.into_code();
 

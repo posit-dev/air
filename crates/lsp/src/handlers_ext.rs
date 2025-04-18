@@ -46,7 +46,7 @@ pub(crate) fn view_file(params: ViewFileParams, state: &WorldState) -> anyhow::R
         }
 
         ViewFileKind::SyntaxTree => {
-            if doc.parse.has_errors() {
+            if doc.parse.has_error() {
                 return Ok(String::from("*Parse error*"));
             }
 
@@ -55,7 +55,7 @@ pub(crate) fn view_file(params: ViewFileParams, state: &WorldState) -> anyhow::R
         }
 
         ViewFileKind::FormatTree => {
-            if doc.parse.has_errors() {
+            if doc.parse.has_error() {
                 return Ok(String::from("*Parse error*"));
             }
 

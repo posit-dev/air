@@ -1,15 +1,14 @@
-use air_r_parser::ParseError;
 use air_r_parser::{parse, RParserOptions};
-use air_r_syntax::{RRoot, RSyntaxNode};
+use air_r_syntax::RSyntaxNode;
 use biome_console::fmt::{Formatter, Termcolor};
 use biome_console::markup;
 use biome_diagnostics::display::PrintDiagnostic;
 use biome_diagnostics::termcolor;
 use biome_diagnostics::DiagnosticExt;
 use biome_parser::prelude::ParseDiagnostic;
+use biome_rowan::SyntaxKind;
 use biome_rowan::SyntaxNode;
 use biome_rowan::SyntaxSlot;
-use biome_rowan::{AstNode, SyntaxKind};
 use std::fmt::Write;
 use std::fs;
 use std::path::Path;
@@ -29,7 +28,7 @@ fn quick_test() {
     1$2";
     let options = RParserOptions::default();
     let parsed = parse(code, options);
-    let root = RRoot::unwrap_cast(parsed.syntax());
+    let root = parsed.tree();
     println!("{root:#?}");
 }
 
@@ -54,7 +53,7 @@ pub fn run(test_case: &str, _snapshot_name: &str, test_directory: &str, outcome_
 
     let options = RParserOptions::default();
     let parsed = parse(&content, options);
-    let root = RRoot::unwrap_cast(parsed.syntax());
+    let root = parsed.tree();
     let formatted_ast = format!("{:#?}", root);
 
     let mut snapshot = String::new();
@@ -78,13 +77,9 @@ pub fn run(test_case: &str, _snapshot_name: &str, test_directory: &str, outcome_
     )
     .unwrap();
 
-    if parsed.has_errors() {
-        let diagnostics: Vec<ParseDiagnostic> = parsed
-            .errors()
-            .iter()
-            .map(ParseError::diagnostic)
-            .map(ParseDiagnostic::clone)
-            .collect();
+    if parsed.has_error() {
+        // Safety: We just checked that there is an error
+        let diagnostics: Vec<ParseDiagnostic> = vec![parsed.error().unwrap().clone().into()];
 
         let mut diagnostics_buffer = termcolor::Buffer::no_color();
 
@@ -135,8 +130,8 @@ pub fn run(test_case: &str, _snapshot_name: &str, test_directory: &str, outcome_
             }
         }
         ExpectedOutcome::Fail => {
-            if !parsed.has_errors() {
-                panic!("Failing test must have diagnostics");
+            if !parsed.has_error() {
+                panic!("Failing test must have an error");
             }
         }
         _ => {}

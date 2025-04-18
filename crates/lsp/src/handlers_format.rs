@@ -43,13 +43,10 @@ pub(crate) fn document_formatting(
         }
     }
 
-    if doc.parse.has_errors() {
+    if doc.parse.has_error() {
         // Refuse to format in the face of parse errors, but only log a warning
         // rather than returning an LSP error, as toast notifications here are distracting.
-        tracing::warn!(
-            "Failed to format {uri}. Can't format when there are parse errors.",
-            uri = params.text_document.uri
-        );
+        tracing::warn!("Failed to format {uri}. Can't format when there are parse errors.");
         return Ok(None);
     }
 
@@ -88,13 +85,10 @@ pub(crate) fn document_range_formatting(
         }
     }
 
-    if doc.parse.has_errors() {
+    if doc.parse.has_error() {
         // Refuse to format in the face of parse errors, but only log a warning
         // rather than returning an LSP error, as toast notifications here are distracting.
-        tracing::warn!(
-            "Failed to format {uri}. Can't format when there are parse errors.",
-            uri = params.text_document.uri
-        );
+        tracing::warn!("Failed to format {uri}. Can't format when there are parse errors.");
         return Ok(None);
     }
 
