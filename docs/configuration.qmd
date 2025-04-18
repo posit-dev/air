@@ -66,7 +66,7 @@ If you run `air format` with a working directory of `~/packages/dplyr` or open y
 Air also supports walking up the directory tree from the project root.
 For example, if you ran `air format` from within `~/packages/dplyr/R`, then Air would look "up" one directory and would find and use `~/packages/dplyr/air.toml`.
 
-## Settings synchronization
+## Settings synchronization {#configuration-settings-synchronization}
 
 In IDEs that support synchronization (VS Code and Positron currently), Air does its best to ensure that the formatter and the IDE are in agreement.
 This is supported by two mechanisms:

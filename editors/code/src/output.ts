@@ -8,6 +8,10 @@ class OutputChannelLogger {
 	public log(...data: Arguments): void {
 		this.channel.appendLine(util.format(...data));
 	}
+
+	public show() {
+		this.channel.show();
+	}
 }
 
 let channel: OutputChannelLogger | undefined;
@@ -20,7 +24,7 @@ export function registerLogger(logChannel: OutputChannel): Disposable {
 	};
 }
 
-/*
+/**
  * Free function for logging to the global output channel shared with the server
  *
  * Adapted from:
@@ -31,4 +35,11 @@ export function log(...args: Arguments): void {
 		console.log(...args);
 	}
 	channel?.log(...args);
+}
+
+/**
+ * Free function for showing the global output channel shared with the server
+ */
+export function show() {
+	channel?.show();
 }

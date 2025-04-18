@@ -7,6 +7,8 @@
 
 ## Development version
 
+- New `Air: Format Workspace Folder` command to format an entire project (similar to running `air format {folder}` at the command line). Combined with `usethis::use_air()`, this is the easiest way to transition an existing project to use Air (#312)!
+
 
 ## 0.10.0
 

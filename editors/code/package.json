@@ -117,6 +117,11 @@
 				"command": "air.restart"
 			},
 			{
+				"title": "Format Workspace Folder",
+				"category": "Air",
+				"command": "air.workspaceFolderFormatting"
+			},
+			{
 				"title": "View Tree Sitter",
 				"category": "Air",
 				"command": "air.viewTreeSitter"
