@@ -23,7 +23,7 @@ pub(crate) enum ViewFileKind {
 }
 
 pub(crate) fn view_file(params: ViewFileParams, state: &WorldState) -> anyhow::Result<String> {
-    let doc = state.get_document(&params.text_document.uri)?;
+    let doc = state.get_document_or_error(&params.text_document.uri)?;
 
     match params.kind {
         ViewFileKind::TreeSitter => {

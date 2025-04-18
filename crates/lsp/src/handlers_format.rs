@@ -23,7 +23,7 @@ pub(crate) fn document_formatting(
     state: &WorldState,
 ) -> anyhow::Result<Option<Vec<lsp_types::TextEdit>>> {
     let uri = &params.text_document.uri;
-    let doc = state.get_document(uri)?;
+    let doc = state.get_document_or_error(uri)?;
 
     let workspace_settings = lsp_state.workspace_document_settings(uri);
 
@@ -68,7 +68,7 @@ pub(crate) fn document_range_formatting(
     state: &WorldState,
 ) -> anyhow::Result<Option<Vec<lsp_types::TextEdit>>> {
     let uri = &params.text_document.uri;
-    let doc = state.get_document(uri)?;
+    let doc = state.get_document_or_error(uri)?;
 
     let workspace_settings = lsp_state.workspace_document_settings(uri);
 
