@@ -21,6 +21,7 @@ use tower_lsp::lsp_types::DidChangeWatchedFilesParams;
 use tower_lsp::lsp_types::DidChangeWorkspaceFoldersParams;
 use tower_lsp::lsp_types::DidCloseTextDocumentParams;
 use tower_lsp::lsp_types::DidOpenTextDocumentParams;
+use tower_lsp::lsp_types::FoldingRangeProviderCapability;
 use tower_lsp::lsp_types::FormattingOptions;
 use tower_lsp::lsp_types::InitializeParams;
 use tower_lsp::lsp_types::InitializeResult;
@@ -132,6 +133,7 @@ pub(crate) fn initialize(
             }),
             document_formatting_provider: Some(OneOf::Left(true)),
             document_range_formatting_provider: Some(OneOf::Left(true)),
+            folding_range_provider: Some(FoldingRangeProviderCapability::Simple(true)),
             ..ServerCapabilities::default()
         },
     })
