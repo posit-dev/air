@@ -118,7 +118,11 @@ pub(crate) fn handle_folding_range(
     state: &WorldState,
 ) -> anyhow::Result<Option<Vec<FoldingRange>>> {
     let uri = params.text_document.uri;
-    let document = state.get_document(&uri)?;
+    let document = state.get_document(&uri).ok_or_else(|| {
+        let err = anyhow::anyhow!("Missing document for URI: {uri}");
+        tracing::error!("{err}");
+        err
+    })?;
     match folding_range(document) {
         Ok(foldings) => Ok(Some(foldings)),
         Err(err) => {
