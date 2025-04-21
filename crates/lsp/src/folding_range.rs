@@ -6,6 +6,7 @@
 //
 
 use regex::Regex;
+use std::cmp::Ordering;
 use std::sync::LazyLock;
 
 use tower_lsp::lsp_types::FoldingRange;
@@ -258,23 +259,27 @@ fn nested_processor(
             tracing::error!("Folding Range: comment_stacks should not be empty here");
             return;
         };
-        if *last_level < level {
-            comment_stack.last_mut().unwrap().push((level, line_num));
-            break;
-        } else if *last_level == level {
-            folding_ranges.push(comment_range(
-                comment_stack.last().unwrap().last().unwrap().1,
-                line_num - 1,
-            ));
-            comment_stack.last_mut().unwrap().pop();
-            comment_stack.last_mut().unwrap().push((level, line_num));
-            break;
-        } else {
-            folding_ranges.push(comment_range(
-                comment_stack.last().unwrap().last().unwrap().1,
-                line_num - 1,
-            ));
-            comment_stack.last_mut().unwrap().pop(); // TODO: Handle case where comment_stack is empty
+        match last_level.cmp(&level) {
+            Ordering::Less => {
+                comment_stack.last_mut().unwrap().push((level, line_num));
+                break;
+            }
+            Ordering::Equal => {
+                folding_ranges.push(comment_range(
+                    comment_stack.last().unwrap().last().unwrap().1,
+                    line_num - 1,
+                ));
+                comment_stack.last_mut().unwrap().pop();
+                comment_stack.last_mut().unwrap().push((level, line_num));
+                break;
+            }
+            Ordering::Greater => {
+                folding_ranges.push(comment_range(
+                    comment_stack.last().unwrap().last().unwrap().1,
+                    line_num - 1,
+                ));
+                comment_stack.last_mut().unwrap().pop(); // TODO: Handle case where comment_stack is empty
+            }
         }
     }
 }
