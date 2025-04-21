@@ -275,7 +275,7 @@ pub(crate) fn init_logging(
 /// Importantly, note that `cargo nextest run` swallows all logs for passing tests unless
 /// you use `--no-capture`, which is the correct expected behavior.
 fn is_test_client(client_info: Option<&ClientInfo>) -> bool {
-    client_info.map_or(false, |client_info| client_info.name == "AirTestClient")
+    client_info.is_some_and(|client_info| client_info.name == "AirTestClient")
 }
 
 fn log_filter(

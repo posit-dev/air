@@ -2,6 +2,34 @@
 
 # Development version
 
+
+# 0.5.0
+
+- Added support for a `skip` field in `air.toml` (#273).
+
+  This is an extension of the `# fmt: skip` comment feature that provides a single place for you to list functions you never want formatting for. For example:
+
+  ```toml
+  skip = ["tribble", "graph_from_literal"]
+  ```
+
+  This `skip` configuration would skip formatting for these function calls, even without a `# fmt: skip` comment:
+
+  ```r
+  tribble(
+    ~x, ~y,
+     1,  2,
+     3,  4
+  )
+
+  igraph::graph_from_literal(A +-+ B +---+ C ++ D + E)
+  ```
+
+  We expect this to be useful when working with packages that provide domain specific languages that come with their own unique formatting conventions.
+
+- Fixed an issue where `air.toml` settings were not being applied to the correct R files (#294).
+
+
 # 0.4.1
 
 - Language server configuration variables are now fully optional, avoiding issues in editors like Zed or Helix (#246).

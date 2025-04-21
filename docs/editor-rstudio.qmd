@@ -13,16 +13,31 @@ RStudio does not support the [Language Server Protocol](https://microsoft.github
 Ensure you have at least RStudio version 2024.12.0, which you can download from [here](https://posit.co/download/rstudio-desktop/).
 Additionally, you'll need to install the Air [command line tool](cli.qmd).
 
-Open `Tools -> Global Options -> Code`, choose the `Formatting` tab at the top, and change the option to use an `External` formatter.
-Then set the `Reformat command` to `{path/to/air} format`.
+Next, you'll need to tell RStudio to use Air as an external formatter:
 
-The easiest way to figure out `{path/to/air}` for yourself is to run `which air` from a Terminal on Unix, and `where air` from the Command Prompt on Windows.
+-   Open `Tools -> Global Options -> Code`
+
+-   Choose the `Formatting` tab at the top
+
+-   Change the `Code formatter:` option to `External`
+
+-   Change the `Reformat command:` to `{path/to/air} format`
+
+    -   Note that you set this to a partially complete command!
+        RStudio will append the name of the file to this partial command, but you *must* specify `format` in addition to the path to Air for it to work.
+
+    -   The easiest way to figure out `{path/to/air}` for yourself is to run `which air` from a Terminal on Unix, and `where air` from the Command Prompt on Windows.
+
+-   Apply the changes and exit the settings.
+
+At this point, explicit calls to `Reformat Selection` and `Reformat Document` should use Air.
+If you'd also like RStudio to invoke Air on save, follow the instructions in [Format on Save].
 
 ![](./images/rstudio-external-formatter.png){fig-alt="Setting Air as an external formatter with Tools -> Global Options -> Code -> Formatting" fig-align="center"}
 
 # Features
 
-## Format on save
+## Format on save {#rstudio-format-on-save}
 
 After you've set Air as an external formatter, you can either tell RStudio to format all documents on save, or set this on a per document basis.
 

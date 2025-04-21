@@ -42,8 +42,7 @@ Formatting a selection may *expand* that selection to find the nearest complete 
 
 ## Quarto
 
-Quarto support currently only works in VS Code.
-There is an [issue](https://github.com/posit-dev/air/issues/77) in VS Code itself that currently prevents it from working correctly in Positron, we will fix this in Positron soon.
+Quarto can automatically invoke Air on R code cells when the [Quarto extension](https://marketplace.visualstudio.com/items?itemName=quarto.quarto) is active.
 
 ### Format on save
 

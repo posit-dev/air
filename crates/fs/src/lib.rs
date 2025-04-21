@@ -6,7 +6,7 @@ use std::path::PathBuf;
 pub fn has_r_extension(path: &Path) -> bool {
     path.extension()
         .and_then(OsStr::to_str)
-        .map_or(false, is_r_extension)
+        .is_some_and(is_r_extension)
 }
 
 pub fn is_r_extension(extension: &str) -> bool {

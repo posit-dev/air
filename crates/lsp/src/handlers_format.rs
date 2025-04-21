@@ -23,7 +23,7 @@ pub(crate) fn document_formatting(
     state: &WorldState,
 ) -> anyhow::Result<Option<Vec<lsp_types::TextEdit>>> {
     let uri = &params.text_document.uri;
-    let doc = state.get_document(uri)?;
+    let doc = state.get_document_or_error(uri)?;
 
     let workspace_settings = lsp_state.workspace_document_settings(uri);
 
@@ -68,7 +68,7 @@ pub(crate) fn document_range_formatting(
     state: &WorldState,
 ) -> anyhow::Result<Option<Vec<lsp_types::TextEdit>>> {
     let uri = &params.text_document.uri;
-    let doc = state.get_document(uri)?;
+    let doc = state.get_document_or_error(uri)?;
 
     let workspace_settings = lsp_state.workspace_document_settings(uri);
 
@@ -725,6 +725,134 @@ default-exclude = false
         let input = "1+1";
         let output = "1 + 1\n";
         let url = as_file_url(tempdir.join("cpp11.R").as_path());
+        let filename = FileName::Url(url);
+        let doc = Document::new(input.to_string(), Some(0), PositionEncoding::Utf8);
+        let result = client.format_document(&doc, filename).await;
+        assert_eq!(result, output);
+    }
+
+    #[tokio::test]
+    async fn test_format_skip_functions() {
+        let as_file_url = |path: &Path| format!("file:///{path}", path = path.display());
+
+        let mut client = new_test_client().await;
+
+        // Create a tempdir that will serve as our workspace
+        let tempdir = tempfile::TempDir::new().unwrap();
+        let tempdir = tempdir.path();
+
+        // Note that `graph_from_literal()` is formatted by default
+        let input = r#"
+igraph::graph_from_literal(Alice +--+ Jerry)
+1+1
+"#
+        .trim_start();
+        let output = r#"
+igraph::graph_from_literal(Alice + --+Jerry)
+1 + 1
+"#
+        .trim_start();
+        let url = as_file_url(tempdir.join("test.R").as_path());
+        let filename = FileName::Url(url);
+        let doc = Document::new(input.to_string(), Some(0), PositionEncoding::Utf8);
+        let result = client.format_document(&doc, filename).await;
+        assert_eq!(result, output);
+
+        // Write the `air.toml` to disk inside the workspace so the server can discover it
+        let air_path = tempdir.join("air.toml");
+        let air_contents = r#"
+[format]
+skip = ["graph_from_literal"]
+"#;
+        std::fs::write(&air_path, air_contents).unwrap();
+
+        // Open the tempdir as the workspace, the server will load in the `air.toml`
+        let workspace_folder = WorkspaceFolder {
+            uri: Url::parse(&as_file_url(tempdir)).unwrap(),
+            name: "workspace".to_string(),
+        };
+        client
+            .did_change_workspace_folders(DidChangeWorkspaceFoldersParams {
+                event: WorkspaceFoldersChangeEvent {
+                    added: vec![workspace_folder],
+                    removed: vec![],
+                },
+            })
+            .await;
+
+        // Now `graph_from_literal()` should be skipped, but `1+1` is still formatted
+        let input = r#"
+igraph::graph_from_literal(Alice +--+ Jerry)
+1+1
+"#
+        .trim_start();
+        let output = r#"
+igraph::graph_from_literal(Alice +--+ Jerry)
+1 + 1
+"#
+        .trim_start();
+        let url = as_file_url(tempdir.join("test.R").as_path());
+        let filename = FileName::Url(url);
+        let doc = Document::new(input.to_string(), Some(0), PositionEncoding::Utf8);
+        let result = client.format_document(&doc, filename).await;
+        assert_eq!(result, output);
+    }
+
+    #[tokio::test]
+    async fn test_files_outside_the_workspace_dont_get_workspace_settings() {
+        // https://github.com/posit-dev/air/issues/294
+
+        let as_file_url = |path: &Path| format!("file:///{path}", path = path.display());
+
+        let mut client = new_test_client().await;
+
+        // Create a tempdir that will serve as our base of operations
+        let tempdir = tempfile::TempDir::new().unwrap();
+        let tempdir = tempdir.path();
+
+        // Note that `workspace < directory` lexicographically, but we still don't want
+        // `workspace` settings to apply to files in `directory`. We want default settings
+        // to apply.
+        let workspace = tempdir.join("a");
+        let directory = tempdir.join("b");
+
+        std::fs::create_dir(&workspace).unwrap();
+
+        // Write the `air.toml` to disk inside the workspace so the server can discover it
+        let air_path = workspace.join("air.toml");
+        let air_contents = r#"
+[format]
+indent-width = 8
+"#;
+        std::fs::write(&air_path, air_contents).unwrap();
+
+        // Open `workspace` as the workspace, the server will load in the `air.toml`
+        let workspace_folder = WorkspaceFolder {
+            uri: Url::parse(&as_file_url(workspace.as_path())).unwrap(),
+            name: "workspace".to_string(),
+        };
+        client
+            .did_change_workspace_folders(DidChangeWorkspaceFoldersParams {
+                event: WorkspaceFoldersChangeEvent {
+                    added: vec![workspace_folder],
+                    removed: vec![],
+                },
+            })
+            .await;
+
+        // `{directory}/test.R` should get default settings, as it is not under `{workspace}`
+        let input = "list(\n  1\n)\n";
+        let output = "list(\n  1\n)\n";
+        let url = as_file_url(directory.join("test.R").as_path());
+        let filename = FileName::Url(url);
+        let doc = Document::new(input.to_string(), Some(0), PositionEncoding::Utf8);
+        let result = client.format_document(&doc, filename).await;
+        assert_eq!(result, output);
+
+        // `{workspace}/test.R` should get workspace settings (and the increased indent)
+        let input = "list(\n  1\n)\n";
+        let output = "list(\n        1\n)\n";
+        let url = as_file_url(workspace.join("test.R").as_path());
         let filename = FileName::Url(url);
         let doc = Document::new(input.to_string(), Some(0), PositionEncoding::Utf8);
         let result = client.format_document(&doc, filename).await;

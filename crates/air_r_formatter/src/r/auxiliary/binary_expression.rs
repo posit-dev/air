@@ -1,5 +1,6 @@
 use crate::context::RFormatOptions;
 use crate::either::Either;
+use crate::is_suppressed_by_comment;
 use crate::prelude::*;
 use air_r_syntax::AnyRExpression;
 use air_r_syntax::RBinaryExpression;
@@ -8,7 +9,6 @@ use air_r_syntax::RLanguage;
 use air_r_syntax::RSyntaxKind;
 use biome_formatter::format_args;
 use biome_formatter::write;
-use biome_formatter::CstFormatContext;
 use biome_formatter::FormatRuleWithOptions;
 use biome_rowan::AstNode;
 use biome_rowan::SyntaxResult;
@@ -490,7 +490,7 @@ fn fmt_binary_chain(
     while let Some(node) = as_chainable_binary_expression(&left)? {
         // It's only possible to suppress the formatting of the whole binary expression formatting OR
         // the formatting of the right hand side value but not of a nested binary expression.
-        if f.context().comments().is_suppressed(node.syntax()) {
+        if is_suppressed_by_comment(node, f) {
             tracing::warn!("Can't use a suppression comment partway through a binary chain.");
         }
 
@@ -685,5 +685,5 @@ fn has_persistent_line_break(tail: &[TailPiece], options: &RFormatOptions) -> bo
     }
 
     tail.first()
-        .map_or(false, |piece| piece.right.syntax().has_leading_newline())
+        .is_some_and(|piece| piece.right.syntax().has_leading_newline())
 }

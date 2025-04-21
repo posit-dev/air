@@ -2,7 +2,7 @@
 	"name": "air-vscode",
 	"displayName": "Air - R Language Support",
 	"description": "R formatter and language server",
-	"version": "0.8.0",
+	"version": "0.10.0",
 	"publisher": "Posit",
 	"license": "MIT",
 	"homepage": "https://posit-dev.github.io/air",
@@ -28,7 +28,11 @@
 	"activationEvents": [
 		"onLanguage:r",
 		"workspaceContains:*.r",
-		"workspaceContains:*.R"
+		"workspaceContains:*.R",
+		"workspaceContains:air.toml",
+		"workspaceContains:.air.toml",
+		"workspaceContains:DESCRIPTION",
+		"workspaceContains:*.Rproj"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {

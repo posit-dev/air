@@ -169,7 +169,7 @@ pub(crate) fn did_change(
     state: &mut WorldState,
 ) -> anyhow::Result<()> {
     let uri = &params.text_document.uri;
-    let doc = state.get_document_mut(uri)?;
+    let doc = state.get_document_mut_or_error(uri)?;
     doc.on_did_change(params);
 
     Ok(())
@@ -251,7 +251,7 @@ pub(crate) fn did_change_formatting_options(
     opts: &FormattingOptions,
     state: &mut WorldState,
 ) {
-    let Ok(doc) = state.get_document_mut(uri) else {
+    let Some(doc) = state.get_document_mut(uri) else {
         return;
     };
 
@@ -402,7 +402,7 @@ fn update_documents_config(
         let config: DocumentSettings = config.into();
 
         // Finally, update the document's config
-        state.get_document_mut(&uri)?.settings = config;
+        state.get_document_mut_or_error(&uri)?.settings = config;
     }
 
     Ok(())

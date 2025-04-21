@@ -43,13 +43,41 @@ install-path = ["$XDG_BIN_HOME/", "$XDG_DATA_HOME/../bin", "~/.local/bin"]
 install-updater = false
 
 [dist.github-custom-runners]
+# Use an `ubuntu-latest` runner for all "global" steps of the release process,
+# rather than cargo-dist's default of using the oldest possible Linux runner.
+# This includes `plan`, `build-global-artifacts`, `host`, and `announce`, none
+# of which actually rely on the specific Linux version.
+global = "ubuntu-latest"
+
+[dist.github-custom-runners.aarch64-apple-darwin]
 # Use ARM Mac runner to build ARM binary (not strictly required, but nice).
-# dist uses `macos-13` by default and cross-compiles.
-aarch64-apple-darwin = "macos-14"
-# Lock Linux to minimum supported Ubuntu version (glibc 2.31).
-# For ARM Linux dist actually uses an x86_64 host and uses cargo-zigbuild to cross compile.
-x86_64-unknown-linux-gnu = "ubuntu-20.04"
-aarch64-unknown-linux-gnu = "ubuntu-20.04"
+# dist uses `macos-13` (Intel) by default and cross-compiles to ARM.
+runner = "macos-14"
+
+[dist.github-custom-runners.x86_64-unknown-linux-gnu]
+# Lock Linux to minimum supported version (Ubuntu 18.04 / RHEL 8, glibc 2.28).
+# PyPa is the Python Packaging Authority, they manage old Linux variants for building Python wheels.
+# The container `host` uses MUSL because dist itself may require a newer glibc than we are locked to.
+# Runs on ubuntu-latest, dist defaults to oldest possible runner, but container usage means we can use latest
+# and not have to worry about it being EOL-ed.
+runner = "ubuntu-latest"
+container = { image = "quay.io/pypa/manylinux_2_28_x86_64", host = "x86_64-unknown-linux-musl" }
+
+[dist.github-custom-runners.aarch64-unknown-linux-gnu]
+# See `x86_64-unknown-linux-gnu` comments
+# For ARM Linux, dist actually uses an x86_64 host and uses cargo-zigbuild to cross compile,
+# since GitHub doesn't offer a reliable free ARM Linux host yet.
+runner = "ubuntu-latest"
+container = { image = "quay.io/pypa/manylinux_2_28_x86_64", host = "x86_64-unknown-linux-musl" }
+
+[dist.github-custom-runners.aarch64-pc-windows-msvc]
+# This setup is nearly identical to specifying nothing, but dist defaults to the oldest possible
+# ubuntu runner, and is sometimes slow to update when they are EOL-ed by GitHub. We use a container,
+# so we can use latest and not have to worry about their EOL.
+# https://github.com/axodotdev/cargo-dist/blob/c8ba950c63f9c38c77782912ec6cdb6807bd0fbd/cargo-dist/src/backend/ci/github.rs#L678-L688
+runner = "ubuntu-latest"
+host = "x86_64-unknown-linux-gnu"
+container = { image = "messense/cargo-xwin", host = "x86_64-unknown-linux-musl", package_manager = "apt" }
 
 [[dist.extra-artifacts]]
 # We always keep `air.schema.json` up to date, so there is no command required to build it,
