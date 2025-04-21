@@ -278,7 +278,7 @@ fn nested_processor(
                     comment_stack.last().unwrap().last().unwrap().1,
                     line_num - 1,
                 ));
-                comment_stack.last_mut().unwrap().pop(); // TODO: Handle case where comment_stack is empty
+                comment_stack.last_mut().unwrap().pop(); // Safe: the loop exits early if the stack becomes empty
             }
         }
     }
