@@ -42,6 +42,8 @@ pub fn folding_range(document: &Document) -> anyhow::Result<Vec<FoldingRange>> {
         &mut None,
     );
 
+    // Add indent folding ranges
+    append_indent_folding_ranges(document, &mut folding_ranges);
     Ok(folding_ranges)
 }
 
@@ -380,5 +382,70 @@ fn end_node_handler(
         let folding_range = comment_range(*cell_start, line_idx - 1);
         folding_ranges.push(folding_range);
         *cell_marker = None;
+    }
+}
+
+fn append_indent_folding_ranges(document: &Document, folding_ranges: &mut Vec<FoldingRange>) {
+    let lines: Vec<&str> = document.contents.lines().collect();
+    let mut indent_stack: Vec<(usize, usize)> = Vec::new(); // (start_line, indent_level)
+
+    for (line_idx, line) in lines.iter().enumerate() {
+        let trimmed = line.trim_end();
+
+        // Skip blank lines
+        if trimmed.is_empty() || (line_idx < 1) {
+            continue;
+        }
+
+        let indent = line.chars().take_while(|c| c.is_whitespace()).count();
+
+        if indent_stack.is_empty() {
+            indent_stack.push((line_idx - 1, indent));
+            continue;
+        }
+
+        // Pop all deeper indents
+        loop {
+            let Some(&(start_line, start_indent)) = indent_stack.last() else {
+                tracing::error!("Folding Range: indent_stack should not be empty here");
+                return;
+            };
+
+            match start_indent.cmp(&indent) {
+                Ordering::Less => {
+                    indent_stack.push((line_idx - 1, indent));
+                    break;
+                }
+                Ordering::Equal => break,
+                Ordering::Greater => {
+                    if line_idx > start_line + 1 {
+                        folding_ranges.push(FoldingRange {
+                            start_line: start_line as u32,
+                            end_line: (line_idx - 1) as u32,
+                            kind: Some(FoldingRangeKind::Region),
+                            start_character: None,
+                            end_character: None,
+                            collapsed_text: None,
+                        });
+                    }
+                    indent_stack.pop();
+                }
+            }
+        }
+    }
+
+    // Final flush: any unfinished indent block to End of Document
+    let last_line = lines.len().saturating_sub(1);
+    for (start_line, _) in indent_stack.into_iter() {
+        if last_line > start_line {
+            folding_ranges.push(FoldingRange {
+                start_line: start_line as u32,
+                end_line: last_line as u32,
+                kind: Some(FoldingRangeKind::Region),
+                start_character: None,
+                end_character: None,
+                collapsed_text: None,
+            });
+        }
     }
 }
