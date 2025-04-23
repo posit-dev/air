@@ -1,8 +1,8 @@
-import * as cp from "child_process";
 import * as vscode from "vscode";
 
 import { Cmd, Ctx } from "../context";
 import * as output from "../output";
+import { isError, isResult, runCommand } from "../process";
 
 /**
  * Format a workspace folder
@@ -62,9 +62,6 @@ export function workspaceFolderFormatting(ctx: Ctx): Cmd {
 
 		const workspaceFolderPath = workspaceFolder.uri.fsPath;
 
-		let stderr = "";
-		let anyErrors = false;
-
 		// i.e., `air format {workspaceFolderPath} --no-color`
 		const args = ["format", workspaceFolderPath, "--no-color"];
 
@@ -73,34 +70,30 @@ export function workspaceFolderFormatting(ctx: Ctx): Cmd {
 			cwd: workspaceFolderPath,
 		};
 
-		// A promise that resolves when the spawned process closes or errors
-		const finishedFormatting = new Promise<void>((resolve) => {
-			// Use spawn instead of exec to avoid maxBufferExceeded error
-			const p = cp.spawn(binaryPath, args, options);
+		// Resolves when the spawned process closes or errors
+		const result = await runCommand(binaryPath, args, options);
 
-			p.stderr.setEncoding("utf8");
-			p.stderr.on("data", (data) => (stderr += data));
+		let anyErrors = false;
 
-			p.on("error", () => {
+		if (isError(result)) {
+			// Something went horribly wrong in the process spawning or shutdown process
+			anyErrors = true;
+			output.log(
+				`Errors occurred while formatting the ${workspaceFolder.name} workspace folder.\n${result.error.message}`,
+			);
+		}
+
+		if (isResult(result)) {
+			if (result.code !== 0) {
+				// Air was able to run and exit, but we had an error along the way
+				output.log(
+					`Errors occurred while formatting the ${workspaceFolder.name} workspace folder.\n${result.stderr}`,
+				);
 				anyErrors = true;
-				return resolve();
-			});
-
-			p.on("close", (code) => {
-				if (code !== 0) {
-					anyErrors = true;
-				}
-				return resolve();
-			});
-		});
-
-		await finishedFormatting;
+			}
+		}
 
 		if (anyErrors) {
-			output.log(
-				`Errors occurred while formatting the ${workspaceFolder.name} workspace folder.\n${stderr}`,
-			);
-
 			const answer = await vscode.window.showInformationMessage(
 				`Errors occurred while formatting the ${workspaceFolder.name} workspace folder. View the logs?`,
 				{ modal: true },
