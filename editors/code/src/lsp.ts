@@ -137,8 +137,19 @@ export class Lsp {
 
 						const uri = vscode.Uri.parse(item.scopeUri);
 
-						const document =
-							await vscode.workspace.openTextDocument(uri);
+						const document = vscode.workspace.textDocuments.find(
+							(document) => {
+								return document.uri === uri;
+							},
+						);
+
+						if (!document) {
+							return new ResponseError(
+								-1,
+								`Can't retrieve configuration for document with uri ${uri}. Document is closed.`,
+							);
+						}
+
 						const languageId = document.languageId;
 
 						const config = vscode.workspace.getConfiguration(
