@@ -13,22 +13,18 @@ import { isError, isResult, runCommand } from "../process";
  * - If 1 workspace folder is open, automatically uses it
  * - If >1 workspace folders are open, asks the user to choose
  *
- * # Tab closing
+ * # Tab saving
  *
  * Because we use the embedded Air CLI to perform the formatting, we force all
- * relevant tabs to be saved and closed before proceeding. This has two main
- * benefits:
+ * relevant tabs to be saved before proceeding. The Air CLI can't know about any
+ * in-memory changes that may have occurred in "dirty" editors. Forcing them to
+ * save causes any changes to be written to disk first, syncing VS Code with the
+ * CLI.
  *
- * - The Air CLI can't know about any in-memory changes that may have occurred
- *   in "dirty" editors. Forcing them to save and close causes any changes
- *   to be written to disk first, syncing VS Code with the CLI.
- *
- * - The LSP server part of Air needs to perfectly track changes for any open
- *   files. Closing the tabs first switches the server's "source of truth" from
- *   the client version of the file to the on-disk version of the file, which
- *   should ensure the LSP server won't have any chance of getting out of sync.
- *   This may be overkill, since the LSP server seems to handle git branch
- *   changes well, but it's still not a bad idea.
+ * We don't force the tabs to be closed. We've seen that VS Code seems to sync
+ * the LSP client and server well when performing a git branch switch (as long
+ * as all files are saved beforehand), so we are hopeful it should also behave
+ * well when we format with the CLI.
  *
  * # Forward propagation of settings
  *
@@ -55,8 +51,9 @@ export function workspaceFolderFormatting(ctx: Ctx): Cmd {
 			return;
 		}
 
-		const allTabsClosed = await closeAllTabs(workspaceFolder);
-		if (!allTabsClosed) {
+		const allSaved =
+			await saveAllDirtyWorkspaceTextDocuments(workspaceFolder);
+		if (!allSaved) {
 			return;
 		}
 
@@ -174,38 +171,24 @@ async function selectWorkspaceFolderFromQuickPick(
 }
 
 /**
- * Close all open editor tabs relevant to the workspace folder
+ * Save all open dirty editor tabs relevant to the workspace folder
  *
  * - Filters to only tabs living under the chosen workspace folder
- * - Asks the user if they are okay with us closing the editor tabs
- * - Asks the user to save or discard any dirty editor tabs
+ * - Asks the user if they are okay with us saving the editor tabs
  */
-async function closeAllTabs(
+async function saveAllDirtyWorkspaceTextDocuments(
 	workspaceFolder: vscode.WorkspaceFolder,
 ): Promise<boolean> {
-	// Collect all tabs from all tab groups
-	const allTabs = vscode.window.tabGroups.all.flatMap((group) => group.tabs);
+	const textDocuments = dirtyWorkspaceTextDocuments(workspaceFolder);
 
-	// Filter down to only tabs containing a text based resource who's uri
-	// prefix matches the workspace folder we are going to format. This way
-	// we don't have to close anything outside the workspace folder.
-	const allRelevantTabs = allTabs.filter((tab) => {
-		const input = tab.input;
-
-		if (!(input instanceof vscode.TabInputText)) {
-			return false;
-		}
-
-		return input.uri.fsPath.startsWith(workspaceFolder.uri.fsPath);
-	});
-
-	if (allRelevantTabs.length === 0) {
-		// Nothing to close!
+	if (textDocuments.length === 0) {
+		// Nothing to save!
 		return true;
 	}
 
+	// Ask the user if we can save them
 	const answer = await vscode.window.showInformationMessage(
-		`All editors within the ${workspaceFolder.name} workspace folder must be closed before formatting. Proceed with closing these editors?`,
+		`All editors within the ${workspaceFolder.name} workspace folder must be saved before formatting. Proceed with saving these editors?`,
 		{ modal: true },
 		"Yes",
 		"No",
@@ -216,6 +199,42 @@ async function closeAllTabs(
 		return false;
 	}
 
-	// Close all tabs at once, each dirty tab will prompt the user to save or discard any changes
-	return await vscode.window.tabGroups.close(allRelevantTabs);
+	for (const textDocument of textDocuments) {
+		const saved = await textDocument.save();
+
+		if (!saved) {
+			// Somehow a document failed to save, bail
+			return false;
+		}
+	}
+
+	return true;
+}
+
+function dirtyWorkspaceTextDocuments(
+	workspaceFolder: vscode.WorkspaceFolder,
+): vscode.TextDocument[] {
+	return vscode.workspace.textDocuments.filter((document) => {
+		if (document.isClosed) {
+			// Not actually synchonized. This document will be refreshed when the document is reopened.
+			return false;
+		}
+
+		if (!document.isDirty) {
+			// Nothing to do
+			return false;
+		}
+
+		if (document.isUntitled) {
+			// These aren't part of the workspace folder
+			return false;
+		}
+
+		if (!document.uri.fsPath.startsWith(workspaceFolder.uri.fsPath)) {
+			// The document must live "under" the chosen workspace folder for us to care about it
+			return false;
+		}
+
+		return true;
+	});
 }
