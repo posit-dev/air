@@ -40,6 +40,14 @@ Formatting a selection may *expand* that selection to find the nearest complete 
 
 <!--# Come back and add video -->
 
+## Format workspace folder
+
+Air ships with a special `Air: Format Workspace Folder` command to format all R files within a workspace folder.
+This is particularly useful when transitioning an existing project over to Air, where you need to perform a project-wide format before utilizing the per-file format on save feature.
+
+Note that if you don't have an `air.toml` in your project, then this command will use Air's default settings rather than the IDE [settings synchronization mechanism](configuration.qmd#configuration-settings-synchronization).
+We recommend using `usethis::use_air()` to set up an `air.toml` (among other things) before running this command.
+
 ## Quarto
 
 Quarto can automatically invoke Air on R code cells when the [Quarto extension](https://marketplace.visualstudio.com/items?itemName=quarto.quarto) is active.
