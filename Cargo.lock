@@ -30,18 +30,13 @@ dependencies = [
 name = "air"
 version = "0.5.0"
 dependencies = [
- "air_r_formatter",
- "air_r_parser",
  "anyhow",
- "biome_formatter",
- "biome_parser",
  "clap",
  "colored",
  "crates",
  "fs",
  "ignore",
  "itertools",
- "line_ending",
  "lsp",
  "tempfile",
  "thiserror 2.0.5",
@@ -2903,6 +2898,7 @@ name = "workspace"
 version = "0.1.0"
 dependencies = [
  "air_r_formatter",
+ "air_r_parser",
  "anyhow",
  "biome_formatter",
  "fs",
