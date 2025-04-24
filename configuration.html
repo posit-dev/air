@@ -72,7 +72,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-018089954d508eae8a473f0b7f0491f0.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-781e5482ac5088a0e283dca5a42cbd3d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-ddd42761ca8066d31ae3d04d2aa4294b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -220,7 +220,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#example-configuration" id="toc-example-configuration" class="nav-link active" data-scroll-target="#example-configuration">Example configuration</a></li>
   <li><a href="#configuration-recommendations" id="toc-configuration-recommendations" class="nav-link" data-scroll-target="#configuration-recommendations">Configuration recommendations</a></li>
   <li><a href="#configuration-discovery" id="toc-configuration-discovery" class="nav-link" data-scroll-target="#configuration-discovery">Configuration discovery</a></li>
-  <li><a href="#settings-synchronization" id="toc-settings-synchronization" class="nav-link" data-scroll-target="#settings-synchronization">Settings synchronization</a></li>
+  <li><a href="#configuration-settings-synchronization" id="toc-configuration-settings-synchronization" class="nav-link" data-scroll-target="#configuration-settings-synchronization">Settings synchronization</a></li>
   <li><a href="#dotfiles" id="toc-dotfiles" class="nav-link" data-scroll-target="#dotfiles">Dotfiles</a></li>
   <li><a href="#format-options" id="toc-format-options" class="nav-link" data-scroll-target="#format-options">Format options</a>
   <ul class="collapse">
@@ -296,8 +296,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>If you run <code>air format</code> with a working directory of <code>~/packages/dplyr</code> or open your IDE in the dplyr project, then Air will find and use that TOML file.</p>
 <p>Air also supports walking up the directory tree from the project root. For example, if you ran <code>air format</code> from within <code>~/packages/dplyr/R</code>, then Air would look “up” one directory and would find and use <code>~/packages/dplyr/air.toml</code>.</p>
 </section>
-<section id="settings-synchronization" class="level2">
-<h2 class="anchored" data-anchor-id="settings-synchronization">Settings synchronization</h2>
+<section id="configuration-settings-synchronization" class="level2">
+<h2 class="anchored" data-anchor-id="configuration-settings-synchronization">Settings synchronization</h2>
 <p>In IDEs that support synchronization (VS Code and Positron currently), Air does its best to ensure that the formatter and the IDE are in agreement. This is supported by two mechanisms:</p>
 <ul>
 <li><p>In projects that don’t have an <code>air.toml</code> file, IDE settings are sent to Air. This ensures that Air will use the same indentation style and width that is configured in the IDE.</p></li>

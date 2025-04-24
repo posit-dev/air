@@ -44,119 +44,6 @@
     ]
   },
   {
-    "objectID": "editor-rstudio.html",
-    "href": "editor-rstudio.html",
-    "title": "RStudio",
-    "section": "",
-    "text": "RStudio does not support the Language Server Protocol, but you can still use Air as an external formatter.",
-    "crumbs": [
-      "Editors",
-      "RStudio"
-    ]
-  },
-  {
-    "objectID": "editor-rstudio.html#rstudio-format-on-save",
-    "href": "editor-rstudio.html#rstudio-format-on-save",
-    "title": "RStudio",
-    "section": "Format on save",
-    "text": "Format on save\nAfter you’ve set Air as an external formatter, you can either tell RStudio to format all documents on save, or set this on a per document basis.\nTo format all documents on save, open Tools -&gt; Global Options -&gt; Code -&gt; Saving and check Reformat documents on save.\n\n\n\n\n\nTo format individual documents on save, open the file specific settings and check Reformat Document on Save.",
-    "crumbs": [
-      "Editors",
-      "RStudio"
-    ]
-  },
-  {
-    "objectID": "editor-rstudio.html#quarto",
-    "href": "editor-rstudio.html#quarto",
-    "title": "RStudio",
-    "section": "Quarto",
-    "text": "Quarto\nThere is currently no way to use Air in RStudio with Quarto documents.",
-    "crumbs": [
-      "Editors",
-      "RStudio"
-    ]
-  },
-  {
-    "objectID": "editors.html",
-    "href": "editors.html",
-    "title": "Editor support",
-    "section": "",
-    "text": "Air provides excellent support for code editors that support the Language Server Protocol. Many do, including Positron, VS Code, and Zed. Air also provides some support for code editors that allow for external formatters, such as RStudio. Follow one of our editor specific guides to get set up with Air in your preferred editor:\n\nVS Code\nPositron\nRStudio\nNeovim\nHelix",
-    "crumbs": [
-      "Editors"
-    ]
-  },
-  {
-    "objectID": "configuration.html",
-    "href": "configuration.html",
-    "title": "Configuration",
-    "section": "",
-    "text": "Air can be configured using a TOML file named air.toml. Air is purposefully minimally configurable, with the main configuration points being related to line width and indent style.",
-    "crumbs": [
-      "Configuration"
-    ]
-  },
-  {
-    "objectID": "configuration.html#example-configuration",
-    "href": "configuration.html#example-configuration",
-    "title": "Configuration",
-    "section": "Example configuration",
-    "text": "Example configuration\nBelow is a complete air.toml file showing all available options set to their default values:\n[format]\nline-width = 80\nindent-width = 2\nindent-style = \"space\"\nline-ending = \"auto\"\npersistent-line-breaks = true\nexclude = []\ndefault-exclude = true",
-    "crumbs": [
-      "Configuration"
-    ]
-  },
-  {
-    "objectID": "configuration.html#configuration-recommendations",
-    "href": "configuration.html#configuration-recommendations",
-    "title": "Configuration",
-    "section": "Configuration recommendations",
-    "text": "Configuration recommendations\nFor collaborative projects, we recommend creating an air.toml and placing it at your project root even if you plan to use the default Air settings. This has a number of benefits:\n\nIt stops Air from using user level editor settings. When an air.toml is not present, Air respects some user level editor settings, such as editor.tabWidth in VS Code or Positron. The presence of an air.toml (even an empty one) disables this, instead pulling all settings from the configuration file. This ensures that settings are the same across team members, code editors, and in CI.\nIt stops configuration discovery from extending outside your project. Without an air.toml at the project root, Air might discover your local ~/packages/air.toml as the configuration file to use for the ~/packages/dplyr project. By adding ~/packages/dplyr/air.toml, you prevent configuration discovery from looking “above” ~/packages/dplyr, again ensuring consistent settings across team members.\nIt serves as a signal to others that your project is using Air.\n\nIf you do plan to just use the defaults, the air.toml can be completely empty. The important thing is that it exists.\nIf you’re happy with Air’s defaults (or your IDE settings, see section on synchronization) and don’t plan for your project to ever leave your computer, you likely don’t need an air.toml.",
-    "crumbs": [
-      "Configuration"
-    ]
-  },
-  {
-    "objectID": "configuration.html#configuration-discovery",
-    "href": "configuration.html#configuration-discovery",
-    "title": "Configuration",
-    "section": "Configuration discovery",
-    "text": "Configuration discovery\nThe ideal place to put an air.toml file is at your project root. For example, note the placement of air.toml in this minimal dplyr project:\n~/packages/dplyr\n├── air.toml\n├── DESCRIPTION\n├── NAMESPACE\n├── R\n├── src\n├── tests\n└── vignettes\nIf you run air format with a working directory of ~/packages/dplyr or open your IDE in the dplyr project, then Air will find and use that TOML file.\nAir also supports walking up the directory tree from the project root. For example, if you ran air format from within ~/packages/dplyr/R, then Air would look “up” one directory and would find and use ~/packages/dplyr/air.toml.",
-    "crumbs": [
-      "Configuration"
-    ]
-  },
-  {
-    "objectID": "configuration.html#settings-synchronization",
-    "href": "configuration.html#settings-synchronization",
-    "title": "Configuration",
-    "section": "Settings synchronization",
-    "text": "Settings synchronization\nIn IDEs that support synchronization (VS Code and Positron currently), Air does its best to ensure that the formatter and the IDE are in agreement. This is supported by two mechanisms:\n\nIn projects that don’t have an air.toml file, IDE settings are sent to Air. This ensures that Air will use the same indentation style and width that is configured in the IDE.\nIn projects that do have an air.toml file, the Air settings are sent to the IDE. This ensures that the IDE will use the same indentation style and width that Air uses.\n\nThe goal of this synchronization mechanism is for the IDE to work in lockstep with the Air formatter.",
-    "crumbs": [
-      "Configuration"
-    ]
-  },
-  {
-    "objectID": "configuration.html#dotfiles",
-    "href": "configuration.html#dotfiles",
-    "title": "Configuration",
-    "section": "Dotfiles",
-    "text": "Dotfiles\nAir supports both air.toml and .air.toml. If both are present in the same directory, then air.toml is preferred (but we don’t recommend this).",
-    "crumbs": [
-      "Configuration"
-    ]
-  },
-  {
-    "objectID": "configuration.html#format-options",
-    "href": "configuration.html#format-options",
-    "title": "Configuration",
-    "section": "Format options",
-    "text": "Format options\nAll formatting options are specified under the [format] table.\n\nline-width\nThe preferred maximum line length.\nAn integer value between 1 and 320, with a default of 80.\nWhile the formatter will attempt to format lines such that they remain within the line-width, it isn’t a hard upper bound, and formatted lines may exceed the line-width.\n\n\nindent-width\nThe number of spaces per indentation level.\nAn integer value between 1 and 24, with a default of 2.\nThis option changes the number of spaces the formatter inserts when using indent-style = \"space\". It also represents the width of a tab when indent-style = \"tab\" for the purposes of computing the line-width.\n\n\nindent-style\nWhether to use spaces or tabs for indentation.\nOne of the following values, with a default of \"space\":\n\n\"space\": Use spaces for indentation.\n\"tab\": Use tabs for indentation.\n\nAir defaults to spaces due to the overwhelming amount of existing R code written in this style, but consider using tabs for new projects to improve accessibility. See indent-width to configure the number of spaces per indentation and the tab width.\n\n\nline-ending\nThe character air uses at the end of a line.\nOne of the following values, with a default of \"auto\":\n\n\"auto\": The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to \\n for files that contain no line endings.\n\"lf\": Line endings will be converted to \\n. The typical line ending on Unix.\n\"crlf\": Line endings will be converted to \\r\\n. The typical line ending on Windows.\n\"native\": Line endings will be converted to \\n on Unix and \\r\\n on Windows.\n\n\n\npersistent-line-breaks\nWhether or not persistent line breaks are allowed.\nEither true to respect persistent line breaks, or false to ignore them, with a default of true.\nAir respects a small set of persistent line breaks as an indication that certain function calls or function signatures should be left expanded. For example, the following list could be flattened to one line and would still fit within a line-width of 80, however, it remains expanded due to the persistent line break between the opening ( and the first argument, apple.\ndictionary &lt;- list(\n  apple = 0.75,\n  banana = 0.25,\n  cherry = 0.50\n)\nSimilarly, this function signature could also be flattened, but is not, due to the persistent line break between the opening ( and the first parameter, ....\ncase_when &lt;- function(\n  ...,\n  .default = NULL,\n  .ptype = NULL,\n  .size = NULL\n) {\n  body\n}\nTo request flattening in these cases, just remove the persistent line break. For example:\n# If you started here,\ndictionary &lt;- list(\n  apple = 0.75,\n  banana = 0.25,\n  cherry = 0.50\n)\n\n# then do this, and run air,\ndictionary &lt;- list(apple = 0.75,\n  banana = 0.25,\n  cherry = 0.50\n)\n\n# to get this.\ndictionary &lt;- list(apple = 0.75, banana = 0.25, cherry = 0.50)\nAlternatively, use a tool such as codegrip bound to a keyboard shortcut to flatten the code, and Air will keep it flattened as long as it fits within the line-width.\nIt may be preferable to ignore persistent line breaks if you prefer that line-width should be the only value that influences line breaks.\n\n\nexclude\nThe set of additional files and folders to exclude.\nA list of strings, i.e. exclude = [\"file.R\", \"folder/\", \"files-like-*-this.R\"].\nBy default, Air will refuse to format files matched by patterns listed in default-exclude. Use this option to supply an additional list of exclude patterns.\nExclude patterns are modeled after what you can provide in a .gitignore, and are resolved relative to the parent directory that your air.toml is contained within. For example, if your air.toml was located at root/air.toml, then:\n\nfile.R excludes a file named file.R located anywhere below root/. This is equivalent to **/file.R.\nfolder/ excludes a directory named folder (and all of its children) located anywhere below root/. You can also just use folder, but this would technically also match a file named folder, so the trailing slash is preferred when targeting directories. This is equivalent to **/folder/.\n/file.R excludes a file named file.R located at root/file.R.\n/folder/ excludes a directory named folder (and all of its children) located at root/folder/.\nfile-*.R excludes R files named like file-this.R and file-that.R located anywhere below root/.\nfolder/*.R excludes all R files located at root/folder/. Note that R files in directories under folder/ are not excluded in this case (such as root/folder/subfolder/file.R).\nfolder/**/*.R excludes all R files located anywhere below root/folder/.\n**/folder/*.R excludes all R files located directly inside a folder/ directory, where the folder/ directory itself can appear anywhere.\n\nSee the full .gitignore documentation for all of the patterns you can provide.\n\n\ndefault-exclude\nWhether or not the default file exclude patterns are used.\nEither true to use the default exclude patterns, or false to not use them, with a default of true.\nBy default, Air excludes a set of files and folders that you are unlikely to want formatting in. The complete list of default exclude patterns is:\n\n.git/\nrenv/\nrevdep/\ncpp11.R\nRcppExports.R\nextendr-wrappers.R\nimport-standalone-*.R\n\n\n\nskip\nThe set of function names to skip formatting for, even without a # fmt: skip comment.\nA list of strings, i.e. skip = [\"tribble\", \"graph_from_literal\"].\nAir typically formats every function call it comes across. To skip formatting of a single function call, you can use a # fmt: skip comment. However, if you know of particular functions that you use a lot that are part of a custom domain specific language that doesn’t follow conventional formatting rules, you can entirely opt out of formatting for those functions by providing them here.\nFor example, using skip = [\"graph_from_literal\"] would automatically skip formatting of:\nigraph::graph_from_literal(A +-+ B +---+ C ++ D + E)\nIn the short term, we also anticipate that this will be useful to avoid formatting of tibble::tribble() calls. In the long term, Air may have more sophisticated features for automatically formatting using a specified alignment.",
-    "crumbs": [
-      "Configuration"
-    ]
-  },
-  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "Air",
@@ -194,39 +81,6 @@
     "text": "Skip configuration\nSkip comments are useful for disabling formatting for one-off function calls, but sometimes you may find yourself repeatedly using functions from a domain specific language (DSL) that doesn’t follow conventional formatting rules. For example, the igraph package contains a DSL for constructing a graph from a literal representation:\nigraph::graph_from_literal(A +-+ B +---+ C ++ D + E)\nAir would format this as:\nigraph::graph_from_literal(A + -+B + ---+C + +D + E)\nIf you use graph_from_literal() often, it would be annoying to add # fmt: skip comments at every call site. Instead, air.toml supports a skip field that allows you to specify function names that you never want formatting for. Specifying this would retain the original formatting of the graph_from_literal() call, even without a # fmt: skip comment:\nskip = [\"graph_from_literal\"]\nOne particularly common use of this is skip = [\"tribble\"], which you can use to avoid formatting of all tibble::tribble() calls. In the long term, Air may provide more sophisticated tooling for formatting using a specified alignment.",
     "crumbs": [
       "Formatter"
-    ]
-  },
-  {
-    "objectID": "editor-helix.html",
-    "href": "editor-helix.html",
-    "title": "Helix",
-    "section": "",
-    "text": "Helix is a modal editor with builtin support for the Language Server Protocol.",
-    "crumbs": [
-      "Editors",
-      "Helix"
-    ]
-  },
-  {
-    "objectID": "editor-helix.html#languageserver",
-    "href": "editor-helix.html#languageserver",
-    "title": "Helix",
-    "section": "languageserver",
-    "text": "languageserver\nCurrently, Air only supports formatting. It’s possible to use Air and languageserver simultaneously for a better editing experience. Use the following configuration to enable both language servers (make sure that the languageserver R package is installed, Helix is able to use it without any additional configuration).\n[[language]]\nname = \"r\"\nlanguage-servers = [\"air\", \"r\"]",
-    "crumbs": [
-      "Editors",
-      "Helix"
-    ]
-  },
-  {
-    "objectID": "editor-helix.html#format-on-save",
-    "href": "editor-helix.html#format-on-save",
-    "title": "Helix",
-    "section": "Format on save",
-    "text": "Format on save\nAdd auto-format = true to your R language configuration block to enable formatting on save.\n[[language]]\nname = \"r\"\nlanguage-servers = [\"air\"]\nauto-format = true",
-    "crumbs": [
-      "Editors",
-      "Helix"
     ]
   },
   {
@@ -273,6 +127,17 @@
     ]
   },
   {
+    "objectID": "editor-vscode.html#format-workspace-folder",
+    "href": "editor-vscode.html#format-workspace-folder",
+    "title": "VS Code and Positron",
+    "section": "Format workspace folder",
+    "text": "Format workspace folder\nAir ships with a special Air: Format Workspace Folder command to format all R files within a workspace folder. This is particularly useful when transitioning an existing project over to Air, where you need to perform a project-wide format before utilizing the per-file format on save feature.\nNote that if you don’t have an air.toml in your project, then this command will use Air’s default settings rather than the IDE settings synchronization mechanism. We recommend using usethis::use_air() to set up an air.toml (among other things) before running this command.",
+    "crumbs": [
+      "Editors",
+      "VS Code and Positron"
+    ]
+  },
+  {
     "objectID": "editor-vscode.html#quarto",
     "href": "editor-vscode.html#quarto",
     "title": "VS Code and Positron",
@@ -292,6 +157,152 @@
     "crumbs": [
       "Editors",
       "VS Code and Positron"
+    ]
+  },
+  {
+    "objectID": "editor-rstudio.html",
+    "href": "editor-rstudio.html",
+    "title": "RStudio",
+    "section": "",
+    "text": "RStudio does not support the Language Server Protocol, but you can still use Air as an external formatter.",
+    "crumbs": [
+      "Editors",
+      "RStudio"
+    ]
+  },
+  {
+    "objectID": "editor-rstudio.html#rstudio-format-on-save",
+    "href": "editor-rstudio.html#rstudio-format-on-save",
+    "title": "RStudio",
+    "section": "Format on save",
+    "text": "Format on save\nAfter you’ve set Air as an external formatter, you can either tell RStudio to format all documents on save, or set this on a per document basis.\nTo format all documents on save, open Tools -&gt; Global Options -&gt; Code -&gt; Saving and check Reformat documents on save.\n\n\n\n\n\nTo format individual documents on save, open the file specific settings and check Reformat Document on Save.",
+    "crumbs": [
+      "Editors",
+      "RStudio"
+    ]
+  },
+  {
+    "objectID": "editor-rstudio.html#quarto",
+    "href": "editor-rstudio.html#quarto",
+    "title": "RStudio",
+    "section": "Quarto",
+    "text": "Quarto\nThere is currently no way to use Air in RStudio with Quarto documents.",
+    "crumbs": [
+      "Editors",
+      "RStudio"
+    ]
+  },
+  {
+    "objectID": "editors.html",
+    "href": "editors.html",
+    "title": "Editor support",
+    "section": "",
+    "text": "Air provides excellent support for code editors that support the Language Server Protocol. Many do, including Positron, VS Code, and Zed. Air also provides some support for code editors that allow for external formatters, such as RStudio. Follow one of our editor specific guides to get set up with Air in your preferred editor:\n\nVS Code\nPositron\nRStudio\nNeovim\nHelix",
+    "crumbs": [
+      "Editors"
+    ]
+  },
+  {
+    "objectID": "editor-helix.html",
+    "href": "editor-helix.html",
+    "title": "Helix",
+    "section": "",
+    "text": "Helix is a modal editor with builtin support for the Language Server Protocol.",
+    "crumbs": [
+      "Editors",
+      "Helix"
+    ]
+  },
+  {
+    "objectID": "editor-helix.html#languageserver",
+    "href": "editor-helix.html#languageserver",
+    "title": "Helix",
+    "section": "languageserver",
+    "text": "languageserver\nCurrently, Air only supports formatting. It’s possible to use Air and languageserver simultaneously for a better editing experience. Use the following configuration to enable both language servers (make sure that the languageserver R package is installed, Helix is able to use it without any additional configuration).\n[[language]]\nname = \"r\"\nlanguage-servers = [\"air\", \"r\"]",
+    "crumbs": [
+      "Editors",
+      "Helix"
+    ]
+  },
+  {
+    "objectID": "editor-helix.html#format-on-save",
+    "href": "editor-helix.html#format-on-save",
+    "title": "Helix",
+    "section": "Format on save",
+    "text": "Format on save\nAdd auto-format = true to your R language configuration block to enable formatting on save.\n[[language]]\nname = \"r\"\nlanguage-servers = [\"air\"]\nauto-format = true",
+    "crumbs": [
+      "Editors",
+      "Helix"
+    ]
+  },
+  {
+    "objectID": "configuration.html",
+    "href": "configuration.html",
+    "title": "Configuration",
+    "section": "",
+    "text": "Air can be configured using a TOML file named air.toml. Air is purposefully minimally configurable, with the main configuration points being related to line width and indent style.",
+    "crumbs": [
+      "Configuration"
+    ]
+  },
+  {
+    "objectID": "configuration.html#example-configuration",
+    "href": "configuration.html#example-configuration",
+    "title": "Configuration",
+    "section": "Example configuration",
+    "text": "Example configuration\nBelow is a complete air.toml file showing all available options set to their default values:\n[format]\nline-width = 80\nindent-width = 2\nindent-style = \"space\"\nline-ending = \"auto\"\npersistent-line-breaks = true\nexclude = []\ndefault-exclude = true",
+    "crumbs": [
+      "Configuration"
+    ]
+  },
+  {
+    "objectID": "configuration.html#configuration-recommendations",
+    "href": "configuration.html#configuration-recommendations",
+    "title": "Configuration",
+    "section": "Configuration recommendations",
+    "text": "Configuration recommendations\nFor collaborative projects, we recommend creating an air.toml and placing it at your project root even if you plan to use the default Air settings. This has a number of benefits:\n\nIt stops Air from using user level editor settings. When an air.toml is not present, Air respects some user level editor settings, such as editor.tabWidth in VS Code or Positron. The presence of an air.toml (even an empty one) disables this, instead pulling all settings from the configuration file. This ensures that settings are the same across team members, code editors, and in CI.\nIt stops configuration discovery from extending outside your project. Without an air.toml at the project root, Air might discover your local ~/packages/air.toml as the configuration file to use for the ~/packages/dplyr project. By adding ~/packages/dplyr/air.toml, you prevent configuration discovery from looking “above” ~/packages/dplyr, again ensuring consistent settings across team members.\nIt serves as a signal to others that your project is using Air.\n\nIf you do plan to just use the defaults, the air.toml can be completely empty. The important thing is that it exists.\nIf you’re happy with Air’s defaults (or your IDE settings, see section on synchronization) and don’t plan for your project to ever leave your computer, you likely don’t need an air.toml.",
+    "crumbs": [
+      "Configuration"
+    ]
+  },
+  {
+    "objectID": "configuration.html#configuration-discovery",
+    "href": "configuration.html#configuration-discovery",
+    "title": "Configuration",
+    "section": "Configuration discovery",
+    "text": "Configuration discovery\nThe ideal place to put an air.toml file is at your project root. For example, note the placement of air.toml in this minimal dplyr project:\n~/packages/dplyr\n├── air.toml\n├── DESCRIPTION\n├── NAMESPACE\n├── R\n├── src\n├── tests\n└── vignettes\nIf you run air format with a working directory of ~/packages/dplyr or open your IDE in the dplyr project, then Air will find and use that TOML file.\nAir also supports walking up the directory tree from the project root. For example, if you ran air format from within ~/packages/dplyr/R, then Air would look “up” one directory and would find and use ~/packages/dplyr/air.toml.",
+    "crumbs": [
+      "Configuration"
+    ]
+  },
+  {
+    "objectID": "configuration.html#configuration-settings-synchronization",
+    "href": "configuration.html#configuration-settings-synchronization",
+    "title": "Configuration",
+    "section": "Settings synchronization",
+    "text": "Settings synchronization\nIn IDEs that support synchronization (VS Code and Positron currently), Air does its best to ensure that the formatter and the IDE are in agreement. This is supported by two mechanisms:\n\nIn projects that don’t have an air.toml file, IDE settings are sent to Air. This ensures that Air will use the same indentation style and width that is configured in the IDE.\nIn projects that do have an air.toml file, the Air settings are sent to the IDE. This ensures that the IDE will use the same indentation style and width that Air uses.\n\nThe goal of this synchronization mechanism is for the IDE to work in lockstep with the Air formatter.",
+    "crumbs": [
+      "Configuration"
+    ]
+  },
+  {
+    "objectID": "configuration.html#dotfiles",
+    "href": "configuration.html#dotfiles",
+    "title": "Configuration",
+    "section": "Dotfiles",
+    "text": "Dotfiles\nAir supports both air.toml and .air.toml. If both are present in the same directory, then air.toml is preferred (but we don’t recommend this).",
+    "crumbs": [
+      "Configuration"
+    ]
+  },
+  {
+    "objectID": "configuration.html#format-options",
+    "href": "configuration.html#format-options",
+    "title": "Configuration",
+    "section": "Format options",
+    "text": "Format options\nAll formatting options are specified under the [format] table.\n\nline-width\nThe preferred maximum line length.\nAn integer value between 1 and 320, with a default of 80.\nWhile the formatter will attempt to format lines such that they remain within the line-width, it isn’t a hard upper bound, and formatted lines may exceed the line-width.\n\n\nindent-width\nThe number of spaces per indentation level.\nAn integer value between 1 and 24, with a default of 2.\nThis option changes the number of spaces the formatter inserts when using indent-style = \"space\". It also represents the width of a tab when indent-style = \"tab\" for the purposes of computing the line-width.\n\n\nindent-style\nWhether to use spaces or tabs for indentation.\nOne of the following values, with a default of \"space\":\n\n\"space\": Use spaces for indentation.\n\"tab\": Use tabs for indentation.\n\nAir defaults to spaces due to the overwhelming amount of existing R code written in this style, but consider using tabs for new projects to improve accessibility. See indent-width to configure the number of spaces per indentation and the tab width.\n\n\nline-ending\nThe character air uses at the end of a line.\nOne of the following values, with a default of \"auto\":\n\n\"auto\": The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to \\n for files that contain no line endings.\n\"lf\": Line endings will be converted to \\n. The typical line ending on Unix.\n\"crlf\": Line endings will be converted to \\r\\n. The typical line ending on Windows.\n\"native\": Line endings will be converted to \\n on Unix and \\r\\n on Windows.\n\n\n\npersistent-line-breaks\nWhether or not persistent line breaks are allowed.\nEither true to respect persistent line breaks, or false to ignore them, with a default of true.\nAir respects a small set of persistent line breaks as an indication that certain function calls or function signatures should be left expanded. For example, the following list could be flattened to one line and would still fit within a line-width of 80, however, it remains expanded due to the persistent line break between the opening ( and the first argument, apple.\ndictionary &lt;- list(\n  apple = 0.75,\n  banana = 0.25,\n  cherry = 0.50\n)\nSimilarly, this function signature could also be flattened, but is not, due to the persistent line break between the opening ( and the first parameter, ....\ncase_when &lt;- function(\n  ...,\n  .default = NULL,\n  .ptype = NULL,\n  .size = NULL\n) {\n  body\n}\nTo request flattening in these cases, just remove the persistent line break. For example:\n# If you started here,\ndictionary &lt;- list(\n  apple = 0.75,\n  banana = 0.25,\n  cherry = 0.50\n)\n\n# then do this, and run air,\ndictionary &lt;- list(apple = 0.75,\n  banana = 0.25,\n  cherry = 0.50\n)\n\n# to get this.\ndictionary &lt;- list(apple = 0.75, banana = 0.25, cherry = 0.50)\nAlternatively, use a tool such as codegrip bound to a keyboard shortcut to flatten the code, and Air will keep it flattened as long as it fits within the line-width.\nIt may be preferable to ignore persistent line breaks if you prefer that line-width should be the only value that influences line breaks.\n\n\nexclude\nThe set of additional files and folders to exclude.\nA list of strings, i.e. exclude = [\"file.R\", \"folder/\", \"files-like-*-this.R\"].\nBy default, Air will refuse to format files matched by patterns listed in default-exclude. Use this option to supply an additional list of exclude patterns.\nExclude patterns are modeled after what you can provide in a .gitignore, and are resolved relative to the parent directory that your air.toml is contained within. For example, if your air.toml was located at root/air.toml, then:\n\nfile.R excludes a file named file.R located anywhere below root/. This is equivalent to **/file.R.\nfolder/ excludes a directory named folder (and all of its children) located anywhere below root/. You can also just use folder, but this would technically also match a file named folder, so the trailing slash is preferred when targeting directories. This is equivalent to **/folder/.\n/file.R excludes a file named file.R located at root/file.R.\n/folder/ excludes a directory named folder (and all of its children) located at root/folder/.\nfile-*.R excludes R files named like file-this.R and file-that.R located anywhere below root/.\nfolder/*.R excludes all R files located at root/folder/. Note that R files in directories under folder/ are not excluded in this case (such as root/folder/subfolder/file.R).\nfolder/**/*.R excludes all R files located anywhere below root/folder/.\n**/folder/*.R excludes all R files located directly inside a folder/ directory, where the folder/ directory itself can appear anywhere.\n\nSee the full .gitignore documentation for all of the patterns you can provide.\n\n\ndefault-exclude\nWhether or not the default file exclude patterns are used.\nEither true to use the default exclude patterns, or false to not use them, with a default of true.\nBy default, Air excludes a set of files and folders that you are unlikely to want formatting in. The complete list of default exclude patterns is:\n\n.git/\nrenv/\nrevdep/\ncpp11.R\nRcppExports.R\nextendr-wrappers.R\nimport-standalone-*.R\n\n\n\nskip\nThe set of function names to skip formatting for, even without a # fmt: skip comment.\nA list of strings, i.e. skip = [\"tribble\", \"graph_from_literal\"].\nAir typically formats every function call it comes across. To skip formatting of a single function call, you can use a # fmt: skip comment. However, if you know of particular functions that you use a lot that are part of a custom domain specific language that doesn’t follow conventional formatting rules, you can entirely opt out of formatting for those functions by providing them here.\nFor example, using skip = [\"graph_from_literal\"] would automatically skip formatting of:\nigraph::graph_from_literal(A +-+ B +---+ C ++ D + E)\nIn the short term, we also anticipate that this will be useful to avoid formatting of tibble::tribble() calls. In the long term, Air may have more sophisticated features for automatically formatting using a specified alignment.",
+    "crumbs": [
+      "Configuration"
     ]
   }
 ]
