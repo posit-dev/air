@@ -28,7 +28,7 @@ pub struct Document {
 
     /// We store the syntax tree in the document for now.
     /// We will think about laziness and incrementality in the future.
-    pub parse: biome_parser::AnyParse,
+    pub parse: air_r_parser::Parse,
 
     /// The version of the document we last synchronized with.
     /// None if the document hasn't been synchronized yet.
@@ -73,7 +73,7 @@ impl Document {
         };
 
         // Parse document immediately for now
-        let parse = air_r_parser::parse(&contents, Default::default()).into();
+        let parse = air_r_parser::parse(&contents, Default::default());
 
         Self {
             contents,
@@ -128,7 +128,7 @@ impl Document {
         );
 
         // No incrementality for now
-        let parse = air_r_parser::parse(&contents, Default::default()).into();
+        let parse = air_r_parser::parse(&contents, Default::default());
 
         self.parse = parse;
         self.contents = contents;
