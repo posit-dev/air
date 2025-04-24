@@ -199,16 +199,12 @@ async function saveAllDirtyWorkspaceTextDocuments(
 		return false;
 	}
 
-	for (const textDocument of textDocuments) {
-		const saved = await textDocument.save();
-
-		if (!saved) {
-			// Somehow a document failed to save, bail
-			return false;
-		}
-	}
-
-	return true;
+	// Save all documents, and ensure that all successfully saved
+	const savedPromises = textDocuments.map((textDocument) =>
+		textDocument.save(),
+	);
+	const saved = await Promise.all(savedPromises);
+	return saved.every((save) => save);
 }
 
 function dirtyWorkspaceTextDocuments(
