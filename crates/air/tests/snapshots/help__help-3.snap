@@ -1,0 +1,32 @@
+---
+source: crates/air/tests/help.rs
+expression: "run(Command::new(get_air_bin()).arg(\"--help\"))"
+---
+success: true
+exit_code: 0
+----- stdout -----
+Air: An R language server and formatter
+
+Usage: air [OPTIONS] <COMMAND>
+
+Commands:
+  format           Format a set of files or directories
+  language-server  Start a language server
+  help             Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help     Print help
+  -V, --version  Print version
+
+Global options:
+      --log-level=<LEVEL>  The log level. One of: `error`, `warn`, `info`, `debug`, or `trace`.
+                           Defaults to `warn`
+      --no-color           Disable colored output. To turn colored output off, either set this
+                           option or set the environment variable `NO_COLOR` to any non-zero value
+
+For help with a specific command, see: `air help <command>`.
+
+----- stderr -----
+
+----- args -----
+--help

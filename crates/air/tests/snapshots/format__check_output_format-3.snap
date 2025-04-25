@@ -1,0 +1,17 @@
+---
+source: crates/air/tests/format.rs
+expression: "run(Command::new(get_air_bin()).arg(\"format\").arg(path1).arg(path2).arg(\"--check=github\"))"
+---
+success: false
+exit_code: 1
+----- stdout -----
+::error file=fixtures/format/needs-formatting-1.R,line=1::Would reformat
+::error file=fixtures/format/needs-formatting-2.R,line=1::Would reformat
+
+----- stderr -----
+
+----- args -----
+format
+/Users/davis/files/programming/air/crates/air/fixtures/format/needs-formatting-1.R
+/Users/davis/files/programming/air/crates/air/fixtures/format/needs-formatting-2.R
+--check=github

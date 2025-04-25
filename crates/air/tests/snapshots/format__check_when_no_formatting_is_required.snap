@@ -1,0 +1,14 @@
+---
+source: crates/air/tests/format.rs
+expression: "run(Command::new(get_air_bin()).arg(\"format\").arg(path).arg(\"--check\"))"
+---
+success: true
+exit_code: 0
+----- stdout -----
+
+----- stderr -----
+
+----- args -----
+format
+/Users/davis/files/programming/air/crates/air/fixtures/format/formatted.R
+--check

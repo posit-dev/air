@@ -1,0 +1,17 @@
+---
+source: crates/air/tests/format.rs
+expression: "run(Command::new(get_air_bin()).arg(\"format\").arg(\"path.R\").arg(\"--check=foo\"))"
+---
+success: false
+exit_code: 2
+----- stdout -----
+
+----- stderr -----
+error: invalid value 'foo' for '--check[=<OUTPUT_FORMAT>]': Must be one of 'interactive' or 'github', not 'foo'.
+
+For more information, try '--help'.
+
+----- args -----
+format
+path.R
+--check=foo
