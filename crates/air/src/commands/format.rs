@@ -2,9 +2,11 @@ use std::fmt::Display;
 use std::fmt::Formatter;
 use std::io;
 use std::io::stderr;
+use std::io::stdout;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use colored::Colorize;
 use fs::relativize_path;
@@ -27,7 +29,13 @@ use crate::ExitStatus;
 #[derive(Copy, Clone, Debug)]
 enum FormatMode {
     Write,
-    Check,
+    Check(OutputFormat),
+}
+
+#[derive(Clone, Copy, Debug)]
+pub(crate) enum OutputFormat {
+    Interactive,
+    GitHub,
 }
 
 #[derive(Error, Debug)]
@@ -64,14 +72,17 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
                 Ok(ExitStatus::Error)
             }
         }
-        FormatMode::Check => {
+        FormatMode::Check(output_format) => {
             let (paths, errors) = format_paths_check(&command.paths, &resolver);
 
             for error in &errors {
                 tracing::error!("{error}");
             }
 
-            inform_changed(&paths, &mut stderr().lock())?;
+            match output_format {
+                OutputFormat::Interactive => inform_interactive(&paths, &mut stderr().lock())?,
+                OutputFormat::GitHub => inform_github(&paths, &mut stdout().lock())?,
+            }
 
             if errors.is_empty() {
                 if paths.is_empty() {
@@ -88,17 +99,56 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
 
 impl FormatMode {
     fn from_command(command: &FormatCommand) -> Self {
-        if command.check {
-            FormatMode::Check
-        } else {
-            FormatMode::Write
+        match command.check {
+            Some(check_output) => FormatMode::Check(check_output),
+            None => FormatMode::Write,
         }
     }
 }
 
-fn inform_changed(paths: &[PathBuf], f: &mut impl Write) -> io::Result<()> {
+impl FromStr for OutputFormat {
+    type Err = anyhow::Error;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        match value {
+            "interactive" => Ok(OutputFormat::Interactive),
+            "github" => Ok(OutputFormat::GitHub),
+            value => Err(anyhow::anyhow!(
+                "Must be one of 'interactive' or 'github', not '{value}'."
+            )),
+        }
+    }
+}
+
+/// Emit the names of the files that would change
+///
+/// Most useful during interactive usage of the air
+fn inform_interactive(paths: &[PathBuf], f: &mut impl Write) -> io::Result<()> {
     for path in paths.iter().sorted_unstable() {
-        writeln!(f, "Would reformat: {}", path.display())?;
+        writeln!(
+            f,
+            "Would reformat: {path}",
+            path = relativize_path(path).underline()
+        )?;
+    }
+    Ok(())
+}
+
+/// Emit GitHub Workflow Commands for the files that would change
+///
+/// It seems like it is required that we say `line=1`, otherwise GitHub has been known
+/// to choose `line=0`, which results in the resulting Annotation not showing up in the
+/// Pull Requests files view.
+/// https://github.com/astral-sh/ruff-action/issues/124
+///
+/// https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/workflow-commands-for-github-actions
+fn inform_github(paths: &[PathBuf], f: &mut impl Write) -> io::Result<()> {
+    for path in paths.iter().sorted_unstable() {
+        writeln!(
+            f,
+            "::error file={path},line=1::Would reformat",
+            path = relativize_path(path)
+        )?;
     }
     Ok(())
 }
