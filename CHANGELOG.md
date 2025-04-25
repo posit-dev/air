@@ -2,6 +2,8 @@
 
 # Development version
 
+- `air format` has gained a new `--check=github` output format. This emits [Workflow Commands for GitHub Actions](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/workflow-commands-for-github-actions), which are used to provide inline annotations in the Pull Request files view.
+
 
 # 0.5.0
 
