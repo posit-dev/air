@@ -387,38 +387,42 @@ fn end_node_handler(
 
 fn append_indent_folding_ranges(document: &Document, folding_ranges: &mut Vec<FoldingRange>) {
     let lines: Vec<&str> = document.contents.lines().collect();
-    let mut indent_stack: Vec<(usize, usize)> = Vec::new(); // (start_line, indent_level)
+    // usize::MAX is used as a placeholder for start lines which should not be included in the folding range
+    let mut indent_stack: Vec<(usize, usize)> = vec![(usize::MAX, 0)]; // (start_line, indent_level)
+    let mut last_line_is_empty = true; // folding ranges should not start with empty lines
 
     for (line_idx, line) in lines.iter().enumerate() {
         let trimmed = line.trim_end();
-
-        // Skip blank lines
-        if trimmed.is_empty() || (line_idx < 1) {
-            continue;
-        }
-
         let indent = line.chars().take_while(|c| c.is_whitespace()).count();
-
-        if indent_stack.is_empty() {
-            indent_stack.push((line_idx - 1, indent));
-            continue;
-        }
 
         // Pop all deeper indents
         loop {
             let Some(&(start_line, start_indent)) = indent_stack.last() else {
-                tracing::error!("Folding Range: indent_stack should not be empty here");
-                return;
+                indent_stack = vec![(usize::MAX, indent)];
+                break;
             };
+
+            if trimmed.is_empty() {
+                if last_line_is_empty {
+                    break; // end of indent block handling has been done
+                };
+                end_indent_handler(folding_ranges, &mut indent_stack, line_idx - 1); // flush indent block
+                break;
+            }
 
             match start_indent.cmp(&indent) {
                 Ordering::Less => {
+                    if last_line_is_empty {
+                        // we need to update the placeholder indent level
+                        indent_stack = vec![(usize::MAX, indent)];
+                        break;
+                    }
                     indent_stack.push((line_idx - 1, indent));
                     break;
                 }
                 Ordering::Equal => break,
                 Ordering::Greater => {
-                    if line_idx > start_line + 1 {
+                    if start_line != usize::MAX {
                         folding_ranges.push(FoldingRange {
                             start_line: start_line as u32,
                             end_line: (line_idx - 1) as u32,
@@ -432,15 +436,28 @@ fn append_indent_folding_ranges(document: &Document, folding_ranges: &mut Vec<Fo
                 }
             }
         }
+        last_line_is_empty = trimmed.is_empty();
     }
 
     // Final flush: any unfinished indent block to End of Document
     let last_line = lines.len().saturating_sub(1);
+    end_indent_handler(folding_ranges, &mut indent_stack, last_line);
+}
+
+// end of indent block handling
+fn end_indent_handler(
+    folding_ranges: &mut Vec<FoldingRange>,
+    indent_stack: &mut Vec<(usize, usize)>,
+    line_idx: usize,
+) {
     for (start_line, _) in indent_stack.into_iter() {
-        if last_line > start_line {
+        if *start_line == usize::MAX {
+            continue; // Skip the placeholder
+        }
+        if line_idx > *start_line {
             folding_ranges.push(FoldingRange {
-                start_line: start_line as u32,
-                end_line: last_line as u32,
+                start_line: *start_line as u32,
+                end_line: line_idx as u32,
                 kind: Some(FoldingRangeKind::Region),
                 start_character: None,
                 end_character: None,
@@ -448,4 +465,5 @@ fn append_indent_folding_ranges(document: &Document, folding_ranges: &mut Vec<Fo
             });
         }
     }
+    indent_stack.push((usize::MAX, 0)); // Add the placeholder back to the stack
 }
