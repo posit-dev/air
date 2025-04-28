@@ -90,7 +90,13 @@ fn parse_ts_node(
             // Nested comment section handling
             let comment_line = get_line_text(document, start.row, None, None);
 
-            nested_processor(comment_stack, folding_ranges, start.row, &comment_line);
+            nested_processor(
+                document,
+                comment_stack,
+                folding_ranges,
+                start.row,
+                &comment_line,
+            );
             region_processor(folding_ranges, region_marker, start.row, &comment_line);
             cell_processor(folding_ranges, cell_marker, start.row, &comment_line);
         }
@@ -121,6 +127,7 @@ fn parse_ts_node(
         }
         // End of node handling
         end_node_handler(
+            document,
             folding_ranges,
             end.row,
             &mut child_comment_stack,
@@ -213,6 +220,15 @@ fn get_line_text(
     line[start_idx..end_idx].to_string() // TODO
 }
 
+fn find_last_non_empty_line(document: &Document, start_line: usize, end_line: usize) -> usize {
+    for idx in (start_line..=end_line).rev() {
+        if !get_line_text(document, idx, None, None).trim().is_empty() {
+            return idx;
+        }
+    }
+    start_line
+}
+
 fn count_leading_whitespaces(document: &Document, line_num: usize) -> usize {
     let line_text = get_line_text(document, line_num, None, None);
     line_text.chars().take_while(|c| c.is_whitespace()).count()
@@ -237,6 +253,7 @@ fn parse_comment_as_section(comment: &str) -> Option<(usize, String)> {
 }
 
 fn nested_processor(
+    document: &Document,
     comment_stack: &mut Vec<Vec<(usize, usize)>>,
     folding_ranges: &mut Vec<FoldingRange>,
     line_num: usize,
@@ -267,18 +284,20 @@ fn nested_processor(
                 break;
             }
             Ordering::Equal => {
+                let start_line = comment_stack.last().unwrap().last().unwrap().1;
                 folding_ranges.push(comment_range(
-                    comment_stack.last().unwrap().last().unwrap().1,
-                    line_num - 1,
+                    start_line,
+                    find_last_non_empty_line(document, start_line, line_num - 1),
                 ));
                 comment_stack.last_mut().unwrap().pop();
                 comment_stack.last_mut().unwrap().push((level, line_num));
                 break;
             }
             Ordering::Greater => {
+                let start_line = comment_stack.last().unwrap().last().unwrap().1;
                 folding_ranges.push(comment_range(
-                    comment_stack.last().unwrap().last().unwrap().1,
-                    line_num - 1,
+                    start_line,
+                    find_last_non_empty_line(document, start_line, line_num - 1),
                 ));
                 comment_stack.last_mut().unwrap().pop(); // Safe: the loop exits early if the stack becomes empty
             }
@@ -350,6 +369,7 @@ fn cell_processor(
 }
 
 fn end_node_handler(
+    document: &Document,
     folding_ranges: &mut Vec<FoldingRange>,
     line_idx: usize,
     comment_stack: &mut Vec<Vec<(usize, usize)>>,
@@ -362,7 +382,10 @@ fn end_node_handler(
         // Iterate over each (start level, start line) in the last section
         for &(_level, start_line) in last_section.iter() {
             // Add a new folding range for each range in the last section
-            let folding_range = comment_range(start_line, line_idx - 1);
+            let folding_range = comment_range(
+                start_line,
+                find_last_non_empty_line(document, start_line, line_idx - 1),
+            );
 
             folding_ranges.push(folding_range);
         }
