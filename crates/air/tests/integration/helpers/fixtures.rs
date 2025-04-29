@@ -6,6 +6,6 @@ pub fn path_root() -> PathBuf {
 }
 
 /// Relative path to the air `fixtures/` directory
-pub fn path_fixtures() -> PathBuf {
+pub fn relative_path_fixtures() -> PathBuf {
     PathBuf::from("fixtures")
 }
