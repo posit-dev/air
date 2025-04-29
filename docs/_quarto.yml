@@ -30,6 +30,10 @@ website:
           - editor-neovim.qmd
           - editor-helix.qmd
 
+      - section: "Integrations"
+        contents:
+          - integration-github-actions.qmd
+
       - text: "Configuration"
         href: configuration.qmd
   margin-header: |
