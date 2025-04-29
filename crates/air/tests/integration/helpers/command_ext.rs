@@ -40,6 +40,19 @@ impl CommandExt for Command {
 
 impl Display for Output {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let stdout = String::from_utf8_lossy(&self.stdout);
+        let stderr = String::from_utf8_lossy(&self.stderr);
+        let arguments = self.arguments.join(" ");
+
+        // Normalize all `\` to `/` for snapshot stability
+        let stdout = stdout.replace('\\', "/");
+        let stderr = stderr.replace('\\', "/");
+        let arguments = arguments.replace('\\', "/");
+
+        // Replace Windows help documentation's `air.exe` with `air` for snapshot stability
+        let stdout = stdout.replace("air.exe", "air");
+        let stderr = stderr.replace("air.exe", "air");
+
         f.write_fmt(format_args!(
             "
 success: {:?}
@@ -52,9 +65,9 @@ exit_code: {}
 {}",
             self.status.success(),
             self.status.code().unwrap_or(1),
-            String::from_utf8_lossy(&self.stdout),
-            String::from_utf8_lossy(&self.stderr),
-            self.arguments.join(" "),
+            stdout,
+            stderr,
+            arguments,
         ))
     }
 }
