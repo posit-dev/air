@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>VS Code and Positron – Air</title>
+<title>GitHub Actions – Air</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -126,7 +126,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./editors.html">Editors</a></li><li class="breadcrumb-item"><a href="./editor-vscode.html">VS Code and Positron</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./integration-github-actions.html">Integrations</a></li><li class="breadcrumb-item"><a href="./integration-github-actions.html">GitHub Actions</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -181,7 +181,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./editor-vscode.html" class="sidebar-item-text sidebar-link active">
+  <a href="./editor-vscode.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">VS Code and Positron</span></a>
   </div>
 </li>
@@ -210,7 +210,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./integration-github-actions.html" class="sidebar-item-text sidebar-link">
+  <a href="./integration-github-actions.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">GitHub Actions</span></a>
   </div>
 </li>
@@ -234,28 +234,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#installation" id="toc-installation" class="nav-link active" data-scroll-target="#installation">Installation</a></li>
-  <li><a href="#features" id="toc-features" class="nav-link" data-scroll-target="#features">Features</a>
+  <li><a href="#example-actions" id="toc-example-actions" class="nav-link active" data-scroll-target="#example-actions">Example actions</a>
   <ul class="collapse">
-  <li><a href="#format-on-save" id="toc-format-on-save" class="nav-link" data-scroll-target="#format-on-save">Format on save</a></li>
-  <li><a href="#format-selection" id="toc-format-selection" class="nav-link" data-scroll-target="#format-selection">Format selection</a></li>
-  <li><a href="#format-workspace-folder" id="toc-format-workspace-folder" class="nav-link" data-scroll-target="#format-workspace-folder">Format workspace folder</a></li>
-  <li><a href="#quarto" id="toc-quarto" class="nav-link" data-scroll-target="#quarto">Quarto</a>
-  <ul class="collapse">
-  <li><a href="#format-on-save-1" id="toc-format-on-save-1" class="nav-link" data-scroll-target="#format-on-save-1">Format on save</a></li>
-  <li><a href="#format-cell" id="toc-format-cell" class="nav-link" data-scroll-target="#format-cell">Format cell</a></li>
-  </ul></li>
-  <li><a href="#configuration-autocompletion-and-validation" id="toc-configuration-autocompletion-and-validation" class="nav-link" data-scroll-target="#configuration-autocompletion-and-validation">Configuration autocompletion and validation</a></li>
+  <li><a href="#format-with-github-suggestions" id="toc-format-with-github-suggestions" class="nav-link" data-scroll-target="#format-with-github-suggestions">Format with GitHub Suggestions</a></li>
+  <li><a href="#format-with---check" id="toc-format-with---check" class="nav-link" data-scroll-target="#format-with---check">Format with <code>--check</code></a></li>
   </ul></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/editor-vscode.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/integration-github-actions.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./editors.html">Editors</a></li><li class="breadcrumb-item"><a href="./editor-vscode.html">VS Code and Positron</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./integration-github-actions.html">Integrations</a></li><li class="breadcrumb-item"><a href="./integration-github-actions.html">GitHub Actions</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">VS Code and Positron</h1>
+<h1 class="title">GitHub Actions</h1>
 </div>
 
 
@@ -272,69 +264,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Air provides first class support for both VS Code and Positron, which both support the <a href="https://microsoft.github.io/language-server-protocol/">Language Server Protocol</a>.</p>
-<section id="installation" class="level1">
-<h1>Installation</h1>
-<p>Air is available <a href="https://marketplace.visualstudio.com/items?itemName=Posit.air-vscode">as an Extension</a> for both VS Code and Positron. The extension comes pre-bundled with an Air binary, so you don’t need anything else to get going! The Air extension is hosted in the VS Code Marketplace and on OpenVSX.</p>
+<p>Air integrates with GitHub Actions through the <a href="https://github.com/posit-dev/setup-air">posit-dev/setup-air</a> action. The action is in charge of:</p>
+<ul>
+<li><p>Installing Air</p></li>
+<li><p>Adding Air to the PATH</p></li>
+<li><p>Caching Air to speed up consecutive runs on self-hosted runners</p></li>
+</ul>
+<p>You can install Air in one step, and then invoke Air in the next step, like:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Install Air</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> posit-dev/setup-air@v1</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Check</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">run</span><span class="kw">:</span><span class="at"> air format . --check</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="example-actions" class="level2">
+<h2 class="anchored" data-anchor-id="example-actions">Example actions</h2>
+<p>We provide full <a href="https://github.com/posit-dev/setup-air/tree/main/examples">example actions</a> to get you started quickly, described below. We recommend that you use usethis to copy one of the following into your <code>.github/workflows</code> folder.</p>
+<section id="format-with-github-suggestions" class="level3">
+<h3 class="anchored" data-anchor-id="format-with-github-suggestions">Format with GitHub Suggestions</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">use_github_action</span>(<span class="at">url =</span> <span class="st">"https://github.com/posit-dev/setup-air/blob/main/examples/format-suggest.yaml"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This action runs <code>air format .</code> on every pull request. If formatting is required, the check fails and suggestion comments are added directly to the pull request. We recommend committing the suggestions in a single batch from the <code>Files changed</code> view, which will trigger a rerun of the check and delete the outdated suggestion comments. Before using this action, ensure that you’ve locally run Air on your entire project at least once using <code>air format .</code> or the <code>Air: Format Workspace Folder</code> command in VS Code or Positron, otherwise you can end up with a very large amount of suggestions.</p>
+<p>This action is great for managing pull requests from external contributors. Even if they don’t use Air themselves, they can commit the suggestions to pass Air’s formatting checks.</p>
+<p>Note that this does not run on pushes straight to <code>main</code>.</p>
+<p><img src="./images/format-suggest-example.png" class="img-fluid" alt="GitHub Actions bot automatically adding a GitHub Suggestions comment of the changes required to make this file pass Air's formatting checks."></p>
 </section>
-<section id="features" class="level1">
-<h1>Features</h1>
-<section id="format-on-save" class="level2">
-<h2 class="anchored" data-anchor-id="format-on-save">Format on save</h2>
-<p>Once you have the extension installed, turn on Format on Save for R documents by opening your <code>settings.json</code> and adding:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"[r]"</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">"editor.formatOnSave"</span><span class="fu">:</span> <span class="kw">true</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>You should now be able to simply open an R document, save it, and have the entire document formatted by Air. You can also explicitly call the command <code>Format Document</code> if you’d like to control this manually.</p>
-<!--# Come back and add video -->
-</section>
-<section id="format-selection" class="level2">
-<h2 class="anchored" data-anchor-id="format-selection">Format selection</h2>
-<p>To format a selection of code, highlight it with your cursor and run the command <code>Format Selection</code>. Formatting a selection may <em>expand</em> that selection to find the nearest complete fragment of code that is formattable.</p>
-<!--# Come back and add video -->
-</section>
-<section id="format-workspace-folder" class="level2">
-<h2 class="anchored" data-anchor-id="format-workspace-folder">Format workspace folder</h2>
-<p>Air ships with a special <code>Air: Format Workspace Folder</code> command to format all R files within a workspace folder. This is particularly useful when transitioning an existing project over to Air, where you need to perform a project-wide format before utilizing the per-file format on save feature.</p>
-<p>Note that if you don’t have an <code>air.toml</code> in your project, then this command will use Air’s default settings rather than the IDE <a href="./configuration.html#configuration-settings-synchronization">settings synchronization mechanism</a>. We recommend using <code>usethis::use_air()</code> to set up an <code>air.toml</code> (among other things) before running this command.</p>
-</section>
-<section id="quarto" class="level2">
-<h2 class="anchored" data-anchor-id="quarto">Quarto</h2>
-<p>Quarto can automatically invoke Air on R code cells when the <a href="https://marketplace.visualstudio.com/items?itemName=quarto.quarto">Quarto extension</a> is active.</p>
-<section id="format-on-save-1" class="level3">
-<h3 class="anchored" data-anchor-id="format-on-save-1">Format on save</h3>
-<p>To format all R code cells on save, set this in your <code>settings.json</code>:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"[quarto]"</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">"editor.formatOnSave"</span><span class="fu">:</span> <span class="kw">true</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">},</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"[r]"</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        <span class="dt">"editor.formatOnSave"</span><span class="fu">:</span> <span class="kw">true</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<!--# Come back and add video -->
-</section>
-<section id="format-cell" class="level3">
-<h3 class="anchored" data-anchor-id="format-cell">Format cell</h3>
-<p>When inside an R cell in a Quarto document, use the chorded key combination <code>Cmd+K Cmd+F</code> or the command <code>Quarto: Format Cell</code> to format a single cell.</p>
-<!--# Come back and add video -->
-</section>
-</section>
-<section id="configuration-autocompletion-and-validation" class="level2">
-<h2 class="anchored" data-anchor-id="configuration-autocompletion-and-validation">Configuration autocompletion and validation</h2>
-<p>Installing the <a href="https://marketplace.visualstudio.com/items?itemName=tamasfe.even-better-toml">Even Better TOML</a> extension activates autocompletion and validation while inside an <code>air.toml</code> file. There is a <a href="https://github.com/tamasfe/taplo/issues/514">known issue</a> regarding autocompletion duplication, but we still find this extension very useful!</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="images/autocomplete-persistent-line-breaks.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
-</figure>
-</div>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="images/autocomplete-line-ending.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
-</figure>
-</div>
+<section id="format-with---check" class="level3">
+<h3 class="anchored" data-anchor-id="format-with---check">Format with <code>--check</code></h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">use_github_action</span>(<span class="at">url =</span> <span class="st">"https://github.com/posit-dev/setup-air/blob/main/examples/format-check.yaml"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This runs <code>air format . --check</code> on every push to <code>main</code> and on every pull request. This is a very simple action that fails if any files would be reformatted. When this happens, reformat locally using <code>air format .</code> or the <code>Air: Format Workspace Folder</code> command in VS Code or Positron, and commit and push the results.</p>
 
 
 </section>
@@ -766,4 +722,4 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/editor-vscode.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/integration-github-actions.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

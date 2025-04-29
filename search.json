@@ -160,6 +160,28 @@
     ]
   },
   {
+    "objectID": "integration-github-actions.html",
+    "href": "integration-github-actions.html",
+    "title": "GitHub Actions",
+    "section": "",
+    "text": "Air integrates with GitHub Actions through the posit-dev/setup-air action. The action is in charge of:\nYou can install Air in one step, and then invoke Air in the next step, like:",
+    "crumbs": [
+      "Integrations",
+      "GitHub Actions"
+    ]
+  },
+  {
+    "objectID": "integration-github-actions.html#example-actions",
+    "href": "integration-github-actions.html#example-actions",
+    "title": "GitHub Actions",
+    "section": "Example actions",
+    "text": "Example actions\nWe provide full example actions to get you started quickly, described below. We recommend that you use usethis to copy one of the following into your .github/workflows folder.\n\nFormat with GitHub Suggestions\nusethis::use_github_action(url = \"https://github.com/posit-dev/setup-air/blob/main/examples/format-suggest.yaml\")\nThis action runs air format . on every pull request. If formatting is required, the check fails and suggestion comments are added directly to the pull request. We recommend committing the suggestions in a single batch from the Files changed view, which will trigger a rerun of the check and delete the outdated suggestion comments. Before using this action, ensure that you’ve locally run Air on your entire project at least once using air format . or the Air: Format Workspace Folder command in VS Code or Positron, otherwise you can end up with a very large amount of suggestions.\nThis action is great for managing pull requests from external contributors. Even if they don’t use Air themselves, they can commit the suggestions to pass Air’s formatting checks.\nNote that this does not run on pushes straight to main.\n\n\n\nFormat with --check\nusethis::use_github_action(url = \"https://github.com/posit-dev/setup-air/blob/main/examples/format-check.yaml\")\nThis runs air format . --check on every push to main and on every pull request. This is a very simple action that fails if any files would be reformatted. When this happens, reformat locally using air format . or the Air: Format Workspace Folder command in VS Code or Positron, and commit and push the results.",
+    "crumbs": [
+      "Integrations",
+      "GitHub Actions"
+    ]
+  },
+  {
     "objectID": "editor-rstudio.html",
     "href": "editor-rstudio.html",
     "title": "RStudio",
