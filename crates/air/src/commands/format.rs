@@ -98,7 +98,11 @@ impl FormatMode {
 
 fn inform_changed(paths: &[PathBuf], f: &mut impl Write) -> io::Result<()> {
     for path in paths.iter().sorted_unstable() {
-        writeln!(f, "Would reformat: {}", path.display())?;
+        writeln!(
+            f,
+            "Would reformat: {path}",
+            path = relativize_path(path).underline()
+        )?;
     }
     Ok(())
 }
