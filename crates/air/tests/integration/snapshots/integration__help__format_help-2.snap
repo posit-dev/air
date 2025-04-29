@@ -1,0 +1,30 @@
+---
+source: crates/air/tests/integration/help.rs
+expression: "Command::new(binary_path()).arg(\"format\").arg(\"--help\").run()"
+---
+success: true
+exit_code: 0
+----- stdout -----
+Format a set of files or directories
+
+Usage: air format [OPTIONS] [PATHS]...
+
+Arguments:
+  [PATHS]...  The files or directories to format
+
+Options:
+      --check  If enabled, format results are not written back to the file. Instead, exit with a
+               non-zero status code if any files would have been modified, and zero otherwise
+  -h, --help   Print help
+
+Global options:
+      --log-level <LOG_LEVEL>  The log level. One of: `error`, `warn`, `info`, `debug`, or `trace`.
+                               Defaults to `warn`
+      --no-color               Disable colored output. To turn colored output off, either set this
+                               option or set the environment variable `NO_COLOR` to any non-zero
+                               value
+
+----- stderr -----
+
+----- args -----
+format --help
