@@ -148,16 +148,11 @@ export class Lsp {
 						);
 
 						// If there was no document, it means it was closed in
-						// the mean time. Nothing we can do here so fail in bulk
-						// for all parameters. The caller might make assumptions
-						// about the order and length of returned configuration
-						// items so we have to bail for all of them even though
-						// other items might be fine.
+						// the mean time. Nothing we can do here so use the global
+						// value we already pulled from `next()` above.
+						// Since the document is closed the scope should not matter.
 						if (!document) {
-							return new ResponseError(
-								-1,
-								`Can't retrieve configuration for document with uri ${uri}. Document is closed.`,
-							);
+							continue;
 						}
 
 						const languageId = document.languageId;
@@ -169,6 +164,7 @@ export class Lsp {
 								languageId,
 							},
 						);
+
 						items[i] = config.get(item.section);
 					}
 
