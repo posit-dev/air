@@ -137,12 +137,22 @@ export class Lsp {
 
 						const uri = vscode.Uri.parse(item.scopeUri);
 
+						// We're expecting the document to be opened. But it
+						// could have been closed in the meantime. We need to be
+						// careful not to open it again to avoid a cascading
+						// chain of events with this middleware. So we don't
+						// call `openDocument()` here, we just look for an
+						// already opened one.
 						const document = vscode.workspace.textDocuments.find(
-							(document) => {
-								return document.uri === uri;
-							},
+							(document) => document.uri === uri,
 						);
 
+						// If there was no document, it means it was closed in
+						// the mean time. Nothing we can do here so fail in bulk
+						// for all parameters. The caller might make assumptions
+						// about the order and length of returned configuration
+						// items so we have to bail for all of them even though
+						// other items might be fine.
 						if (!document) {
 							return new ResponseError(
 								-1,
