@@ -21,9 +21,7 @@
   "lsp": {
     "rust-analyzer": {
       "initialization_options": {
-        "checkOnSave": {
-          "command": "clippy"
-        },
+        "check.command": "clippy",
         "rustfmt": {
           "extraArgs": ["+nightly"]
         }
