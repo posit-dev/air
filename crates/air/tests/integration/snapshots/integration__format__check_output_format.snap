@@ -1,6 +1,6 @@
 ---
 source: crates/air/tests/integration/format.rs
-expression: "Command::new(binary_path()).current_dir(path_root()).arg(\"format\").arg(path1).arg(path2).arg(\"--check\").run()"
+expression: "Command::new(binary_path()).current_dir(path_root()).arg(\"format\").arg(path1).arg(path2).arg(\"--check\").run().normalize_os_path_separator()"
 ---
 success: false
 exit_code: 1

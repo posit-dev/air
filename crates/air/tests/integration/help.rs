@@ -5,18 +5,37 @@ use crate::helpers::CommandExt;
 
 #[test]
 fn test_help() {
-    insta::assert_snapshot!(&mut Command::new(binary_path()).run());
-    insta::assert_snapshot!(Command::new(binary_path()).arg("help").run());
-    insta::assert_snapshot!(Command::new(binary_path()).arg("--help").run());
-    insta::assert_snapshot!(Command::new(binary_path()).arg("-h").run());
+    insta::assert_snapshot!(&mut Command::new(binary_path())
+        .run()
+        .normalize_os_executable_name());
+    insta::assert_snapshot!(Command::new(binary_path())
+        .arg("help")
+        .run()
+        .normalize_os_executable_name());
+    insta::assert_snapshot!(Command::new(binary_path())
+        .arg("--help")
+        .run()
+        .normalize_os_executable_name());
+    insta::assert_snapshot!(Command::new(binary_path())
+        .arg("-h")
+        .run()
+        .normalize_os_executable_name());
 }
 
 #[test]
 fn test_format_help() {
-    insta::assert_snapshot!(Command::new(binary_path()).arg("format").run());
+    insta::assert_snapshot!(Command::new(binary_path())
+        .arg("format")
+        .run()
+        .normalize_os_executable_name());
     insta::assert_snapshot!(Command::new(binary_path())
         .arg("format")
         .arg("--help")
-        .run());
-    insta::assert_snapshot!(Command::new(binary_path()).arg("format").arg("-h").run());
+        .run()
+        .normalize_os_executable_name());
+    insta::assert_snapshot!(Command::new(binary_path())
+        .arg("format")
+        .arg("-h")
+        .run()
+        .normalize_os_executable_name());
 }

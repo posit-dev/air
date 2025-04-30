@@ -1,6 +1,6 @@
 ---
 source: crates/air/tests/integration/help.rs
-expression: "Command::new(binary_path()).arg(\"format\").run()"
+expression: "Command::new(binary_path()).arg(\"format\").run().normalize_os_executable_name()"
 ---
 success: false
 exit_code: 2

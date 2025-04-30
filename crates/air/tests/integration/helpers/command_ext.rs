@@ -11,12 +11,34 @@ pub trait CommandExt {
     fn run(&mut self) -> Output;
 }
 
-/// Like [std::process::Output], but augmented with `arguments`
+/// Like [std::process::Output], but augmented with `arguments` and a few extra methods
 pub struct Output {
     pub status: ExitStatus,
-    pub stdout: Vec<u8>,
-    pub stderr: Vec<u8>,
-    pub arguments: Vec<String>,
+    pub stdout: String,
+    pub stderr: String,
+    pub arguments: String,
+}
+
+impl Output {
+    /// Normalize path separator for cross OS snapshot stability
+    pub fn normalize_os_path_separator(self) -> Self {
+        Self {
+            status: self.status,
+            stdout: self.stdout.replace('\\', "/"),
+            stderr: self.stderr.replace('\\', "/"),
+            arguments: self.arguments.replace('\\', "/"),
+        }
+    }
+
+    /// Normalize executable name for cross OS snapshot stability
+    pub fn normalize_os_executable_name(self) -> Self {
+        Self {
+            status: self.status,
+            stdout: self.stdout.replace("air.exe", "air"),
+            stderr: self.stderr.replace("air.exe", "air"),
+            arguments: self.arguments.replace("air.exe", "air"),
+        }
+    }
 }
 
 impl CommandExt for Command {
@@ -24,15 +46,21 @@ impl CommandExt for Command {
         // Augment `std::process::Output` with the arguments
         let output = self.output().unwrap();
 
+        // Go ahead and turn these into `String`
+        let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+        let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+
         let arguments: Vec<String> = self
             .get_args()
             .map(|x| x.to_string_lossy().into_owned())
             .collect();
 
+        let arguments = arguments.join(" ");
+
         Output {
             status: output.status,
-            stdout: output.stdout,
-            stderr: output.stderr,
+            stdout,
+            stderr,
             arguments,
         }
     }
@@ -40,19 +68,6 @@ impl CommandExt for Command {
 
 impl Display for Output {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let stdout = String::from_utf8_lossy(&self.stdout);
-        let stderr = String::from_utf8_lossy(&self.stderr);
-        let arguments = self.arguments.join(" ");
-
-        // Normalize all `\` to `/` for snapshot stability
-        let stdout = stdout.replace('\\', "/");
-        let stderr = stderr.replace('\\', "/");
-        let arguments = arguments.replace('\\', "/");
-
-        // Replace Windows help documentation's `air.exe` with `air` for snapshot stability
-        let stdout = stdout.replace("air.exe", "air");
-        let stderr = stderr.replace("air.exe", "air");
-
         f.write_fmt(format_args!(
             "
 success: {:?}
@@ -65,9 +80,9 @@ exit_code: {}
 {}",
             self.status.success(),
             self.status.code().unwrap_or(1),
-            stdout,
-            stderr,
-            arguments,
+            self.stdout,
+            self.stderr,
+            self.arguments,
         ))
     }
 }

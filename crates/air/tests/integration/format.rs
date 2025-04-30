@@ -184,7 +184,8 @@ fn test_check_when_no_formatting_is_required() {
         .arg("format")
         .arg(path)
         .arg("--check")
-        .run());
+        .run()
+        .normalize_os_path_separator());
 }
 
 #[test]
@@ -201,5 +202,6 @@ fn test_check_output_format() {
         .arg(path1)
         .arg(path2)
         .arg("--check")
-        .run());
+        .run()
+        .normalize_os_path_separator());
 }

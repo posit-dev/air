@@ -1,6 +1,6 @@
 ---
 source: crates/air/tests/integration/help.rs
-expression: "&mut Command::new(binary_path()).run()"
+expression: "&mut Command::new(binary_path()).run().normalize_os_executable_name()"
 ---
 success: false
 exit_code: 2
