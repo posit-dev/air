@@ -1,0 +1,81 @@
+---
+title: "Zed"
+editor:
+  markdown:
+    wrap: sentence
+    canonical: true
+---
+
+[Zed](https://github.com/zed-industries/zed) is a collaborative editor with an extension system and builtin support for the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/).
+
+# Installation
+
+To use Air in Zed, you currently need to install the following two Zed extensions by running the command `zed: extensions`:
+
+-   `R`
+
+    -   Adds *language* support for R, teaching Zed about R file types, syntax highlighting, and other basic editor capabilities.
+        This is required for Zed to detect R files and call Air on them.
+
+    -   Adds *language server* support for R, backed by the [`languageserver`](https://github.com/REditorSupport/languageserver) R package.
+        This is turned on by default, but is optional if you just want to use Air.
+        The languageserver package provides a more comprehensive language server than Air.
+        While Air's language server is currently focused on formatting, this also provides help, go to definition, and other nice features.
+
+-   `Air`
+
+    -   Adds *language server* support for R, backed by Air.
+        The Air language server is primarily used for document formatting.
+
+You won't need to install the Air command line tool - the Zed extension will download it for you as needed.
+
+To configure Zed to use the Air language server to format R files, add the following to your Zed `settings.json`:
+
+``` json
+{
+  "languages": {
+    "R": {
+      "language_servers": ["air"]
+    }
+  }
+}
+```
+
+If you'd like to also use [`languageserver`](https://github.com/REditorSupport/languageserver) through the Zed R extension, use the following configuration:
+
+``` json
+{
+  "languages": {
+    "R": {
+      "language_servers": ["air", "r_language_server"]
+    }
+  }
+}
+```
+
+::: callout-caution
+## It's important that `"air"` is provided before `"r_language_server"`, otherwise Air won't get formatting requests!
+:::
+
+If you use `"r_language_server"`, note that languageserver provides on-type formatting support.
+Notably, it will automatically break pipe chains of \>1 pipe over multiple lines when you type a closing `)`.
+If you don't want this and would like Air to be fully in charge of formatting, then use this configuration:
+
+``` json
+{
+  "languages": {
+    "R": {
+      "language_servers": ["air", "r_language_server"],
+      "use_on_type_format": false
+    }
+  }
+}
+```
+
+# Features
+
+## Format on save
+
+The Zed setting `format_on_save` is `"on"` by default, so there is no additional configuration required to get Zed to format your R files on save using Air.
+
+<!--# Come back and add video -->
