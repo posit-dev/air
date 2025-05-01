@@ -254,7 +254,11 @@ if (a) 1 else
   else 2
 }
 
-# The nested if forces braces
+# The nested if in `consequence` forces braces
+if (a) if (b) 1
+if (a) if (b) 1 else 2
+
+# The nested if in `alternative` forces braces
 if (a) 1 else if (b) 2
 if (a) 1 else if (b) 2 else 3
 

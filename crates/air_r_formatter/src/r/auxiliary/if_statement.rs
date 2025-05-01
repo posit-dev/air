@@ -145,9 +145,20 @@ impl FormatNodeRule<RIfStatement> for FormatRIfStatement {
 /// }
 /// ```
 ///
-/// ## The `alternative` is another if statement
+/// ## The `consequence` or `alternative` is another if statement
 ///
 /// ```r
+/// # Before
+/// if (cond) if (cond) consequence
+/// #         |----consequence----|
+///
+/// # After
+/// if (cond) {
+///   if (cond) {
+///     consequence
+///   }
+/// }
+///
 /// # Before
 /// if (cond) consequence1 else if (cond) consequence2
 /// #                           |-----alternative----|
@@ -166,6 +177,11 @@ fn compute_braced_expressions(node: &RIfStatement) -> SyntaxResult<BracedExpress
         return Ok(BracedExpressions::Force);
     }
     if matches!(consequence, AnyRExpression::RBracedExpressions(_)) {
+        return Ok(BracedExpressions::Force);
+    }
+    if matches!(consequence, AnyRExpression::RIfStatement(_)) {
+        // Disallow `if (condition) if (condition) 1` as that is too complex.
+        // Also shortcircuits recursion nicely.
         return Ok(BracedExpressions::Force);
     }
 
@@ -245,11 +261,42 @@ impl Format<RFormatContext> for FormatIfBody<'_> {
             AnyRExpression::RBracedExpressions(node) => {
                 write!(f, [node.format()])
             }
-            // Body is the `alternative` of an `else` and is another if statement,
-            // format with pre-computed `braced_expressions`
+            // Body is a `consequence` that is another if statement, pass through
+            // pre computed `braced_expressions` (will be `BracedExpressions::Force`)
+            // and force braces around the body
+            //
+            // ```r
+            // if (TRUE) if (TRUE) 1
+            // #        |-----------|
+            // ```
+            AnyRExpression::RIfStatement(node)
+                if matches!(self.if_body_kind, IfBodyKind::Consequence) =>
+            {
+                debug_assert!(matches!(self.braced_expressions, BracedExpressions::Force));
+                write!(
+                    f,
+                    [
+                        text("{"),
+                        block_indent(&format_args![&node.format().with_options(
+                            FormatRIfStatementOptions {
+                                braced_expressions: Some(self.braced_expressions)
+                            }
+                        )]),
+                        text("}")
+                    ]
+                )
+            }
+            // Body is an `alternative` that is another if statement, pass through
+            // pre computed `braced_expressions` (will be `BracedExpressions::Force`)
+            //
+            // ```r
+            // if (TRUE) 1 else if (TRUE) 2
+            // #               |-----------|
+            // ```
             AnyRExpression::RIfStatement(node)
                 if matches!(self.if_body_kind, IfBodyKind::Alternative) =>
             {
+                debug_assert!(matches!(self.braced_expressions, BracedExpressions::Force));
                 write!(
                     f,
                     [node.format().with_options(FormatRIfStatementOptions {
