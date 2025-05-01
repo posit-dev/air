@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Neovim – Air</title>
+<title>Zed – Air</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -126,7 +126,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./editors.html">Editors</a></li><li class="breadcrumb-item"><a href="./editor-neovim.html">Neovim</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./editors.html">Editors</a></li><li class="breadcrumb-item"><a href="./editor-zed.html">Zed</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -187,13 +187,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./editor-zed.html" class="sidebar-item-text sidebar-link">
+  <a href="./editor-zed.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Zed</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./editor-neovim.html" class="sidebar-item-text sidebar-link active">
+  <a href="./editor-neovim.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Neovim</span></a>
   </div>
 </li>
@@ -240,24 +240,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#installation" id="toc-installation" class="nav-link active" data-scroll-target="#installation">Installation</a>
-  <ul class="collapse">
-  <li><a href="#languageserver" id="toc-languageserver" class="nav-link" data-scroll-target="#languageserver"><code>languageserver</code></a></li>
-  </ul></li>
+  <li><a href="#installation" id="toc-installation" class="nav-link active" data-scroll-target="#installation">Installation</a></li>
   <li><a href="#features" id="toc-features" class="nav-link" data-scroll-target="#features">Features</a>
   <ul class="collapse">
   <li><a href="#format-on-save" id="toc-format-on-save" class="nav-link" data-scroll-target="#format-on-save">Format on save</a></li>
-  <li><a href="#quarto" id="toc-quarto" class="nav-link" data-scroll-target="#quarto">Quarto</a></li>
   </ul></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/editor-neovim.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/editor-zed.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./editors.html">Editors</a></li><li class="breadcrumb-item"><a href="./editor-neovim.html">Neovim</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./editors.html">Editors</a></li><li class="breadcrumb-item"><a href="./editor-zed.html">Zed</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Neovim</h1>
+<h1 class="title">Zed</h1>
 </div>
 
 
@@ -274,51 +270,67 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Air provides first class support for Neovim, which supports the <a href="https://microsoft.github.io/language-server-protocol/">Language Server Protocol</a>.</p>
+<p><a href="https://github.com/zed-industries/zed">Zed</a> is a collaborative editor with an extension system and builtin support for the <a href="https://microsoft.github.io/language-server-protocol/">Language Server Protocol</a>.</p>
 <section id="installation" class="level1">
 <h1>Installation</h1>
-<p>First you should ensure you have an appropriate Air binary which Neovim can locate. You can achieve this using a package manager such as <a href="https://github.com/williamboman/mason.nvim">mason.nvim</a>, e.g.&nbsp;with <code>:MasonInstall air</code>, or by <a href="./cli.html">manually installing</a> Air as a standalone command line tool.</p>
-<p>We recommend configuring Air as an LSP server via <a href="https://github.com/neovim/nvim-lspconfig">nvim-lspconfig</a>. While the Air language server currently only supports formatting, it will gain more features in future. Add the following to your <code>init.lua</code>:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode lua code-with-copy"><code class="sourceCode lua"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span><span class="op">(</span><span class="st">"lspconfig"</span><span class="op">).</span><span class="va">air</span><span class="op">.</span>setup<span class="op">({</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">on_attach</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="cn">_</span><span class="op">,</span> <span class="va">bufnr</span><span class="op">)</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">vim</span><span class="op">.</span><span class="va">api</span><span class="op">.</span>nvim_create_autocmd<span class="op">(</span><span class="st">"BufWritePre"</span><span class="op">,</span> <span class="op">{</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>            <span class="va">buffer</span> <span class="op">=</span> <span class="va">bufnr</span><span class="op">,</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>            <span class="va">callback</span> <span class="op">=</span> <span class="kw">function</span><span class="op">()</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>                <span class="va">vim</span><span class="op">.</span><span class="va">lsp</span><span class="op">.</span><span class="va">buf</span><span class="op">.</span>format<span class="op">()</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>            <span class="kw">end</span><span class="op">,</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        <span class="op">})</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span><span class="op">,</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="op">})</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>While not required, the <code>BufWritePre</code> command ensures that Air automatically formats your R code when you save a file.</p>
-<section id="languageserver" class="level2">
-<h2 class="anchored" data-anchor-id="languageserver"><code>languageserver</code></h2>
-<p>If both Air and <code>languageserver</code> are installed, you can use the following configuration to disable <code>languageserver</code> formatting, ensuring that only Air handles formatting:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode lua code-with-copy"><code class="sourceCode lua"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span><span class="op">(</span><span class="st">"lspconfig"</span><span class="op">).</span><span class="va">r_language_server</span><span class="op">.</span>setup<span class="op">({</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">on_attach</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">client</span><span class="op">,</span> <span class="cn">_</span><span class="op">)</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">client</span><span class="op">.</span><span class="va">server_capabilities</span><span class="op">.</span><span class="va">documentFormattingProvider</span> <span class="op">=</span> <span class="kw">false</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">client</span><span class="op">.</span><span class="va">server_capabilities</span><span class="op">.</span><span class="va">documentRangeFormattingProvider</span> <span class="op">=</span> <span class="kw">false</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span><span class="op">,</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="op">})</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
+<p>To use Air in Zed, you currently need to install the following two Zed extensions by running the command <code>zed: extensions</code>:</p>
+<ul>
+<li><p><code>R</code></p>
+<ul>
+<li><p>Adds <em>language</em> support for R, teaching Zed about R file types, syntax highlighting, and other basic editor capabilities. This is required for Zed to detect R files and call Air on them.</p></li>
+<li><p>Adds <em>language server</em> support for R, backed by the <a href="https://github.com/REditorSupport/languageserver"><code>languageserver</code></a> R package. This is turned on by default, but is optional if you just want to use Air. The languageserver package provides a more comprehensive language server than Air. While Air’s language server is currently focused only on formatting, languageserver also provides help, go to definition, and other nice features.</p></li>
+</ul></li>
+<li><p><code>Air</code></p>
+<ul>
+<li>Adds <em>language server</em> support for R, backed by Air. The Air language server is primarily used for document formatting.</li>
+</ul></li>
+</ul>
+<p>You won’t need to install the Air command line tool - the Zed extension will download it for you as needed.</p>
+<p>To configure Zed to use the Air language server to format R files, add the following to your Zed <code>settings.json</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"languages"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"R"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"language_servers"</span><span class="fu">:</span> <span class="ot">[</span><span class="st">"air"</span><span class="ot">]</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>If you’d like to also use <a href="https://github.com/REditorSupport/languageserver"><code>languageserver</code></a> through the Zed R extension, use the following configuration:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"languages"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"R"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"language_servers"</span><span class="fu">:</span> <span class="ot">[</span><span class="st">"air"</span><span class="ot">,</span> <span class="st">"r_language_server"</span><span class="ot">]</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-caution callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+It’s important that <code>"air"</code> is provided before <code>"r_language_server"</code>, otherwise Air won’t get formatting requests!
+</div>
+</div>
+<div class="callout-body-container callout-body">
+
+</div>
+</div>
+<p>If you use <code>"r_language_server"</code>, note that languageserver provides on-type formatting support. Notably, it will automatically break pipe chains of &gt;1 pipe over multiple lines when you type a closing <code>)</code>. If you don’t want this and would like Air to be fully in charge of formatting, then use this configuration:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"languages"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"R"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"language_servers"</span><span class="fu">:</span> <span class="ot">[</span><span class="st">"air"</span><span class="ot">,</span> <span class="st">"r_language_server"</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"use_on_type_format"</span><span class="fu">:</span> <span class="kw">false</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="features" class="level1">
 <h1>Features</h1>
 <section id="format-on-save" class="level2">
 <h2 class="anchored" data-anchor-id="format-on-save">Format on save</h2>
-<p>With the <code>BufWritePre</code> hook recommended in the configuration step, Air will format your R files on every save.</p>
+<p>The Zed setting <code>format_on_save</code> is <code>"on"</code> by default, so there is no additional configuration required to get Zed to format your R files on save using Air.</p>
 <!--# Come back and add video -->
-</section>
-<section id="quarto" class="level2">
-<h2 class="anchored" data-anchor-id="quarto">Quarto</h2>
-<p>As an LSP, Air itself does not provide direct support for Quarto or RMarkdown documents. However, Air can additionally be configured as a formatter plugin for <a href="https://github.com/stevearc/conform.nvim">conform.nvim</a>, which supports <a href="https://github.com/stevearc/conform.nvim/blob/master/doc/advanced_topics.md#injected-language-formatting-code-blocks">“injected language formatting”</a> for code blocks in Markdown, Quarto, and RMarkdown. Conform can be configured by adding the following to your <code>nvim/lua/plugins/conform.lua</code>:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode lua code-with-copy"><code class="sourceCode lua"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span><span class="op">(</span><span class="st">"conform"</span><span class="op">).</span>setup<span class="op">({</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">formatters_by_ft</span> <span class="op">=</span> <span class="op">{</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">quarto</span> <span class="op">=</span> <span class="op">{</span> <span class="st">"injected"</span> <span class="op">},</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">rmd</span> <span class="op">=</span> <span class="op">{</span> <span class="st">"injected"</span> <span class="op">},</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">r</span> <span class="op">=</span> <span class="op">{</span> <span class="st">"air"</span> <span class="op">},</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="op">})</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>See the <a href="https://github.com/stevearc/conform.nvim?tab=readme-ov-file#installation">conform.nvim documentation</a> for more information on how to configure conform.nvim with your favorite plugin manager.</p>
 
 
 </section>
@@ -750,4 +762,4 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/editor-neovim.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/editor-zed.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
