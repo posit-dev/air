@@ -36,6 +36,7 @@ dependencies = [
  "crates",
  "fs",
  "ignore",
+ "insta",
  "itertools",
  "lsp",
  "tempfile",
