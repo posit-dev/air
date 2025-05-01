@@ -138,6 +138,17 @@ if (a # becomes trailing on `a`
     }
 }
 
+# Recursion into `consequence`
+if (condition) if (condition2) this # becomes trailing on `this`
+if (condition) if (condition2) if (condition3) this # becomes trailing on `this`
+if (condition) if (condition2) this else that # becomes trailing on `that`
+
+# Recursion into `alternative`
+if (condition) this else that # becomes trailing on `that`
+if (condition) this else if (condition2) that # becomes trailing on `that`
+if (condition) this else if (condition2) this2 else that # becomes trailing on `that`
+if (condition) this else if (condition2) this2 else if (condition3) that # becomes trailing on `that`
+
 # ---------------------------------------------------------------------------
 # Comments - these comments aren't "enclosed" by the if statement, but
 # we attach EndOfLine comments with a preceding if statement node to the last

@@ -453,15 +453,37 @@ fn handle_if_statement_trailing_comment(
 
 fn locate_if_statement_trailing_comment_node(if_statement: RIfStatement) -> Option<AnyRExpression> {
     match if_statement.else_clause() {
-        // No `else_clause`, trail the `consequence`
+        // No `else_clause`, trail the `consequence`, recursing into chained if statements
+        //
+        // ```r
+        // if (TRUE) a # becomes trailing on `a`
+        // ```
+        //
+        // ```r
+        // if (TRUE) if (TRUE) a # becomes trailing on `a`
+        // ```
         None => match if_statement.consequence() {
-            Ok(consequence) => Some(consequence),
+            Ok(consequence) => match consequence {
+                AnyRExpression::RIfStatement(if_statement) => {
+                    locate_if_statement_trailing_comment_node(if_statement)
+                }
+                consequence => Some(consequence),
+            },
             Err(_) => {
                 // Would be unexpected to have an `if_statement` with no `consequence`
                 None
             }
         },
         // Yes `else_clause`, trail the `alternative`, recursing into chained if statements
+        //
+        // ```r
+        // if (TRUE) a else b # becomes trailing on `b`
+        // ```
+        //
+        // ```r
+        // if (TRUE) a else if (TRUE) b # becomes trailing on `b`
+        // if (TRUE) a else if (TRUE) b else c # becomes trailing on `c`
+        // ```
         Some(else_clause) => match else_clause.alternative() {
             Ok(alternative) => match alternative {
                 AnyRExpression::RIfStatement(if_statement) => {
