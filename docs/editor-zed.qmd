@@ -20,7 +20,7 @@ To use Air in Zed, you currently need to install the following two Zed extension
     -   Adds *language server* support for R, backed by the [`languageserver`](https://github.com/REditorSupport/languageserver) R package.
         This is turned on by default, but is optional if you just want to use Air.
         The languageserver package provides a more comprehensive language server than Air.
-        While Air's language server is currently focused on formatting, this also provides help, go to definition, and other nice features.
+        While Air's language server is currently focused only on formatting, languageserver also provides help, go to definition, and other nice features.
 
 -   `Air`
 
