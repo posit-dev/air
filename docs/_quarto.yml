@@ -25,8 +25,9 @@ website:
       - section: "Editors"
         href: editors.qmd
         contents:
-          - editor-rstudio.qmd
           - editor-vscode.qmd
+          - editor-rstudio.qmd
+          - editor-zed.qmd
           - editor-neovim.qmd
           - editor-helix.qmd
 

@@ -2,6 +2,8 @@
 
 # Development version
 
+- Added documentation on using Air in [Zed](https://github.com/zed-industries/zed).
+
 
 # 0.5.0
 
