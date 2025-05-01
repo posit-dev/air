@@ -2,6 +2,7 @@ use crate::prelude::*;
 use air_r_syntax::AnyRExpression;
 use air_r_syntax::RArgument;
 use air_r_syntax::RArgumentNameClause;
+use air_r_syntax::RElseClause;
 use air_r_syntax::RIfStatement;
 use air_r_syntax::RLanguage;
 use air_r_syntax::RParenthesizedExpression;
@@ -59,13 +60,14 @@ impl CommentStyle for RCommentStyle {
         &self,
         comment: DecoratedComment<Self::Language>,
     ) -> CommentPlacement<Self::Language> {
-        // TODO: Implement more rule based comment placement, see `biome_js_formatter`
         match comment.text_position() {
             CommentTextPosition::EndOfLine => handle_for_comment(comment)
                 .or_else(handle_function_comment)
                 .or_else(handle_while_comment)
                 .or_else(handle_repeat_comment)
                 .or_else(handle_if_statement_comment)
+                .or_else(handle_if_statement_trailing_comment)
+                .or_else(handle_else_clause_comment)
                 .or_else(handle_parenthesized_expression_comment)
                 .or_else(handle_argument_name_clause_comment)
                 .or_else(handle_argument_comment)
@@ -75,6 +77,7 @@ impl CommentStyle for RCommentStyle {
                 .or_else(handle_while_comment)
                 .or_else(handle_repeat_comment)
                 .or_else(handle_if_statement_comment)
+                .or_else(handle_else_clause_comment)
                 .or_else(handle_parenthesized_expression_comment)
                 .or_else(handle_argument_name_clause_comment)
                 .or_else(handle_argument_comment)
@@ -192,53 +195,299 @@ fn handle_function_comment(comment: DecoratedComment<RLanguage>) -> CommentPlace
 fn handle_if_statement_comment(
     comment: DecoratedComment<RLanguage>,
 ) -> CommentPlacement<RLanguage> {
-    match (comment.enclosing_node().kind(), comment.following_node()) {
-        (RSyntaxKind::R_IF_STATEMENT, Some(following)) => {
-            let if_statement = RIfStatement::unwrap_cast(comment.enclosing_node().clone());
+    let Some(if_statement) = RIfStatement::cast_ref(comment.enclosing_node()) else {
+        return CommentPlacement::Default(comment);
+    };
 
-            if let Some(preceding) = comment.preceding_node() {
-                // Make comments directly before the condition `)` trailing
-                // comments of the condition itself
-                //
-                // ```r
-                // if (
-                //   cond
-                //   # comment
-                // ) {
-                // }
-                // ```
-                if comment
-                    .following_token()
-                    .is_some_and(|token| token.kind() == RSyntaxKind::R_PAREN)
-                {
-                    return CommentPlacement::trailing(preceding.clone(), comment);
-                }
-            }
+    let Ok(condition) = if_statement.condition() else {
+        // Bail with default placement if we don't have a `condition`, should
+        // be unexpected
+        return CommentPlacement::Default(comment);
+    };
 
-            // Figure out if this is a comment that comes directly before the
-            // `consequence` and after the `)`, in which case we move it onto
-            // the `consequence`
-            //
-            // ```r
-            // if (cond) # comment
-            //   TRUE
-            // ```
-            if let Ok(consequence) = if_statement.consequence() {
-                if consequence.syntax() == following {
-                    return place_leading_or_dangling_body_comment(consequence, comment);
-                }
+    let Ok(consequence) = if_statement.consequence() else {
+        // Bail with default placement if we don't have a `consequence`, should
+        // be unexpected
+        return CommentPlacement::Default(comment);
+    };
+
+    // Make comments directly after the `condition` trailing
+    // comments of the `condition` itself
+    //
+    // ```r
+    // if (
+    //   condition
+    //   # comment
+    // ) {
+    // }
+    // ```
+    //
+    // But don't steal comments that belong on the `consequence`, like
+    // below. Here the preceding node is the `condition`. To do this right,
+    // we also force the following token to be `)`.
+    //
+    // ```r
+    // if (condition) # comment
+    //   consequence
+    // ```
+    if let Some(preceding) = comment.preceding_node() {
+        if let Some(following_token) = comment.following_token() {
+            if condition.syntax() == preceding
+                && matches!(following_token.kind(), RSyntaxKind::R_PAREN)
+            {
+                return CommentPlacement::trailing(preceding.clone(), comment);
             }
         }
-        (RSyntaxKind::R_ELSE_CLAUSE, _) => {
-            // TODO: Handle else clause comments in some way? See JS for an example.
-            // fall through
+    }
+
+    // Figure out if this is a comment that comes directly before the
+    // `consequence` and after the `)`, in which case we move it onto
+    // the `consequence` to prepare for autobracing
+    //
+    // ```r
+    // if (condition) # comment
+    //   consequence
+    // ```
+    //
+    // This aligns with behavior when braces already exist. Here, the comment's
+    // default placement makes it leading on `consequence` (the enclosing node is
+    // the braced expression, and there are no preceding nodes, so it attaches as leading
+    // on the following node).
+    //
+    // ```r
+    // if (condition) { # comment
+    //   consequence
+    // }
+    // ```
+    //
+    // It is important that we first check for comments after the `condition`
+    // but before the `)`, which we do above, otherwise this will steal this
+    // comment and place it on `consequence` when it really belongs to `condition`
+    //
+    // ```r
+    // if (
+    //   condition
+    //   # comment
+    // ) {
+    // }
+    // ```
+    if let Some(following) = comment.following_node() {
+        if consequence.syntax() == following {
+            return place_leading_or_dangling_body_comment(consequence, comment);
         }
-        _ => {
-            // fall through
+    }
+
+    // Move comments directly before an `else_clause` to the correct location
+    //
+    // Most `else` related handling is done by `handle_else_clause_comment()`,
+    // but when the comment is right before the `else` token, it is "enclosed"
+    // by the if statement node instead. We handle all of those cases here.
+    //
+    // We try extremely hard to force `} else` onto the same line with nothing
+    // between them, for maximum portability of the if/else statement. This
+    // requires moving the comment up onto `consequence` or down onto `alternative`.
+    //
+    // ```r
+    // {
+    //   if (cond) this # becomes trailing on `this`
+    //   else that
+    // }
+    // ```
+    //
+    // ```r
+    // {
+    //   if (cond) this
+    //   # becomes leading on `that`
+    //   else that
+    // }
+    // ```
+    //
+    // ```r
+    // {
+    //   if (cond) {
+    //     this
+    //   } # becomes trailing on `this`
+    //   else {
+    //     that
+    //   }
+    // }
+    // ```
+    //
+    // ```r
+    // {
+    //   if (cond) {
+    //
+    //   } # becomes dangling on `{}`
+    //   else {
+    //     that
+    //   }
+    // }
+    // ```
+    //
+    // ```r
+    // {
+    //   if (cond) {
+    //     this
+    //   }
+    //   # becomes leading on `that`
+    //   else {
+    //     that
+    //   }
+    // }
+    // ```
+    //
+    // ```r
+    // {
+    //   if (cond) {
+    //     this
+    //   }
+    //   # becomes dangling on `{}`
+    //   else {
+    //   }
+    // }
+    // ```
+    //
+    // ```r
+    // {
+    //   if (cond) {
+    //     this
+    //   }
+    //   # becomes leading on `that`
+    //   else if (cond) {
+    //     that
+    //   }
+    // }
+    // ```
+    if let Some(else_clause) = if_statement.else_clause() {
+        let Ok(alternative) = else_clause.alternative() else {
+            // Bail with default placement if we don't have a `alternative`, should
+            // be unexpected
+            return CommentPlacement::Default(comment);
+        };
+
+        if let Some(following) = comment.following_node() {
+            if else_clause.syntax() == following {
+                return match comment.text_position() {
+                    // End of line comments are moved up inside `consequence`
+                    CommentTextPosition::EndOfLine => {
+                        place_trailing_or_dangling_body_comment(consequence, comment)
+                    }
+                    // Own line comments are moved down inside `alternative`
+                    CommentTextPosition::OwnLine => {
+                        place_leading_or_dangling_alternative_comment(alternative, comment)
+                    }
+                    CommentTextPosition::SameLine => {
+                        unreachable!("Inline comments aren't possible in R")
+                    }
+                };
+            }
         }
     }
 
     CommentPlacement::Default(comment)
+}
+
+fn handle_else_clause_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
+    let Some(else_clause) = RElseClause::cast_ref(comment.enclosing_node()) else {
+        return CommentPlacement::Default(comment);
+    };
+
+    let Ok(alternative) = else_clause.alternative() else {
+        // Bail with default placement if we don't have a `alternative`, should
+        // be unexpected
+        return CommentPlacement::Default(comment);
+    };
+
+    // Comments following the `else` token but before the `alternative` are enclosed by
+    // the `else_clause`. Like with `consequence` above, we make these comments leading
+    // on the `alternative`.
+    //
+    // ```r
+    // {
+    //   if (condition) a
+    //   else # becomes leading on `b`
+    //   {
+    //     b
+    //   }
+    // }
+    // ```
+    //
+    // ```r
+    // {
+    //   if (condition) a
+    //   else
+    //   # becomes leading on `b`
+    //   {
+    //     b
+    //   }
+    // }
+    // ```
+    if let Some(following) = comment.following_node() {
+        if alternative.syntax() == following {
+            return place_leading_or_dangling_alternative_comment(alternative, comment);
+        }
+    }
+
+    CommentPlacement::Default(comment)
+}
+
+// Only used for `EndOfLine` comments!
+//
+// TODO!: More comments about this helper
+fn handle_if_statement_trailing_comment(
+    comment: DecoratedComment<RLanguage>,
+) -> CommentPlacement<RLanguage> {
+    let Some(preceding) = comment.preceding_node() else {
+        return CommentPlacement::Default(comment);
+    };
+
+    let Some(if_statement) = RIfStatement::cast_ref(preceding) else {
+        return CommentPlacement::Default(comment);
+    };
+
+    match locate_if_statement_trailing_comment_node(if_statement) {
+        Some(node) => CommentPlacement::trailing(node.into_syntax(), comment),
+        None => CommentPlacement::Default(comment),
+    }
+}
+
+fn locate_if_statement_trailing_comment_node(if_statement: RIfStatement) -> Option<AnyRExpression> {
+    match if_statement.else_clause() {
+        // No `else_clause`, trail the `consequence`
+        None => match if_statement.consequence() {
+            Ok(consequence) => Some(consequence),
+            Err(_) => {
+                // Would be unexpected to have an `if_statement` with no `consequence`
+                None
+            }
+        },
+        // Yes `else_clause`, trail the `alternative`, recursing into chained if statements
+        Some(else_clause) => match else_clause.alternative() {
+            Ok(alternative) => match alternative {
+                AnyRExpression::RIfStatement(if_statement) => {
+                    locate_if_statement_trailing_comment_node(if_statement)
+                }
+                alternative => Some(alternative),
+            },
+            Err(_) => {
+                // Would be unexpected to have an `else_clause` with no `alternative`
+                None
+            }
+        },
+    }
+}
+
+fn place_leading_or_dangling_alternative_comment(
+    alternative: AnyRExpression,
+    comment: DecoratedComment<RLanguage>,
+) -> CommentPlacement<RLanguage> {
+    match alternative {
+        AnyRExpression::RIfStatement(node) => match node.consequence() {
+            Ok(consequence) => place_leading_or_dangling_body_comment(consequence, comment),
+            Err(_) => CommentPlacement::Default(comment),
+        },
+        node => place_leading_or_dangling_body_comment(node, comment),
+    }
 }
 
 fn handle_parenthesized_expression_comment(
@@ -577,7 +826,7 @@ fn handle_hole_argument_comment(
 /// ```
 ///
 /// ```r
-/// if (cond) # becomes leading on `{}`
+/// if (cond) # becomes dangling on `{}`
 /// {
 /// }
 /// ```
@@ -591,5 +840,18 @@ fn place_leading_or_dangling_body_comment(
             None => CommentPlacement::dangling(body.into_syntax(), comment),
         },
         _ => CommentPlacement::leading(body.into_syntax(), comment),
+    }
+}
+
+fn place_trailing_or_dangling_body_comment(
+    body: AnyRExpression,
+    comment: DecoratedComment<RLanguage>,
+) -> CommentPlacement<RLanguage> {
+    match body {
+        AnyRExpression::RBracedExpressions(body) => match body.expressions().last() {
+            Some(last) => CommentPlacement::trailing(last.into_syntax(), comment),
+            None => CommentPlacement::dangling(body.into_syntax(), comment),
+        },
+        _ => CommentPlacement::trailing(body.into_syntax(), comment),
     }
 }
