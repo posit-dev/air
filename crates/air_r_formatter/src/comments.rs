@@ -66,7 +66,6 @@ impl CommentStyle for RCommentStyle {
                 .or_else(handle_while_comment)
                 .or_else(handle_repeat_comment)
                 .or_else(handle_if_statement_comment)
-                .or_else(handle_if_statement_trailing_comment)
                 .or_else(handle_else_clause_comment)
                 .or_else(handle_parenthesized_expression_comment)
                 .or_else(handle_argument_name_clause_comment)
@@ -429,74 +428,6 @@ fn handle_else_clause_comment(comment: DecoratedComment<RLanguage>) -> CommentPl
     }
 
     CommentPlacement::Default(comment)
-}
-
-// Only used for `EndOfLine` comments!
-//
-// TODO!: More comments about this helper
-fn handle_if_statement_trailing_comment(
-    comment: DecoratedComment<RLanguage>,
-) -> CommentPlacement<RLanguage> {
-    let Some(preceding) = comment.preceding_node() else {
-        return CommentPlacement::Default(comment);
-    };
-
-    let Some(if_statement) = RIfStatement::cast_ref(preceding) else {
-        return CommentPlacement::Default(comment);
-    };
-
-    match locate_if_statement_trailing_comment_node(if_statement) {
-        Some(node) => CommentPlacement::trailing(node.into_syntax(), comment),
-        None => CommentPlacement::Default(comment),
-    }
-}
-
-fn locate_if_statement_trailing_comment_node(if_statement: RIfStatement) -> Option<AnyRExpression> {
-    match if_statement.else_clause() {
-        // No `else_clause`, trail the `consequence`, recursing into chained if statements
-        //
-        // ```r
-        // if (TRUE) a # becomes trailing on `a`
-        // ```
-        //
-        // ```r
-        // if (TRUE) if (TRUE) a # becomes trailing on `a`
-        // ```
-        None => match if_statement.consequence() {
-            Ok(consequence) => match consequence {
-                AnyRExpression::RIfStatement(if_statement) => {
-                    locate_if_statement_trailing_comment_node(if_statement)
-                }
-                consequence => Some(consequence),
-            },
-            Err(_) => {
-                // Would be unexpected to have an `if_statement` with no `consequence`
-                None
-            }
-        },
-        // Yes `else_clause`, trail the `alternative`, recursing into chained if statements
-        //
-        // ```r
-        // if (TRUE) a else b # becomes trailing on `b`
-        // ```
-        //
-        // ```r
-        // if (TRUE) a else if (TRUE) b # becomes trailing on `b`
-        // if (TRUE) a else if (TRUE) b else c # becomes trailing on `c`
-        // ```
-        Some(else_clause) => match else_clause.alternative() {
-            Ok(alternative) => match alternative {
-                AnyRExpression::RIfStatement(if_statement) => {
-                    locate_if_statement_trailing_comment_node(if_statement)
-                }
-                alternative => Some(alternative),
-            },
-            Err(_) => {
-                // Would be unexpected to have an `else_clause` with no `alternative`
-                None
-            }
-        },
-    }
 }
 
 fn place_leading_or_dangling_alternative_comment(

@@ -136,5 +136,4 @@ function(){
 # If statements and comments
 
 # fmt: skip
-# TODO!: Comment should not disappear
 if (TRUE) 1 # hi

@@ -167,84 +167,70 @@ if (condition) # becomes leading on `a`
   c
 }
 
-# # TODO!: Has to move somewhere stable. Trailing `if (condition) a` will currently
-# # result in idempotence where it moves again and forces expansion there.
-# {
-#   if (condition) {
-#     if (condition) a
-#   } # becomes trailing on `a`
-#   else {
-#     b
-#   }
-# }
-
-# Recursion into `consequence`
-if (condition) if (condition2) this # becomes trailing on `this`
-if (condition) if (condition2) if (condition3) this # becomes trailing on `this`
-if (condition) if (condition2) this else that # becomes trailing on `that`
-
-# Recursion into `alternative`
-if (condition) this else that # becomes trailing on `that`
-if (condition) this else if (condition2) that # becomes trailing on `that`
-if (condition) this else if (condition2) this2 else that # becomes trailing on `that`
-if (condition) this else if (condition2) this2 else if (condition3) that # becomes trailing on `that`
+{
+  if (condition) {
+    if (condition) a
+  } # becomes trailing on `a`
+  else {
+    b
+  }
+}
 
 # ---------------------------------------------------------------------------
-# Comments - these comments aren't "enclosed" by the if statement, but
-# we attach EndOfLine comments with a preceding if statement node to the last
-# node of the if statement to prepare for autobracing
+# Comments - these comments aren't "enclosed" by the if statement, so they
+# our outside our if statement comment handling hooks. Avoid the urge to
+# try and attach these comments to the last node in the if statement, as
+# that causes verbatim printing (with `fmt: skip`) to break, because biome's
+# formatter expects that the trailing comment trails the outermost code element
+# (here, the whole if statement, not the last node of it). We have `fmt: skip`
+# related test elsewhere to ensure we don't break this.
 
-# NOTE: Ideally these would stay as is and would not autobrace. That would work
-# if we attached the comment as trailing on the if statement node. But because
-# we attach it as trailing on `a` to have good behavior when autobracing, we
-# end up forcing autobracing, because trailing end of line comments expand their
-# parent group, which triggers the autobracing. That's ok by us, because overly
-# autobracing is probably better than pooly placed comments.
+# These stay where they are, short one liner if statements don't expand
 if (condition) a # becomes trailing on `a`
 if (condition) a else b # becomes trailing on `b`
 
-if (condition) { a } # becomes trailing on `{}`
-if (condition) { a } else { b } # becomes trailing on `{}`
+if (condition) { a } # becomes trailing on if statement
+if (condition) { a } else { b } # becomes trailing on if statement
 
-if (condition) a_really_really_long_name_here_that_forces_a_break_because_it_is_so_long # becomes trailing on `a_really_really_long_name_here_that_forces_a_break_because_it_is_so_long`
-if (condition) { a_really_really_long_name_here_that_forces_a_break_because_it_is_so_long } # becomes trailing on `{}`
+if (condition) a_really_really_long_name_here_that_forces_a_break_because_it_is_so_long # becomes trailing on if statement
+if (condition) { a_really_really_long_name_here_that_forces_a_break_because_it_is_so_long } # becomes trailing on if statement
 
-if (condition) a_really_really_long_name_here else another_really_really_long_name # becomes trailing on `another_really_really_long_name`
-if (condition) a_really_really_long_name_here else { another_really_really_long_name } # becomes trailing on `{}`
+if (condition) a_really_really_long_name_here else another_really_really_long_name # becomes trailing on if statement
+if (condition) a_really_really_long_name_here else { another_really_really_long_name } # becomes trailing on if statement
 
-if (condition) a_really_really_long_name_here else if (condition2) another_really_really_long_name # becomes trailing on `another_really_really_long_name`
-if (condition) a_really_really_long_name_here else if (condition2) { another_really_really_long_name } # becomes trailing on `{}`
+if (condition) a_really_really_long_name_here else if (condition2) another_really_really_long_name # becomes trailing on outer if statement
+if (condition) a_really_really_long_name_here else if (condition2) { another_really_really_long_name } # becomes trailing on outer if statement
 
-if (condition) a_really_really_long_name_here else if (condition2) another_really_really_long_name else that_name # becomes trailing on `that_name`
-if (condition) a_really_really_long_name_here else if (condition2) another_really_really_long_name else { that_name } # becomes trailing on `{}`
+if (condition) a_really_really_long_name_here else if (condition2) another_really_really_long_name else that_name # becomes trailing on outer if statement
+if (condition) a_really_really_long_name_here else if (condition2) another_really_really_long_name else { that_name } # becomes trailing on outer if statement
 
 if (condition)
-  a # becomes trailing on `a`
+  a # becomes trailing on if statement
 
 if (condition) # becomes leading on `a`
-  a # becomes trailing on `a`
+  a # becomes trailing on if statement
 
 if (condition) {
   a
-} # becomes trailing on `{}`
+} # becomes trailing on if statement
 
-# We really want consistent behavior here, which takes some work.
+# It would be nice to have consistent behavior, but it's basically impossible.
 # Comment on `a` is enclosed by the if statement, but comment on `b` is not!
 {
-  if (condition) a # becomes trailing on `a` 
-  else           b # becomes trailing on `b`
+  if (condition) a # becomes trailing on `a`
+  else           b # becomes trailing on if statement
 }
 
 {
   if (condition) a
-  else           b # becomes trailing on `b`
+  else           b # becomes trailing on if statement
 }
 
 {
   if (condition) a
   else {
     b
-  } # stays trailing on `{}`
+  } # becomes trailing on if statement
 }
 
 {
@@ -252,6 +238,17 @@ if (condition) {
   else           b
   # Floating comment after the if statement
 }
+
+# Nesting in `consequence`
+if (condition) if (condition2) this # becomes trailing on if statement
+if (condition) if (condition2) if (condition3) this # becomes trailing on if statement
+if (condition) if (condition2) this else that # becomes trailing on if statement
+
+# Nesting in `alternative`
+if (condition) this else that # stays flat, one liner if statement
+if (condition) this else if (condition2) that # becomes trailing on if statement
+if (condition) this else if (condition2) this2 else that # becomes trailing on if statement
+if (condition) this else if (condition2) this2 else if (condition3) that # becomes trailing on if statement
 
 # ---------------------------------------------------------------------------
 # Special
