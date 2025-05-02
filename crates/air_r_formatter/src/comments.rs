@@ -284,11 +284,14 @@ fn handle_if_statement_comment(
     //
     // We try extremely hard to force `} else` onto the same line with nothing
     // between them, for maximum portability of the if/else statement. This
-    // requires moving the comment up onto `consequence` or down onto `alternative`.
+    // requires moving the comment onto `consequence` or `alternative`.
+    //
+    // We greatly prefer creating leading comments over dangling comments when we move
+    // them, as they play much nicer with idempotence.
     //
     // ```r
     // {
-    //   if (cond) this # becomes trailing on `this`
+    //   if (cond) this # becomes leading on `this`
     //   else that
     // }
     // ```
@@ -305,7 +308,7 @@ fn handle_if_statement_comment(
     // {
     //   if (cond) {
     //     this
-    //   } # becomes trailing on `this`
+    //   } # becomes leading on `that`
     //   else {
     //     that
     //   }
@@ -316,7 +319,7 @@ fn handle_if_statement_comment(
     // {
     //   if (cond) {
     //
-    //   } # becomes dangling on `{}`
+    //   } # becomes leading on `that`
     //   else {
     //     that
     //   }
@@ -367,11 +370,19 @@ fn handle_if_statement_comment(
         if let Some(following) = comment.following_node() {
             if else_clause.syntax() == following {
                 return match comment.text_position() {
-                    // End of line comments are moved up inside `consequence`
                     CommentTextPosition::EndOfLine => {
-                        place_trailing_or_dangling_body_comment(consequence, comment)
+                        match consequence {
+                            // End of line comments following a `}` lead the `alternative`
+                            AnyRExpression::RBracedExpressions(_) => {
+                                place_leading_or_dangling_body_comment(alternative, comment)
+                            }
+                            // End of line comments not following a `}` lead the `consequence`
+                            consequence => {
+                                place_leading_or_dangling_body_comment(consequence, comment)
+                            }
+                        }
                     }
-                    // Own line comments are moved down inside `alternative`
+                    // Own line comments lead the `alternative`
                     CommentTextPosition::OwnLine => {
                         place_leading_or_dangling_alternative_comment(alternative, comment)
                     }
@@ -793,18 +804,5 @@ fn place_leading_or_dangling_body_comment(
             None => CommentPlacement::dangling(body.into_syntax(), comment),
         },
         _ => CommentPlacement::leading(body.into_syntax(), comment),
-    }
-}
-
-fn place_trailing_or_dangling_body_comment(
-    body: AnyRExpression,
-    comment: DecoratedComment<RLanguage>,
-) -> CommentPlacement<RLanguage> {
-    match body {
-        AnyRExpression::RBracedExpressions(body) => match body.expressions().last() {
-            Some(last) => CommentPlacement::trailing(last.into_syntax(), comment),
-            None => CommentPlacement::dangling(body.into_syntax(), comment),
-        },
-        _ => CommentPlacement::trailing(body.into_syntax(), comment),
     }
 }

@@ -39,7 +39,7 @@ if (a # becomes trailing on `a`
 }
 
 {
-  if (condition) this  # becomes trailing on `this`
+  if (condition) this  # becomes leading on `this`
   else that
 }
 
@@ -49,15 +49,16 @@ if (a # becomes trailing on `a`
   else that
 }
 
+# TODO!: Maybe improve on this one? One liner {} causes issues.
 {
-  if (condition) { this } # becomes trailing on `this`
+  if (condition) { this } # becomes leading on `that`
   else that
 }
 
 {
   if (condition) {
     this
-  } # becomes trailing on `this`
+  } # becomes leading on `that`
   else that
 }
 
@@ -167,10 +168,13 @@ if (condition) # becomes leading on `a`
   c
 }
 
+# In general, greatly prefer creating leading comments on `b` rather than
+# creating trailing comments on `a`, as it is much easier to handle from
+# an idempotence point of view.
 {
   if (condition) {
     if (condition) a
-  } # becomes trailing on `a`
+  } # becomes leading on `b`
   else {
     b
   }
@@ -186,8 +190,8 @@ if (condition) # becomes leading on `a`
 # related test elsewhere to ensure we don't break this.
 
 # These stay where they are, short one liner if statements don't expand
-if (condition) a # becomes trailing on `a`
-if (condition) a else b # becomes trailing on `b`
+if (condition) a # becomes trailing on if statement
+if (condition) a else b # becomes trailing on if statement
 
 if (condition) { a } # becomes trailing on if statement
 if (condition) { a } else { b } # becomes trailing on if statement
@@ -215,9 +219,10 @@ if (condition) {
 } # becomes trailing on if statement
 
 # It would be nice to have consistent behavior, but it's basically impossible.
-# Comment on `a` is enclosed by the if statement, but comment on `b` is not!
+# Comment on `a` is enclosed by the if statement so our hooks handle it, but
+# comment on `b` is not!
 {
-  if (condition) a # becomes trailing on `a`
+  if (condition) a # becomes leading on `a`
   else           b # becomes trailing on if statement
 }
 
