@@ -163,6 +163,17 @@ if (condition) {
   c
 }
 
+if (condition) # becomes leading on `a`
+{
+  a
+} else if (condition) # becomes leading on `b`
+{
+  b
+} else # becomes leading on `c`
+{ 
+  c
+}
+
 # # TODO!: Has to move somewhere stable. Trailing `if (condition) a` will currently
 # # result in idempotence where it moves again and forces expansion there.
 # {
@@ -507,6 +518,17 @@ if (condition) {
   c
 }
 
+if (condition) {
+  # becomes leading on `a`
+  a
+} else if (condition) {
+  # becomes leading on `b`
+  b
+} else {
+  # becomes leading on `c`
+  c
+}
+
 # # TODO!: Has to move somewhere stable. Trailing `if (condition) a` will currently
 # # result in idempotence where it moves again and forces expansion there.
 # {
@@ -809,8 +831,8 @@ if (a) {
 
 # Lines exceeding max width of 80 characters
 ```
-  178: # # TODO!: Has to move somewhere stable. Trailing `if (condition) a` will currently
-  266:   a_really_really_long_name_here_that_forces_a_break_because_it_is_so_long # becomes trailing on `a_really_really_long_name_here_that_forces_a_break_because_it_is_so_long`
-  275:   another_really_really_long_name # becomes trailing on `another_really_really_long_name`
+  189: # # TODO!: Has to move somewhere stable. Trailing `if (condition) a` will currently
+  277:   a_really_really_long_name_here_that_forces_a_break_because_it_is_so_long # becomes trailing on `a_really_really_long_name_here_that_forces_a_break_because_it_is_so_long`
   286:   another_really_really_long_name # becomes trailing on `another_really_really_long_name`
+  297:   another_really_really_long_name # becomes trailing on `another_really_really_long_name`
 ```

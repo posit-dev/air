@@ -156,6 +156,17 @@ if (condition) {
   c
 }
 
+if (condition) # becomes leading on `a`
+{
+  a
+} else if (condition) # becomes leading on `b`
+{
+  b
+} else # becomes leading on `c`
+{ 
+  c
+}
+
 # # TODO!: Has to move somewhere stable. Trailing `if (condition) a` will currently
 # # result in idempotence where it moves again and forces expansion there.
 # {
