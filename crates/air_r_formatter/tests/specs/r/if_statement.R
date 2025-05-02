@@ -46,6 +46,11 @@ if (a # becomes trailing on `a`
 }
 
 {
+  if (condition) { this } # becomes trailing on `this`
+  else that
+}
+
+{
   if (condition) {
     this
   } # becomes trailing on `this`

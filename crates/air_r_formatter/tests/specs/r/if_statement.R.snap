@@ -53,6 +53,11 @@ if (a # becomes trailing on `a`
 }
 
 {
+  if (condition) { this } # becomes trailing on `this`
+  else that
+}
+
+{
   if (condition) {
     this
   } # becomes trailing on `this`
@@ -354,6 +359,14 @@ if (
     this
   } else {
     # becomes leading on `that`
+    that
+  }
+}
+
+{
+  if (condition) {
+    this # becomes trailing on `this`
+  } else {
     that
   }
 }
@@ -745,7 +758,7 @@ if (a) {
 
 # Lines exceeding max width of 80 characters
 ```
-  231:   a_really_really_long_name_here_that_forces_a_break_because_it_is_so_long # becomes trailing on `a_really_really_long_name_here_that_forces_a_break_because_it_is_so_long`
-  240:   another_really_really_long_name # becomes trailing on `another_really_really_long_name`
-  251:   another_really_really_long_name # becomes trailing on `another_really_really_long_name`
+  239:   a_really_really_long_name_here_that_forces_a_break_because_it_is_so_long # becomes trailing on `a_really_really_long_name_here_that_forces_a_break_because_it_is_so_long`
+  248:   another_really_really_long_name # becomes trailing on `another_really_really_long_name`
+  259:   another_really_really_long_name # becomes trailing on `another_really_really_long_name`
 ```
