@@ -131,3 +131,10 @@ function(){
     1+1
     2+2
 }
+
+# -----------------------------------------------------------------------------
+# If statements and comments
+
+# fmt: skip
+# TODO!: Comment should not disappear
+if (TRUE) 1 # hi
