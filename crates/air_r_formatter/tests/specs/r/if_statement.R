@@ -254,9 +254,18 @@ if (a) 1 else
   else 2
 }
 
-# The nested if in `consequence` forces braces
+# The nested if in `consequence` forces braces around the outer if
 if (a) if (b) 1
+if (a) if (b) if (c) 1
 if (a) if (b) 1 else 2
+
+# We don't force the inner if inside the `consequence` to have braces as
+# well, because a user could have writen a short if in the inner branch to
+# begin with (like the second example here) and that would have been valid.
+if (a) if (b) 1
+if (a) {
+  if (b) 1
+}
 
 # The nested if in `alternative` forces braces
 if (a) 1 else if (b) 2

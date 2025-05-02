@@ -153,10 +153,10 @@ impl FormatNodeRule<RIfStatement> for FormatRIfStatement {
 /// #         |----consequence----|
 ///
 /// # After
+/// # Note that we don't `Force` the inner if to be braced, because short
+/// # ifs would be allowed there if the user wants to write it like that to begin with.
 /// if (cond) {
-///   if (cond) {
-///     consequence
-///   }
+///   if (cond) consequence
 /// }
 ///
 /// # Before
@@ -182,6 +182,8 @@ fn compute_braced_expressions(node: &RIfStatement) -> SyntaxResult<BracedExpress
     if matches!(consequence, AnyRExpression::RIfStatement(_)) {
         // Disallow `if (condition) if (condition) 1` as that is too complex.
         // Also shortcircuits recursion nicely.
+        // Notably we don't pass through `Force` to the inner if statement as well,
+        // it gets to compute its own `BracedExpressions` value.
         return Ok(BracedExpressions::Force);
     }
 
@@ -260,31 +262,6 @@ impl Format<RFormatContext> for FormatIfBody<'_> {
             // Body already has braces, just format it
             AnyRExpression::RBracedExpressions(node) => {
                 write!(f, [node.format()])
-            }
-            // Body is a `consequence` that is another if statement, pass through
-            // pre computed `braced_expressions` (will be `BracedExpressions::Force`)
-            // and force braces around the body
-            //
-            // ```r
-            // if (TRUE) if (TRUE) 1
-            // #        |-----------|
-            // ```
-            AnyRExpression::RIfStatement(node)
-                if matches!(self.if_body_kind, IfBodyKind::Consequence) =>
-            {
-                debug_assert!(matches!(self.braced_expressions, BracedExpressions::Force));
-                write!(
-                    f,
-                    [
-                        text("{"),
-                        block_indent(&format_args![&node.format().with_options(
-                            FormatRIfStatementOptions {
-                                braced_expressions: Some(self.braced_expressions)
-                            }
-                        )]),
-                        text("}")
-                    ]
-                )
             }
             // Body is an `alternative` that is another if statement, pass through
             // pre computed `braced_expressions` (will be `BracedExpressions::Force`)
