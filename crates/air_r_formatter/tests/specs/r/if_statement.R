@@ -22,6 +22,10 @@ if (a) # becomes dangling on `{}`
 if (a) # becomes leading on `TRUE`
   TRUE
 
+if 
+# becomes leading on `a`
+(a) TRUE
+
 if (
   a
   # becomes trailing on `a`
@@ -142,6 +146,17 @@ if (a # becomes trailing on `a`
       b
     }
 }
+
+# # TODO!: Has to move somewhere stable. Trailing `if (condition) a` will currently
+# # result in idempotence where it moves again and forces expansion there.
+# {
+#   if (condition) {
+#     if (condition) a
+#   } # becomes trailing on `a`
+#   else {
+#     b
+#   }
+# }
 
 # Recursion into `consequence`
 if (condition) if (condition2) this # becomes trailing on `this`
