@@ -147,6 +147,15 @@ if (a # becomes trailing on `a`
     }
 }
 
+if (condition) {
+  a
+} else if (condition) {
+  b
+} else # becomes leading on `c`
+{ 
+  c
+}
+
 # # TODO!: Has to move somewhere stable. Trailing `if (condition) a` will currently
 # # result in idempotence where it moves again and forces expansion there.
 # {
