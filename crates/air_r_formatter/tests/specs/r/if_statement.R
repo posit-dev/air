@@ -180,6 +180,23 @@ if (condition) # becomes leading on `a`
   }
 }
 
+{
+  if (condition) a # becomes leading on `a`
+  else if (condition) b
+}
+
+{
+  if (condition) { a } # becomes leading on `b`
+  else if (condition) b
+}
+
+{
+  if (condition) { 
+    a 
+  } # becomes leading on `b`
+  else if (condition) b
+}
+
 # ---------------------------------------------------------------------------
 # Comments - these comments aren't "enclosed" by the if statement, so they
 # our outside our if statement comment handling hooks. Avoid the urge to

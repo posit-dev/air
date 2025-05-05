@@ -374,7 +374,7 @@ fn handle_if_statement_comment(
                         match consequence {
                             // End of line comments following a `}` lead the `alternative`
                             AnyRExpression::RBracedExpressions(_) => {
-                                place_leading_or_dangling_body_comment(alternative, comment)
+                                place_leading_or_dangling_alternative_comment(alternative, comment)
                             }
                             // End of line comments not following a `}` lead the `consequence`
                             consequence => {
