@@ -318,6 +318,18 @@ fn(if (a) 1)
 fn(if (a) 1, if (a) 1 else 2)
 fn(x = if (a) 1)
 fn(if (a) 1, x = if (a) 1 else 2)
+# Too complex
+fn(if (a) 1 else if (b) 2 else 3)
+# Breaks argument list, but not if/else
+fn(if (a) 1, x = if (a) 1 else 2, this_is_really_really_long_and_breaks_the_group_here)
+
+# These are in the allowed function parameter context
+function(x = if (a) 1) {}
+function(x = if (a) 1, y = if (a) 1 else 2) {}
+# Too complex
+function(x = if (a) 1 else if (b) 2 else 3) {}
+# Breaks parameter list, but not if/else
+function(x = if (a) 1, y = if (a) 1 else 2, this_is_really_really_long_and_breaks_the_group_here) {}
 
 # The group breaking forces braces
 x <- if (something_really_really_long_here_something_really_really_long_here) 1 else 2

@@ -5,6 +5,7 @@ use air_r_syntax::RArgument;
 use air_r_syntax::RBinaryExpression;
 use air_r_syntax::RIfStatement;
 use air_r_syntax::RIfStatementFields;
+use air_r_syntax::RParameterDefault;
 use air_r_syntax::RSyntaxKind;
 use biome_formatter::format_args;
 use biome_formatter::write;
@@ -89,6 +90,7 @@ impl FormatNodeRule<RIfStatement> for FormatRIfStatement {
 /// Single line if statements are only allowed in a few specific contexts:
 /// - The right hand side of a `=`, `<-`, or `<<-` assignment
 /// - A function call argument
+/// - A function signature parameter
 ///
 /// If we are within one of those contexts, we must also decide if the if statement
 /// is simple enough to stay on a single line.
@@ -255,7 +257,7 @@ fn in_allowed_one_line_if_statement_context(node: &RIfStatement) -> SyntaxResult
     // fn(if (a) 1 else 2)
     //
     // # Allowed (named)
-    // fn(a = if (a) 1 else 2)
+    // fn(x = if (a) 1 else 2)
     //
     // # Allowed here, rejected later for being too complex
     // fn(if (a) 1 else if (b) 2)
@@ -263,6 +265,18 @@ fn in_allowed_one_line_if_statement_context(node: &RIfStatement) -> SyntaxResult
     if node.parent::<RArgument>().is_some() {
         return Ok(true);
     };
+
+    // ```r
+    // # Allowed (parameter with default)
+    // function(x = if (a) 1) {}
+    // function(x = if (a) 1 else 2) {}
+    //
+    // # Allowed here, rejected later for being too complex
+    // function(x = if (a) 1 else if (b) 2) {}
+    // ```
+    if node.parent::<RParameterDefault>().is_some() {
+        return Ok(true);
+    }
 
     // Otherwise one line if statements are not allowed
     Ok(false)
