@@ -49,16 +49,19 @@ if (a # becomes trailing on `a`
   else that
 }
 
-# TODO!: Maybe improve on this one? One liner {} causes issues.
+# With `{ this }`, it's nice that this becomes leading on `this`
 {
-  if (condition) { this } # becomes leading on `that`
+  if (condition) { this } # becomes leading on `this`
   else that
 }
 
+# With `{\n  this\n}`, it's arguable whether this should lead
+# `this` or lead `that`, but we keep things simple here to have
+# one code path that also handles the `{ this }` case.
 {
   if (condition) {
     this
-  } # becomes leading on `that`
+  } # becomes leading on `this`
   else that
 }
 
@@ -168,13 +171,13 @@ if (condition) # becomes leading on `a`
   c
 }
 
-# In general, greatly prefer creating leading comments on `b` rather than
+# In general, greatly prefer creating leading comments on `a` rather than
 # creating trailing comments on `a`, as it is much easier to handle from
 # an idempotence point of view.
 {
   if (condition) {
     if (condition) a
-  } # becomes leading on `b`
+  } # becomes leading on `a`'s if statement
   else {
     b
   }
@@ -186,14 +189,14 @@ if (condition) # becomes leading on `a`
 }
 
 {
-  if (condition) { a } # becomes leading on `b`
+  if (condition) { a } # becomes leading on `a`
   else if (condition) b
 }
 
 {
   if (condition) { 
     a 
-  } # becomes leading on `b`
+  } # becomes leading on `a`
   else if (condition) b
 }
 

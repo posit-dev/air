@@ -370,19 +370,11 @@ fn handle_if_statement_comment(
         if let Some(following) = comment.following_node() {
             if else_clause.syntax() == following {
                 return match comment.text_position() {
+                    // End of line comments lead the `consequence` body
                     CommentTextPosition::EndOfLine => {
-                        match consequence {
-                            // End of line comments following a `}` lead the `alternative`
-                            AnyRExpression::RBracedExpressions(_) => {
-                                place_leading_or_dangling_alternative_comment(alternative, comment)
-                            }
-                            // End of line comments not following a `}` lead the `consequence`
-                            consequence => {
-                                place_leading_or_dangling_body_comment(consequence, comment)
-                            }
-                        }
+                        place_leading_or_dangling_body_comment(consequence, comment)
                     }
-                    // Own line comments lead the `alternative`
+                    // Own line comments lead the `alternative` body
                     CommentTextPosition::OwnLine => {
                         place_leading_or_dangling_alternative_comment(alternative, comment)
                     }
@@ -409,8 +401,7 @@ fn handle_else_clause_comment(comment: DecoratedComment<RLanguage>) -> CommentPl
     };
 
     // Comments following the `else` token but before the `alternative` are enclosed by
-    // the `else_clause`. Like with `consequence` above, we make these comments leading
-    // on the `alternative`.
+    // the `else_clause`. We make these comments leading on the `alternative`.
     //
     // ```r
     // {
@@ -441,6 +432,20 @@ fn handle_else_clause_comment(comment: DecoratedComment<RLanguage>) -> CommentPl
     CommentPlacement::Default(comment)
 }
 
+/// Basically [place_leading_or_dangling_body_comment()], but moves comments on an if
+/// statement `alternative` onto the body of that if statement to handle if chaining a bit
+/// nicer
+///
+/// ```r
+/// {
+///   if (condition) {
+///     a
+///   } else # becomes leading on `b` rather than leading on if statement `alternative`
+///   if (condition) {
+///     b
+///   }
+/// }
+/// ```
 fn place_leading_or_dangling_alternative_comment(
     alternative: AnyRExpression,
     comment: DecoratedComment<RLanguage>,
