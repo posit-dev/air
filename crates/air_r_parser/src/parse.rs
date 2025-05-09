@@ -578,7 +578,8 @@ impl<'src> RWalk<'src> {
         // Now between last token and EOF.
         self.between_two_tokens = false;
 
-        // TODO!: Don't unwrap()
+        // Safety: tree-sitter uses `u32` internally and upcasts to `usize` in
+        // `end_byte()`. `TextSize` also uses `u32` internally, so we are safe.
         let this_end = TextSize::try_from(node.end_byte()).unwrap();
         let gap = &self.text[usize::from(self.last_end)..usize::from(this_end)];
 
@@ -592,7 +593,8 @@ impl<'src> RWalk<'src> {
     }
 
     fn handle_token(&mut self, node: tree_sitter::Node, kind: RSyntaxKind) {
-        // TODO!: Don't unwrap()
+        // Safety: tree-sitter uses `u32` internally and upcasts to `usize` in
+        // `start/end_byte()`. `TextSize` also uses `u32` internally, so we are safe.
         let this_start = TextSize::try_from(node.start_byte()).unwrap();
         let this_end = TextSize::try_from(node.end_byte()).unwrap();
         let gap = &self.text[usize::from(self.last_end)..usize::from(this_start)];
@@ -1074,12 +1076,6 @@ impl RParse {
     fn drain(self) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>) {
         (self.events, self.trivia)
     }
-
-    // TODO!: Need to handle comments too. It will be like `derive_trivia()`
-    // but whitespace after the final token on a line but before a trailing
-    // comment is also considered trailing trivia (I think the trick to
-    // recognize is that any whitespace before a comment is considered trailing
-    // until you see your first newline)
 
     /// Given:
     /// - A slice of `text` starting at byte `start`
