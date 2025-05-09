@@ -3,6 +3,7 @@ use air_r_syntax::AnyRExpression;
 use air_r_syntax::RArgument;
 use air_r_syntax::RArgumentNameClause;
 use air_r_syntax::RElseClause;
+use air_r_syntax::RForStatement;
 use air_r_syntax::RIfStatement;
 use air_r_syntax::RLanguage;
 use air_r_syntax::RParenthesizedExpression;
@@ -17,6 +18,7 @@ use biome_formatter::comments::Comments;
 use biome_formatter::comments::DecoratedComment;
 use biome_formatter::comments::SourceComment;
 use biome_formatter::write;
+use biome_rowan::AstNode;
 use biome_rowan::SyntaxTriviaPieceComments;
 use comments::Directive;
 use comments::FormatDirective;
@@ -90,18 +92,58 @@ impl CommentStyle for RCommentStyle {
 }
 
 fn handle_for_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
-    let enclosing = comment.enclosing_node();
-
-    if enclosing.kind() != RSyntaxKind::R_FOR_STATEMENT {
+    let Some(for_statement) = RForStatement::cast_ref(comment.enclosing_node()) else {
         return CommentPlacement::Default(comment);
-    }
+    };
 
-    if comment.text_position().is_own_line() {
-        // Lift comment up as a leading comment on the whole `R_FOR_STATEMENT` node
-        return CommentPlacement::leading(enclosing.clone(), comment);
-    }
-
-    CommentPlacement::Default(comment)
+    // If the comment is "enclosed" by the for statement, then it's in one of a few
+    // possible places. None of these cases are meaningful, so we prefer to move the
+    // comment to be leading on the for statement. This is also required for idempotence
+    // in some cases.
+    //
+    // ```r
+    // for # comment
+    // (i in 1:5) {
+    // }
+    // ```
+    //
+    // ```r
+    // for ( # comment
+    // i in 1:5) {
+    // }
+    // ```
+    //
+    // ```r
+    // for (i # comment
+    // in 1:5) {
+    // }
+    // ```
+    //
+    // ```r
+    // for (i in # comment
+    // 1:5) {
+    // }
+    // ```
+    //
+    // ```r
+    // for (i in
+    // # comment
+    // 1:5) {
+    // }
+    // ```
+    //
+    // ```r
+    // for (i in 1:5 # comment
+    // ) {
+    // }
+    // ```
+    //
+    // ```r
+    // for (i in 1:5) # comment
+    //   {
+    //   }
+    // ```
+    CommentPlacement::leading(for_statement.into_syntax(), comment)
 }
 
 fn handle_while_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
