@@ -1077,12 +1077,6 @@ impl RParse {
         (self.events, self.trivia)
     }
 
-    // TODO!: Need to handle comments too. It will be like `derive_trivia()`
-    // but whitespace after the final token on a line but before a trailing
-    // comment is also considered trailing trivia (I think the trick to
-    // recognize is that any whitespace before a comment is considered trailing
-    // until you see your first newline)
-
     /// Given:
     /// - A slice of `text` starting at byte `start`
     /// - Which only contains whitespace or newlines
