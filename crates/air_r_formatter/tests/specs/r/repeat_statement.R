@@ -1,41 +1,59 @@
-repeat 1
-
 repeat {}
 
-repeat { # a comment
+repeat {
+  a + b
 }
 
-repeat { # comment1
-  # comment2
-  1 + 1
-}
-
-repeat # comment1
+repeat 
 {
-  # comment2
-  1 + 1
+  a + b  
 }
 
-repeat # comment1
+# ------------------------------------------------------------------------------
+# Autobracing
+
+repeat 1
+
+repeat
+  1 + 1
+
+# ------------------------------------------------------------------------------
+# Comments
+
+repeat { # dangles {}
+}
+
+repeat { # leads a
+  # leads a part 2
+  a
+}
+
+repeat # leads repeat
+{
+  # leads a
+  a
+}
+
+repeat # leads repeat
 {}
 
-repeat # comment1
+repeat # leads repeat
 {
-  # comment2
+  # dangles {}
 }
 
 repeat
-# comment1
+# leads repeat
 {
-  1 + 1
+  a
 }
 
-# comment1
+# leads repeat
 repeat
 {
-  # comment2
-  1 + 1
+  # leads a
+  a
 }
 
-repeat # comment1
+repeat # leads repeat
   1

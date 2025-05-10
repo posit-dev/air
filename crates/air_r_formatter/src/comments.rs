@@ -3,7 +3,6 @@ use air_r_syntax::AnyRExpression;
 use air_r_syntax::RArgument;
 use air_r_syntax::RArgumentNameClause;
 use air_r_syntax::RElseClause;
-use air_r_syntax::RForStatement;
 use air_r_syntax::RIfStatement;
 use air_r_syntax::RLanguage;
 use air_r_syntax::RParenthesizedExpression;
@@ -92,10 +91,6 @@ impl CommentStyle for RCommentStyle {
 }
 
 fn handle_for_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
-    let Some(for_statement) = RForStatement::cast_ref(comment.enclosing_node()) else {
-        return CommentPlacement::Default(comment);
-    };
-
     // If the comment is "enclosed" by the for statement, then it's in one of a few
     // possible places. None of these cases are meaningful, so we prefer to move the
     // comment to be leading on the for statement. This is also required for idempotence
@@ -143,7 +138,7 @@ fn handle_for_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<
     //   {
     //   }
     // ```
-    CommentPlacement::leading(for_statement.into_syntax(), comment)
+    handle_loop_comment(comment, RSyntaxKind::R_FOR_STATEMENT)
 }
 
 fn handle_while_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
@@ -194,26 +189,37 @@ fn handle_while_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacemen
 }
 
 fn handle_repeat_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
-    if !matches!(
-        comment.enclosing_node().kind(),
-        RSyntaxKind::R_REPEAT_STATEMENT
-    ) {
-        return CommentPlacement::Default(comment);
-    };
-
-    // Repeat statements have a `repeat` token and a `body` field, and
-    // only the `body` can be an `AnyRExpression`.
-    let Some(body) = comment.following_node().and_then(AnyRExpression::cast_ref) else {
-        return CommentPlacement::Default(comment);
-    };
-
-    // Handle cases like:
+    // If the comment is "enclosed" by the repeat statement, then there's really only one
+    // place it could have been. It's not meaningful, so we move it to leading the whole
+    // repeat statement instead.
     //
     // ```r
     // repeat # comment
-    // {}
+    // {
+    // }
     // ```
-    place_leading_or_dangling_body_comment(body, comment)
+    //
+    // ```r
+    // repeat
+    // # comment
+    // {
+    // }
+    // ```
+    handle_loop_comment(comment, RSyntaxKind::R_REPEAT_STATEMENT)
+}
+
+#[inline]
+fn handle_loop_comment(
+    comment: DecoratedComment<RLanguage>,
+    kind: RSyntaxKind,
+) -> CommentPlacement<RLanguage> {
+    let node = comment.enclosing_node();
+
+    if node.kind() != kind {
+        return CommentPlacement::Default(comment);
+    }
+
+    CommentPlacement::leading(node.clone(), comment)
 }
 
 fn handle_function_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
