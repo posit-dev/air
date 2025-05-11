@@ -31,6 +31,12 @@ Once you have the extension installed, turn on Format on Save for R documents by
 You should now be able to simply open an R document, save it, and have the entire document formatted by Air.
 You can also explicitly call the command `Format Document` if you'd like to control this manually.
 
+To open your `settings.json` file, run one of the following from the Command Palette:
+
+-   Run `Preferences: Open User Settings (JSON)` to modify global user settings.
+-   Run `Preferences: Open Workspace Settings (JSON)` to modify project specific settings.
+    You may prefer this instead of setting the user level setting if you drop in on multiple projects, but not all of them use Air. Similarly, if you work on a project with collaborators, we [recommend](configuration.qmd "Configuration recommendations") that you set project specific settings and check in these project specific settings to your repository to ensure that every collaborator is using the same formatting settings.
+
 <!--# Come back and add video -->
 
 ## Format selection
