@@ -8,7 +8,6 @@ use air_r_syntax::RLanguage;
 use air_r_syntax::RParenthesizedExpression;
 use air_r_syntax::RSyntaxKind;
 use air_r_syntax::RSyntaxToken;
-use air_r_syntax::RWhileStatement;
 use biome_formatter::comments::CommentKind;
 use biome_formatter::comments::CommentPlacement;
 use biome_formatter::comments::CommentStyle;
@@ -90,124 +89,107 @@ impl CommentStyle for RCommentStyle {
     }
 }
 
-fn handle_for_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
-    // If the comment is "enclosed" by the for statement, then it's in one of a few
-    // possible places. None of these cases are meaningful, so we prefer to move the
-    // comment to be leading on the for statement. This is also required for idempotence
-    // in some cases.
-    //
-    // ```r
-    // for # comment
-    // (i in 1:5) {
-    // }
-    // ```
-    //
-    // ```r
-    // for ( # comment
-    // i in 1:5) {
-    // }
-    // ```
-    //
-    // ```r
-    // for (i # comment
-    // in 1:5) {
-    // }
-    // ```
-    //
-    // ```r
-    // for (i in # comment
-    // 1:5) {
-    // }
-    // ```
-    //
-    // ```r
-    // for (i in
-    // # comment
-    // 1:5) {
-    // }
-    // ```
-    //
-    // ```r
-    // for (i in 1:5 # comment
-    // ) {
-    // }
-    // ```
-    //
-    // ```r
-    // for (i in 1:5) # comment
-    //   {
-    //   }
-    // ```
-    handle_loop_comment(comment, RSyntaxKind::R_FOR_STATEMENT)
-}
-
-fn handle_while_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
-    let Some(enclosing) = RWhileStatement::cast_ref(comment.enclosing_node()) else {
-        return CommentPlacement::Default(comment);
-    };
-
-    if let Some(preceding) = comment.preceding_node() {
-        // Make comments directly before the condition `)` trailing
-        // comments of the condition itself (rather than leading comments of
-        // the `body` node)
-        //
-        // ```r
-        // while (
-        //   cond
-        //   # comment
-        // ) {
-        // }
-        // ```
-        if comment
-            .following_token()
-            .is_some_and(|token| token.kind() == RSyntaxKind::R_PAREN)
-        {
-            return CommentPlacement::trailing(preceding.clone(), comment);
-        }
-    }
-
-    // Check that the `body` of the while loop is identical to the `following`
-    // node of the comment. While loops also have a `condition` that can be
-    // any R expression, so we need to differentiate here.
-    let Ok(body) = enclosing.body() else {
-        return CommentPlacement::Default(comment);
-    };
-    let Some(following) = comment.following_node() else {
-        return CommentPlacement::Default(comment);
-    };
-    if body.syntax() != following {
-        return CommentPlacement::Default(comment);
-    }
-
-    // Handle cases like:
-    //
-    // ```r
-    // while (a) # comment
-    // {}
-    // ```
-    place_leading_or_dangling_body_comment(body, comment)
-}
-
-fn handle_repeat_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
-    // If the comment is "enclosed" by the repeat statement, then there's really only one
-    // place it could have been. It's not meaningful, so we move it to leading the whole
-    // repeat statement instead.
-    //
-    // ```r
-    // repeat # comment
-    // {
-    // }
-    // ```
-    //
-    // ```r
-    // repeat
-    // # comment
-    // {
-    // }
-    // ```
-    handle_loop_comment(comment, RSyntaxKind::R_REPEAT_STATEMENT)
-}
-
+/// Handling of loop comments for `for_statement`, `while_statement`, and
+/// `repeat_statement`
+///
+/// If the comment is "enclosed" by the loop statement, it's typically in one of only a
+/// few places. Most of the time these places are not very meaningful, and get in the way
+/// of how we want to format the loop statement. For simplicity and consistency, we lift
+/// all "enclosed" comments up to lead the loop statement. In some cases, this is actually
+/// required for idempotence.
+///
+/// # For loops
+///
+/// ```r
+/// for # comment
+/// (i in 1:5) {
+/// }
+/// ```
+///
+/// ```r
+/// for ( # comment
+/// i in 1:5) {
+/// }
+/// ```
+///
+/// ```r
+/// for (i # comment
+/// in 1:5) {
+/// }
+/// ```
+///
+/// ```r
+/// for (i in # comment
+/// 1:5) {
+/// }
+/// ```
+///
+/// ```r
+/// for (i in
+/// # comment
+/// 1:5) {
+/// }
+/// ```
+///
+/// ```r
+/// for (i in 1:5 # comment
+/// ) {
+/// }
+/// ```
+///
+/// ```r
+/// for (i in 1:5) # comment
+///   {
+///   }
+/// ```
+///
+/// # While loops
+///
+/// ```r
+/// while # comment
+/// (condition) {
+/// }
+/// ```
+///
+/// ```r
+/// while ( # comment
+/// condition) {
+/// }
+/// ```
+///
+/// ```r
+/// while (
+/// # comment
+/// condition) {
+/// }
+/// ```
+///
+/// ```r
+/// while (condition # comment
+/// ) {
+/// }
+/// ```
+///
+/// ```r
+/// while (condition) # comment
+///   {
+///   }
+/// ```
+///
+/// # Repeat loops
+///
+/// ```r
+/// repeat # comment
+/// {
+/// }
+/// ```
+///
+/// ```r
+/// repeat
+/// # comment
+/// {
+/// }
+/// ```
 #[inline]
 fn handle_loop_comment(
     comment: DecoratedComment<RLanguage>,
@@ -220,6 +202,18 @@ fn handle_loop_comment(
     }
 
     CommentPlacement::leading(node.clone(), comment)
+}
+
+fn handle_for_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
+    handle_loop_comment(comment, RSyntaxKind::R_FOR_STATEMENT)
+}
+
+fn handle_while_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
+    handle_loop_comment(comment, RSyntaxKind::R_WHILE_STATEMENT)
+}
+
+fn handle_repeat_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
+    handle_loop_comment(comment, RSyntaxKind::R_REPEAT_STATEMENT)
 }
 
 fn handle_function_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {

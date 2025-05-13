@@ -5,16 +5,12 @@ info: r/while_statement.R
 # Input
 
 ```R
-while(a)a
-
 while(a){}
 
 while(a) {
   1 + 1
 }
 
-# TODO: Not entirely sure how this should be formatted.
-# It's not very common though.
 while({ complex }) {
   1 + 1
 }
@@ -23,32 +19,77 @@ while(super_long_function_name_is_true_man_this_is_a_really_really_long_function
   1 + 1
 }
 
-while(
-  # comment
-  a) {
+# ------------------------------------------------------------------------------
+# Autobracing
+
+while(a)a
+
+while(a) 
+  a
+
+# ------------------------------------------------------------------------------
+# Comments
+
+while # leads while
+(a) {
+  1 + 1
+}
+
+while
+# leads while
+(a) {
+  1 + 1
+}
+
+while(a # leads while
+) {
   1 + 1
 }
 
 while(a
-# comment
+# leads while
 ) {
   1 + 1
 }
 
-while(a # comment
+while( # leads while
+  a) {
+  1 + 1
+}
+
+while(
+  # leads while
+  a) {
+  1 + 1
+}
+
+while(
+  a
+  # leads while
 ) {
   1 + 1
 }
 
-while(a) # comment
+while(a) # leads while
+{
+  1 + 1
+}
+
+while(a)
+# leads while
+{
+  1 + 1
+}
+
+while(a) # leads while
 {}
 
-while(a) # comment
+while(a) # leads while
 1
 
-while(a) # comment1
+while(a) # leads while
 {
-  # comment2
+  # dangles {}
 }
 
 ```
@@ -70,8 +111,6 @@ Skip: None
 -----
 
 ```R
-while (a) a
-
 while (a) {
 }
 
@@ -79,8 +118,6 @@ while (a) {
   1 + 1
 }
 
-# TODO: Not entirely sure how this should be formatted.
-# It's not very common though.
 while (
   {
     complex
@@ -95,36 +132,76 @@ while (
   1 + 1
 }
 
-while (
-  # comment
-  a
-) {
-  1 + 1
-}
+# ------------------------------------------------------------------------------
+# Autobracing
 
-while (
+while (a) {
   a
-  # comment
-) {
-  1 + 1
-}
-
-while (
-  a # comment
-) {
-  1 + 1
 }
 
 while (a) {
-  # comment
+  a
 }
 
-while (a)
-  # comment
+# ------------------------------------------------------------------------------
+# Comments
+
+# leads while
+while (a) {
+  1 + 1
+}
+
+# leads while
+while (a) {
+  1 + 1
+}
+
+# leads while
+while (a) {
+  1 + 1
+}
+
+# leads while
+while (a) {
+  1 + 1
+}
+
+# leads while
+while (a) {
+  1 + 1
+}
+
+# leads while
+while (a) {
+  1 + 1
+}
+
+# leads while
+while (a) {
+  1 + 1
+}
+
+# leads while
+while (a) {
+  1 + 1
+}
+
+# leads while
+while (a) {
+  1 + 1
+}
+
+# leads while
+while (a) {
+}
+
+# leads while
+while (a) {
   1
+}
 
+# leads while
 while (a) {
-  # comment1
-  # comment2
+  # dangles {}
 }
 ```
