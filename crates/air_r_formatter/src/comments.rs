@@ -3,6 +3,7 @@ use air_r_syntax::AnyRExpression;
 use air_r_syntax::RArgument;
 use air_r_syntax::RArgumentNameClause;
 use air_r_syntax::RElseClause;
+use air_r_syntax::RFunctionDefinition;
 use air_r_syntax::RIfStatement;
 use air_r_syntax::RLanguage;
 use air_r_syntax::RParenthesizedExpression;
@@ -217,20 +218,63 @@ fn handle_repeat_comment(comment: DecoratedComment<RLanguage>) -> CommentPlaceme
 }
 
 fn handle_function_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
-    if !matches!(
-        comment.enclosing_node().kind(),
-        RSyntaxKind::R_FUNCTION_DEFINITION
-    ) {
+    let Some(function_definition) = RFunctionDefinition::cast_ref(comment.enclosing_node()) else {
         return CommentPlacement::Default(comment);
     };
 
-    // Function definitions have `name`, `parameters`, and `body` fields, and
-    // only the `body` can be an `AnyRExpression`.
-    let Some(body) = comment.following_node().and_then(AnyRExpression::cast_ref) else {
-        return CommentPlacement::Default(comment);
+    // If the following node is the `parameters`, we make the comment lead the whole
+    // `function_definition` node
+    //
+    // ```r
+    // function # becomes leading on everything
+    // () a
+    // ```
+    //
+    // ```r
+    // function
+    // # becomes leading on everything
+    // () a
+    // ```
+    if let Ok(parameters) = function_definition.parameters() {
+        if let Some(following) = comment.following_node() {
+            if parameters.syntax() == following {
+                return CommentPlacement::leading(function_definition.into_syntax(), comment);
+            }
+        };
     };
 
-    place_leading_or_dangling_body_comment(body, comment)
+    // If the following node is the `body`, we make the comment lead the first node of
+    // the `body`.
+    //
+    // ```r
+    // function() # becomes leading on `a`
+    //   a
+    // ```
+    //
+    // ```r
+    // function() # becomes leading on `a`
+    // {
+    //   a
+    // }
+    // ```
+    //
+    // This is consistent with what happens when the comment is already after an opening
+    // `{`
+    //
+    // ```r
+    // function() { # becomes leading on `a`
+    //   a
+    // }
+    // ```
+    if let Ok(body) = function_definition.body() {
+        if let Some(following) = comment.following_node() {
+            if body.syntax() == following {
+                return place_leading_or_dangling_body_comment(body, comment);
+            }
+        };
+    };
+
+    CommentPlacement::Default(comment)
 }
 
 fn handle_if_statement_comment(

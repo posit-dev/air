@@ -28,7 +28,6 @@ pub mod loop_body;
 mod prelude;
 mod r;
 pub(crate) mod separated;
-mod statement_body;
 mod string_literal;
 
 #[rustfmt::skip]

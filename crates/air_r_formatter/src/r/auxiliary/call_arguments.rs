@@ -412,7 +412,8 @@ impl Format<RFormatContext> for RCallLikeArguments {
         // )
         // ```
         //
-        // If we don't handle it specially, it can break idempotence
+        // If we don't handle it specially, it can break idempotence.
+        // Same as `RParameters`.
         if items.is_empty() {
             return write!(
                 f,
