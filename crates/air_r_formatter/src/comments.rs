@@ -3,6 +3,7 @@ use air_r_syntax::AnyRExpression;
 use air_r_syntax::RArgument;
 use air_r_syntax::RArgumentNameClause;
 use air_r_syntax::RElseClause;
+use air_r_syntax::RForStatement;
 use air_r_syntax::RFunctionDefinition;
 use air_r_syntax::RIfStatement;
 use air_r_syntax::RLanguage;
@@ -90,59 +91,13 @@ impl CommentStyle for RCommentStyle {
     }
 }
 
-/// Handling of loop comments for `for_statement`, `while_statement`, and
-/// `repeat_statement`
+/// Handling of loop comments for `while_statement`, and `repeat_statement`
 ///
 /// If the comment is "enclosed" by the loop statement, it's typically in one of only a
 /// few places. Most of the time these places are not very meaningful, and get in the way
 /// of how we want to format the loop statement. For simplicity and consistency, we lift
 /// all "enclosed" comments up to lead the loop statement. In some cases, this is actually
 /// required for idempotence.
-///
-/// # For loops
-///
-/// ```r
-/// for # comment
-/// (i in 1:5) {
-/// }
-/// ```
-///
-/// ```r
-/// for ( # comment
-/// i in 1:5) {
-/// }
-/// ```
-///
-/// ```r
-/// for (i # comment
-/// in 1:5) {
-/// }
-/// ```
-///
-/// ```r
-/// for (i in # comment
-/// 1:5) {
-/// }
-/// ```
-///
-/// ```r
-/// for (i in
-/// # comment
-/// 1:5) {
-/// }
-/// ```
-///
-/// ```r
-/// for (i in 1:5 # comment
-/// ) {
-/// }
-/// ```
-///
-/// ```r
-/// for (i in 1:5) # comment
-///   {
-///   }
-/// ```
 ///
 /// # While loops
 ///
@@ -206,7 +161,102 @@ fn handle_loop_comment(
 }
 
 fn handle_for_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
-    handle_loop_comment(comment, RSyntaxKind::R_FOR_STATEMENT)
+    let Some(for_statement) = RForStatement::cast_ref(comment.enclosing_node()) else {
+        return CommentPlacement::Default(comment);
+    };
+
+    // If the following node is the `body`, we want to lead the first element of the body.
+    // But we only want to do this if we are past the `)` of the loop sequence, so we have
+    // to check that the following token isn't `)` too.
+    //
+    //
+    // ```r
+    // for (i in 1:5) # dangles {}
+    //   {
+    //   }
+    // ```
+    //
+    // ```r
+    // for (i in 1:5) # leads `a`
+    // {
+    //   a
+    // }
+    // ```
+    //
+    // Particularly important for prepping for autobracing here
+    //
+    // ```r
+    // for (i in 1:5) # leads `a`
+    //   a
+    // ```
+    //
+    // This is consistent to when there are already braces there.
+    //
+    // ```r
+    // for (i in 1:5) { # leads `a`
+    //   a
+    // }
+    // ```
+    //
+    // Here the following node is the `body`, but the following token is `)`. We want
+    // to avoid stealing this comment.
+    //
+    // ```r
+    // for (i in 1:5 # comment
+    // ) {
+    // }
+    // ```
+    if let Ok(body) = for_statement.body() {
+        if let Some(following) = comment.following_node() {
+            if let Some(following_token) = comment.following_token() {
+                if body.syntax() == following && following_token.kind() != RSyntaxKind::R_PAREN {
+                    return place_leading_or_dangling_body_comment(body, comment);
+                }
+            }
+        }
+    }
+
+    // Otherwise if the comment is "enclosed" by the `for_statement` then it can only be
+    // in one of a few places, none of which are particularly meaningful, so we move the
+    // comment to lead the whole `for_statement`
+    //
+    // ```r
+    // for # comment
+    // (i in 1:5) {
+    // }
+    // ```
+    //
+    // ```r
+    // for ( # comment
+    // i in 1:5) {
+    // }
+    // ```
+    //
+    // ```r
+    // for (i # comment
+    // in 1:5) {
+    // }
+    // ```
+    //
+    // ```r
+    // for (i in # comment
+    // 1:5) {
+    // }
+    // ```
+    //
+    // ```r
+    // for (i in
+    // # comment
+    // 1:5) {
+    // }
+    // ```
+    //
+    // ```r
+    // for (i in 1:5 # comment
+    // ) {
+    // }
+    // ```
+    CommentPlacement::leading(for_statement.into_syntax(), comment)
 }
 
 fn handle_while_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {

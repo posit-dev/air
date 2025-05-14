@@ -18,47 +18,58 @@ for(x in xs) x + y
 # ------------------------------------------------------------------------------
 # Comments
 
-for # comment
+for # leads for loop
 (i in 1:5) {
 }
 
-for ( # comment
+for ( # leads for loop
 i in 1:5) {
 }
 
-for (i # comment
+for (i # leads for loop
 in 1:5) {
 }
 
-for (i in # comment
+for (i in # leads for loop
 1:5) {
 }
 
 for (i in
-# comment
+# leads for loop
 1:5) {
 }
 
-for (i in 1:5 # comment
+for (i in 1:5 # leads for loop
 ) {
 }
 
-for (i in 1:5) # comment
+for (i in 1:5) # dangles {}
   {
   }
 
-for (i in 1:5) i # comment
+for (i in 1:5) # leads a
+{
+  a
+}
 
-for (i in 1:5) { i } # comment
+for (i in 1:5) { # leads a
+  a
+}
 
-# All comments enclosed by the for statement get lifted up
+for (i in 1:5) i # trails whole for loop
+
+for (i in 1:5) { i } # trails whole for loop
+
+# Comments 1-3 lead the whole for loop
+# Comments 4-5 move to lead the body
 for (
     # comment1
     # comment2
     a in 1
-  ) # comment3
-  # comment4
+    # comment3
+  ) # comment4
+  # comment5
   {
-    # comment5
+    # comment6
     a
   }
