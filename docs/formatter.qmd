@@ -375,10 +375,49 @@ These are all allowed by Air:
 ``` r
 add_one <- function(x) x + 1
 
-map_lgl(xs, function(x) is.list(x) && length(x) == 0L)
+map_lgl(xs, function(x) is.logical(x) && length(x) == 1L && !is.na(x))
 
 # This includes anonymous functions
 map_lgl(xs, \(x) is.list(x) && length(x) == 0L)
+```
+
+## With persistent line breaks
+
+Autobracing is particularly useful as a code rewriting tool when combined with persistent line breaks.
+Consider:
+
+``` r
+result <- map_lgl(xs, function(x) is.logical(x) && length(x) == 1L && !is.na(x))
+```
+
+This may be easier to read if it spanned across multiple lines.
+You could manually rework this, or you could let Air help you!
+There are two places you could put a persistent line break depending on what your desired final result is:
+
+``` r
+# Adding a line break before `xs` expands the call
+result <- map_lgl(
+  xs, function(x) is.logical(x) && length(x) == 1L && !is.na(x))
+
+# Becomes:
+result <- map_lgl(
+  xs,
+  function(x) is.logical(x) && length(x) == 1L && !is.na(x)
+)
+```
+
+``` r
+# Adding a line break before `is.logical(x)` expands and forces autobracing
+result <- map_lgl(xs, function(x)
+    is.logical(x) && length(x) == 1L && !is.na(x))
+
+# Becomes:
+result <- map_lgl(
+  xs,
+  function(x) {
+    is.logical(x) && length(x) == 1L && !is.na(x)
+  }
+)
 ```
 
 ## Comments
