@@ -8,6 +8,7 @@ use air_r_syntax::RFunctionDefinition;
 use air_r_syntax::RIfStatement;
 use air_r_syntax::RLanguage;
 use air_r_syntax::RParenthesizedExpression;
+use air_r_syntax::RRepeatStatement;
 use air_r_syntax::RSyntaxKind;
 use air_r_syntax::RSyntaxToken;
 use air_r_syntax::RWhileStatement;
@@ -90,42 +91,6 @@ impl CommentStyle for RCommentStyle {
             }
         }
     }
-}
-
-/// Handling of loop comments for `repeat_statement`
-///
-/// If the comment is "enclosed" by the loop statement, it's typically in one of only a
-/// few places. Most of the time these places are not very meaningful, and get in the way
-/// of how we want to format the loop statement. For simplicity and consistency, we lift
-/// all "enclosed" comments up to lead the loop statement. In some cases, this is actually
-/// required for idempotence.
-///
-/// # Repeat loops
-///
-/// ```r
-/// repeat # comment
-/// {
-/// }
-/// ```
-///
-/// ```r
-/// repeat
-/// # comment
-/// {
-/// }
-/// ```
-#[inline]
-fn handle_loop_comment(
-    comment: DecoratedComment<RLanguage>,
-    kind: RSyntaxKind,
-) -> CommentPlacement<RLanguage> {
-    let node = comment.enclosing_node();
-
-    if node.kind() != kind {
-        return CommentPlacement::Default(comment);
-    }
-
-    CommentPlacement::leading(node.clone(), comment)
 }
 
 fn handle_for_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
@@ -315,7 +280,56 @@ fn handle_while_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacemen
 }
 
 fn handle_repeat_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
-    handle_loop_comment(comment, RSyntaxKind::R_REPEAT_STATEMENT)
+    let Some(repeat_statement) = RRepeatStatement::cast_ref(comment.enclosing_node()) else {
+        return CommentPlacement::Default(comment);
+    };
+
+    // If the comment is "enclosed" by the `repeat_statement` then it can only be
+    // in one of a few places, all of which should move the comment onto the first
+    // element of the `body`
+    //
+    // ```r
+    // repeat # dangles {}
+    // {
+    // }
+    // ```
+    //
+    // ```r
+    // repeat
+    // # dangles {}
+    // {
+    // }
+    // ```
+    //
+    // ```r
+    // repeat # leads `a`
+    // {
+    //   a
+    // }
+    // ```
+    //
+    // Particularly important for prepping for autobracing here
+    //
+    // ```r
+    // repeat # leads `a`
+    //   a
+    // ```
+    //
+    // This is consistent to when there are already braces there.
+    //
+    // ```r
+    // repeat { # leads `a`
+    //   a
+    // }
+    // ```
+    if let Ok(body) = repeat_statement.body() {
+        return place_leading_or_dangling_body_comment(body, comment);
+    }
+
+    // We don't expect to ever fall through to here, but if we do for some unknown reason
+    // then we make the comment lead the whole `repeat_statement` to be consistent with
+    // `for_statement` and `while_statement`
+    CommentPlacement::leading(repeat_statement.into_syntax(), comment)
 }
 
 fn handle_function_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {

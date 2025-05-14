@@ -23,27 +23,27 @@ repeat
 repeat { # dangles {}
 }
 
+# These should be consistent
 repeat { # leads a
-  # leads a part 2
+  # leads a 2
   a
 }
-
-repeat # leads repeat
+repeat # leads a
 {
-  # leads a
+  # leads a 2
   a
 }
 
-repeat # leads repeat
+repeat # dangles {}
 {}
 
-repeat # leads repeat
+repeat # dangles {}
 {
-  # dangles {}
+  # dangles {} 2
 }
 
 repeat
-# leads repeat
+# leads a
 {
   a
 }
@@ -55,5 +55,5 @@ repeat
   a
 }
 
-repeat # leads repeat
-  1
+repeat # leads a
+  a
