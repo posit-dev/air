@@ -25,62 +25,62 @@ while(a)
 
 while # leads while
 (a) {
-  1 + 1
+  b
 }
 
 while
 # leads while
 (a) {
-  1 + 1
+  b
 }
 
 while(a # leads while
 ) {
-  1 + 1
+  b
 }
 
 while(a
 # leads while
 ) {
-  1 + 1
+  b
 }
 
 while( # leads while
   a) {
-  1 + 1
+  b
 }
 
 while(
   # leads while
   a) {
-  1 + 1
+  b
 }
 
 while(
   a
   # leads while
 ) {
-  1 + 1
+  b
 }
 
-while(a) # leads while
+while(a) # leads b
 {
-  1 + 1
+  b
 }
 
 while(a)
-# leads while
+# leads b
 {
-  1 + 1
+  b
 }
 
-while(a) # leads while
+while(a) # dangles {}
 {}
 
-while(a) # leads while
-1
+while(a) # leads b
+b
 
-while(a) # leads while
+while(a) # dangles {}
 {
-  # dangles {}
+  # dangles {} 2
 }

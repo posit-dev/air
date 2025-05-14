@@ -10,6 +10,7 @@ use air_r_syntax::RLanguage;
 use air_r_syntax::RParenthesizedExpression;
 use air_r_syntax::RSyntaxKind;
 use air_r_syntax::RSyntaxToken;
+use air_r_syntax::RWhileStatement;
 use biome_formatter::comments::CommentKind;
 use biome_formatter::comments::CommentPlacement;
 use biome_formatter::comments::CommentStyle;
@@ -91,46 +92,13 @@ impl CommentStyle for RCommentStyle {
     }
 }
 
-/// Handling of loop comments for `while_statement`, and `repeat_statement`
+/// Handling of loop comments for `repeat_statement`
 ///
 /// If the comment is "enclosed" by the loop statement, it's typically in one of only a
 /// few places. Most of the time these places are not very meaningful, and get in the way
 /// of how we want to format the loop statement. For simplicity and consistency, we lift
 /// all "enclosed" comments up to lead the loop statement. In some cases, this is actually
 /// required for idempotence.
-///
-/// # While loops
-///
-/// ```r
-/// while # comment
-/// (condition) {
-/// }
-/// ```
-///
-/// ```r
-/// while ( # comment
-/// condition) {
-/// }
-/// ```
-///
-/// ```r
-/// while (
-/// # comment
-/// condition) {
-/// }
-/// ```
-///
-/// ```r
-/// while (condition # comment
-/// ) {
-/// }
-/// ```
-///
-/// ```r
-/// while (condition) # comment
-///   {
-///   }
-/// ```
 ///
 /// # Repeat loops
 ///
@@ -260,7 +228,90 @@ fn handle_for_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<
 }
 
 fn handle_while_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
-    handle_loop_comment(comment, RSyntaxKind::R_WHILE_STATEMENT)
+    let Some(while_statement) = RWhileStatement::cast_ref(comment.enclosing_node()) else {
+        return CommentPlacement::Default(comment);
+    };
+
+    // If the following node is the `body`, we want to lead the first element of the body.
+    // But we only want to do this if we are past the `)` of the loop sequence, so we have
+    // to check that the following token isn't `)` too.
+    //
+    //
+    // ```r
+    // while (condition) # dangles {}
+    //   {
+    //   }
+    // ```
+    //
+    // ```r
+    // while (condition) # leads `a`
+    // {
+    //   a
+    // }
+    // ```
+    //
+    // Particularly important for prepping for autobracing here
+    //
+    // ```r
+    // while (condition) # leads `a`
+    //   a
+    // ```
+    //
+    // This is consistent to when there are already braces there.
+    //
+    // ```r
+    // while (condition) { # leads `a`
+    //   a
+    // }
+    // ```
+    //
+    // Here the following node is the `body`, but the following token is `)`. We want
+    // to avoid stealing this comment.
+    //
+    // ```r
+    // while (condition # comment
+    // ) {
+    // }
+    // ```
+    if let Ok(body) = while_statement.body() {
+        if let Some(following) = comment.following_node() {
+            if let Some(following_token) = comment.following_token() {
+                if body.syntax() == following && following_token.kind() != RSyntaxKind::R_PAREN {
+                    return place_leading_or_dangling_body_comment(body, comment);
+                }
+            }
+        }
+    }
+
+    // Otherwise if the comment is "enclosed" by the `while_statement` then it can only be
+    // in one of a few places, none of which are particularly meaningful, so we move the
+    // comment to lead the whole `while_statement`
+    //
+    // ```r
+    // while # comment
+    // (condition) {
+    // }
+    // ```
+    //
+    // ```r
+    // while ( # comment
+    // condition) {
+    // }
+    // ```
+    //
+    // ```r
+    // while (
+    // # comment
+    // condition) {
+    // }
+    // ```
+    //
+    // ```r
+    // while (condition # comment
+    // ) {
+    // }
+    // ```
+    CommentPlacement::leading(while_statement.into_syntax(), comment)
 }
 
 fn handle_repeat_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
