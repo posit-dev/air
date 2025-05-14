@@ -209,13 +209,11 @@ if (condition) # becomes leading on `a`
 # (here, the whole if statement, not the last node of it). We have `fmt: skip`
 # related test elsewhere to ensure we don't break this.
 
-# These stay where they are, short one liner assigned if statements don't expand
-x <- if (condition) a # becomes trailing on if statement
-x <- if (condition) a else b # becomes trailing on if statement
-
-# These expand
+# These stay where they are, short one liner if statements don't expand
 if (condition) a # becomes trailing on if statement
 if (condition) a else b # becomes trailing on if statement
+x <- if (condition) a # becomes trailing on if statement
+x <- if (condition) a else b # becomes trailing on if statement
 
 if (condition) { a } # becomes trailing on if statement
 if (condition) { a } else { b } # becomes trailing on if statement
@@ -269,16 +267,12 @@ if (condition) {
 }
 
 # Nesting in `consequence`
-x <- if (condition) if (condition2) this # becomes trailing on if statement
-x <- if (condition) if (condition2) if (condition3) this # becomes trailing on if statement
-x <- if (condition) if (condition2) this else that # becomes trailing on if statement
 if (condition) if (condition2) this # becomes trailing on if statement
 if (condition) if (condition2) if (condition3) this # becomes trailing on if statement
 if (condition) if (condition2) this else that # becomes trailing on if statement
 
 # Nesting in `alternative`
-x <- if (condition) this else that # stays flat, one liner if statement
-if (condition) this else that # becomes trailing on if statement
+if (condition) this else that # stays flat, one liner if statement
 if (condition) this else if (condition2) that # becomes trailing on if statement
 if (condition) this else if (condition2) this2 else that # becomes trailing on if statement
 if (condition) this else if (condition2) this2 else if (condition3) that # becomes trailing on if statement
@@ -302,59 +296,56 @@ if (this || this || this || this || this || this || this || this || this || this
 # ---------------------------------------------------------------------------
 # Auto bracing
 
-# These are simple statements, but are braced because they aren't in an
-# allowed context
+# Allowed on one line without braces
 if (a) 1
 if (a) 1 else 2
 
-# These are in the allowed assignment context
+# Allowed on one line without braces
 x = if (a) 1
 x <- if (a) 1
 x <<- if (a) 1
-
 x = if (a) 1 else 2
 x <- if (a) 1 else 2
 x <<- if (a) 1 else 2
 
-# These are in the allowed function argument context
+# Allowed on one line without braces
 fn(if (a) 1)
 fn(if (a) 1, if (a) 1 else 2)
 fn(x = if (a) 1)
 fn(if (a) 1, x = if (a) 1 else 2)
-# Too complex
+# Too complex, forces braces
 fn(if (a) 1 else if (b) 2 else 3)
 # Breaks argument list, but not if/else
 fn(if (a) 1, x = if (a) 1 else 2, this_is_really_really_long_and_breaks_the_group_here)
 
-# These are in the allowed function parameter context
+# Allowed on one line without braces
 function(x = if (a) 1) {}
 function(x = if (a) 1, y = if (a) 1 else 2) {}
-# Too complex
+# Too complex, forces braces
 function(x = if (a) 1 else if (b) 2 else 3) {}
 # Breaks parameter list, but not if/else
 function(x = if (a) 1, y = if (a) 1 else 2, this_is_really_really_long_and_breaks_the_group_here) {}
 
 # The group breaking forces braces
-x <- if (something_really_really_long_here_something_really_really_long_here) 1 else 2
-x <- if (a) something_really_really_long_here else and_something_really_really_long_here
+if (something_really_really_long_here_something_really_really_long_here) 1 else 2
+if (a) something_really_really_long_here else and_something_really_really_long_here
 
 # The leading newline forces braces
-x <- if (a)
+if (a)
   1
-x <- if (a) 1 else
+if (a) 1 else
   2
 
 # The leading newline before `else` forces braces
 {
-  x <- if (a) 1
+  if (a) 1
   else 2
 }
 
-# The nested if in `consequence` forces braces around the outer if.
-# The inner ifs aren't in allowed contexts.
-x <- if (a) if (b) 1
-x <- if (a) if (b) if (c) 1
-x <- if (a) if (b) 1 else 2
+# The nested if in `consequence` forces braces around the outer if
+if (a) if (b) 1
+if (a) if (b) if (c) 1
+if (a) if (b) 1 else 2
 
 # We don't force the inner if inside the `consequence` to have braces as
 # well, because a user could have writen a short if in the inner branch to
@@ -365,9 +356,9 @@ x <- if (a) {
 }
 
 # The nested if in `alternative` forces braces
-x <- if (a) 1 else if (b) 2
-x <- if (a) 1 else if (b) 2 else 3
+if (a) 1 else if (b) 2
+if (a) 1 else if (b) 2 else 3
 
 # The braces on one piece force braces
-x <- if (a) {1} else 2
-x <- if (a) {1} else {2}
+if (a) {1} else 2
+if (a) {1} else {2}

@@ -1,12 +1,8 @@
 use crate::prelude::*;
 use crate::r::auxiliary::else_clause::FormatRElseClauseOptions;
 use air_r_syntax::AnyRExpression;
-use air_r_syntax::RArgument;
-use air_r_syntax::RBinaryExpression;
 use air_r_syntax::RIfStatement;
 use air_r_syntax::RIfStatementFields;
-use air_r_syntax::RParameterDefault;
-use air_r_syntax::RSyntaxKind;
 use biome_formatter::format_args;
 use biome_formatter::write;
 use biome_formatter::FormatRuleWithOptions;
@@ -87,13 +83,8 @@ impl FormatNodeRule<RIfStatement> for FormatRIfStatement {
 
 /// Determine if braced expressions should be forced within this if statement
 ///
-/// Single line if statements are only allowed in a few specific contexts:
-/// - The right hand side of a `=`, `<-`, or `<<-` assignment
-/// - A function call argument
-/// - A function signature parameter
-///
-/// If we are within one of those contexts, we must also decide if the if statement
-/// is simple enough to stay on a single line.
+/// We must decide if the if statement is simple enough to potentially stay on a single
+/// line:
 /// - Any existing newline forces multiline
 /// - A braced `consequence` or `alternative` forces multiline
 /// - Nested if statements force multiline
@@ -104,18 +95,18 @@ impl FormatNodeRule<RIfStatement> for FormatRIfStatement {
 ///
 /// ```r
 /// # Before
-/// x <- if (cond)
+/// if (cond)
 ///   consequence
 ///
-/// x <- if (cond) consequence else
+/// if (cond) consequence else
 ///   alternative
 ///
 /// # After
-/// x <- if (cond) {
+/// if (cond) {
 ///   consequence
 /// }
 ///
-/// x <- if (cond) {
+/// if (cond) {
 ///   consequence
 /// } else {
 ///   alternative
@@ -127,13 +118,13 @@ impl FormatNodeRule<RIfStatement> for FormatRIfStatement {
 /// ```r
 /// # Before
 /// {
-///   x <- if (condition) 1
+///   if (condition) 1
 ///   else 2
 /// }
 ///
 /// # After
 /// {
-///   x <- if (condition) {
+///   if (condition) {
 ///     1
 ///   } else {
 ///     2
@@ -145,11 +136,11 @@ impl FormatNodeRule<RIfStatement> for FormatRIfStatement {
 ///
 /// ```r
 /// # Before
-/// x <- if (cond) { consequence } else alternative
-/// x <- if (cond) consequence else { alternative }
+/// if (cond) { consequence } else alternative
+/// if (cond) consequence else { alternative }
 ///
 /// # After
-/// x <- if (cond) {
+/// if (cond) {
 ///   consequence
 /// } else {
 ///   alternative
@@ -160,32 +151,28 @@ impl FormatNodeRule<RIfStatement> for FormatRIfStatement {
 ///
 /// ```r
 /// # Before
-/// x <- if (cond) if (cond) consequence
-/// #              |----consequence----|
+/// if (cond) if (cond) consequence
+/// #         |----consequence----|
 ///
 /// # After
 /// # Note that we don't `Force` the inner if to be braced, because short
 /// # ifs would be allowed there if the user wants to write it like that to begin with.
-/// x <- if (cond) {
+/// if (cond) {
 ///   if (cond) consequence
 /// }
 ///
 /// # Before
-/// x <- if (cond) consequence1 else if (cond) consequence2
-/// #                                |-----alternative----|
+/// if (cond) consequence1 else if (cond) consequence2
+/// #                           |-----alternative----|
 ///
 /// # After
-/// x <- if (cond) {
+/// if (cond) {
 ///   consequence1
 /// } else if (cond) {
 ///   consequence2
 /// }
 /// ```
 fn compute_braced_expressions(node: &RIfStatement) -> SyntaxResult<BracedExpressions> {
-    if !in_allowed_one_line_if_statement_context(node)? {
-        return Ok(BracedExpressions::Force);
-    }
-
     let consequence = node.consequence()?;
 
     if consequence.syntax().has_leading_newline() {
@@ -225,61 +212,6 @@ fn compute_braced_expressions(node: &RIfStatement) -> SyntaxResult<BracedExpress
     };
 
     Ok(BracedExpressions::IfGroupBreaks)
-}
-
-fn in_allowed_one_line_if_statement_context(node: &RIfStatement) -> SyntaxResult<bool> {
-    // ```r
-    // # Allowed
-    // x = if (a) else b
-    // x <- if (a) else b
-    // x <<- if (a) else b
-    // ```
-    if let Some(parent) = node.parent::<RBinaryExpression>() {
-        // Check for `=`, `<-`, or `<<-` as the operator
-        if !matches!(
-            parent.operator()?.kind(),
-            RSyntaxKind::EQUAL | RSyntaxKind::ASSIGN | RSyntaxKind::SUPER_ASSIGN
-        ) {
-            return Ok(false);
-        }
-
-        // Ensure we were the right hand side
-        if parent.right()?.syntax() != node.syntax() {
-            return Ok(false);
-        }
-
-        return Ok(true);
-    };
-
-    // ```r
-    // # Allowed (unnamed)
-    // fn(if (a) 1)
-    // fn(if (a) 1 else 2)
-    //
-    // # Allowed (named)
-    // fn(x = if (a) 1 else 2)
-    //
-    // # Allowed here, rejected later for being too complex
-    // fn(if (a) 1 else if (b) 2)
-    // ```
-    if node.parent::<RArgument>().is_some() {
-        return Ok(true);
-    };
-
-    // ```r
-    // # Allowed (parameter with default)
-    // function(x = if (a) 1) {}
-    // function(x = if (a) 1 else 2) {}
-    //
-    // # Allowed here, rejected later for being too complex
-    // function(x = if (a) 1 else if (b) 2) {}
-    // ```
-    if node.parent::<RParameterDefault>().is_some() {
-        return Ok(true);
-    }
-
-    // Otherwise one line if statements are not allowed
-    Ok(false)
 }
 
 pub(crate) struct FormatIfBody<'a> {
