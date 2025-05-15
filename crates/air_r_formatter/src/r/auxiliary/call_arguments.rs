@@ -123,10 +123,31 @@ impl RCallLikeArguments {
     ///
     /// Example:
     ///
+    /// An inline function without braces is an example where "most flat" is considered.
+    /// We consider this as groupable because it is possible that a long function body
+    /// or long function signature can cause a break, which may benefit from the middle
+    /// variant before expanding all the way to the most expanded variant.
+    ///
     /// ```r
-    /// # NOTE: Not currently possible, as the `{}` always force a break right now,
-    /// # but this would be an example if `{}` didn't force a break.
-    /// map(xs, function(x) {})
+    /// # Most flat wins
+    /// map(xs, function(x) x + 1)
+    ///
+    /// # Middle variant wins
+    /// map(xs, function(x) x + a_really_long_thing_here + a_really_long_thing_there)
+    /// # ->
+    /// map(xs, function(x) {
+    ///   x + a_really_long_thing_here + a_really_long_thing_there
+    /// })
+    ///
+    /// # Most expanded wins (middle variant wouldn't fit within line length)
+    /// map(xs_are_extremely_long_too, function(this_argument_is_really_long, option = "so is this") this_argument_is_really_long)
+    /// # ->
+    /// map(
+    ///   xs_are_extremely_long_too,
+    ///   function(this_argument_is_really_long, option = "so is this") {
+    ///     this_argument_is_really_long
+    ///   }
+    /// )
     /// ```
     ///
     /// This variant is removed from the set if we detect that the grouped argument
@@ -134,14 +155,28 @@ impl RCallLikeArguments {
     /// parameters, we bail entirely and use the most expanded form, as noted
     /// at the beginning of this documentation page).
     ///
-    /// Note that because `{}` currently unconditionally force a break, and because
-    /// we only go down this path when we have a `{}` to begin with, that means that
-    /// currently the most flat variant is always removed. There is an
-    /// `unreachable!()` in the code to assert this. We can't simply remove the
-    /// `most_flat` code path though, because it is also where we detect if a
-    /// parameter forces a break, triggering one of our early exists. Additionally,
-    /// in the future we may allow `{}` to not force a break, meaning this variant
-    /// may come back into play.
+    /// ```r
+    /// # Forced break in the body
+    /// map(xs, function(x) {
+    ///   x
+    /// })
+    ///
+    /// # This is a forced break in the body too, and triggers autobracing and
+    /// # results in the middle variant winning
+    /// map(xs, function(x)
+    ///   x)
+    /// ```
+    ///
+    /// Note that because `{}` currently unconditionally force a break, that means that
+    /// currently the most flat variant is always removed when `{}` are present. In the
+    /// future we will make empty `{}` never break and we will declare cases of empty
+    /// `{}` as not groupable, so it won't go through this best fitting process at all.
+    ///
+    /// ```r
+    /// # NOTE: Currently considered groupable, but the `{}` currently unconditionally
+    /// # force a break, so the `most_flat` variant is always removed
+    /// map(xs, function(x) {})
+    /// ```
     ///
     /// ```r
     /// # NOTE: We explicitly disallow curly-curly as a groupable argument,
@@ -297,7 +332,7 @@ impl RCallLikeArguments {
 
         // Write the most flat variant with the first or last argument grouped
         // (but not forcibly expanded)
-        let _most_flat = {
+        let most_flat = {
             let snapshot = f.state_snapshot();
             let mut buffer = VecBuffer::new(f.state_mut());
             buffer.write_element(FormatElement::Tag(Tag::StartEntry))?;
@@ -375,14 +410,15 @@ impl RCallLikeArguments {
             buffer.into_vec().into_boxed_slice()
         };
 
-        // If the grouped content breaks, then we can skip the most_flat variant,
-        // since we already know that it won't be fitting on a single line.
         let variants = if grouped_breaks {
+            // If the grouped content breaks, then we can skip the most_flat variant,
+            // since we already know that it won't be fitting on a single line. We can
+            // also go ahead and signal that we will be expanding.
             write!(f, [expand_parent()])?;
             vec![middle_variant, most_expanded.into_boxed_slice()]
         } else {
-            unreachable!("`grouped_breaks` is currently always `true`.");
-            // vec![most_flat, middle_variant, most_expanded.into_boxed_slice()]
+            // Otherwise we best fit between all variants
+            vec![most_flat, middle_variant, most_expanded.into_boxed_slice()]
         };
 
         // SAFETY: Safe because variants is guaranteed to contain >=2 entries:
@@ -1087,7 +1123,7 @@ fn argument_is_groupable(argument: &AnyRExpression) -> SyntaxResult<bool> {
         // })
         // ```
         //
-        // Empty braces always expand, so they benefit from grouping
+        // Empty braces currently always expand, so they benefit from grouping
         //
         // ```r
         // with(data, {
@@ -1098,7 +1134,7 @@ fn argument_is_groupable(argument: &AnyRExpression) -> SyntaxResult<bool> {
         //
         // ```r
         // with(data, {
-        //   // comment
+        //   # comment
         // })
         // ```
         //
@@ -1119,15 +1155,91 @@ fn argument_is_groupable(argument: &AnyRExpression) -> SyntaxResult<bool> {
         // ```
         RBracedExpressions(node) => as_curly_curly(node).is_none(),
 
+        // Currently, every kind of function definition can benefit from grouping.
+        //
+        // - If the body has `{}` and is not empty, the braces will be expanded across
+        //   multiple lines, so it can benefit from grouping.
+        //
+        // - If the body does not have `{}`, we may keep the function definition
+        //   completely flat on one line, or we may expand it over multiple lines if
+        //   it exceeds the line length or a persistent line break forces a break. If
+        //   it were to break, it would benefit from grouping.
+        //
+        // - NOTE: If the body has `{}` and is empty (including no comments), then
+        //   currently those are always expanded anyways, so it can benefit from grouping.
+        //   In the future we will force empty `{}` to not expand, and when that happens
+        //   we should return `false` from here to signal that it can't benefit from
+        //   grouping (use the same rule as `RBracedExpressions` above, but applied to
+        //   the `node.body()`).
+        //
+        // Here are some examples:
+        //
+        // Trailing function definition with braces is the classic example of something
+        // that benefits from grouping
+        //
         // ```r
-        // map(a, function(x) {
+        // map(xs, function(x) {
         //   x
         // })
         // ```
-        RFunctionDefinition(node) => {
-            let body = node.body()?;
-            matches!(&body, AnyRExpression::RBracedExpressions(_))
-        }
+        //
+        // When the braces are empty, it still benefits from grouping right now because
+        // we currently always expand the braces.
+        //
+        // ```r
+        // map(xs, function(x) {
+        // })
+        // ```
+        //
+        // With a dangling comment in empty braces, we always benefit from grouping
+        //
+        // ```r
+        // map(xs, function(x) {
+        //   # comment
+        // })
+        // ```
+        //
+        // Long function definition that would be split over multiple lines, triggering
+        // autobracing, and would benefit from grouping
+        //
+        // ```r
+        // map(xs, function(x) x + a_really_really_long_name + another_really_long_name)
+        //
+        // # Becomes:
+        // map(xs, function(x) {
+        //   x + a_really_really_long_name + another_really_long_name
+        // })
+        //
+        // # Which is preferred over fully expanding:
+        // map(
+        //   xs,
+        //   function(x) {
+        //     x + a_really_really_long_name + another_really_long_name
+        //   }
+        // )
+        // ```
+        //
+        // Line break in the function definition body, triggering autobracing, and would
+        // benefit from grouping
+        //
+        // ```r
+        // map(xs, function(x)
+        //  x + 1)
+        //
+        // # Becomes:
+        // map(xs, function(x) {
+        //   x + 1
+        // })
+        //
+        // # Which is preferred over fully expanding:
+        // map(
+        //   xs,
+        //   function(x) {
+        //     x + 1
+        //   }
+        // )
+        // ```
+        RFunctionDefinition(_) => true,
 
         // Nothing else benefits from grouping
         _ => false,

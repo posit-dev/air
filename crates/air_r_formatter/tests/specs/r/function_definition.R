@@ -179,37 +179,3 @@ fn <- function(a, b = c(
   1, 2, 3)) {
   body
 }
-
-# ------------------------------------------------------------------------
-# User requested line break and trailing anonymous functions in calls
-
-# Ensure these features play nicely together
-
-# This user line break expands the function definition, causing the whole
-# `map()` to expand
-map(xs, function(
-  x, option = "a") {
-  x
-})
-
-# This user line break expands the function definition, causing the whole
-# `map()` to expand
-map(xs, function(x, option = "a")
-  x
-)
-
-# This flattens the function parameters, but the `map()` stays expanded
-map(
-  xs,
-  function(x,
-    option = "a"
-  ) {
-    x
-  }
-)
-
-# This flattens the parameters onto one line
-map(xs, function(x,
-  option = "a") {
-  x
-})

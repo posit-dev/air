@@ -407,17 +407,14 @@ result <- map_lgl(
 ```
 
 ``` r
-# Adding a line break before `is.logical(x)` expands and forces autobracing
+# Adding a line break before `is.logical(x)` forces autobracing
 result <- map_lgl(xs, function(x)
     is.logical(x) && length(x) == 1L && !is.na(x))
 
 # Becomes:
-result <- map_lgl(
-  xs,
-  function(x) {
-    is.logical(x) && length(x) == 1L && !is.na(x)
-  }
-)
+result <- map_lgl(xs, function(x) {
+  is.logical(x) && length(x) == 1L && !is.na(x)
+})
 ```
 
 ## Comments
