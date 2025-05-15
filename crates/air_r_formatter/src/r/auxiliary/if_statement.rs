@@ -1,8 +1,11 @@
 use crate::prelude::*;
 use crate::r::auxiliary::else_clause::FormatRElseClauseOptions;
 use air_r_syntax::AnyRExpression;
+use air_r_syntax::RExpressionList;
 use air_r_syntax::RIfStatement;
 use air_r_syntax::RIfStatementFields;
+use air_r_syntax::RRoot;
+use air_r_syntax::RSyntaxNode;
 use biome_formatter::format_args;
 use biome_formatter::write;
 use biome_formatter::FormatRuleWithOptions;
@@ -85,28 +88,43 @@ impl FormatNodeRule<RIfStatement> for FormatRIfStatement {
 ///
 /// We must decide if the if statement is simple enough to potentially stay on a single
 /// line:
+/// - It must be in a [SyntaxPosition::Value] position
 /// - Any existing newline forces multiline
 /// - A braced `consequence` or `alternative` forces multiline
 /// - Nested if statements force multiline
 ///
 /// That ends up resulting in the following scenarios:
 ///
-/// ## The `consequence` or `alternative` has a leading newline
+/// ## The if statement is not in a [SyntaxPosition::Value] position
 ///
 /// ```r
-/// # Before
-/// if (cond)
-///   consequence
-///
-/// if (cond) consequence else
-///   alternative
+/// # Before (top level, considered an `Effect`)
+/// if (cond) consequence else alternative
 ///
 /// # After
 /// if (cond) {
 ///   consequence
+/// } else {
+///   alternative
+/// }
+/// ```
+///
+/// ## The `consequence` or `alternative` has a leading newline
+///
+/// ```r
+/// # Before
+/// x <- if (cond)
+///   consequence
+///
+/// x <- if (cond) consequence else
+///   alternative
+///
+/// # After
+/// x <- if (cond) {
+///   consequence
 /// }
 ///
-/// if (cond) {
+/// x <- if (cond) {
 ///   consequence
 /// } else {
 ///   alternative
@@ -136,11 +154,11 @@ impl FormatNodeRule<RIfStatement> for FormatRIfStatement {
 ///
 /// ```r
 /// # Before
-/// if (cond) { consequence } else alternative
-/// if (cond) consequence else { alternative }
+/// x <- if (cond) { consequence } else alternative
+/// x <- if (cond) consequence else { alternative }
 ///
 /// # After
-/// if (cond) {
+/// x <- if (cond) {
 ///   consequence
 /// } else {
 ///   alternative
@@ -151,28 +169,32 @@ impl FormatNodeRule<RIfStatement> for FormatRIfStatement {
 ///
 /// ```r
 /// # Before
-/// if (cond) if (cond) consequence
-/// #         |----consequence----|
+/// x <- if (cond) if (cond) consequence
+/// #              |----consequence----|
 ///
 /// # After
 /// # Note that we don't `Force` the inner if to be braced, because short
 /// # ifs would be allowed there if the user wants to write it like that to begin with.
-/// if (cond) {
+/// x <- if (cond) {
 ///   if (cond) consequence
 /// }
 ///
 /// # Before
-/// if (cond) consequence1 else if (cond) consequence2
-/// #                           |-----alternative----|
+/// x <- if (cond) consequence1 else if (cond) consequence2
+/// #                                |-----alternative----|
 ///
 /// # After
-/// if (cond) {
+/// x <- if (cond) {
 ///   consequence1
 /// } else if (cond) {
 ///   consequence2
 /// }
 /// ```
 fn compute_braced_expressions(node: &RIfStatement) -> SyntaxResult<BracedExpressions> {
+    if node.syntax().position() != SyntaxPosition::Value {
+        return Ok(BracedExpressions::Force);
+    }
+
     let consequence = node.consequence()?;
 
     if consequence.syntax().has_leading_newline() {
@@ -302,6 +324,93 @@ impl Format<RFormatContext> for FormatIfBody<'_> {
                     ]
                 ),
             },
+        }
+    }
+}
+
+// NOTE: If this ends up being useful for more than if statements, we can move it to
+// `air_r_syntax` as `syntax_node_ext.rs`
+trait SyntaxPositionExt {
+    /// Compute the [SyntaxPosition] of a node
+    ///
+    /// [SyntaxPosition] is an attempt to take a very simple syntax based approach to
+    /// determine whether a node is in a _value_ or an _effect_ position.
+    ///
+    /// - [SyntaxPosition::Value]s are assigned, are used as inputs to functions, and
+    ///   are returned from `RBracedExpression` scopes.
+    ///
+    /// - [SyntaxPosition::Effect]s are statements that are typically used for their side
+    ///   effects, such as calling `cat()`, or performing an assignment like `x <- 5`.
+    ///
+    /// An [SyntaxPosition::Effect] is either:
+    ///
+    /// - A direct child of `RRoot`
+    /// - A direct child of `RBracedExpression`, with the exception of the last child,
+    ///   which is considered a [SyntaxPosition::Value], as it is the returned value
+    ///   of the braced expression
+    ///
+    /// Everything else is considered a [SyntaxPosition::Value].
+    ///
+    /// ## Examples
+    ///
+    /// At top level
+    ///
+    /// ```r
+    /// 1 + 1 # Effect
+    /// ```
+    ///
+    /// Direct children of `{}`
+    ///
+    /// ```r
+    /// fn <- function() {
+    ///   fn() # Effect
+    ///   cat("hi") # Effect
+    ///   fn() # Value, last child of `{}`
+    /// }
+    /// ```
+    ///
+    /// Additional examples of [SyntaxPosition::Value] positions
+    ///
+    /// ```r
+    /// x <- <value>
+    /// fun(<value>)
+    /// function(x = <value>)
+    /// map(xs, function() <value>)
+    /// ```
+    fn position(&self) -> SyntaxPosition;
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum SyntaxPosition {
+    Value,
+    Effect,
+}
+
+impl SyntaxPositionExt for RSyntaxNode {
+    fn position(&self) -> SyntaxPosition {
+        let Some(expressions) = self.parent().and_then(RExpressionList::cast) else {
+            // If our direct parent isn't an `RExpressionList`, we are definitely a `Value`
+            return SyntaxPosition::Value;
+        };
+
+        // Direct child of `RRoot`, this is an `Effect`
+        if expressions.parent::<RRoot>().is_some() {
+            return SyntaxPosition::Effect;
+        }
+
+        // Otherwise, direct child of `RBracedExpressions`. If this is the last
+        // expression, it is a `Value` (the value returned from a scope), otherwise it is
+        // an `Effect`.
+        let Some(last) = expressions.last() else {
+            // Would be unexpected since we just checked that `self` is a child of this,
+            // but we'd rather not crash if we are wrong
+            return SyntaxPosition::Value;
+        };
+
+        if self == last.syntax() {
+            SyntaxPosition::Value
+        } else {
+            SyntaxPosition::Effect
         }
     }
 }
