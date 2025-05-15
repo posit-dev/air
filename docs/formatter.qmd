@@ -234,11 +234,38 @@ if (condition) {
 }
 ```
 
-Simple if statements with no braces and up to one else clause are allowed on one line and will not be autobraced unless they exceed the line limit.
-These are all allowed by Air:
+Simple if statements that don't hit any of the autobracing criteria mentioned above are allowed to stay on one line as long as they are also in *value* position, as opposed to *effect* position.
+
+-   Top level if statements are in effect position.
+
+-   If statements that are direct children of `{}` are in effect position, unless the if statement is the last child of the `{}` expression list, in which case it is in value position (because it is the returned value from that scope).
+
+-   Otherwise, the if statement is in value position.
+
+These if statements are in effect position, and would be autobraced:
+
+``` r
+# If statement at top level
+if (condition) a else b
+
+# If statement inside `{}`
+fn <- function() {
+  if (condition) stop("oh no")
+  1 + 1
+}
+
+fn <- function() {
+  if (condition) return(1)
+  1 + 1
+}
+```
+
+These are in value position, and would not be autobraced:
 
 ``` r
 x <- if (condition) 1 else 2
+
+x <- x %||% if (condition) 1 else 2
 
 list(a = if (condition) 1 else 2)
 
@@ -246,30 +273,12 @@ function(
   a,
   optional = if (is.null(a)) 1 else 2
 ) {
-
 }
 
+# If statement is the last expression of the `{}` scope
 map(xs, function(x) {
   if (is.null(x)) 1 else 2
 })
-```
-
-While Air also allows single line if statements with bodies that cause *side effects*, such as `stop()` or `return()`, we encourage you to brace these for maximum clarity:
-
-``` r
-# Good
-if (condition) {
-  stop("oh no!")
-}
-
-if (condition) {
-  return(42)
-}
-
-# Bad
-if (condition) stop("oh no")
-
-if (condition) return(42)
 ```
 
 ### Portability
