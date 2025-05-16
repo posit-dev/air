@@ -283,7 +283,7 @@ map(xs, function(x) {
 
 ### Portability
 
-It is particularly important to autobrace if statements for *portability*, which is the ability to copy and paste that if statement into any context and have it still parse.
+It is particularly important to autobrace multiline if statements for *portability*, which is the ability to copy and paste that if statement into any context and have it still parse.
 Consider the following if statement:
 
 ``` r
