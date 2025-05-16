@@ -308,7 +308,7 @@ fn handle_if_statement_comment(
     // {
     //   if (cond) {
     //     this
-    //   } # becomes leading on `that`
+    //   } # becomes leading on `this`
     //   else {
     //     that
     //   }
@@ -319,7 +319,7 @@ fn handle_if_statement_comment(
     // {
     //   if (cond) {
     //
-    //   } # becomes leading on `that`
+    //   } # becomes leading on `this`
     //   else {
     //     that
     //   }
