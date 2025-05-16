@@ -33,7 +33,7 @@
   }
   ```
 
-  Single line if statements and function definitions are still allowed:
+  Single line if statements and function definitions are still allowed in certain contexts:
 
   ```r
   list(a = if (is.null(x)) NA else x)
