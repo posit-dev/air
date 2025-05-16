@@ -1,9 +1,11 @@
 use crate::prelude::*;
-use crate::statement_body::FormatStatementBody;
+use air_r_syntax::AnyRExpression;
 use air_r_syntax::RFunctionDefinition;
+use biome_formatter::format_args;
 use biome_formatter::write;
 use biome_formatter::FormatRuleWithOptions;
 use biome_formatter::RemoveSoftLinesBuffer;
+use biome_rowan::SyntaxResult;
 
 use super::call_arguments::GroupedCallArgumentLayout;
 
@@ -82,13 +84,76 @@ impl FormatFunction {
             Ok(())
         });
 
+        // The `group()` should contain all elements of the function definition,
+        // which allows `FormatFunctionBody` to autobrace if any element forces a
+        // break
         write!(
             f,
-            [
+            [group(&format_args!(
                 name.format(),
                 &format_parameters,
-                group(&FormatStatementBody::new(&body))
-            ]
+                space(),
+                FormatFunctionBody::new(&body)
+            ))]
         )
     }
+}
+
+pub(crate) struct FormatFunctionBody<'a> {
+    node: &'a AnyRExpression,
+}
+
+impl<'a> FormatFunctionBody<'a> {
+    pub fn new(node: &'a AnyRExpression) -> Self {
+        Self { node }
+    }
+}
+
+impl Format<RFormatContext> for FormatFunctionBody<'_> {
+    fn fmt(&self, f: &mut Formatter<RFormatContext>) -> FormatResult<()> {
+        match self.node {
+            // Body already has braces, just format it
+            AnyRExpression::RBracedExpressions(node) => {
+                write!(f, [node.format()])
+            }
+            // Body does not have braces yet
+            node => {
+                if should_force_braced_expressions(node)? {
+                    write!(
+                        f,
+                        [
+                            text("{"),
+                            block_indent(&format_args![&node.format()]),
+                            text("}")
+                        ]
+                    )
+                } else {
+                    write!(
+                        f,
+                        [
+                            if_group_breaks(&text("{")),
+                            soft_block_indent(&format_args![&node.format()]),
+                            if_group_breaks(&text("}"))
+                        ]
+                    )
+                }
+            }
+        }
+    }
+}
+
+fn should_force_braced_expressions(node: &AnyRExpression) -> SyntaxResult<bool> {
+    // A kind of persistent line break, but not one we respect
+    // with the `persistent_line_breaks` setting, because it is
+    // more related to whether or not we autobrace
+    //
+    // ```r
+    // function()
+    //   a
+    // ```
+    if node.syntax().has_leading_newline() {
+        return Ok(true);
+    }
+
+    Ok(false)
 }

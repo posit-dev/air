@@ -24,10 +24,10 @@ mod cst;
 pub mod either;
 pub mod formatter_ext;
 pub mod joiner_ext;
+pub mod loop_body;
 mod prelude;
 mod r;
 pub(crate) mod separated;
-mod statement_body;
 mod string_literal;
 
 #[rustfmt::skip]

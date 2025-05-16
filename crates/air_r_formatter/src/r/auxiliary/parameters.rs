@@ -16,6 +16,27 @@ impl FormatNodeRule<RParameters> for FormatRParameters {
             r_paren_token,
         } = node.as_fields();
 
+        // Special case where the dangling comment has no node to attach to:
+        //
+        // ```r
+        // function(
+        //   # dangling comment
+        // ) {}
+        // ```
+        //
+        // If we don't handle it specially, it can break idempotence.
+        // Same as `RCallLikeArguments`.
+        if items.is_empty() {
+            return write!(
+                f,
+                [
+                    l_paren_token.format(),
+                    format_dangling_comments(node.syntax()).with_soft_block_indent(),
+                    r_paren_token.format()
+                ]
+            );
+        }
+
         write!(
             f,
             [group(&format_args![
@@ -25,6 +46,12 @@ impl FormatNodeRule<RParameters> for FormatRParameters {
             ])
             .should_expand(has_persistent_line_break(&items, f.options()))]
         )
+    }
+
+    fn fmt_dangling_comments(&self, _: &RParameters, _: &mut RFormatter) -> FormatResult<()> {
+        // Formatted inside of `fmt_fields`
+        // Only applicable for the empty arguments case
+        Ok(())
     }
 }
 

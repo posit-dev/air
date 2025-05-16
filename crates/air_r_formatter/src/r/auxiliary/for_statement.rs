@@ -1,5 +1,5 @@
+use crate::loop_body::FormatLoopBody;
 use crate::prelude::*;
-use crate::statement_body::FormatStatementBody;
 use air_r_syntax::RForStatement;
 use air_r_syntax::RForStatementFields;
 use biome_formatter::format_args;
@@ -31,7 +31,8 @@ impl FormatNodeRule<RForStatement> for FormatRForStatement {
                 space(),
                 sequence.format(),
                 r_paren_token.format(),
-                FormatStatementBody::new(&body?)
+                space(),
+                FormatLoopBody::new(&body?)
             ))]
         )
     }

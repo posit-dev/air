@@ -1,5 +1,5 @@
+use crate::loop_body::FormatLoopBody;
 use crate::prelude::*;
-use crate::statement_body::FormatStatementBody;
 use air_r_syntax::RRepeatStatement;
 use air_r_syntax::RRepeatStatementFields;
 use biome_formatter::format_args;
@@ -15,7 +15,8 @@ impl FormatNodeRule<RRepeatStatement> for FormatRRepeatStatement {
             f,
             [group(&format_args!(
                 repeat_token.format(),
-                FormatStatementBody::new(&body?)
+                space(),
+                FormatLoopBody::new(&body?)
             ))]
         )
     }

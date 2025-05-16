@@ -3,9 +3,12 @@ use air_r_syntax::AnyRExpression;
 use air_r_syntax::RArgument;
 use air_r_syntax::RArgumentNameClause;
 use air_r_syntax::RElseClause;
+use air_r_syntax::RForStatement;
+use air_r_syntax::RFunctionDefinition;
 use air_r_syntax::RIfStatement;
 use air_r_syntax::RLanguage;
 use air_r_syntax::RParenthesizedExpression;
+use air_r_syntax::RRepeatStatement;
 use air_r_syntax::RSyntaxKind;
 use air_r_syntax::RSyntaxToken;
 use air_r_syntax::RWhileStatement;
@@ -17,6 +20,7 @@ use biome_formatter::comments::Comments;
 use biome_formatter::comments::DecoratedComment;
 use biome_formatter::comments::SourceComment;
 use biome_formatter::write;
+use biome_rowan::AstNode;
 use biome_rowan::SyntaxTriviaPieceComments;
 use comments::Directive;
 use comments::FormatDirective;
@@ -90,105 +94,302 @@ impl CommentStyle for RCommentStyle {
 }
 
 fn handle_for_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
-    let enclosing = comment.enclosing_node();
-
-    if enclosing.kind() != RSyntaxKind::R_FOR_STATEMENT {
-        return CommentPlacement::Default(comment);
-    }
-
-    if comment.text_position().is_own_line() {
-        // Lift comment up as a leading comment on the whole `R_FOR_STATEMENT` node
-        return CommentPlacement::leading(enclosing.clone(), comment);
-    }
-
-    CommentPlacement::Default(comment)
-}
-
-fn handle_while_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
-    let Some(enclosing) = RWhileStatement::cast_ref(comment.enclosing_node()) else {
+    let Some(for_statement) = RForStatement::cast_ref(comment.enclosing_node()) else {
         return CommentPlacement::Default(comment);
     };
 
-    if let Some(preceding) = comment.preceding_node() {
-        // Make comments directly before the condition `)` trailing
-        // comments of the condition itself (rather than leading comments of
-        // the `body` node)
-        //
-        // ```r
-        // while (
-        //   cond
-        //   # comment
-        // ) {
-        // }
-        // ```
-        if comment
-            .following_token()
-            .is_some_and(|token| token.kind() == RSyntaxKind::R_PAREN)
-        {
-            return CommentPlacement::trailing(preceding.clone(), comment);
+    // If the following node is the `body`, we want to lead the first element of the body.
+    // But we only want to do this if we are past the `)` of the loop sequence, so we have
+    // to check that the following token isn't `)` too.
+    //
+    //
+    // ```r
+    // for (i in 1:5) # dangles {}
+    //   {
+    //   }
+    // ```
+    //
+    // ```r
+    // for (i in 1:5) # leads `a`
+    // {
+    //   a
+    // }
+    // ```
+    //
+    // Particularly important for prepping for autobracing here
+    //
+    // ```r
+    // for (i in 1:5) # leads `a`
+    //   a
+    // ```
+    //
+    // This is consistent to when there are already braces there.
+    //
+    // ```r
+    // for (i in 1:5) { # leads `a`
+    //   a
+    // }
+    // ```
+    //
+    // Here the following node is the `body`, but the following token is `)`. We want
+    // to avoid stealing this comment.
+    //
+    // ```r
+    // for (i in 1:5 # comment
+    // ) {
+    // }
+    // ```
+    if let Ok(body) = for_statement.body() {
+        if let Some(following) = comment.following_node() {
+            if let Some(following_token) = comment.following_token() {
+                if body.syntax() == following && following_token.kind() != RSyntaxKind::R_PAREN {
+                    return place_leading_or_dangling_body_comment(body, comment);
+                }
+            }
         }
     }
 
-    // Check that the `body` of the while loop is identical to the `following`
-    // node of the comment. While loops also have a `condition` that can be
-    // any R expression, so we need to differentiate here.
-    let Ok(body) = enclosing.body() else {
-        return CommentPlacement::Default(comment);
-    };
-    let Some(following) = comment.following_node() else {
-        return CommentPlacement::Default(comment);
-    };
-    if body.syntax() != following {
-        return CommentPlacement::Default(comment);
-    }
-
-    // Handle cases like:
+    // Otherwise if the comment is "enclosed" by the `for_statement` then it can only be
+    // in one of a few places, none of which are particularly meaningful, so we move the
+    // comment to lead the whole `for_statement`
     //
     // ```r
-    // while (a) # comment
-    // {}
+    // for # comment
+    // (i in 1:5) {
+    // }
     // ```
-    place_leading_or_dangling_body_comment(body, comment)
+    //
+    // ```r
+    // for ( # comment
+    // i in 1:5) {
+    // }
+    // ```
+    //
+    // ```r
+    // for (i # comment
+    // in 1:5) {
+    // }
+    // ```
+    //
+    // ```r
+    // for (i in # comment
+    // 1:5) {
+    // }
+    // ```
+    //
+    // ```r
+    // for (i in
+    // # comment
+    // 1:5) {
+    // }
+    // ```
+    //
+    // ```r
+    // for (i in 1:5 # comment
+    // ) {
+    // }
+    // ```
+    CommentPlacement::leading(for_statement.into_syntax(), comment)
+}
+
+fn handle_while_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
+    let Some(while_statement) = RWhileStatement::cast_ref(comment.enclosing_node()) else {
+        return CommentPlacement::Default(comment);
+    };
+
+    // If the following node is the `body`, we want to lead the first element of the body.
+    // But we only want to do this if we are past the `)` of the loop sequence, so we have
+    // to check that the following token isn't `)` too.
+    //
+    //
+    // ```r
+    // while (condition) # dangles {}
+    //   {
+    //   }
+    // ```
+    //
+    // ```r
+    // while (condition) # leads `a`
+    // {
+    //   a
+    // }
+    // ```
+    //
+    // Particularly important for prepping for autobracing here
+    //
+    // ```r
+    // while (condition) # leads `a`
+    //   a
+    // ```
+    //
+    // This is consistent to when there are already braces there.
+    //
+    // ```r
+    // while (condition) { # leads `a`
+    //   a
+    // }
+    // ```
+    //
+    // Here the following node is the `body`, but the following token is `)`. We want
+    // to avoid stealing this comment.
+    //
+    // ```r
+    // while (condition # comment
+    // ) {
+    // }
+    // ```
+    if let Ok(body) = while_statement.body() {
+        if let Some(following) = comment.following_node() {
+            if let Some(following_token) = comment.following_token() {
+                if body.syntax() == following && following_token.kind() != RSyntaxKind::R_PAREN {
+                    return place_leading_or_dangling_body_comment(body, comment);
+                }
+            }
+        }
+    }
+
+    // Otherwise if the comment is "enclosed" by the `while_statement` then it can only be
+    // in one of a few places, none of which are particularly meaningful, so we move the
+    // comment to lead the whole `while_statement`
+    //
+    // ```r
+    // while # comment
+    // (condition) {
+    // }
+    // ```
+    //
+    // ```r
+    // while ( # comment
+    // condition) {
+    // }
+    // ```
+    //
+    // ```r
+    // while (
+    // # comment
+    // condition) {
+    // }
+    // ```
+    //
+    // ```r
+    // while (condition # comment
+    // ) {
+    // }
+    // ```
+    CommentPlacement::leading(while_statement.into_syntax(), comment)
 }
 
 fn handle_repeat_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
-    if !matches!(
-        comment.enclosing_node().kind(),
-        RSyntaxKind::R_REPEAT_STATEMENT
-    ) {
+    let Some(repeat_statement) = RRepeatStatement::cast_ref(comment.enclosing_node()) else {
         return CommentPlacement::Default(comment);
     };
 
-    // Repeat statements have a `repeat` token and a `body` field, and
-    // only the `body` can be an `AnyRExpression`.
-    let Some(body) = comment.following_node().and_then(AnyRExpression::cast_ref) else {
-        return CommentPlacement::Default(comment);
-    };
-
-    // Handle cases like:
+    // If the comment is "enclosed" by the `repeat_statement` then it can only be
+    // in one of a few places, all of which should move the comment onto the first
+    // element of the `body`
     //
     // ```r
-    // repeat # comment
-    // {}
+    // repeat # dangles {}
+    // {
+    // }
     // ```
-    place_leading_or_dangling_body_comment(body, comment)
+    //
+    // ```r
+    // repeat
+    // # dangles {}
+    // {
+    // }
+    // ```
+    //
+    // ```r
+    // repeat # leads `a`
+    // {
+    //   a
+    // }
+    // ```
+    //
+    // Particularly important for prepping for autobracing here
+    //
+    // ```r
+    // repeat # leads `a`
+    //   a
+    // ```
+    //
+    // This is consistent to when there are already braces there.
+    //
+    // ```r
+    // repeat { # leads `a`
+    //   a
+    // }
+    // ```
+    if let Ok(body) = repeat_statement.body() {
+        return place_leading_or_dangling_body_comment(body, comment);
+    }
+
+    // We don't expect to ever fall through to here, but if we do for some unknown reason
+    // then we make the comment lead the whole `repeat_statement` to be consistent with
+    // `for_statement` and `while_statement`
+    CommentPlacement::leading(repeat_statement.into_syntax(), comment)
 }
 
 fn handle_function_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<RLanguage> {
-    if !matches!(
-        comment.enclosing_node().kind(),
-        RSyntaxKind::R_FUNCTION_DEFINITION
-    ) {
+    let Some(function_definition) = RFunctionDefinition::cast_ref(comment.enclosing_node()) else {
         return CommentPlacement::Default(comment);
     };
 
-    // Function definitions have `name`, `parameters`, and `body` fields, and
-    // only the `body` can be an `AnyRExpression`.
-    let Some(body) = comment.following_node().and_then(AnyRExpression::cast_ref) else {
-        return CommentPlacement::Default(comment);
+    // If the following node is the `parameters`, we make the comment lead the whole
+    // `function_definition` node
+    //
+    // ```r
+    // function # becomes leading on everything
+    // () a
+    // ```
+    //
+    // ```r
+    // function
+    // # becomes leading on everything
+    // () a
+    // ```
+    if let Ok(parameters) = function_definition.parameters() {
+        if let Some(following) = comment.following_node() {
+            if parameters.syntax() == following {
+                return CommentPlacement::leading(function_definition.into_syntax(), comment);
+            }
+        };
     };
 
-    place_leading_or_dangling_body_comment(body, comment)
+    // If the following node is the `body`, we make the comment lead the first node of
+    // the `body`.
+    //
+    // ```r
+    // function() # becomes leading on `a`
+    //   a
+    // ```
+    //
+    // ```r
+    // function() # becomes leading on `a`
+    // {
+    //   a
+    // }
+    // ```
+    //
+    // This is consistent with what happens when the comment is already after an opening
+    // `{`
+    //
+    // ```r
+    // function() { # becomes leading on `a`
+    //   a
+    // }
+    // ```
+    if let Ok(body) = function_definition.body() {
+        if let Some(following) = comment.following_node() {
+            if body.syntax() == following {
+                return place_leading_or_dangling_body_comment(body, comment);
+            }
+        };
+    };
+
+    CommentPlacement::Default(comment)
 }
 
 fn handle_if_statement_comment(
