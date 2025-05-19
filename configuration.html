@@ -72,7 +72,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-018089954d508eae8a473f0b7f0491f0.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-5a24ce54f527ad539914d6ccb7fbdf03.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-88151eb52ff9074a1925a7d2bfeea723.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -102,7 +102,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 
 
-<link rel="stylesheet" href="styles.css">
 </head>
 
 <body class="nav-sidebar floating nav-fixed">
@@ -296,14 +295,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="configuration-recommendations" class="level2">
 <h2 class="anchored" data-anchor-id="configuration-recommendations">Configuration recommendations</h2>
-<p>For collaborative projects, we recommend creating an <code>air.toml</code> and placing it at your project root even if you plan to use the default Air settings. This has a number of benefits:</p>
+<p>For collaborative projects, we recommend creating an <code>air.toml</code> and placing it at your project root even if you plan to use the default Air settings. The easiest way to do this is by running <a href="https://usethis.r-lib.org/dev/reference/use_air.html"><code>usethis::use_air()</code></a> (note that this currently requires the development version of usethis).</p>
+<p>The existence of an <code>air.toml</code> has a number of benefits:</p>
 <ul>
 <li><p>It stops Air from using user level editor settings. When an <code>air.toml</code> is not present, Air respects some user level editor settings, such as <code>editor.tabWidth</code> in VS Code or Positron. The presence of an <code>air.toml</code> (even an empty one) disables this, instead pulling all settings from the configuration file. This ensures that settings are the same across team members, code editors, and in CI.</p></li>
 <li><p>It stops <a href="#configuration-discovery">configuration discovery</a> from extending outside your project. Without an <code>air.toml</code> at the project root, Air might discover your local <code>~/packages/air.toml</code> as the configuration file to use for the <code>~/packages/dplyr</code> project. By adding <code>~/packages/dplyr/air.toml</code>, you prevent configuration discovery from looking “above” <code>~/packages/dplyr</code>, again ensuring consistent settings across team members.</p></li>
 <li><p>It serves as a signal to others that your project is using Air.</p></li>
 </ul>
 <p>If you do plan to just use the defaults, the <code>air.toml</code> can be completely empty. The important thing is that it exists.</p>
-<p>If you’re happy with Air’s defaults (or your IDE settings, see section on synchronization) and don’t plan for your project to ever leave your computer, you likely don’t need an <code>air.toml</code>.</p>
+<p>If you’re happy with Air’s defaults (or your IDE settings, see <a href="#configuration-settings-synchronization">synchronization</a>) and don’t plan for your project to ever leave your computer, you likely don’t need an <code>air.toml</code>.</p>
 </section>
 <section id="configuration-discovery" class="level2">
 <h2 class="anchored" data-anchor-id="configuration-discovery">Configuration discovery</h2>

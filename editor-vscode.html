@@ -72,7 +72,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-018089954d508eae8a473f0b7f0491f0.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-5a24ce54f527ad539914d6ccb7fbdf03.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-88151eb52ff9074a1925a7d2bfeea723.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -102,7 +102,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 
 
-<link rel="stylesheet" href="styles.css">
 </head>
 
 <body class="nav-sidebar floating nav-fixed">
@@ -240,15 +239,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#installation" id="toc-installation" class="nav-link active" data-scroll-target="#installation">Installation</a></li>
+  <li><a href="#installation" id="toc-installation" class="nav-link active" data-scroll-target="#installation">Installation</a>
+  <ul class="collapse">
+  <li><a href="#user-vs-workspace-settings" id="toc-user-vs-workspace-settings" class="nav-link" data-scroll-target="#user-vs-workspace-settings">User vs Workspace settings</a></li>
+  </ul></li>
   <li><a href="#features" id="toc-features" class="nav-link" data-scroll-target="#features">Features</a>
   <ul class="collapse">
-  <li><a href="#format-on-save" id="toc-format-on-save" class="nav-link" data-scroll-target="#format-on-save">Format on save</a></li>
+  <li><a href="#editor-vs-code-format-on-save" id="toc-editor-vs-code-format-on-save" class="nav-link" data-scroll-target="#editor-vs-code-format-on-save">Format on save</a></li>
   <li><a href="#format-selection" id="toc-format-selection" class="nav-link" data-scroll-target="#format-selection">Format selection</a></li>
   <li><a href="#format-workspace-folder" id="toc-format-workspace-folder" class="nav-link" data-scroll-target="#format-workspace-folder">Format workspace folder</a></li>
   <li><a href="#quarto" id="toc-quarto" class="nav-link" data-scroll-target="#quarto">Quarto</a>
   <ul class="collapse">
-  <li><a href="#format-on-save-1" id="toc-format-on-save-1" class="nav-link" data-scroll-target="#format-on-save-1">Format on save</a></li>
+  <li><a href="#format-on-save" id="toc-format-on-save" class="nav-link" data-scroll-target="#format-on-save">Format on save</a></li>
   <li><a href="#format-cell" id="toc-format-cell" class="nav-link" data-scroll-target="#format-cell">Format cell</a></li>
   </ul></li>
   <li><a href="#configuration-autocompletion-and-validation" id="toc-configuration-autocompletion-and-validation" class="nav-link" data-scroll-target="#configuration-autocompletion-and-validation">Configuration autocompletion and validation</a></li>
@@ -282,11 +284,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="installation" class="level1">
 <h1>Installation</h1>
 <p>Air is available <a href="https://marketplace.visualstudio.com/items?itemName=Posit.air-vscode">as an Extension</a> for both VS Code and Positron. The extension comes pre-bundled with an Air binary, so you don’t need anything else to get going! The Air extension is hosted in the VS Code Marketplace and on OpenVSX.</p>
+<section id="user-vs-workspace-settings" class="level2">
+<h2 class="anchored" data-anchor-id="user-vs-workspace-settings">User vs Workspace settings</h2>
+<p>VS Code and Positron give you the ability to edit settings at a <em>user</em> level and at a <em>workspace</em> level (i.e.&nbsp;for just the current project you are working on). To enable some Air features, like <a href="#editor-vs-code-format-on-save">Format on Save</a>, you’ll need to adjust settings in either your user or workspace level <code>settings.json</code> file. We generally recommend modifying workspace level settings for two reasons:</p>
+<ul>
+<li><p>Workspace level settings exist inside your workspace folder at <code>.vscode/settings.json</code> and are checked in to your version control system. This means that your collaborators will get those settings automatically when they check out your project. User level settings are not checked in to version control.</p></li>
+<li><p>User level settings are automatically applied for <em>all</em> projects that you open. While this sounds nice, if you open an older project (or a project you don’t own) that doesn’t use Air, then you’ll have to remember to turn off your user level Air settings before committing to that project, otherwise you may create a large amount of format related diffs that the project may not want.</p></li>
+</ul>
+<p>The easiest way to set up a workspace level <code>settings.json</code> with the recommended settings is by running <a href="https://usethis.r-lib.org/dev/reference/use_air.html"><code>usethis::use_air()</code></a> (note that this currently requires the development version of usethis).</p>
+<p>Alternatively, to open your <code>settings.json</code> file from the Command Palette (<code>Cmd + P</code> on Mac/Linux, <code>Ctrl + P</code> on Windows):</p>
+<ul>
+<li>Run <code>Preferences: Open Workspace Settings (JSON)</code> to modify workspace specific settings (recommended).</li>
+<li>Run <code>Preferences: Open User Settings (JSON)</code> to modify global user settings.</li>
+</ul>
+</section>
 </section>
 <section id="features" class="level1">
 <h1>Features</h1>
-<section id="format-on-save" class="level2">
-<h2 class="anchored" data-anchor-id="format-on-save">Format on save</h2>
+<section id="editor-vs-code-format-on-save" class="level2">
+<h2 class="anchored" data-anchor-id="editor-vs-code-format-on-save">Format on save</h2>
 <p>Once you have the extension installed, turn on Format on Save for R documents by opening your <code>settings.json</code> and adding:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"[r]"</span><span class="fu">:</span> <span class="fu">{</span></span>
@@ -309,8 +325,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="quarto" class="level2">
 <h2 class="anchored" data-anchor-id="quarto">Quarto</h2>
 <p>Quarto can automatically invoke Air on R code cells when the <a href="https://marketplace.visualstudio.com/items?itemName=quarto.quarto">Quarto extension</a> is active.</p>
-<section id="format-on-save-1" class="level3">
-<h3 class="anchored" data-anchor-id="format-on-save-1">Format on save</h3>
+<section id="format-on-save" class="level3">
+<h3 class="anchored" data-anchor-id="format-on-save">Format on save</h3>
 <p>To format all R code cells on save, set this in your <code>settings.json</code>:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"[quarto]"</span><span class="fu">:</span> <span class="fu">{</span></span>
