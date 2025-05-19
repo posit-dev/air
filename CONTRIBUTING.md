@@ -40,6 +40,8 @@ When you want to cut a release of the Air binary and Air VS Code / OpenVSX exten
 
     -   It runs on `workflow_dispatch`, and automatically pulls in the latest release binary of Air from the binary release workflow above. It will release to both the VS Code marketplace and the OpenVSX marketplace.
 
+-   Bump the version of Air recorded in Positron's [`product.json`](https://github.com/posit-dev/positron/blob/main/product.json).
+
 -   Merge the release branch
 
     -   There is no need to bump to an intermediate "dev version" after a release.
