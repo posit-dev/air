@@ -27,7 +27,9 @@ default-exclude = true
 ## Configuration recommendations
 
 For collaborative projects, we recommend creating an `air.toml` and placing it at your project root even if you plan to use the default Air settings.
-This has a number of benefits:
+The easiest way to do this is by running [`usethis::use_air()`](https://github.com/r-lib/usethis) (note that this currently requires the development version of usethis).
+
+The existence of an `air.toml` has a number of benefits:
 
 -   It stops Air from using user level editor settings.
     When an `air.toml` is not present, Air respects some user level editor settings, such as `editor.tabWidth` in VS Code or Positron.
@@ -43,10 +45,7 @@ This has a number of benefits:
 If you do plan to just use the defaults, the `air.toml` can be completely empty.
 The important thing is that it exists.
 
-The easiest way to configure a project to use Air with the recommended settings is to use `use_air()` from [{usethis}](https://github.com/r-lib/usethis).
-Note that you currently need the development of the usethis package version installed.
-
-If you're happy with Air's defaults (or your IDE settings, see section on synchronization) and don't plan for your project to ever leave your computer, you likely don't need an `air.toml`.
+If you're happy with Air's defaults (or your IDE settings, see [synchronization](#configuration-settings-synchronization)) and don't plan for your project to ever leave your computer, you likely don't need an `air.toml`.
 
 ## Configuration discovery
 
