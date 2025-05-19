@@ -24,7 +24,7 @@ Formatters do not change the meaning of code; instead they ensure that whitespac
       geom_point()
     ```
 
-    As well as *expanded* (i.e. vertically laid out) function calls:
+    as well as *expanded* (i.e. vertically laid out) function calls:
 
     ``` r
     list(

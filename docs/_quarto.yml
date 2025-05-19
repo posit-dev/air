@@ -45,7 +45,6 @@ format:
     theme:
       - cosmo
       - custom.scss
-    css: styles.css
     toc: true
 
 editor: visual
