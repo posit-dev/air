@@ -14,9 +14,29 @@ Air is available [as an Extension](https://marketplace.visualstudio.com/items?it
 The extension comes pre-bundled with an Air binary, so you don't need anything else to get going!
 The Air extension is hosted in the VS Code Marketplace and on OpenVSX.
 
+## User vs Workspace settings
+
+VS Code and Positron give you the ability to edit settings at a *user* level and at a *workspace* level (i.e. for just the current project you are working on).
+To enable some Air features, like [Format on Save](#editor-vs-code-format-on-save), you'll need to adjust settings in either your user or workspace level `settings.json` file.
+We generally recommend modifying workspace level settings for two reasons:
+
+-   Workspace level settings exist inside your workspace folder at `.vscode/settings.json` and are checked in to your version control system.
+    This means that your collaborators will get those settings automatically when they check out your project.
+    User level settings are not checked in to version control.
+
+-   User level settings are automatically applied for *all* projects that you open.
+    While this sounds nice, if you open an older project (or a project you don't own) that doesn't use Air, then you'll have to remember to turn off your user level Air settings before committing to that project, otherwise you may create a large amount of format related diffs that the project may not want.
+
+The easiest way to set up a workspace level `settings.json` with the recommended settings is by running [`usethis::use_air()`](https://usethis.r-lib.org/dev/reference/use_air.html) (note that this currently requires the development version of usethis).
+
+Alternatively, to open your `settings.json` file from the Command Palette (`Cmd + P` on Mac/Linux, `Ctrl + P` on Windows):
+
+-   Run `Preferences: Open Workspace Settings (JSON)` to modify workspace specific settings (recommended).
+-   Run `Preferences: Open User Settings (JSON)` to modify global user settings.
+
 # Features
 
-## Format on save
+## Format on save {#editor-vs-code-format-on-save}
 
 Once you have the extension installed, turn on Format on Save for R documents by opening your `settings.json` and adding:
 
@@ -30,12 +50,6 @@ Once you have the extension installed, turn on Format on Save for R documents by
 
 You should now be able to simply open an R document, save it, and have the entire document formatted by Air.
 You can also explicitly call the command `Format Document` if you'd like to control this manually.
-
-To open your `settings.json` file, run one of the following from the Command Palette:
-
--   Run `Preferences: Open User Settings (JSON)` to modify global user settings.
--   Run `Preferences: Open Workspace Settings (JSON)` to modify project specific settings.
-    You may prefer this instead of setting the user level setting if you drop in on multiple projects, but not all of them use Air. Similarly, if you work on a project with collaborators, we [recommend](configuration.qmd "Configuration recommendations") that you set project specific settings and check in these project specific settings to your repository to ensure that every collaborator is using the same formatting settings.
 
 <!--# Come back and add video -->
 
