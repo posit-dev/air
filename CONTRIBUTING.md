@@ -14,6 +14,8 @@ When you want to cut a release of the Air binary and Air VS Code / OpenVSX exten
 
     -   Polish `editors/code/CHANGELOG.md`, bump the version and add a new `Development version` header.
 
+        -   Mention that the new version of the binary is shipped with the extension.
+
     -   In `crates/air/Cargo.toml`, bump the version.
 
     -   Run `cargo check` to sync `Cargo.lock`.
