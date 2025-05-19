@@ -7,6 +7,9 @@
 
 ## Development version
 
+
+## 0.12.0
+
 - Fixed an issue that could cause Positron's Test Explorer to infinitely loop through opening and closing the same document (#320).
 
 - New `Air: Format Workspace Folder` command to format an entire project (similar to running `air format {folder}` at the command line). Combined with `usethis::use_air()`, this is the easiest way to transition an existing project to use Air (#312)!
