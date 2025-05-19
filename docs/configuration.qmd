@@ -27,7 +27,7 @@ default-exclude = true
 ## Configuration recommendations
 
 For collaborative projects, we recommend creating an `air.toml` and placing it at your project root even if you plan to use the default Air settings.
-The easiest way to do this is by running [`usethis::use_air()`](https://github.com/r-lib/usethis) (note that this currently requires the development version of usethis).
+The easiest way to do this is by running [`usethis::use_air()`](https://usethis.r-lib.org/dev/reference/use_air.html) (note that this currently requires the development version of usethis).
 
 The existence of an `air.toml` has a number of benefits:
 
