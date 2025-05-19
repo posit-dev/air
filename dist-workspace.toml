@@ -49,6 +49,11 @@ install-updater = false
 # of which actually rely on the specific Linux version.
 global = "ubuntu-latest"
 
+[dist.github-custom-runners.x86_64-apple-darwin]
+# Use Intel Mac runner to build Intel binary.
+# This is the dist default but we want to explicitly pin it.
+runner = "macos-13"
+
 [dist.github-custom-runners.aarch64-apple-darwin]
 # Use ARM Mac runner to build ARM binary (not strictly required, but nice).
 # dist uses `macos-13` (Intel) by default and cross-compiles to ARM.
@@ -70,8 +75,13 @@ container = { image = "quay.io/pypa/manylinux_2_28_x86_64", host = "x86_64-unkno
 runner = "ubuntu-latest"
 container = { image = "quay.io/pypa/manylinux_2_28_x86_64", host = "x86_64-unknown-linux-musl" }
 
+[dist.github-custom-runners.x86_64-pc-windows-msvc]
+# Use 2022 Windows runner for x86 Windows.
+# dist uses windows-2019 by default, but that is deprecated.
+runner = "windows-2022"
+
 [dist.github-custom-runners.aarch64-pc-windows-msvc]
-# This setup is nearly identical to specifying nothing, but dist defaults to the oldest possible
+# This setup is nearly identical to the defaults, but dist defaults to the oldest possible
 # ubuntu runner, and is sometimes slow to update when they are EOL-ed by GitHub. We use a container,
 # so we can use latest and not have to worry about their EOL.
 # https://github.com/axodotdev/cargo-dist/blob/c8ba950c63f9c38c77782912ec6cdb6807bd0fbd/cargo-dist/src/backend/ci/github.rs#L678-L688
