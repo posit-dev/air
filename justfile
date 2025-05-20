@@ -32,3 +32,9 @@ test-quick:
 new-crate name:
   cargo new --lib crates/{{snakecase(name)}}
   cargo run -p xtask_codegen -- new-crate --name={{snakecase(name)}}
+
+install-vscode:
+  cd editors/code && rm -rf *.vsix && vsce package && code --install-extension *.vsix
+
+install-positron:
+  cd editors/code && rm -rf *.vsix && vsce package && positron --install-extension *.vsix
