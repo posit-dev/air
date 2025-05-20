@@ -5,18 +5,15 @@ info: r/if_statement.R
 # Input
 
 ```R
-if (a) 1
-if (a) 1 else 2
-if (a) 1 else if (b) 2 else 3
-
-# Spacing test
-if(a)1 else if(b)2 else 3
-
-# Line break test
-if (a_really_really_long_condition_here_that_is_allowed_to_break_onto_the_next_line) 1 else 2
+# ---------------------------------------------------------------------------
+# Comments
 
 if (a) # becomes leading on `1 + 1`
 {
+  1 + 1
+}
+
+if (a) { # becomes leading on `1 + 1`
   1 + 1
 }
 
@@ -32,6 +29,10 @@ if (a) # becomes dangling on `{}`
 if (a) # becomes leading on `TRUE`
   TRUE
 
+if 
+# becomes leading on `a`
+(a) TRUE
+
 if (
   a
   # becomes trailing on `a`
@@ -43,6 +44,255 @@ if (a # becomes trailing on `a`
 ) {
   TRUE
 }
+
+{
+  if (condition) this  # becomes leading on `this`
+  else that
+}
+
+{
+  if (condition) this
+  # becomes leading on `that`
+  else that
+}
+
+# With `{ this }`, it's nice that this becomes leading on `this`
+{
+  if (condition) { this } # becomes leading on `this`
+  else that
+}
+
+# With `{\n  this\n}`, it's arguable whether this should lead
+# `this` or lead `that`, but we keep things simple here to have
+# one code path that also handles the `{ this }` case.
+{
+  if (condition) {
+    this
+  } # becomes leading on `this`
+  else that
+}
+
+{
+  if (condition) {
+
+  } # becomes dangling on `{}`
+  else that
+}
+
+{
+  if (condition) {
+    this
+  }
+  # becomes leading on `that`
+  else that
+}
+
+{
+  if (condition) {
+    this
+  }
+  # becomes leading on `that`
+  else {
+    that
+  }
+}
+
+{
+  if (condition) {
+    this
+  }
+  # becomes dangling on `{}`
+  else {
+
+  }
+}
+
+{
+  if (condition) {
+    this
+  }
+  # becomes leading on `that`
+  else if (condition) {
+    that
+  }
+}
+
+{
+  if (condition) {
+    this
+  }
+  # becomes leading on `that`
+  else if (condition) that
+}
+
+{
+  if (condition) {
+    this
+  }
+  # becomes dangling on `{}`
+  else if (condition) {}
+}
+
+{
+  if (condition) {
+    this
+  }
+  # becomes leading on `that`
+  # becomes leading on `that` part 2
+  else if (condition) {
+    that
+  }
+}
+
+{
+  if (condition) a
+  else # becomes leading on `b`
+    b
+}
+
+{
+  if (condition) a
+  else # becomes leading on `b`
+    {
+      b
+    }
+}
+
+if (condition) {
+  a
+} else if (condition) {
+  b
+} else # becomes leading on `c`
+{ 
+  c
+}
+
+if (condition) # becomes leading on `a`
+{
+  a
+} else if (condition) # becomes leading on `b`
+{
+  b
+} else # becomes leading on `c`
+{ 
+  c
+}
+
+# In general, greatly prefer creating leading comments on `a` rather than
+# creating trailing comments on `a`, as it is much easier to handle from
+# an idempotence point of view.
+{
+  if (condition) {
+    if (condition) a
+  } # becomes leading on `a`'s if statement
+  else {
+    b
+  }
+}
+
+{
+  if (condition) a # becomes leading on `a`
+  else if (condition) b
+}
+
+{
+  if (condition) { a } # becomes leading on `a`
+  else if (condition) b
+}
+
+{
+  if (condition) { 
+    a 
+  } # becomes leading on `a`
+  else if (condition) b
+}
+
+# ---------------------------------------------------------------------------
+# Comments - these comments aren't "enclosed" by the if statement, so they
+# our outside our if statement comment handling hooks. Avoid the urge to
+# try and attach these comments to the last node in the if statement, as
+# that causes verbatim printing (with `fmt: skip`) to break, because biome's
+# formatter expects that the trailing comment trails the outermost code element
+# (here, the whole if statement, not the last node of it). We have `fmt: skip`
+# related test elsewhere to ensure we don't break this.
+
+# These stay where they are, short one liner if statements in value position
+# don't expand
+x <- if (condition) a # becomes trailing on if statement
+x <- if (condition) a else b # becomes trailing on if statement
+
+# These expand from being at top level in effect position
+if (condition) a # becomes trailing on if statement
+if (condition) a else b # becomes trailing on if statement
+
+if (condition) { a } # becomes trailing on if statement
+if (condition) { a } else { b } # becomes trailing on if statement
+
+if (condition) a_really_really_long_name_here_that_forces_a_break_because_it_is_so_long # becomes trailing on if statement
+if (condition) { a_really_really_long_name_here_that_forces_a_break_because_it_is_so_long } # becomes trailing on if statement
+
+if (condition) a_really_really_long_name_here else another_really_really_long_name # becomes trailing on if statement
+if (condition) a_really_really_long_name_here else { another_really_really_long_name } # becomes trailing on if statement
+
+if (condition) a_really_really_long_name_here else if (condition2) another_really_really_long_name # becomes trailing on outer if statement
+if (condition) a_really_really_long_name_here else if (condition2) { another_really_really_long_name } # becomes trailing on outer if statement
+
+if (condition) a_really_really_long_name_here else if (condition2) another_really_really_long_name else that_name # becomes trailing on outer if statement
+if (condition) a_really_really_long_name_here else if (condition2) another_really_really_long_name else { that_name } # becomes trailing on outer if statement
+
+if (condition)
+  a # becomes trailing on if statement
+
+if (condition) # becomes leading on `a`
+  a # becomes trailing on if statement
+
+if (condition) {
+  a
+} # becomes trailing on if statement
+
+# It would be nice to have consistent behavior, but it's basically impossible.
+# Comment on `a` is enclosed by the if statement so our hooks handle it, but
+# comment on `b` is not!
+{
+  if (condition) a # becomes leading on `a`
+  else           b # becomes trailing on if statement
+}
+
+{
+  if (condition) a
+  else           b # becomes trailing on if statement
+}
+
+{
+  if (condition) a
+  else {
+    b
+  } # becomes trailing on if statement
+}
+
+{
+  if (condition) a
+  else           b
+  # Floating comment after the if statement
+}
+
+# Nesting in `consequence`
+x <- if (condition) if (condition2) this # becomes trailing on if statement
+x <- if (condition) if (condition2) if (condition3) this # becomes trailing on if statement
+x <- if (condition) if (condition2) this else that # becomes trailing on if statement
+if (condition) if (condition2) this # becomes trailing on if statement
+if (condition) if (condition2) if (condition3) this # becomes trailing on if statement
+if (condition) if (condition2) this else that # becomes trailing on if statement
+
+# Nesting in `alternative`
+x <- if (condition) this else that # stays flat, one liner if statement in value position
+if (condition) this else that # becomes trailing on if statement
+if (condition) this else if (condition2) that # becomes trailing on if statement
+if (condition) this else if (condition2) this2 else that # becomes trailing on if statement
+if (condition) this else if (condition2) this2 else if (condition3) that # becomes trailing on if statement
+
+# ---------------------------------------------------------------------------
+# Special
 
 # Breaks, but the `condition` itself fits and is not expanded
 if (this || this || this || this || this || this || this || this || this || this) {
@@ -57,6 +307,118 @@ if (this || this || this || this || this || this || this || this || this || this
   2
 }
 
+# ---------------------------------------------------------------------------
+# Auto bracing
+
+# Not allowed on one line without braces (effect position)
+if (a) 1
+if (a) 1 else 2
+{
+  if (a) 1
+  1 + 1
+}
+
+# Allowed on one line without braces (value position)
+x = if (a) 1
+x <- if (a) 1
+x <<- if (a) 1
+x = if (a) 1 else 2
+x <- if (a) 1 else 2
+x <<- if (a) 1 else 2
+{
+  if (a) 1
+}
+
+# Allowed on one line without braces (value position)
+fn(if (a) 1)
+fn(if (a) 1, if (a) 1 else 2)
+fn(x = if (a) 1)
+fn(if (a) 1, x = if (a) 1 else 2)
+# Too complex, forces braces
+fn(if (a) 1 else if (b) 2 else 3)
+# Breaks argument list, but not if/else
+fn(if (a) 1, x = if (a) 1 else 2, this_is_really_really_long_and_breaks_the_group_here)
+
+# Allowed on one line without braces (value position)
+function(x = if (a) 1) {}
+function(x = if (a) 1, y = if (a) 1 else 2) {}
+# Too complex, forces braces
+function(x = if (a) 1 else if (b) 2 else 3) {}
+# Breaks parameter list, but not if/else
+function(x = if (a) 1, y = if (a) 1 else 2, this_is_really_really_long_and_breaks_the_group_here) {}
+
+# The group breaking forces braces
+x <- if (something_really_really_long_here_something_really_really_long_here) 1 else 2
+x <- if (a) something_really_really_long_here else and_something_really_really_long_here
+
+# The leading newline forces braces
+x <- if (a)
+  1
+x <- if (a) 1 else
+  2
+
+# The leading newline before `else` forces braces
+{
+  if (a) 1
+  else 2
+}
+
+# The nested if in `consequence` forces braces around the outer if
+x <- if (a) if (b) 1
+x <- if (a) if (b) if (c) 1
+x <- if (a) if (b) 1 else 2
+
+# We don't force the inner if inside the `consequence` to have braces as
+# well, because a user could have writen a short if in the inner branch to
+# begin with (like the second example here) and that would have been valid.
+x <- if (a) if (b) 1
+x <- if (a) {
+  if (b) 1
+}
+
+# The nested if in `alternative` forces braces
+x <- if (a) 1 else if (b) 2
+x <- if (a) 1 else if (b) 2 else 3
+
+# The braces on one piece force braces
+x <- if (a) {1} else 2
+x <- if (a) {1} else {2}
+
+# Seen in dplyr, don't autobrace (value position)
+map(xs, function(x) if (is_thing(x)) "this" else "that")
+
+# Seen in dplyr, don't autobrace (value position)
+map(xs, function(x) {
+  if (is_thing(x)) "this" else "that"
+})
+
+# Seen in dplyr, don't autobrace (value position)
+x <- x %||% if (condition) "this" else "that"
+
+# Seen in dplyr, don't autobrace (value position)
+ntext <- function(n, msg1, msg2) {
+  if (n == 1) msg1 else msg2
+}
+
+# We want side-effects like `return()` inside if statements
+# to expand (effect position)
+fn <- function() {
+  if (condition) return(1)
+  2
+}
+
+# We want side-effects like `stop()` inside if statements
+# to expand (effect position)
+fn <- function() {
+  if (condition) stop("oh no!")
+  2
+}
+
+# We don't prevent value positioned if statements that are actually
+# side effects from expanding, i.e. we don't try and fix up poor logic
+fn <- function() {
+  if (condition) stop("oh no!")
+}
 ```
 
 
@@ -76,18 +438,13 @@ Skip: None
 -----
 
 ```R
-if (a) 1
-if (a) 1 else 2
-if (a) 1 else if (b) 2 else 3
+# ---------------------------------------------------------------------------
+# Comments
 
-# Spacing test
-if (a) 1 else if (b) 2 else 3
-
-# Line break test
-if (
-  a_really_really_long_condition_here_that_is_allowed_to_break_onto_the_next_line
-)
-  1 else 2
+if (a) {
+  # becomes leading on `1 + 1`
+  1 + 1
+}
 
 if (a) {
   # becomes leading on `1 + 1`
@@ -103,9 +460,17 @@ if (a) {
   # inner comment but empty `{}`
 }
 
-if (a)
+if (a) {
   # becomes leading on `TRUE`
   TRUE
+}
+
+if (
+  # becomes leading on `a`
+  a
+) {
+  TRUE
+}
 
 if (
   a
@@ -119,6 +484,374 @@ if (
 ) {
   TRUE
 }
+
+{
+  if (condition) {
+    # becomes leading on `this`
+    this
+  } else {
+    that
+  }
+}
+
+{
+  if (condition) {
+    this
+  } else {
+    # becomes leading on `that`
+    that
+  }
+}
+
+# With `{ this }`, it's nice that this becomes leading on `this`
+{
+  if (condition) {
+    # becomes leading on `this`
+    this
+  } else {
+    that
+  }
+}
+
+# With `{\n  this\n}`, it's arguable whether this should lead
+# `this` or lead `that`, but we keep things simple here to have
+# one code path that also handles the `{ this }` case.
+{
+  if (condition) {
+    # becomes leading on `this`
+    this
+  } else {
+    that
+  }
+}
+
+{
+  if (condition) {
+    # becomes dangling on `{}`
+  } else {
+    that
+  }
+}
+
+{
+  if (condition) {
+    this
+  } else {
+    # becomes leading on `that`
+    that
+  }
+}
+
+{
+  if (condition) {
+    this
+  } else {
+    # becomes leading on `that`
+    that
+  }
+}
+
+{
+  if (condition) {
+    this
+  } else {
+    # becomes dangling on `{}`
+  }
+}
+
+{
+  if (condition) {
+    this
+  } else if (condition) {
+    # becomes leading on `that`
+    that
+  }
+}
+
+{
+  if (condition) {
+    this
+  } else if (condition) {
+    # becomes leading on `that`
+    that
+  }
+}
+
+{
+  if (condition) {
+    this
+  } else if (condition) {
+    # becomes dangling on `{}`
+  }
+}
+
+{
+  if (condition) {
+    this
+  } else if (condition) {
+    # becomes leading on `that`
+    # becomes leading on `that` part 2
+    that
+  }
+}
+
+{
+  if (condition) {
+    a
+  } else {
+    # becomes leading on `b`
+    b
+  }
+}
+
+{
+  if (condition) {
+    a
+  } else {
+    # becomes leading on `b`
+    b
+  }
+}
+
+if (condition) {
+  a
+} else if (condition) {
+  b
+} else {
+  # becomes leading on `c`
+  c
+}
+
+if (condition) {
+  # becomes leading on `a`
+  a
+} else if (condition) {
+  # becomes leading on `b`
+  b
+} else {
+  # becomes leading on `c`
+  c
+}
+
+# In general, greatly prefer creating leading comments on `a` rather than
+# creating trailing comments on `a`, as it is much easier to handle from
+# an idempotence point of view.
+{
+  if (condition) {
+    # becomes leading on `a`'s if statement
+    if (condition) a
+  } else {
+    b
+  }
+}
+
+{
+  if (condition) {
+    # becomes leading on `a`
+    a
+  } else if (condition) {
+    b
+  }
+}
+
+{
+  if (condition) {
+    # becomes leading on `a`
+    a
+  } else if (condition) {
+    b
+  }
+}
+
+{
+  if (condition) {
+    # becomes leading on `a`
+    a
+  } else if (condition) {
+    b
+  }
+}
+
+# ---------------------------------------------------------------------------
+# Comments - these comments aren't "enclosed" by the if statement, so they
+# our outside our if statement comment handling hooks. Avoid the urge to
+# try and attach these comments to the last node in the if statement, as
+# that causes verbatim printing (with `fmt: skip`) to break, because biome's
+# formatter expects that the trailing comment trails the outermost code element
+# (here, the whole if statement, not the last node of it). We have `fmt: skip`
+# related test elsewhere to ensure we don't break this.
+
+# These stay where they are, short one liner if statements in value position
+# don't expand
+x <- if (condition) a # becomes trailing on if statement
+x <- if (condition) a else b # becomes trailing on if statement
+
+# These expand from being at top level in effect position
+if (condition) {
+  a
+} # becomes trailing on if statement
+if (condition) {
+  a
+} else {
+  b
+} # becomes trailing on if statement
+
+if (condition) {
+  a
+} # becomes trailing on if statement
+if (condition) {
+  a
+} else {
+  b
+} # becomes trailing on if statement
+
+if (condition) {
+  a_really_really_long_name_here_that_forces_a_break_because_it_is_so_long
+} # becomes trailing on if statement
+if (condition) {
+  a_really_really_long_name_here_that_forces_a_break_because_it_is_so_long
+} # becomes trailing on if statement
+
+if (condition) {
+  a_really_really_long_name_here
+} else {
+  another_really_really_long_name
+} # becomes trailing on if statement
+if (condition) {
+  a_really_really_long_name_here
+} else {
+  another_really_really_long_name
+} # becomes trailing on if statement
+
+if (condition) {
+  a_really_really_long_name_here
+} else if (condition2) {
+  another_really_really_long_name
+} # becomes trailing on outer if statement
+if (condition) {
+  a_really_really_long_name_here
+} else if (condition2) {
+  another_really_really_long_name
+} # becomes trailing on outer if statement
+
+if (condition) {
+  a_really_really_long_name_here
+} else if (condition2) {
+  another_really_really_long_name
+} else {
+  that_name
+} # becomes trailing on outer if statement
+if (condition) {
+  a_really_really_long_name_here
+} else if (condition2) {
+  another_really_really_long_name
+} else {
+  that_name
+} # becomes trailing on outer if statement
+
+if (condition) {
+  a
+} # becomes trailing on if statement
+
+if (condition) {
+  # becomes leading on `a`
+  a
+} # becomes trailing on if statement
+
+if (condition) {
+  a
+} # becomes trailing on if statement
+
+# It would be nice to have consistent behavior, but it's basically impossible.
+# Comment on `a` is enclosed by the if statement so our hooks handle it, but
+# comment on `b` is not!
+{
+  if (condition) {
+    # becomes leading on `a`
+    a
+  } else {
+    b
+  } # becomes trailing on if statement
+}
+
+{
+  if (condition) {
+    a
+  } else {
+    b
+  } # becomes trailing on if statement
+}
+
+{
+  if (condition) {
+    a
+  } else {
+    b
+  } # becomes trailing on if statement
+}
+
+{
+  if (condition) {
+    a
+  } else {
+    b
+  }
+  # Floating comment after the if statement
+}
+
+# Nesting in `consequence`
+x <- if (condition) {
+  if (condition2) this
+} # becomes trailing on if statement
+x <- if (condition) {
+  if (condition2) {
+    if (condition3) this
+  }
+} # becomes trailing on if statement
+x <- if (condition) {
+  if (condition2) this else that
+} # becomes trailing on if statement
+if (condition) {
+  if (condition2) this
+} # becomes trailing on if statement
+if (condition) {
+  if (condition2) {
+    if (condition3) this
+  }
+} # becomes trailing on if statement
+if (condition) {
+  if (condition2) this else that
+} # becomes trailing on if statement
+
+# Nesting in `alternative`
+x <- if (condition) this else that # stays flat, one liner if statement in value position
+if (condition) {
+  this
+} else {
+  that
+} # becomes trailing on if statement
+if (condition) {
+  this
+} else if (condition2) {
+  that
+} # becomes trailing on if statement
+if (condition) {
+  this
+} else if (condition2) {
+  this2
+} else {
+  that
+} # becomes trailing on if statement
+if (condition) {
+  this
+} else if (condition2) {
+  this2
+} else if (condition3) {
+  that
+} # becomes trailing on if statement
+
+# ---------------------------------------------------------------------------
+# Special
 
 # Breaks, but the `condition` itself fits and is not expanded
 if (
@@ -147,9 +880,205 @@ if (
 } else {
   2
 }
+
+# ---------------------------------------------------------------------------
+# Auto bracing
+
+# Not allowed on one line without braces (effect position)
+if (a) {
+  1
+}
+if (a) {
+  1
+} else {
+  2
+}
+{
+  if (a) {
+    1
+  }
+  1 + 1
+}
+
+# Allowed on one line without braces (value position)
+x = if (a) 1
+x <- if (a) 1
+x <<- if (a) 1
+x = if (a) 1 else 2
+x <- if (a) 1 else 2
+x <<- if (a) 1 else 2
+{
+  if (a) 1
+}
+
+# Allowed on one line without braces (value position)
+fn(if (a) 1)
+fn(if (a) 1, if (a) 1 else 2)
+fn(x = if (a) 1)
+fn(if (a) 1, x = if (a) 1 else 2)
+# Too complex, forces braces
+fn(
+  if (a) {
+    1
+  } else if (b) {
+    2
+  } else {
+    3
+  }
+)
+# Breaks argument list, but not if/else
+fn(
+  if (a) 1,
+  x = if (a) 1 else 2,
+  this_is_really_really_long_and_breaks_the_group_here
+)
+
+# Allowed on one line without braces (value position)
+function(x = if (a) 1) {
+}
+function(x = if (a) 1, y = if (a) 1 else 2) {
+}
+# Too complex, forces braces
+function(
+  x = if (a) {
+    1
+  } else if (b) {
+    2
+  } else {
+    3
+  }
+) {
+}
+# Breaks parameter list, but not if/else
+function(
+  x = if (a) 1,
+  y = if (a) 1 else 2,
+  this_is_really_really_long_and_breaks_the_group_here
+) {
+}
+
+# The group breaking forces braces
+x <- if (something_really_really_long_here_something_really_really_long_here) {
+  1
+} else {
+  2
+}
+x <- if (a) {
+  something_really_really_long_here
+} else {
+  and_something_really_really_long_here
+}
+
+# The leading newline forces braces
+x <- if (a) {
+  1
+}
+x <- if (a) {
+  1
+} else {
+  2
+}
+
+# The leading newline before `else` forces braces
+{
+  if (a) {
+    1
+  } else {
+    2
+  }
+}
+
+# The nested if in `consequence` forces braces around the outer if
+x <- if (a) {
+  if (b) 1
+}
+x <- if (a) {
+  if (b) {
+    if (c) 1
+  }
+}
+x <- if (a) {
+  if (b) 1 else 2
+}
+
+# We don't force the inner if inside the `consequence` to have braces as
+# well, because a user could have writen a short if in the inner branch to
+# begin with (like the second example here) and that would have been valid.
+x <- if (a) {
+  if (b) 1
+}
+x <- if (a) {
+  if (b) 1
+}
+
+# The nested if in `alternative` forces braces
+x <- if (a) {
+  1
+} else if (b) {
+  2
+}
+x <- if (a) {
+  1
+} else if (b) {
+  2
+} else {
+  3
+}
+
+# The braces on one piece force braces
+x <- if (a) {
+  1
+} else {
+  2
+}
+x <- if (a) {
+  1
+} else {
+  2
+}
+
+# Seen in dplyr, don't autobrace (value position)
+map(xs, function(x) if (is_thing(x)) "this" else "that")
+
+# Seen in dplyr, don't autobrace (value position)
+map(xs, function(x) {
+  if (is_thing(x)) "this" else "that"
+})
+
+# Seen in dplyr, don't autobrace (value position)
+x <- x %||% if (condition) "this" else "that"
+
+# Seen in dplyr, don't autobrace (value position)
+ntext <- function(n, msg1, msg2) {
+  if (n == 1) msg1 else msg2
+}
+
+# We want side-effects like `return()` inside if statements
+# to expand (effect position)
+fn <- function() {
+  if (condition) {
+    return(1)
+  }
+  2
+}
+
+# We want side-effects like `stop()` inside if statements
+# to expand (effect position)
+fn <- function() {
+  if (condition) {
+    stop("oh no!")
+  }
+  2
+}
+
+# We don't prevent value positioned if statements that are actually
+# side effects from expanding, i.e. we don't try and fix up poor logic
+fn <- function() {
+  if (condition) stop("oh no!")
+}
 ```
 
 # Lines exceeding max width of 80 characters
 ```
-   10:   a_really_really_long_condition_here_that_is_allowed_to_break_onto_the_next_line
+  387: x <- if (condition) this else that # stays flat, one liner if statement in value position
 ```

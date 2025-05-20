@@ -4,26 +4,24 @@ use biome_formatter::write;
 
 pub(crate) struct FormatStatementBody<'a> {
     body: &'a AnyRExpression,
-    force_space: bool,
 }
 
 impl<'a> FormatStatementBody<'a> {
     pub fn new(body: &'a AnyRExpression) -> Self {
-        Self {
-            body,
-            force_space: false,
-        }
-    }
-
-    /// For `if () 1 else if () 2` scenarios, ensures the second `if` is started
-    /// on the same line as the `else` (rather than line broken) and is
-    /// separated from the `else` by a single space
-    pub fn with_forced_space(mut self, value: bool) -> Self {
-        self.force_space = value;
-        self
+        Self { body }
     }
 }
 
+// TODO!: Repurpose this as `FormatBracedBody` for use in:
+// - For loops (unconditionally)
+// - Repeat loops (unconditionally)
+// - While loops (unconditionally)
+// - Function definitions
+//   - Includes anonymous functions
+//   - Allow 1 liner function definitions
+//   - Definitely breaks if argument list expands over multiple lines
+//   - Use `if_group_breaks(&text("{"))` to add missing `{}` if the group breaks,
+//     like if statements. Probably won't be able to use simple `FormatBracedBody`
 impl Format<RFormatContext> for FormatStatementBody<'_> {
     fn fmt(&self, f: &mut Formatter<RFormatContext>) -> FormatResult<()> {
         use AnyRExpression::*;
@@ -31,15 +29,15 @@ impl Format<RFormatContext> for FormatStatementBody<'_> {
         // We only want a single space between the construct and the statement
         // body if the body is a braced expression. The expression will handle
         // the line break as required. Otherwise, we handle the soft line
-        // indent for all other syntax.
+        // indent or space for all other syntax.
         //
-        // if (a) {}
-        //       |--| statement body
+        // for (x in xs) {}
+        //              |--| statement body
         //
-        // if (a)
+        // for (x in xs)
         //   a
         //  |--| statement body
-        if matches!(&self.body, RBracedExpressions(_)) || self.force_space {
+        if matches!(&self.body, RBracedExpressions(_)) {
             write!(f, [space(), self.body.format()])
         } else {
             write!(f, [soft_line_indent_or_space(&self.body.format())])
