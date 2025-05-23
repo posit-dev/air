@@ -137,8 +137,24 @@ export class Lsp {
 
 						const uri = vscode.Uri.parse(item.scopeUri);
 
-						const document =
-							await vscode.workspace.openTextDocument(uri);
+						// We're expecting the document to be opened. But it
+						// could have been closed in the meantime. We need to be
+						// careful not to open it again to avoid a cascading
+						// chain of events with this middleware. So we don't
+						// call `openDocument()` here, we just look for an
+						// already opened one.
+						const document = vscode.workspace.textDocuments.find(
+							(document) => document.uri === uri,
+						);
+
+						// If there was no document, it means it was closed in
+						// the mean time. Nothing we can do here so use the global
+						// value we already pulled from `next()` above.
+						// Since the document is closed the scope should not matter.
+						if (!document) {
+							continue;
+						}
+
 						const languageId = document.languageId;
 
 						const config = vscode.workspace.getConfiguration(
@@ -148,6 +164,7 @@ export class Lsp {
 								languageId,
 							},
 						);
+
 						items[i] = config.get(item.section);
 					}
 

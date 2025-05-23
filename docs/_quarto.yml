@@ -25,10 +25,15 @@ website:
       - section: "Editors"
         href: editors.qmd
         contents:
-          - editor-rstudio.qmd
           - editor-vscode.qmd
+          - editor-rstudio.qmd
+          - editor-zed.qmd
           - editor-neovim.qmd
           - editor-helix.qmd
+
+      - section: "Integrations"
+        contents:
+          - integration-github-actions.qmd
 
       - text: "Configuration"
         href: configuration.qmd
@@ -40,7 +45,6 @@ format:
     theme:
       - cosmo
       - custom.scss
-    css: styles.css
     toc: true
 
 editor: visual

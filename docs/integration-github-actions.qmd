@@ -1,0 +1,59 @@
+---
+title: "GitHub Actions"
+editor:
+  markdown:
+    wrap: sentence
+    canonical: true
+---
+
+Air integrates with GitHub Actions through the [posit-dev/setup-air](https://github.com/posit-dev/setup-air) action.
+The action is in charge of:
+
+-   Installing Air
+
+-   Adding Air to the PATH
+
+-   Caching Air to speed up consecutive runs on self-hosted runners
+
+You can install Air in one step, and then invoke Air in the next step, like:
+
+``` yaml
+- name: Install Air
+  uses: posit-dev/setup-air@v1
+
+- name: Check
+  run: air format . --check
+```
+
+## Example actions
+
+We provide full [example actions](https://github.com/posit-dev/setup-air/tree/main/examples) to get you started quickly, described below.
+We recommend that you use usethis to copy one of the following into your `.github/workflows` folder.
+
+### Format with GitHub Suggestions
+
+``` r
+usethis::use_github_action(url = "https://github.com/posit-dev/setup-air/blob/main/examples/format-suggest.yaml")
+```
+
+This action runs `air format .` on every pull request.
+If formatting is required, the check fails and suggestion comments are added directly to the pull request.
+We recommend committing the suggestions in a single batch from the `Files changed` view, which will trigger a rerun of the check and delete the outdated suggestion comments.
+Before using this action, ensure that you've locally run Air on your entire project at least once using `air format .` or the `Air: Format Workspace Folder` command in VS Code or Positron, otherwise you can end up with a very large amount of suggestions.
+
+This action is great for managing pull requests from external contributors.
+Even if they don't use Air themselves, they can commit the suggestions to pass Air's formatting checks.
+
+Note that this does not run on pushes straight to `main`.
+
+![](./images/format-suggest-example.png){fig-alt="GitHub Actions bot automatically adding a GitHub Suggestions comment of the changes required to make this file pass Air's formatting checks."}
+
+### Format with `--check`
+
+``` r
+usethis::use_github_action(url = "https://github.com/posit-dev/setup-air/blob/main/examples/format-check.yaml")
+```
+
+This runs `air format . --check` on every push to `main` and on every pull request.
+This is a very simple action that fails if any files would be reformatted.
+When this happens, reformat locally using `air format .` or the `Air: Format Workspace Folder` command in VS Code or Positron, and commit and push the results.

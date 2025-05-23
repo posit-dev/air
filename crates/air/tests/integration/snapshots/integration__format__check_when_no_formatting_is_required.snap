@@ -1,0 +1,12 @@
+---
+source: crates/air/tests/integration/format.rs
+expression: "Command::new(binary_path()).current_dir(path_root()).arg(\"format\").arg(path).arg(\"--check\").run().normalize_os_path_separator()"
+---
+success: true
+exit_code: 0
+----- stdout -----
+
+----- stderr -----
+
+----- args -----
+format fixtures/formatted.R --check
