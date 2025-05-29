@@ -108,6 +108,56 @@
     ]
   },
   {
+    "objectID": "formatter.html#if-statements",
+    "href": "formatter.html#if-statements",
+    "title": "Formatter",
+    "section": "If statements",
+    "text": "If statements\nAir will autobrace if statements if:\n\nAny existing part of the if statement spans multiple lines\nAny existing part of the if statement is already braced\nThe if statement is nested, i.e. there is an else if {\nThe if statement exceeds the line length\n\nFor example, the following will all be autobraced:\nif (condition)\n  a\n\n# Becomes:\nif (condition) {\n  a\n}\nif (condition) a else { b }\n\n# Becomes:\nif (condition) {\n  a\n} else {\n  b\n}\nif (condition) a else if (condition2) b else c\n\n# Becomes:\nif (condition) {\n  a\n} else if (condition2) {\n  b\n} else {\n  c\n}\nSimple if statements that don’t hit any of the autobracing criteria mentioned above are allowed to stay on one line as long as they are also in value position, as opposed to effect position.\n\nTop level if statements are in effect position.\nIf statements that are direct children of {} are in effect position, unless the if statement is the last child of the {} expression list, in which case it is in value position (because it is the returned value from that scope).\nOtherwise, the if statement is in value position.\n\nThis if statement is at top level, putting it in effect position, and would be autobraced:\nif (condition) a else b\n\n# Becomes:\nif (condition) {\n  a\n} else {\n  b\n}\nThese if statements are children of {} (but aren’t the last child!), putting them in effect position, and would be autobraced:\nfn &lt;- function(x) {\n  if (condition) stop(\"oh no\")\n  if (condition) return(1)\n  if (condition) x &lt;- 1\n  x + 1\n}\n\n# Becomes:\nfn &lt;- function(x) {\n  if (condition) {\n    stop(\"oh no\")\n  }\n  if (condition) {\n    return(1)\n  }\n  if (condition) {\n    x &lt;- 1\n  }\n  x + 1\n}\nIt’s particularly important for code involving stop(), return(), and &lt;- to be easily readable on their own line because they cause side effects that affect control flow or state.\nThese if statements are in value position, and would not be autobraced:\nx &lt;- if (condition) 1 else 2\n\nx &lt;- x %||% if (condition) 1 else 2\n\nlist(a = if (condition) 1 else 2)\n\nfunction(\n  a,\n  optional = if (is.null(a)) 1 else 2\n) {\n}\n\n# If statement is the last expression of the `{}` scope\nmap(xs, function(x) {\n  if (is.null(x)) 1 else 2\n})\n\nPortability\nIt is particularly important to autobrace multiline if statements for portability, which is the ability to copy and paste that if statement into any context and have it still parse. Consider the following if statement:\nfn &lt;- function(a) {\n  if (is.null(a))\n    1\n  else\n    2\n}\nThis parses and runs correctly while the if statement is nested within the {} braces of the function. But if you’re testing this code and you copy and paste it out of the function, then it no longer parses:\nif (is.null(a))\n  1\nelse\n  2\nIf you try and run this, then you’ll see an error like Error: unexpected 'else'. This is particularly annoying when you’re working inside a debugger. Most R debuggers allow you to pause inside functions and highlight and run chunks of that function. If you’re paused inside fn() and try to highlight and run the if statement, then it will confusingly fail to parse. Autobracing multiline if statements avoids this problem entirely.",
+    "crumbs": [
+      "Formatter"
+    ]
+  },
+  {
+    "objectID": "formatter.html#for-while-and-repeat-loops",
+    "href": "formatter.html#for-while-and-repeat-loops",
+    "title": "Formatter",
+    "section": "For, while, and repeat loops",
+    "text": "For, while, and repeat loops\nAir unconditionally autobraces the body of all R loops. This is mostly for consistency with if statements, as it is fairly uncommon to see braceless loops in practice.\nfor (i in 1:5) x &lt;- x + i\n\n# Becomes:\nfor (i in 1:5) {\n  x &lt;- x + i\n}\nwhile (x &lt; 5) x &lt;- x + 1\n\n# Becomes:\nwhile (x &lt; 5) {\n  x &lt;- x + 1\n}",
+    "crumbs": [
+      "Formatter"
+    ]
+  },
+  {
+    "objectID": "formatter.html#function-definitions",
+    "href": "formatter.html#function-definitions",
+    "title": "Formatter",
+    "section": "Function definitions",
+    "text": "Function definitions\nAir will autobrace the body of a function definition if:\n\nAny existing part of the function definition spans multiple lines\nThe function definition exceeds the line length\n\nfn &lt;- function(a, b)\n  a + b\n\n# Becomes:\nfn &lt;- function(a, b) {\n  a + b\n}\nfn &lt;- function(\n  a,\n  b\n) a + b\n\n# Becomes:\nfn &lt;- function(\n  a,\n  b\n) {\n  a + b\n}\nfn &lt;- function(a_really_long_variable_name, another_really_long_name) a_really_long_variable_name + another_really_long_name\n\n# Becomes:\nfn &lt;- function(\n  a_really_long_variable_name,\n  another_really_long_name\n) {\n  a_really_long_variable_name + another_really_long_name\n}\nShort function definitions are allowed on one line and will not be autobraced. These are all allowed by Air:\nadd_one &lt;- function(x) x + 1\n\nmap_lgl(xs, function(x) is.logical(x) && length(x) == 1L && !is.na(x))\n\n# This includes anonymous functions\nmap_lgl(xs, \\(x) is.list(x) && length(x) == 0L)",
+    "crumbs": [
+      "Formatter"
+    ]
+  },
+  {
+    "objectID": "formatter.html#with-persistent-line-breaks",
+    "href": "formatter.html#with-persistent-line-breaks",
+    "title": "Formatter",
+    "section": "With persistent line breaks",
+    "text": "With persistent line breaks\nAutobracing is particularly useful as a code rewriting tool when combined with persistent line breaks. Consider:\nresult &lt;- map_lgl(xs, function(x) is.logical(x) && length(x) == 1L && !is.na(x))\nThis may be easier to read if it spanned across multiple lines. You could manually rework this, or you could let Air help you! There are two places you could put a persistent line break depending on what your desired final result is:\n# Adding a line break before `xs` expands the call\nresult &lt;- map_lgl(\n  xs, function(x) is.logical(x) && length(x) == 1L && !is.na(x))\n\n# Becomes:\nresult &lt;- map_lgl(\n  xs,\n  function(x) is.logical(x) && length(x) == 1L && !is.na(x)\n)\n# Adding a line break before `is.logical(x)` forces autobracing\nresult &lt;- map_lgl(xs, function(x)\n    is.logical(x) && length(x) == 1L && !is.na(x))\n\n# Becomes:\nresult &lt;- map_lgl(xs, function(x) {\n  is.logical(x) && length(x) == 1L && !is.na(x)\n})",
+    "crumbs": [
+      "Formatter"
+    ]
+  },
+  {
+    "objectID": "formatter.html#comments",
+    "href": "formatter.html#comments",
+    "title": "Formatter",
+    "section": "Comments",
+    "text": "Comments\nAir generally avoids moving your comments. However, when Air autobraces code, it may have to adjust them. This generally works quite well for most code, but is impossible to do perfectly. It is possible that you will have to adjust the placement of your comments after Air runs.\nFor example, leading comments on autobraced elements are generally placed in a way that you’d expect:\nif (condition)\n  # My comment\n  a\n\n# Becomes:\nif (condition) {\n  # My comment\n  a\n}\nBut trailing comments might need manual adjustment:\nif (condition)\n  a # My comment\n\n# Becomes:\nif (condition) {\n  a\n} # My comment\n\n# You may want to adjust it to:\nif (condition) {\n  a # My comment\n}\nIn general, prefer leading comments over trailing comments for readability and to have the highest chance of Air placing it in the correct location when comment adjustment is required.",
+    "crumbs": [
+      "Formatter"
+    ]
+  },
+  {
     "objectID": "formatter.html#skip-comments",
     "href": "formatter.html#skip-comments",
     "title": "Formatter",
