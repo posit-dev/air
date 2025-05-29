@@ -1,5 +1,5 @@
+use crate::loop_body::FormatLoopBody;
 use crate::prelude::*;
-use crate::statement_body::FormatStatementBody;
 use air_r_syntax::RWhileStatement;
 use air_r_syntax::RWhileStatementFields;
 use biome_formatter::format_args;
@@ -25,7 +25,8 @@ impl FormatNodeRule<RWhileStatement> for FormatRWhileStatement {
                 l_paren_token.format(),
                 group(&soft_block_indent(&condition.format())),
                 r_paren_token.format(),
-                FormatStatementBody::new(&body?)
+                space(),
+                FormatLoopBody::new(&body?)
             ))]
         )
     }

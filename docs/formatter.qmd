@@ -174,6 +174,321 @@ list(foo, bar)
 
 The goal of this feature is to strike a balance between being opinionated and recognizing that users often know when taking up more vertical space results in more readable output.
 
+# Autobracing
+
+To encourage more consistent, readable, and portable code, Air will *autobrace* the following elements:
+
+-   If statements
+
+-   For, while, and repeat loops
+
+-   Function definitions
+
+Autobracing is the process of wrapping the body of these code elements with `{ }` if braces don't already exist.
+
+## If statements
+
+Air will autobrace if statements if:
+
+-   Any existing part of the if statement spans multiple lines
+
+-   Any existing part of the if statement is already braced
+
+-   The if statement is nested, i.e. there is an `else if {`
+
+-   The if statement exceeds the line length
+
+For example, the following will all be autobraced:
+
+``` r
+if (condition)
+  a
+
+# Becomes:
+if (condition) {
+  a
+}
+```
+
+``` r
+if (condition) a else { b }
+
+# Becomes:
+if (condition) {
+  a
+} else {
+  b
+}
+```
+
+``` r
+if (condition) a else if (condition2) b else c
+
+# Becomes:
+if (condition) {
+  a
+} else if (condition2) {
+  b
+} else {
+  c
+}
+```
+
+Simple if statements that don't hit any of the autobracing criteria mentioned above are allowed to stay on one line as long as they are also in *value* position, as opposed to *effect* position.
+
+-   Top level if statements are in effect position.
+
+-   If statements that are direct children of `{}` are in effect position, unless the if statement is the last child of the `{}` expression list, in which case it is in value position (because it is the returned value from that scope).
+
+-   Otherwise, the if statement is in value position.
+
+This if statement is at top level, putting it in effect position, and would be autobraced:
+
+``` r
+if (condition) a else b
+
+# Becomes:
+if (condition) {
+  a
+} else {
+  b
+}
+```
+
+These if statements are children of `{}` (but aren't the last child!), putting them in effect position, and would be autobraced:
+
+``` r
+fn <- function(x) {
+  if (condition) stop("oh no")
+  if (condition) return(1)
+  if (condition) x <- 1
+  x + 1
+}
+
+# Becomes:
+fn <- function(x) {
+  if (condition) {
+    stop("oh no")
+  }
+  if (condition) {
+    return(1)
+  }
+  if (condition) {
+    x <- 1
+  }
+  x + 1
+}
+```
+
+It's particularly important for code involving `stop()`, `return()`, and `<-` to be easily readable on their own line because they cause *side effects* that affect control flow or state.
+
+These if statements are in value position, and would not be autobraced:
+
+``` r
+x <- if (condition) 1 else 2
+
+x <- x %||% if (condition) 1 else 2
+
+list(a = if (condition) 1 else 2)
+
+function(
+  a,
+  optional = if (is.null(a)) 1 else 2
+) {
+}
+
+# If statement is the last expression of the `{}` scope
+map(xs, function(x) {
+  if (is.null(x)) 1 else 2
+})
+```
+
+### Portability
+
+It is particularly important to autobrace multiline if statements for *portability*, which is the ability to copy and paste that if statement into any context and have it still parse.
+Consider the following if statement:
+
+``` r
+fn <- function(a) {
+  if (is.null(a))
+    1
+  else
+    2
+}
+```
+
+This parses and runs correctly while the if statement is nested within the `{}` braces of the function.
+But if you're testing this code and you copy and paste it out of the function, then it no longer parses:
+
+``` r
+if (is.null(a))
+  1
+else
+  2
+```
+
+If you try and run this, then you'll see an error like `Error: unexpected 'else'`.
+This is particularly annoying when you're working inside a debugger.
+Most R debuggers allow you to pause inside functions and highlight and run chunks of that function.
+If you're paused inside `fn()` and try to highlight and run the if statement, then it will confusingly fail to parse.
+Autobracing multiline if statements avoids this problem entirely.
+
+## For, while, and repeat loops
+
+Air unconditionally autobraces the body of all R loops.
+This is mostly for consistency with if statements, as it is fairly uncommon to see braceless loops in practice.
+
+``` r
+for (i in 1:5) x <- x + i
+
+# Becomes:
+for (i in 1:5) {
+  x <- x + i
+}
+```
+
+``` r
+while (x < 5) x <- x + 1
+
+# Becomes:
+while (x < 5) {
+  x <- x + 1
+}
+```
+
+## Function definitions
+
+Air will autobrace the body of a function definition if:
+
+-   Any existing part of the function definition spans multiple lines
+
+-   The function definition exceeds the line length
+
+``` r
+fn <- function(a, b)
+  a + b
+
+# Becomes:
+fn <- function(a, b) {
+  a + b
+}
+```
+
+``` r
+fn <- function(
+  a,
+  b
+) a + b
+
+# Becomes:
+fn <- function(
+  a,
+  b
+) {
+  a + b
+}
+```
+
+``` r
+fn <- function(a_really_long_variable_name, another_really_long_name) a_really_long_variable_name + another_really_long_name
+
+# Becomes:
+fn <- function(
+  a_really_long_variable_name,
+  another_really_long_name
+) {
+  a_really_long_variable_name + another_really_long_name
+}
+```
+
+Short function definitions are allowed on one line and will not be autobraced.
+These are all allowed by Air:
+
+``` r
+add_one <- function(x) x + 1
+
+map_lgl(xs, function(x) is.logical(x) && length(x) == 1L && !is.na(x))
+
+# This includes anonymous functions
+map_lgl(xs, \(x) is.list(x) && length(x) == 0L)
+```
+
+## With persistent line breaks
+
+Autobracing is particularly useful as a code rewriting tool when combined with persistent line breaks.
+Consider:
+
+``` r
+result <- map_lgl(xs, function(x) is.logical(x) && length(x) == 1L && !is.na(x))
+```
+
+This may be easier to read if it spanned across multiple lines.
+You could manually rework this, or you could let Air help you!
+There are two places you could put a persistent line break depending on what your desired final result is:
+
+``` r
+# Adding a line break before `xs` expands the call
+result <- map_lgl(
+  xs, function(x) is.logical(x) && length(x) == 1L && !is.na(x))
+
+# Becomes:
+result <- map_lgl(
+  xs,
+  function(x) is.logical(x) && length(x) == 1L && !is.na(x)
+)
+```
+
+``` r
+# Adding a line break before `is.logical(x)` forces autobracing
+result <- map_lgl(xs, function(x)
+    is.logical(x) && length(x) == 1L && !is.na(x))
+
+# Becomes:
+result <- map_lgl(xs, function(x) {
+  is.logical(x) && length(x) == 1L && !is.na(x)
+})
+```
+
+## Comments
+
+Air generally avoids moving your comments.
+However, when Air autobraces code, it may have to adjust them.
+This generally works quite well for most code, but is impossible to do perfectly.
+It is possible that you will have to adjust the placement of your comments after Air runs.
+
+For example, leading comments on autobraced elements are generally placed in a way that you'd expect:
+
+``` r
+if (condition)
+  # My comment
+  a
+
+# Becomes:
+if (condition) {
+  # My comment
+  a
+}
+```
+
+But trailing comments might need manual adjustment:
+
+``` r
+if (condition)
+  a # My comment
+
+# Becomes:
+if (condition) {
+  a
+} # My comment
+
+# You may want to adjust it to:
+if (condition) {
+  a # My comment
+}
+```
+
+In general, prefer leading comments over trailing comments for readability and to have the highest chance of Air placing it in the correct location when comment adjustment is required.
+
 # Disabling formatting
 
 ## Skip comments

@@ -1,9 +1,9 @@
-function() 1
-function(a, b) 1
+# ------------------------------------------------------------------------
+# Miscellaneous
 
-function(a_really_long_argument_name_to_break_on, and_here_is_another_one_please_break_me, and_this) 1
-
-function(a_really_long_argument_name_to_break_on, and_this) a_really_long_argument_name_to_break_on
+function(a_really_long_argument_name_to_break_on, and_here_is_another_one_please_break_me, and_this) {
+  a
+}
 
 function(a = {
   1
@@ -11,34 +11,119 @@ function(a = {
   1
 }
 
+# ------------------------------------------------------------------------
+# Autobracing
+
+# These stay flat
+function() 1
+function(a, b) 1
+\() 1
+\(a, b) 1
+
+# Persistent line break in `parameters` triggers autobracing because the `body`
+# is in the same `group()`
+function(
+  a, b) 1
+
+\(
+  a, b) 1
+
+# Persistent line break in `parameters` triggers autobracing because the `body`
+# is in the same `group()`
+function(
+  a, b
+) 1
+
+# Persistent line break in `body` triggers autobracing
+function(a, b)
+  1
+
+\(a, b)
+  1
+
+# This snaps back to one line
+function
+(a, b) 1
+
+function(a_really_long_argument_name_to_break_on, and_here_is_another_one_please_break_me, and_this) a
+
+function(a_really_long_argument_name_to_break_on, and_this) a_really_long_argument_name_to_break_on
+
+# ------------------------------------------------------------------------
+# Comments
+
+function # leads function
+() {
+}
+
+function
+# leads function
+() {
+}
+
+function( # dangles ()
+) {
+}
+
+function(
+  # dangles ()
+) {
+}
+
 function() {
-  # comment
+  # dangles {}
 }
 
-function() # becomes leading on `1 + 1`
+function() a # trails function
+
+function() # leads `a`
 {
-  1 + 1
+  a
 }
 
-function() # becomes leading on `1 + 1`
+function() # leads `a`
 {
   # an inner comment
-  1 + 1
+  a
 }
 
-function() # becomes dangling on the `{}`
+function() # dangles {}
 {
 }
 
-function() # becomes dangling on the `{}`
+function() # dangles {}
 {
   # an inner comment but empty `{}`
 }
 
-function() # becomes leading on `1 + 1`
-  1 + 1
+function() # leads `a`
+  a
 
-\(x, y) 1
+# Not much we can do here, it's not enclosed by the `function_definition` node
+# so it ends up trailing the `}` of the function. This is consistent with
+# non-enclosed comments in if/else and loops.
+function()
+  a # trails function
+
+function(
+  # leads `a`
+  a
+) {
+  # comment
+}
+
+function(
+  a # trails `a`
+) {
+  # comment
+}
+
+function(
+  a
+  # trails `a`
+) {
+  # comment
+}
 
 # ------------------------------------------------------------------------
 # User requested line break
@@ -94,31 +179,3 @@ fn <- function(a, b = c(
   1, 2, 3)) {
   body
 }
-
-# ------------------------------------------------------------------------
-# User requested line break and trailing anonymous functions in calls
-
-# Ensure these features play nicely together
-
-# This user line break expands the function definition, causing the whole
-# `map()` to expand
-map(xs, function(
-  x, option = "a") {
-  x
-})
-
-# This flattens the function definition, but the `map()` stays expanded
-map(
-  xs,
-  function(x,
-    option = "a"
-  ) {
-    x
-  }
-)
-
-# This flattens to one line
-map(xs, function(x,
-  option = "a") {
-  x
-})
