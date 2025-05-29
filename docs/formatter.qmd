@@ -242,25 +242,47 @@ Simple if statements that don't hit any of the autobracing criteria mentioned ab
 
 -   Otherwise, the if statement is in value position.
 
-These if statements are in effect position, and would be autobraced:
+This if statement is at top level, putting it in effect position, and would be autobraced:
 
 ``` r
-# If statement at top level
 if (condition) a else b
 
-# If statement inside `{}`
-fn <- function() {
-  if (condition) stop("oh no")
-  1 + 1
-}
-
-fn <- function() {
-  if (condition) return(1)
-  1 + 1
+# Becomes:
+if (condition) {
+  a
+} else {
+  b
 }
 ```
 
-These are in value position, and would not be autobraced:
+These if statements are children of `{}` (but aren't the last child!), putting them in effect position, and would be autobraced:
+
+``` r
+fn <- function(x) {
+  if (condition) stop("oh no")
+  if (condition) return(1)
+  if (condition) x <- 1
+  x + 1
+}
+
+# Becomes:
+fn <- function(x) {
+  if (condition) {
+    stop("oh no")
+  }
+  if (condition) {
+    return(1)
+  }
+  if (condition) {
+    x <- 1
+  }
+  x + 1
+}
+```
+
+It's particularly important for code involving `stop()`, `return()`, and `<-` to be easily readable on their own line because they cause *side effects* that affect control flow or state.
+
+These if statements are in value position, and would not be autobraced:
 
 ``` r
 x <- if (condition) 1 else 2
@@ -358,7 +380,7 @@ fn <- function(
   b
 ) a + b
 
-# Becomes
+# Becomes:
 fn <- function(
   a,
   b
