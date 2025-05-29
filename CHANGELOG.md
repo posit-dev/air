@@ -2,6 +2,45 @@
 
 # Development version
 
+- Autobracing is a new feature applied to if statements, for loops, while loops,
+  repeat loops, and function definitions. This feature will automatically add
+  `{}` around the body of these code elements in certain cases to maximize
+  readability, consistency, and portability (#225, #334).
+
+  For example:
+
+  ```r
+  if (condition)
+    a
+
+  # Becomes:
+  if (condition) {
+    a
+  }
+  ```
+
+  ```r
+  fn <- function(
+    a, b
+  ) a + b
+
+  # Becomes:
+  fn <- function(
+    a,
+    b
+  ) {
+    a + b
+  }
+  ```
+
+  Single line if statements and function definitions are still allowed in certain contexts:
+
+  ```r
+  list(a = if (is.null(x)) NA else x)
+
+  map(xs, function(x) x + 1)
+  ```
+
 
 # 0.5.0
 
