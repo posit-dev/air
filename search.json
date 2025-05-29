@@ -142,7 +142,7 @@
     "href": "configuration.html#example-configuration",
     "title": "Configuration",
     "section": "Example configuration",
-    "text": "Example configuration\nBelow is a complete air.toml file showing all available options set to their default values:\n[format]\nline-width = 80\nindent-width = 2\nindent-style = \"space\"\nline-ending = \"auto\"\npersistent-line-breaks = true\nexclude = []\ndefault-exclude = true",
+    "text": "Example configuration\nBelow is a complete air.toml file showing all available options set to their default values:\n[format]\nline-width = 80\nindent-width = 2\nindent-style = \"space\"\nline-ending = \"auto\"\npersistent-line-breaks = true\nexclude = []\ndefault-exclude = true\nskip = []",
     "crumbs": [
       "Configuration"
     ]
