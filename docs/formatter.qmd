@@ -314,6 +314,7 @@ Autobracing multiline if statements avoids this problem entirely.
 ## For, while, and repeat loops
 
 Air unconditionally autobraces the body of all R loops.
+This is mostly for consistency with if statements, as it is fairly uncommon to see braceless loops in practice.
 
 ``` r
 for (i in 1:5) x <- x + i
