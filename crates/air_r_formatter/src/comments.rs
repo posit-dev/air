@@ -520,7 +520,7 @@ fn handle_if_statement_comment(
     // {
     //   if (cond) {
     //
-    //   } # becomes leading on `this`
+    //   } # becomes dangling on {}
     //   else {
     //     that
     //   }
