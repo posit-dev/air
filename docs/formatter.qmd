@@ -489,6 +489,42 @@ if (condition) {
 
 In general, prefer leading comments over trailing comments for readability and to have the highest chance of Air placing it in the correct location when comment adjustment is required.
 
+# Empty braces
+
+Braced expressions generally span multiple lines:
+
+``` r
+for (x in xs) {
+  print(x)
+}
+
+function(x, y) {
+  x + y
+}
+
+function() {
+  # Do nothing
+}
+```
+
+The one exception to this is completely empty braces, i.e. `{}`.
+These are never expanded, allowing for the following style:
+
+``` r
+dummy <- function() {}
+
+while (waiting()) {}
+
+switch(x, a = {}, b = 2)
+
+function(
+  expr = {}
+) {
+  this_first()
+  expr
+}
+```
+
 # Disabling formatting
 
 ## Skip comments

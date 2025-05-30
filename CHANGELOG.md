@@ -2,6 +2,25 @@
 
 # Development version
 
+- Empty `{}` are no longer ever expanded (#43).
+
+  This allows for syntax like:
+
+  ```r
+  dummy <- function() {}
+
+  while (waiting()) {}
+
+  switch(x, a = {}, b = 2)
+
+  function(
+    expr = {}
+  ) {
+    this_first()
+    expr
+  }
+  ```
+
 - Autobracing is a new feature applied to if statements, for loops, while loops,
   repeat loops, and function definitions. This feature will automatically add
   `{}` around the body of these code elements in certain cases to maximize

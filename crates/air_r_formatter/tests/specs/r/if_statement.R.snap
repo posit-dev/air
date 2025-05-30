@@ -934,10 +934,8 @@ fn(
 )
 
 # Allowed on one line without braces (value position)
-function(x = if (a) 1) {
-}
-function(x = if (a) 1, y = if (a) 1 else 2) {
-}
+function(x = if (a) 1) {}
+function(x = if (a) 1, y = if (a) 1 else 2) {}
 # Too complex, forces braces
 function(
   x = if (a) {
@@ -947,15 +945,13 @@ function(
   } else {
     3
   }
-) {
-}
+) {}
 # Breaks parameter list, but not if/else
 function(
   x = if (a) 1,
   y = if (a) 1 else 2,
   this_is_really_really_long_and_breaks_the_group_here
-) {
-}
+) {}
 
 # The group breaking forces braces
 x <- if (something_really_really_long_here_something_really_really_long_here) {

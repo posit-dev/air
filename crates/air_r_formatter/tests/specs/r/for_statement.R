@@ -19,29 +19,23 @@ for(x in xs) x + y
 # Comments
 
 for # leads for loop
-(i in 1:5) {
-}
+(i in 1:5) {}
 
 for ( # leads for loop
-i in 1:5) {
-}
+i in 1:5) {}
 
 for (i # leads for loop
-in 1:5) {
-}
+in 1:5) {}
 
 for (i in # leads for loop
-1:5) {
-}
+1:5) {}
 
 for (i in
 # leads for loop
-1:5) {
-}
+1:5) {}
 
 for (i in 1:5 # leads for loop
-) {
-}
+) {}
 
 for (i in 1:5) # dangles {}
   {

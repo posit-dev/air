@@ -1,17 +1,17 @@
-// TODO: (c) Biome
-
 use std::cell::Cell;
 
 use crate::comments::RComments;
 use crate::context::RFormatOptions;
 use crate::either::Either;
 use crate::prelude::*;
-use crate::r::auxiliary::braced_expressions::as_curly_curly;
+use crate::r::auxiliary::braced_expressions::braced_expressions_variant;
+use crate::r::auxiliary::braced_expressions::BracedExpressionsVariant;
 use crate::r::auxiliary::function_definition::FormatFunctionOptions;
 use crate::separated::FormatAstSeparatedListExtension;
 use air_r_syntax::AnyRExpression;
 use air_r_syntax::RArgument;
 use air_r_syntax::RArgumentList;
+use air_r_syntax::RBracedExpressions;
 use air_r_syntax::RCall;
 use air_r_syntax::RCallArguments;
 use air_r_syntax::RLanguage;
@@ -167,21 +167,17 @@ impl RCallLikeArguments {
     ///   x)
     /// ```
     ///
-    /// Note that because `{}` currently unconditionally force a break, that means that
-    /// currently the most flat variant is always removed when `{}` are present. In the
-    /// future we will make empty `{}` never break and we will declare cases of empty
-    /// `{}` as not groupable, so it won't go through this best fitting process at all.
+    /// An empty `{}` never expands, so this case is not considered groupable, and best
+    /// fitting is not actually used.
     ///
     /// ```r
-    /// # NOTE: Currently considered groupable, but the `{}` currently unconditionally
-    /// # force a break, so the `most_flat` variant is always removed
     /// map(xs, function(x) {})
     /// ```
     ///
+    /// Like `{}`, we explicitly disallow curly-curly as a groupable argument, so this
+    /// case is never considered grouped, and is therefore not an example of "most flat".
+    ///
     /// ```r
-    /// # NOTE: We explicitly disallow curly-curly as a groupable argument,
-    /// # so this case is never considered grouped, and is therefore not an
-    /// # example of "most flat".
     /// group_by(df, {{ by }})
     /// ```
     ///
@@ -1109,33 +1105,34 @@ fn should_group_last_argument(list: &RArgumentList, comments: &RComments) -> Syn
         return Ok(false);
     };
 
-    argument_is_groupable(&last)
+    argument_is_groupable(&last, comments)
 }
 
 /// Checks if `argument` benefits from grouping in call arguments.
-fn argument_is_groupable(argument: &AnyRExpression) -> SyntaxResult<bool> {
+fn argument_is_groupable(argument: &AnyRExpression, comments: &RComments) -> SyntaxResult<bool> {
     use air_r_syntax::AnyRExpression::*;
 
     let result = match argument {
+        // Braces with any expression inside are groupable
+        //
         // ```r
         // with(data, {
         //   col
         // })
         // ```
         //
-        // Empty braces currently always expand, so they benefit from grouping
-        //
-        // ```r
-        // with(data, {
-        // })
-        // ```
-        //
-        // Empty braces that have comments are still groupable
+        // Empty braces with dangling comments are groupable
         //
         // ```r
         // with(data, {
         //   # comment
         // })
+        // ```
+        //
+        // Empty braces never expand, so they are not groupable
+        //
+        // ```r
+        // with(data, {})
         // ```
         //
         // Curly-curly expressions are NOT groupable, we want this to fall through
@@ -1144,33 +1141,19 @@ fn argument_is_groupable(argument: &AnyRExpression) -> SyntaxResult<bool> {
         // ```r
         // group_by(df, {{ vars }})
         // ```
-        //
-        // NOTE: If we ever allow empty `{}` to NOT forcibly expand, then empty
-        // braced expressions won't benefit from grouping unless there is a
-        // comment in there, i.e. we'd change the match arm to include this (used by
-        // biome in the JS implementation):
-        //
-        // ```rust
-        // !node.expressions().is_empty() || comments.has_comments(node.syntax())
-        // ```
-        RBracedExpressions(node) => as_curly_curly(node).is_none(),
+        RBracedExpressions(node) => braced_expressions_is_groupable(node, comments),
 
-        // Currently, every kind of function definition can benefit from grouping.
-        //
-        // - If the body has `{}` and is not empty, the braces will be expanded across
-        //   multiple lines, so it can benefit from grouping.
+        // Almost every kind of function definition can benefit from grouping:
         //
         // - If the body does not have `{}`, we may keep the function definition
         //   completely flat on one line, or we may expand it over multiple lines if
         //   it exceeds the line length or a persistent line break forces a break. If
-        //   it were to break, it would benefit from grouping.
+        //   it were to break, it would benefit from grouping, so we always consider
+        //   this case a candidate for grouping.
         //
-        // - NOTE: If the body has `{}` and is empty (including no comments), then
-        //   currently those are always expanded anyways, so it can benefit from grouping.
-        //   In the future we will force empty `{}` to not expand, and when that happens
-        //   we should return `false` from here to signal that it can't benefit from
-        //   grouping (use the same rule as `RBracedExpressions` above, but applied to
-        //   the `node.body()`).
+        // - If the body has `{}`, we treat it like `RBracedExpressions` above. It's only
+        //   ever not groupable if the body is a totally empty `{}`, because that would
+        //   never spread across multiple lines.
         //
         // Here are some examples:
         //
@@ -1183,12 +1166,11 @@ fn argument_is_groupable(argument: &AnyRExpression) -> SyntaxResult<bool> {
         // })
         // ```
         //
-        // When the braces are empty, it still benefits from grouping right now because
-        // we currently always expand the braces.
+        // When the braces are empty, it won't benefit from grouping because the `{}`
+        // are always kept collapsed
         //
         // ```r
-        // map(xs, function(x) {
-        // })
+        // map(xs, function(x) {})
         // ```
         //
         // With a dangling comment in empty braces, we always benefit from grouping
@@ -1239,11 +1221,25 @@ fn argument_is_groupable(argument: &AnyRExpression) -> SyntaxResult<bool> {
         //   }
         // )
         // ```
-        RFunctionDefinition(_) => true,
+        RFunctionDefinition(node) => node.body().is_ok_and(|body| match body {
+            RBracedExpressions(ref body) => braced_expressions_is_groupable(body, comments),
+            _ => true,
+        }),
 
         // Nothing else benefits from grouping
         _ => false,
     };
 
     Ok(result)
+}
+
+fn braced_expressions_is_groupable(node: &RBracedExpressions, comments: &RComments) -> bool {
+    match braced_expressions_variant(node, comments) {
+        // These two stay collapsed as `{}` or `{{ x }}`, and don't benefit from grouping
+        BracedExpressionsVariant::Empty => false,
+        BracedExpressionsVariant::CurlyCurly(_) => false,
+        // These two expand across multiple lines, and benefit from grouping
+        BracedExpressionsVariant::EmptyWithDanglingComments => true,
+        BracedExpressionsVariant::NotEmpty => true,
+    }
 }

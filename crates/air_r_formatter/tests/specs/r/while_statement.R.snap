@@ -5,6 +5,7 @@ info: r/while_statement.R
 # Input
 
 ```R
+# Stays collapsed
 while(a){}
 
 while(a) {
@@ -111,8 +112,8 @@ Skip: None
 -----
 
 ```R
-while (a) {
-}
+# Stays collapsed
+while (a) {}
 
 while (a) {
   1 + 1

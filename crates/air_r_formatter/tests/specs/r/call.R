@@ -68,7 +68,7 @@ df |> foo(
 # (test-like check comes first and seems more relevant)
 test_that(
   "description", {
-
+    body
 })
 
 # ------------------------------------------------------------------------
@@ -298,6 +298,7 @@ with(my_long_list_my_long_list_my_long_list_my_long_list_long_long_long_long_lon
   }
 )
 
+# Collapses with empty braces
 with(data, {
 })
 
@@ -305,6 +306,7 @@ with(data, {
   # dangling
 })
 
+# Collapses with empty braces
 fn({
 })
 
@@ -337,8 +339,15 @@ map(xs, function(x) {
   x + 1
 })
 
-# Braces expand over multiple lines
-map(xs, function(x) { })
+# Best fitting is not used, the empty `{}` would never be expanded, so we don't
+# require best fitting
+map(xs, function(x) {})
+map(xs_that_is_really_long_to_just_barely_pass_the_line_lengthhh, function(x) {})
+
+# Best fitting is not used, the empty `{}` would (typically) never be expanded,
+# so we don't require best fitting
+map(xs, function(x) {{ x }})
+map(xs_that_is_long_to_just_barely_pass_the_line_lengthhhhh, function(x) {{ x }})
 
 # Best fitting is used to choose the most flat variant, and this stays
 # as is

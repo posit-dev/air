@@ -53,22 +53,18 @@ function(a_really_long_argument_name_to_break_on, and_this) a_really_long_argume
 # Comments
 
 function # leads function
-() {
-}
+() {}
 
 function
 # leads function
-() {
-}
+() {}
 
 function( # dangles ()
-) {
-}
+) {}
 
 function(
   # dangles ()
-) {
-}
+) {}
 
 function() {
   # dangles {}
@@ -90,6 +86,9 @@ function() # leads `a`
 function() # dangles {}
 {
 }
+
+function() # dangles {}
+{}
 
 function() # dangles {}
 {

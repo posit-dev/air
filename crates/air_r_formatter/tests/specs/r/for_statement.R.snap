@@ -26,29 +26,23 @@ for(x in xs) x + y
 # Comments
 
 for # leads for loop
-(i in 1:5) {
-}
+(i in 1:5) {}
 
 for ( # leads for loop
-i in 1:5) {
-}
+i in 1:5) {}
 
 for (i # leads for loop
-in 1:5) {
-}
+in 1:5) {}
 
 for (i in # leads for loop
-1:5) {
-}
+1:5) {}
 
 for (i in
 # leads for loop
-1:5) {
-}
+1:5) {}
 
 for (i in 1:5 # leads for loop
-) {
-}
+) {}
 
 for (i in 1:5) # dangles {}
   {
@@ -110,8 +104,7 @@ for (a_really_long_argument_name in but_we_dont_ever_break_inside_for_conditions
 # ------------------------------------------------------------------------------
 # Autobracing
 
-for (x in xs) {
-}
+for (x in xs) {}
 
 # Unconditional autobracing on for loop bodies to maximize clarity and intent
 for (x in xs) {
@@ -125,28 +118,22 @@ for (x in xs) {
 # Comments
 
 # leads for loop
-for (i in 1:5) {
-}
+for (i in 1:5) {}
 
 # leads for loop
-for (i in 1:5) {
-}
+for (i in 1:5) {}
 
 # leads for loop
-for (i in 1:5) {
-}
+for (i in 1:5) {}
 
 # leads for loop
-for (i in 1:5) {
-}
+for (i in 1:5) {}
 
 # leads for loop
-for (i in 1:5) {
-}
+for (i in 1:5) {}
 
 # leads for loop
-for (i in 1:5) {
-}
+for (i in 1:5) {}
 
 for (i in 1:5) {
   # dangles {}

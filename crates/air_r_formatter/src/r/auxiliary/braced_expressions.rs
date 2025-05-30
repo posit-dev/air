@@ -1,3 +1,4 @@
+use crate::comments::RComments;
 use crate::prelude::*;
 use air_r_syntax::AnyRExpression;
 use air_r_syntax::RArgument;
@@ -7,7 +8,6 @@ use air_r_syntax::RExpressionList;
 use air_r_syntax::RSyntaxToken;
 use biome_formatter::format_args;
 use biome_formatter::write;
-use biome_formatter::CstFormatContext;
 use biome_rowan::SyntaxResult;
 
 #[derive(Debug, Clone, Default)]
@@ -20,24 +20,61 @@ impl FormatNodeRule<RBracedExpressions> for FormatRBracedExpressions {
             r_curly_token,
         } = node.as_fields();
 
-        // Check if we are formatting empty braces, like `{ }`
-        if expressions.is_empty() {
-            return fmt_empty(&l_curly_token, &r_curly_token, node, f);
+        match braced_expressions_variant(node, f.comments()) {
+            // Examples:
+            //
+            // ```r
+            // {}
+            // function() {}
+            // while(waiting()) {}
+            // for (x in xs) {}
+            // switch(on, a = {}, b = 2)
+            // ```
+            BracedExpressionsVariant::Empty => {
+                write!(f, [l_curly_token.format(), r_curly_token.format()])
+            }
+            // Examples:
+            //
+            // ```r
+            // {
+            //   # comment
+            // }
+            // ```
+            BracedExpressionsVariant::EmptyWithDanglingComments => {
+                write!(
+                    f,
+                    [
+                        l_curly_token.format(),
+                        format_dangling_comments(node.syntax()).with_block_indent(),
+                        r_curly_token.format()
+                    ]
+                )
+            }
+            // Examples:
+            //
+            // ```r
+            // fn({{ expr }})
+            // ```
+            BracedExpressionsVariant::CurlyCurly(node) => fmt_curly_curly(&node, f),
+            // Examples:
+            //
+            // ```r
+            // {
+            //   expr
+            //   expr
+            // }
+            // ```
+            BracedExpressionsVariant::NotEmpty => {
+                write!(
+                    f,
+                    [
+                        l_curly_token.format(),
+                        block_indent(&expressions.format()),
+                        r_curly_token.format()
+                    ]
+                )
+            }
         }
-
-        // Check if we are formatting curly-curly, like `fn({{ expr }})`
-        if let Some(node) = as_curly_curly(node) {
-            return fmt_curly_curly(&node, f);
-        }
-
-        write!(
-            f,
-            [
-                l_curly_token.format(),
-                block_indent(&expressions.format()),
-                r_curly_token.format()
-            ]
-        )
     }
 
     fn fmt_dangling_comments(
@@ -46,45 +83,39 @@ impl FormatNodeRule<RBracedExpressions> for FormatRBracedExpressions {
         _: &mut RFormatter,
     ) -> FormatResult<()> {
         // Formatted inside of `fmt_fields`
-        // Only possible with empty `{}`
+        // Only possible with `BracedExpressionsVariant::EmptyWithDanglingComments`
         Ok(())
     }
 }
 
-/// Format an empty braced expression node
-///
-/// i.e. `{ }` or `{\n # hi\n}`
-///
-/// We unconditionally hard line break between the `{` and `}`. We could consider not
-/// doing this for certain syntax, like if statements, but that gets a little hand wavy.
-fn fmt_empty(
-    l_curly_token: &SyntaxResult<RSyntaxToken>,
-    r_curly_token: &SyntaxResult<RSyntaxToken>,
-    node: &RBracedExpressions,
-    f: &mut RFormatter,
-) -> FormatResult<()> {
-    let comments = f.context().comments();
-    let has_dangling_comments = comments.has_dangling_comments(node.syntax());
+pub(crate) enum BracedExpressionsVariant {
+    Empty,
+    EmptyWithDanglingComments,
+    CurlyCurly(RCurlyCurly),
+    NotEmpty,
+}
 
-    if has_dangling_comments {
-        write!(
-            f,
-            [
-                l_curly_token.format(),
-                format_dangling_comments(node.syntax()).with_block_indent(),
-                r_curly_token.format()
-            ]
-        )
-    } else {
-        write!(
-            f,
-            [
-                l_curly_token.format(),
-                hard_line_break(),
-                r_curly_token.format()
-            ]
-        )
+/// Categorize [RBracedExpressions] into its appropriate variant
+///
+/// Used when formatting a [RBracedExpressions], and in `call_arguments.rs` when
+/// determining if a [RBracedExpressions] is groupable or not.
+pub(crate) fn braced_expressions_variant(
+    node: &RBracedExpressions,
+    comments: &RComments,
+) -> BracedExpressionsVariant {
+    if node.expressions().is_empty() {
+        if comments.has_dangling_comments(node.syntax()) {
+            return BracedExpressionsVariant::EmptyWithDanglingComments;
+        } else {
+            return BracedExpressionsVariant::Empty;
+        }
     }
+
+    if let Some(node) = as_curly_curly(node) {
+        return BracedExpressionsVariant::CurlyCurly(node);
+    }
+
+    BracedExpressionsVariant::NotEmpty
 }
 
 pub(crate) struct RCurlyCurly {
@@ -117,7 +148,7 @@ pub(crate) struct RCurlyCurly {
 /// - An outer `{` expression with exactly 1 child, an inner `{`.
 /// - An inner `{` expression with exactly 1 child, a symbol.
 /// - An ancestor of the outer `{` must be an argument node.
-pub(crate) fn as_curly_curly(node: &RBracedExpressions) -> Option<RCurlyCurly> {
+fn as_curly_curly(node: &RBracedExpressions) -> Option<RCurlyCurly> {
     let RBracedExpressionsFields {
         l_curly_token: outer_l_curly_token,
         expressions: outer_expressions,
