@@ -1,3 +1,4 @@
+# Stays collapsed
 while(a){}
 
 while(a) {
