@@ -21,6 +21,10 @@ impl SourceLocation {
     pub fn line_offset(&self) -> LineOffset {
         self.line_offset
     }
+
+    pub fn into_fields(self) -> (LineNumber, LineOffset) {
+        (self.line_number, self.line_offset)
+    }
 }
 
 /// A 0-indexed line number
