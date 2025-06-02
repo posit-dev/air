@@ -310,30 +310,30 @@ impl SourceFile {
     ///
     /// ```
     /// use biome_text_size::TextSize;
-    /// use source_file::{SourceFile, SourceLocation, LineNumber, LineOffset, Encoding};
+    /// use source_file::{SourceFile, SourceLocation, LineNumber, LineOffset, LineOffsetEncoding};
     ///
     /// let source = "x <- function()\n  NULL".to_string();
     /// let source = SourceFile::new(source);
     ///
     /// assert_eq!(
-    ///     source.source_location(TextSize::from(0), Encoding::UTF8),
+    ///     source.source_location(TextSize::from(0), LineOffsetEncoding::UTF8),
     ///     SourceLocation::new(
     ///         LineNumber::from(0),
-    ///         LineOffset::new(0, Encoding::UTF8)
+    ///         LineOffset::new(0, LineOffsetEncoding::UTF8)
     ///     )
     /// );
     /// assert_eq!(
-    ///     source.source_location(TextSize::from(4), Encoding::UTF8),
+    ///     source.source_location(TextSize::from(4), LineOffsetEncoding::UTF8),
     ///     SourceLocation::new(
     ///         LineNumber::from(0),
-    ///         LineOffset::new(4, Encoding::UTF8)
+    ///         LineOffset::new(4, LineOffsetEncoding::UTF8)
     ///     )
     /// );
     /// assert_eq!(
-    ///     source.source_location(TextSize::from(20), Encoding::UTF8),
+    ///     source.source_location(TextSize::from(20), LineOffsetEncoding::UTF8),
     ///     SourceLocation::new(
     ///         LineNumber::from(1),
-    ///         LineOffset::new(4, Encoding::UTF8)
+    ///         LineOffset::new(4, LineOffsetEncoding::UTF8)
     ///     )
     /// );
     /// ```
@@ -383,7 +383,7 @@ impl SourceFile {
     /// ### ASCII
     ///
     /// ```
-    /// use source_file::{SourceFile, SourceLocation, LineNumber, LineOffset, Encoding};
+    /// use source_file::{SourceFile, SourceLocation, LineNumber, LineOffset, LineOffsetEncoding};
     /// use biome_text_size::TextSize;
     ///
     /// let source = r#"a = 4
@@ -396,7 +396,7 @@ impl SourceFile {
     /// assert_eq!(
     ///     source.offset(SourceLocation::new(
     ///         LineNumber::from(0),
-    ///         LineOffset::new(0, Encoding::UTF8)
+    ///         LineOffset::new(0, LineOffsetEncoding::UTF8)
     ///     )),
     ///     TextSize::from(0)
     /// );
@@ -405,7 +405,7 @@ impl SourceFile {
     /// assert_eq!(
     ///     source.offset(SourceLocation::new(
     ///         LineNumber::from(1),
-    ///         LineOffset::new(4, Encoding::UTF8)
+    ///         LineOffset::new(4, LineOffsetEncoding::UTF8)
     ///     )),
     ///     TextSize::from(10)
     /// );
@@ -414,7 +414,7 @@ impl SourceFile {
     /// assert_eq!(
     ///     source.offset(SourceLocation::new(
     ///         LineNumber::from(0),
-    ///         LineOffset::new(10, Encoding::UTF8)
+    ///         LineOffset::new(10, LineOffsetEncoding::UTF8)
     ///     )),
     ///     TextSize::from(6)
     /// );
@@ -423,7 +423,7 @@ impl SourceFile {
     /// assert_eq!(
     ///     source.offset(SourceLocation::new(
     ///         LineNumber::from(3),
-    ///         LineOffset::new(0, Encoding::UTF8)
+    ///         LineOffset::new(0, LineOffsetEncoding::UTF8)
     ///     )),
     ///     TextSize::from(29)
     /// );
@@ -432,7 +432,7 @@ impl SourceFile {
     /// ### UTF8
     ///
     /// ```
-    /// use source_file::{SourceFile, SourceLocation, LineNumber, LineOffset, Encoding};
+    /// use source_file::{SourceFile, SourceLocation, LineNumber, LineOffset, LineOffsetEncoding};
     /// use biome_text_size::TextSize;
     ///
     /// let source = r#"a = 4
@@ -445,7 +445,7 @@ impl SourceFile {
     /// assert_eq!(
     ///     source.offset(SourceLocation::new(
     ///         LineNumber::from(0),
-    ///         LineOffset::new(0, Encoding::UTF8)
+    ///         LineOffset::new(0, LineOffsetEncoding::UTF8)
     ///     )),
     ///     TextSize::from(0)
     /// );
@@ -454,7 +454,7 @@ impl SourceFile {
     /// assert_eq!(
     ///     source.offset(SourceLocation::new(
     ///         LineNumber::from(2),
-    ///         LineOffset::new(1, Encoding::UTF8)
+    ///         LineOffset::new(1, LineOffsetEncoding::UTF8)
     ///     )),
     ///     TextSize::from(20)
     /// );
@@ -463,7 +463,7 @@ impl SourceFile {
     /// assert_eq!(
     ///     source.offset(SourceLocation::new(
     ///         LineNumber::from(2),
-    ///         LineOffset::new(1, Encoding::UTF16)
+    ///         LineOffset::new(1, LineOffsetEncoding::UTF16)
     ///     )),
     ///     TextSize::from(20)
     /// );
@@ -472,7 +472,7 @@ impl SourceFile {
     /// assert_eq!(
     ///     source.offset(SourceLocation::new(
     ///         LineNumber::from(1),
-    ///         LineOffset::new(10, Encoding::UTF8)
+    ///         LineOffset::new(10, LineOffsetEncoding::UTF8)
     ///     )),
     ///     TextSize::from(16)
     /// );
@@ -481,7 +481,7 @@ impl SourceFile {
     /// assert_eq!(
     ///     source.offset(SourceLocation::new(
     ///         LineNumber::from(1),
-    ///         LineOffset::new(10, Encoding::UTF32)
+    ///         LineOffset::new(10, LineOffsetEncoding::UTF32)
     ///     )),
     ///     TextSize::from(19)
     /// );
@@ -490,7 +490,7 @@ impl SourceFile {
     /// assert_eq!(
     ///     source.offset(SourceLocation::new(
     ///         LineNumber::from(3),
-    ///         LineOffset::new(0, Encoding::UTF32)
+    ///         LineOffset::new(0, LineOffsetEncoding::UTF32)
     ///     )),
     ///     TextSize::from(24)
     /// );
