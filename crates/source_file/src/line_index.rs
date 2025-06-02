@@ -1,13 +1,12 @@
 use std::fmt;
 use std::fmt::{Debug, Formatter};
-use std::ops::Deref;
 use std::sync::Arc;
 
 use biome_text_size::{TextLen, TextRange, TextSize};
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
 
-use crate::OneIndexed;
+use crate::source_location::LineNumber;
+use crate::source_location::LineOffset;
+use crate::source_location::LineOffsetEncoding;
 use crate::SourceLocation;
 
 /// Index for fast [byte offset](TextSize) to [`SourceLocation`] conversions.
@@ -28,7 +27,7 @@ impl LineIndex {
     /// Builds the [`LineIndex`] from the source text of a file.
     pub(crate) fn from_source_text(text: &str) -> Self {
         let mut line_starts: Vec<TextSize> = Vec::with_capacity(text.len() / 88);
-        line_starts.push(TextSize::default());
+        line_starts.push(TextSize::from(0));
 
         let bytes = text.as_bytes();
         let mut utf8 = false;
@@ -65,36 +64,43 @@ impl LineIndex {
         self.inner.kind
     }
 
-    /// Returns the row and column index for an offset.
-    pub(crate) fn source_location(&self, offset: TextSize, content: &str) -> SourceLocation {
-        match self.line_starts().binary_search(&offset) {
-            // Offset is at the start of a line
-            Ok(row) => SourceLocation {
-                row: OneIndexed::from_zero_indexed(row),
-                column: OneIndexed::from_zero_indexed(0),
-            },
-            Err(next_row) => {
-                // SAFETY: Safe because the index always contains an entry for the offset 0
-                let row = next_row - 1;
-                let mut line_start = self.line_starts()[row];
+    /// Returns the [SourceLocation] for an offset.
+    pub(crate) fn source_location(
+        &self,
+        offset: TextSize,
+        content: &str,
+        encoding: LineOffsetEncoding,
+    ) -> SourceLocation {
+        let line_number = self.line_number(offset);
+        let line_start = self.line_start(line_number, content);
 
-                let column = if self.kind().is_ascii() {
-                    usize::from(offset) - usize::from(line_start)
-                } else {
-                    // Don't count the BOM character as a column.
-                    if line_start == TextSize::from(0) && content.starts_with('\u{feff}') {
-                        line_start = '\u{feff}'.text_len();
-                    }
-
-                    content[TextRange::new(line_start, offset)].chars().count()
-                };
-
-                SourceLocation {
-                    row: OneIndexed::from_zero_indexed(row),
-                    column: OneIndexed::from_zero_indexed(column),
+        let line_offset = if self.is_ascii() {
+            LineOffset::new((offset - line_start).into(), encoding)
+        } else {
+            match encoding {
+                LineOffsetEncoding::UTF8 => LineOffset::new((offset - line_start).into(), encoding),
+                LineOffsetEncoding::UTF16 => {
+                    let line_contents_up_to_offset = &content[TextRange::new(line_start, offset)];
+                    let offset = line_contents_up_to_offset
+                        .encode_utf16()
+                        .count()
+                        .try_into()
+                        .expect("A single line's offset should fit in u32");
+                    LineOffset::new(offset, encoding)
+                }
+                LineOffsetEncoding::UTF32 => {
+                    let line_contents_up_to_offset = &content[TextRange::new(line_start, offset)];
+                    let offset = line_contents_up_to_offset
+                        .chars()
+                        .count()
+                        .try_into()
+                        .expect("A single line's offset should fit in u32");
+                    LineOffset::new(offset, encoding)
                 }
             }
-        }
+        };
+
+        SourceLocation::new(line_number, line_offset)
     }
 
     /// Return the number of lines in the source code.
@@ -102,123 +108,112 @@ impl LineIndex {
         self.line_starts().len()
     }
 
-    /// Returns `true` if the text only consists of ASCII characters
+    /// Returns `true` if the text only consists of ASCII characters.
     pub(crate) fn is_ascii(&self) -> bool {
         self.kind().is_ascii()
     }
 
-    /// Returns the row number for a given offset.
-    ///
-    /// ## Panics
-    ///
-    /// If the offset is out of bounds.
-    pub(crate) fn line_index(&self, offset: TextSize) -> OneIndexed {
-        match self.line_starts().binary_search(&offset) {
-            // Offset is at the start of a line
-            Ok(row) => OneIndexed::from_zero_indexed(row),
-            Err(row) => {
+    /// Returns the line number for a given offset.
+    pub(crate) fn line_number(&self, offset: TextSize) -> LineNumber {
+        let line = match self.line_starts().binary_search(&offset) {
+            // `offset` is at the start of a line
+            Ok(row) => row,
+            Err(next_row) => {
                 // SAFETY: Safe because the index always contains an entry for the offset 0
-                OneIndexed::from_zero_indexed(row - 1)
+                next_row - 1
             }
-        }
+        };
+
+        LineNumber::try_from(line).expect("Number of line starts should fit in a `LineNumber`")
     }
 
-    /// Returns the [byte offset](TextSize) for the `line` with the given index.
-    pub(crate) fn line_start(&self, line: OneIndexed, contents: &str) -> TextSize {
-        let row_index = line.to_zero_indexed();
+    /// Returns the [byte offset](TextSize) for the `line`'s start.
+    pub(crate) fn line_start(&self, line_number: LineNumber, contents: &str) -> TextSize {
+        let line_number = usize::from(line_number);
         let starts = self.line_starts();
 
         // If start-of-line position after last line
-        if row_index == starts.len() {
+        if line_number >= starts.len() {
             contents.text_len()
         } else {
-            starts[row_index]
+            starts[line_number]
         }
     }
 
     /// Returns the [byte offset](TextSize) of the `line`'s end.
     /// The offset is the end of the line, up to and including the newline character ending the line (if any).
-    pub(crate) fn line_end(&self, line: OneIndexed, contents: &str) -> TextSize {
-        let row_index = line.to_zero_indexed();
+    pub(crate) fn line_end(&self, line_number: LineNumber, contents: &str) -> TextSize {
+        let line_number = usize::from(line_number);
         let starts = self.line_starts();
 
         // If start-of-line position after last line
-        if row_index.saturating_add(1) >= starts.len() {
+        if line_number.saturating_add(1) >= starts.len() {
             contents.text_len()
         } else {
-            starts[row_index + 1]
+            starts[line_number + 1]
         }
     }
 
-    /// Returns the [byte offset](TextSize) of the `line`'s end.
-    /// The offset is the end of the line, excluding the newline character ending the line (if any).
-    pub(crate) fn line_end_exclusive(&self, line: OneIndexed, contents: &str) -> TextSize {
-        let row_index = line.to_zero_indexed();
-        let starts = self.line_starts();
-
-        // If start-of-line position after last line
-        if row_index.saturating_add(1) >= starts.len() {
-            contents.text_len()
-        } else {
-            starts[row_index + 1] - TextSize::from(1)
-        }
-    }
-
-    /// Returns the [`TextRange`] of the `line` with the given index.
+    /// Returns the [`TextRange`] of the `line`.
     /// The start points to the first character's [byte offset](TextSize), the end up to, and including
     /// the newline character ending the line (if any).
-    pub(crate) fn line_range(&self, line: OneIndexed, contents: &str) -> TextRange {
-        let starts = self.line_starts();
-
-        if starts.len() == line.to_zero_indexed() {
-            TextRange::empty(contents.text_len())
-        } else {
-            TextRange::new(
-                self.line_start(line, contents),
-                self.line_start(line.saturating_add(1), contents),
-            )
-        }
+    pub(crate) fn line_range(&self, line_number: LineNumber, contents: &str) -> TextRange {
+        TextRange::new(
+            self.line_start(line_number, contents),
+            self.line_end(line_number, contents),
+        )
     }
 
-    /// Returns the [byte offset](TextSize) at `line` and `column`.
-    pub(crate) fn offset(&self, line: OneIndexed, column: OneIndexed, contents: &str) -> TextSize {
-        // If start-of-line position after last line
-        if line.to_zero_indexed() > self.line_starts().len() {
-            return contents.text_len();
-        }
+    /// Returns the [byte offset](TextSize) at this [SourceLocation].
+    pub(crate) fn offset(&self, source_location: SourceLocation, contents: &str) -> TextSize {
+        let line_number = source_location.line_number();
+        let line_offset = source_location.line_offset();
 
-        let line_range = self.line_range(line, contents);
+        let line_range = self.line_range(line_number, contents);
 
-        match self.kind() {
-            IndexKind::Ascii => {
-                line_range.start()
-                    + TextSize::try_from(column.to_zero_indexed())
-                        .unwrap_or(line_range.len())
-                        .clamp(TextSize::from(0), line_range.len())
+        let offset = if self.is_ascii() {
+            TextSize::from(line_offset.raw())
+        } else {
+            match line_offset.encoding() {
+                LineOffsetEncoding::UTF8 => TextSize::from(line_offset.raw()),
+                LineOffsetEncoding::UTF16 => {
+                    let n_code_units = line_offset.raw();
+                    let line_contents = &contents[line_range];
+
+                    let mut i = 0;
+                    let mut offset = 0;
+
+                    for c in line_contents.chars() {
+                        if i >= n_code_units {
+                            break;
+                        }
+                        i += c.len_utf16() as u32;
+                        offset += c.len_utf8() as u32;
+                    }
+
+                    TextSize::from(offset)
+                }
+                LineOffsetEncoding::UTF32 => {
+                    let n_code_units = line_offset.raw();
+                    let line_contents = &contents[line_range];
+
+                    let mut offset: u32 = 0;
+
+                    for c in line_contents.chars().take(n_code_units as usize) {
+                        offset += c.len_utf8() as u32;
+                    }
+
+                    TextSize::from(offset)
+                }
             }
-            IndexKind::Utf8 => {
-                let rest = &contents[line_range];
-                let column_offset: TextSize = rest
-                    .chars()
-                    .take(column.to_zero_indexed())
-                    .map(biome_text_size::TextLen::text_len)
-                    .sum();
-                line_range.start() + column_offset
-            }
-        }
+        };
+
+        line_range.start() + offset.clamp(TextSize::from(0), line_range.len())
     }
 
     /// Returns the [byte offsets](TextSize) for every line
     pub fn line_starts(&self) -> &[TextSize] {
         &self.inner.line_starts
-    }
-}
-
-impl Deref for LineIndex {
-    type Target = [TextSize];
-
-    fn deref(&self) -> &Self::Target {
-        self.line_starts()
     }
 }
 
@@ -248,7 +243,10 @@ mod tests {
     use biome_text_size::TextSize;
 
     use crate::line_index::LineIndex;
-    use crate::{OneIndexed, SourceLocation};
+    use crate::source_location::LineNumber;
+    use crate::source_location::LineOffset;
+    use crate::source_location::LineOffsetEncoding;
+    use crate::SourceLocation;
 
     #[test]
     fn ascii_index() {
@@ -279,32 +277,32 @@ mod tests {
         let index = LineIndex::from_source_text(contents);
 
         // First row.
-        let loc = index.source_location(TextSize::from(2), contents);
+        let loc = index.source_location(TextSize::from(2), contents, LineOffsetEncoding::UTF8);
         assert_eq!(
             loc,
-            SourceLocation {
-                row: OneIndexed::from_zero_indexed(0),
-                column: OneIndexed::from_zero_indexed(2)
-            }
+            SourceLocation::new(
+                LineNumber::from(0),
+                LineOffset::new(2, LineOffsetEncoding::UTF8)
+            )
         );
 
         // Second row.
-        let loc = index.source_location(TextSize::from(6), contents);
+        let loc = index.source_location(TextSize::from(6), contents, LineOffsetEncoding::UTF8);
         assert_eq!(
             loc,
-            SourceLocation {
-                row: OneIndexed::from_zero_indexed(1),
-                column: OneIndexed::from_zero_indexed(0)
-            }
+            SourceLocation::new(
+                LineNumber::from(1),
+                LineOffset::new(0, LineOffsetEncoding::UTF8)
+            )
         );
 
-        let loc = index.source_location(TextSize::from(11), contents);
+        let loc = index.source_location(TextSize::from(11), contents, LineOffsetEncoding::UTF8);
         assert_eq!(
             loc,
-            SourceLocation {
-                row: OneIndexed::from_zero_indexed(1),
-                column: OneIndexed::from_zero_indexed(5)
-            }
+            SourceLocation::new(
+                LineNumber::from(1),
+                LineOffset::new(5, LineOffsetEncoding::UTF8)
+            )
         );
     }
 
@@ -315,25 +313,25 @@ mod tests {
         assert_eq!(index.line_starts(), &[TextSize::from(0), TextSize::from(6)]);
 
         assert_eq!(
-            index.source_location(TextSize::from(4), contents),
-            SourceLocation {
-                row: OneIndexed::from_zero_indexed(0),
-                column: OneIndexed::from_zero_indexed(4)
-            }
+            index.source_location(TextSize::from(4), contents, LineOffsetEncoding::UTF8),
+            SourceLocation::new(
+                LineNumber::from(0),
+                LineOffset::new(4, LineOffsetEncoding::UTF8)
+            )
         );
         assert_eq!(
-            index.source_location(TextSize::from(6), contents),
-            SourceLocation {
-                row: OneIndexed::from_zero_indexed(1),
-                column: OneIndexed::from_zero_indexed(0)
-            }
+            index.source_location(TextSize::from(6), contents, LineOffsetEncoding::UTF8),
+            SourceLocation::new(
+                LineNumber::from(1),
+                LineOffset::new(0, LineOffsetEncoding::UTF8)
+            )
         );
         assert_eq!(
-            index.source_location(TextSize::from(7), contents),
-            SourceLocation {
-                row: OneIndexed::from_zero_indexed(1),
-                column: OneIndexed::from_zero_indexed(1)
-            }
+            index.source_location(TextSize::from(7), contents, LineOffsetEncoding::UTF8),
+            SourceLocation::new(
+                LineNumber::from(1),
+                LineOffset::new(1, LineOffsetEncoding::UTF8)
+            )
         );
     }
 
@@ -344,25 +342,25 @@ mod tests {
         assert_eq!(index.line_starts(), &[TextSize::from(0), TextSize::from(7)]);
 
         assert_eq!(
-            index.source_location(TextSize::from(4), contents),
-            SourceLocation {
-                row: OneIndexed::from_zero_indexed(0),
-                column: OneIndexed::from_zero_indexed(4)
-            }
+            index.source_location(TextSize::from(4), contents, LineOffsetEncoding::UTF8),
+            SourceLocation::new(
+                LineNumber::from(0),
+                LineOffset::new(4, LineOffsetEncoding::UTF8)
+            )
         );
         assert_eq!(
-            index.source_location(TextSize::from(7), contents),
-            SourceLocation {
-                row: OneIndexed::from_zero_indexed(1),
-                column: OneIndexed::from_zero_indexed(0)
-            }
+            index.source_location(TextSize::from(7), contents, LineOffsetEncoding::UTF8),
+            SourceLocation::new(
+                LineNumber::from(1),
+                LineOffset::new(0, LineOffsetEncoding::UTF8)
+            )
         );
         assert_eq!(
-            index.source_location(TextSize::from(8), contents),
-            SourceLocation {
-                row: OneIndexed::from_zero_indexed(1),
-                column: OneIndexed::from_zero_indexed(1)
-            }
+            index.source_location(TextSize::from(8), contents, LineOffsetEncoding::UTF8),
+            SourceLocation::new(
+                LineNumber::from(1),
+                LineOffset::new(1, LineOffsetEncoding::UTF8)
+            )
         );
     }
 
@@ -409,27 +407,73 @@ mod tests {
             &[TextSize::from(0), TextSize::from(11)]
         );
 
-        // Second '
+        // Second ', UTF8
         assert_eq!(
-            index.source_location(TextSize::from(9), contents),
-            SourceLocation {
-                row: OneIndexed::from_zero_indexed(0),
-                column: OneIndexed::from_zero_indexed(6)
-            }
+            index.source_location(TextSize::from(9), contents, LineOffsetEncoding::UTF8),
+            SourceLocation::new(
+                LineNumber::from(0),
+                LineOffset::new(9, LineOffsetEncoding::UTF8)
+            )
         );
         assert_eq!(
-            index.source_location(TextSize::from(11), contents),
-            SourceLocation {
-                row: OneIndexed::from_zero_indexed(1),
-                column: OneIndexed::from_zero_indexed(0)
-            }
+            index.source_location(TextSize::from(11), contents, LineOffsetEncoding::UTF8),
+            SourceLocation::new(
+                LineNumber::from(1),
+                LineOffset::new(0, LineOffsetEncoding::UTF8)
+            )
         );
         assert_eq!(
-            index.source_location(TextSize::from(12), contents),
-            SourceLocation {
-                row: OneIndexed::from_zero_indexed(1),
-                column: OneIndexed::from_zero_indexed(1)
-            }
+            index.source_location(TextSize::from(12), contents, LineOffsetEncoding::UTF8),
+            SourceLocation::new(
+                LineNumber::from(1),
+                LineOffset::new(1, LineOffsetEncoding::UTF8)
+            )
+        );
+
+        // Second ', UTF16
+        assert_eq!(
+            index.source_location(TextSize::from(9), contents, LineOffsetEncoding::UTF16),
+            SourceLocation::new(
+                LineNumber::from(0),
+                LineOffset::new(7, LineOffsetEncoding::UTF16)
+            )
+        );
+        assert_eq!(
+            index.source_location(TextSize::from(11), contents, LineOffsetEncoding::UTF16),
+            SourceLocation::new(
+                LineNumber::from(1),
+                LineOffset::new(0, LineOffsetEncoding::UTF16)
+            )
+        );
+        assert_eq!(
+            index.source_location(TextSize::from(12), contents, LineOffsetEncoding::UTF16),
+            SourceLocation::new(
+                LineNumber::from(1),
+                LineOffset::new(1, LineOffsetEncoding::UTF16)
+            )
+        );
+
+        // Second ', UTF32
+        assert_eq!(
+            index.source_location(TextSize::from(9), contents, LineOffsetEncoding::UTF32),
+            SourceLocation::new(
+                LineNumber::from(0),
+                LineOffset::new(6, LineOffsetEncoding::UTF32)
+            )
+        );
+        assert_eq!(
+            index.source_location(TextSize::from(11), contents, LineOffsetEncoding::UTF32),
+            SourceLocation::new(
+                LineNumber::from(1),
+                LineOffset::new(0, LineOffsetEncoding::UTF32)
+            )
+        );
+        assert_eq!(
+            index.source_location(TextSize::from(12), contents, LineOffsetEncoding::UTF32),
+            SourceLocation::new(
+                LineNumber::from(1),
+                LineOffset::new(1, LineOffsetEncoding::UTF32)
+            )
         );
     }
 
@@ -445,25 +489,25 @@ mod tests {
 
         // Second '
         assert_eq!(
-            index.source_location(TextSize::from(9), contents),
-            SourceLocation {
-                row: OneIndexed::from_zero_indexed(0),
-                column: OneIndexed::from_zero_indexed(6)
-            }
+            index.source_location(TextSize::from(9), contents, LineOffsetEncoding::UTF32),
+            SourceLocation::new(
+                LineNumber::from(0),
+                LineOffset::new(6, LineOffsetEncoding::UTF32)
+            )
         );
         assert_eq!(
-            index.source_location(TextSize::from(12), contents),
-            SourceLocation {
-                row: OneIndexed::from_zero_indexed(1),
-                column: OneIndexed::from_zero_indexed(0)
-            }
+            index.source_location(TextSize::from(12), contents, LineOffsetEncoding::UTF32),
+            SourceLocation::new(
+                LineNumber::from(1),
+                LineOffset::new(0, LineOffsetEncoding::UTF32)
+            )
         );
         assert_eq!(
-            index.source_location(TextSize::from(13), contents),
-            SourceLocation {
-                row: OneIndexed::from_zero_indexed(1),
-                column: OneIndexed::from_zero_indexed(1)
-            }
+            index.source_location(TextSize::from(13), contents, LineOffsetEncoding::UTF32),
+            SourceLocation::new(
+                LineNumber::from(1),
+                LineOffset::new(1, LineOffsetEncoding::UTF32)
+            )
         );
     }
 
@@ -476,52 +520,134 @@ mod tests {
             &[TextSize::from(0), TextSize::from(10)]
         );
 
-        // First row.
-        let loc = index.source_location(TextSize::from(0), contents);
+        // First row, start
+        let loc = index.source_location(TextSize::from(0), contents, LineOffsetEncoding::UTF8);
         assert_eq!(
             loc,
-            SourceLocation {
-                row: OneIndexed::from_zero_indexed(0),
-                column: OneIndexed::from_zero_indexed(0)
-            }
+            SourceLocation::new(
+                LineNumber::from(0),
+                LineOffset::new(0, LineOffsetEncoding::UTF8)
+            )
+        );
+        let loc = index.source_location(TextSize::from(0), contents, LineOffsetEncoding::UTF16);
+        assert_eq!(
+            loc,
+            SourceLocation::new(
+                LineNumber::from(0),
+                LineOffset::new(0, LineOffsetEncoding::UTF16)
+            )
+        );
+        let loc = index.source_location(TextSize::from(0), contents, LineOffsetEncoding::UTF32);
+        assert_eq!(
+            loc,
+            SourceLocation::new(
+                LineNumber::from(0),
+                LineOffset::new(0, LineOffsetEncoding::UTF32)
+            )
         );
 
-        let loc = index.source_location(TextSize::from(5), contents);
+        // First row, right before
+        let loc = index.source_location(TextSize::from(5), contents, LineOffsetEncoding::UTF8);
         assert_eq!(
             loc,
-            SourceLocation {
-                row: OneIndexed::from_zero_indexed(0),
-                column: OneIndexed::from_zero_indexed(5)
-            }
+            SourceLocation::new(
+                LineNumber::from(0),
+                LineOffset::new(5, LineOffsetEncoding::UTF8)
+            )
+        );
+        let loc = index.source_location(TextSize::from(5), contents, LineOffsetEncoding::UTF16);
+        assert_eq!(
+            loc,
+            SourceLocation::new(
+                LineNumber::from(0),
+                LineOffset::new(5, LineOffsetEncoding::UTF16)
+            )
+        );
+        let loc = index.source_location(TextSize::from(5), contents, LineOffsetEncoding::UTF32);
+        assert_eq!(
+            loc,
+            SourceLocation::new(
+                LineNumber::from(0),
+                LineOffset::new(5, LineOffsetEncoding::UTF32)
+            )
         );
 
-        let loc = index.source_location(TextSize::from(8), contents);
+        // First row, right after
+        let loc = index.source_location(TextSize::from(8), contents, LineOffsetEncoding::UTF8);
         assert_eq!(
             loc,
-            SourceLocation {
-                row: OneIndexed::from_zero_indexed(0),
-                column: OneIndexed::from_zero_indexed(6)
-            }
+            SourceLocation::new(
+                LineNumber::from(0),
+                LineOffset::new(8, LineOffsetEncoding::UTF8)
+            )
+        );
+        let loc = index.source_location(TextSize::from(8), contents, LineOffsetEncoding::UTF16);
+        assert_eq!(
+            loc,
+            SourceLocation::new(
+                LineNumber::from(0),
+                LineOffset::new(6, LineOffsetEncoding::UTF16)
+            )
+        );
+        let loc = index.source_location(TextSize::from(8), contents, LineOffsetEncoding::UTF32);
+        assert_eq!(
+            loc,
+            SourceLocation::new(
+                LineNumber::from(0),
+                LineOffset::new(6, LineOffsetEncoding::UTF32)
+            )
         );
 
-        // Second row.
-        let loc = index.source_location(TextSize::from(10), contents);
+        // Second row, start
+        let loc = index.source_location(TextSize::from(10), contents, LineOffsetEncoding::UTF8);
         assert_eq!(
             loc,
-            SourceLocation {
-                row: OneIndexed::from_zero_indexed(1),
-                column: OneIndexed::from_zero_indexed(0)
-            }
+            SourceLocation::new(
+                LineNumber::from(1),
+                LineOffset::new(0, LineOffsetEncoding::UTF8)
+            )
+        );
+        let loc = index.source_location(TextSize::from(10), contents, LineOffsetEncoding::UTF16);
+        assert_eq!(
+            loc,
+            SourceLocation::new(
+                LineNumber::from(1),
+                LineOffset::new(0, LineOffsetEncoding::UTF16)
+            )
+        );
+        let loc = index.source_location(TextSize::from(10), contents, LineOffsetEncoding::UTF32);
+        assert_eq!(
+            loc,
+            SourceLocation::new(
+                LineNumber::from(1),
+                LineOffset::new(0, LineOffsetEncoding::UTF32)
+            )
         );
 
         // One-past-the-end.
-        let loc = index.source_location(TextSize::from(15), contents);
+        let loc = index.source_location(TextSize::from(15), contents, LineOffsetEncoding::UTF8);
         assert_eq!(
             loc,
-            SourceLocation {
-                row: OneIndexed::from_zero_indexed(1),
-                column: OneIndexed::from_zero_indexed(5)
-            }
+            SourceLocation::new(
+                LineNumber::from(1),
+                LineOffset::new(5, LineOffsetEncoding::UTF8)
+            )
+        );
+        let loc = index.source_location(TextSize::from(15), contents, LineOffsetEncoding::UTF16);
+        assert_eq!(
+            loc,
+            SourceLocation::new(
+                LineNumber::from(1),
+                LineOffset::new(5, LineOffsetEncoding::UTF16)
+            )
+        );
+        let loc = index.source_location(TextSize::from(15), contents, LineOffsetEncoding::UTF32);
+        assert_eq!(
+            loc,
+            SourceLocation::new(
+                LineNumber::from(1),
+                LineOffset::new(5, LineOffsetEncoding::UTF32)
+            )
         );
     }
 }

@@ -1696,7 +1696,6 @@ version = "0.0.0"
 dependencies = [
  "biome_text_size",
  "memchr",
- "serde",
 ]
 
 [[package]]

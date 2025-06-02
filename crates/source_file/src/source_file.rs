@@ -2,7 +2,8 @@ use biome_text_size::TextRange;
 use biome_text_size::TextSize;
 
 use crate::line_index::LineIndex;
-use crate::OneIndexed;
+use crate::source_location::LineNumber;
+use crate::source_location::LineOffsetEncoding;
 use crate::SourceLocation;
 
 /// Manager of a single source file
@@ -10,7 +11,6 @@ use crate::SourceLocation;
 /// Builds a [LineIndex] on creation, and associates that index with the source it
 /// was created from for future method calls.
 #[derive(Debug, Clone, Eq, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct SourceFile {
     contents: String,
     index: LineIndex,
@@ -42,36 +42,46 @@ impl SourceFile {
         self.index = LineIndex::from_source_text(&self.contents);
     }
 
-    /// Returns the row and column index for an offset.
+    /// Returns the [SourceLocation] for an offset.
     ///
     /// ## Examples
     ///
     /// ```
-    /// # use biome_text_size::TextSize;
-    /// # use source_file::{SourceFile, OneIndexed, SourceLocation};
-    /// let source = "def a():\n    pass".to_string();
+    /// use biome_text_size::TextSize;
+    /// use source_file::{SourceFile, SourceLocation, LineNumber, LineOffset, Encoding};
+    ///
+    /// let source = "x <- function()\n  NULL".to_string();
     /// let source = SourceFile::new(source);
     ///
     /// assert_eq!(
-    ///     source.source_location(TextSize::from(0)),
-    ///     SourceLocation { row: OneIndexed::from_zero_indexed(0), column: OneIndexed::from_zero_indexed(0) }
-    /// );
-    ///
-    /// assert_eq!(
-    ///     source.source_location(TextSize::from(4)),
-    ///     SourceLocation { row: OneIndexed::from_zero_indexed(0), column: OneIndexed::from_zero_indexed(4) }
+    ///     source.source_location(TextSize::from(0), Encoding::UTF8),
+    ///     SourceLocation::new(
+    ///         LineNumber::from(0),
+    ///         LineOffset::new(0, Encoding::UTF8)
+    ///     )
     /// );
     /// assert_eq!(
-    ///     source.source_location(TextSize::from(13)),
-    ///     SourceLocation { row: OneIndexed::from_zero_indexed(1), column: OneIndexed::from_zero_indexed(4) }
+    ///     source.source_location(TextSize::from(4), Encoding::UTF8),
+    ///     SourceLocation::new(
+    ///         LineNumber::from(0),
+    ///         LineOffset::new(4, Encoding::UTF8)
+    ///     )
+    /// );
+    /// assert_eq!(
+    ///     source.source_location(TextSize::from(20), Encoding::UTF8),
+    ///     SourceLocation::new(
+    ///         LineNumber::from(1),
+    ///         LineOffset::new(4, Encoding::UTF8)
+    ///     )
     /// );
     /// ```
-    ///
-    /// ## Panics
-    ///
-    /// If the offset is out of bounds.
-    pub fn source_location(&self, offset: TextSize) -> SourceLocation {
-        self.index.source_location(offset, self.contents())
+    pub fn source_location(
+        &self,
+        offset: TextSize,
+        encoding: LineOffsetEncoding,
+    ) -> SourceLocation {
+        self.index
+            .source_location(offset, self.contents(), encoding)
     }
 
     /// Return the number of lines in the source code.
@@ -89,56 +99,48 @@ impl SourceFile {
     /// ## Examples
     ///
     /// ```
-    /// # use biome_text_size::TextSize;
-    /// # use source_file::{SourceFile, OneIndexed, SourceLocation};
+    /// use biome_text_size::TextSize;
+    /// use source_file::{SourceFile, SourceLocation, LineNumber};
+    ///
     /// let source = "def a():\n    pass".to_string();
     /// let source = SourceFile::new(source);
     ///
-    /// assert_eq!(source.line_index(TextSize::from(0)), OneIndexed::from_zero_indexed(0));
-    /// assert_eq!(source.line_index(TextSize::from(4)), OneIndexed::from_zero_indexed(0));
-    /// assert_eq!(source.line_index(TextSize::from(13)), OneIndexed::from_zero_indexed(1));
+    /// assert_eq!(source.line_number(TextSize::from(0)), LineNumber::from(0));
+    /// assert_eq!(source.line_number(TextSize::from(4)), LineNumber::from(0));
+    /// assert_eq!(source.line_number(TextSize::from(13)), LineNumber::from(1));
     /// ```
-    ///
-    /// ## Panics
-    ///
-    /// If the offset is out of bounds.
-    pub fn line_index(&self, offset: TextSize) -> OneIndexed {
-        self.index.line_index(offset)
+    pub fn line_number(&self, offset: TextSize) -> LineNumber {
+        self.index.line_number(offset)
     }
 
-    /// Returns the [byte offset](TextSize) for the `line` with the given index.
-    pub fn line_start(&self, line: OneIndexed) -> TextSize {
-        self.index.line_start(line, self.contents())
+    /// Returns the [byte offset](TextSize) for the `line_number`'s start.
+    pub fn line_start(&self, line_number: LineNumber) -> TextSize {
+        self.index.line_start(line_number, self.contents())
     }
 
-    /// Returns the [byte offset](TextSize) of the `line`'s end.
+    /// Returns the [byte offset](TextSize) of the `line_number`'s end.
     /// The offset is the end of the line, up to and including the newline character ending the line (if any).
-    pub fn line_end(&self, line: OneIndexed) -> TextSize {
-        self.index.line_end(line, self.contents())
+    pub fn line_end(&self, line_number: LineNumber) -> TextSize {
+        self.index.line_end(line_number, self.contents())
     }
 
-    /// Returns the [byte offset](TextSize) of the `line`'s end.
-    /// The offset is the end of the line, excluding the newline character ending the line (if any).
-    pub fn line_end_exclusive(&self, line: OneIndexed) -> TextSize {
-        self.index.line_end_exclusive(line, self.contents())
-    }
-
-    /// Returns the [`TextRange`] of the `line` with the given index.
+    /// Returns the [`TextRange`] of the `line_number`.
     /// The start points to the first character's [byte offset](TextSize), the end up to, and including
     /// the newline character ending the line (if any).
-    pub fn line_range(&self, line: OneIndexed) -> TextRange {
-        self.index.line_range(line, self.contents())
+    pub fn line_range(&self, line_number: LineNumber) -> TextRange {
+        self.index.line_range(line_number, self.contents())
     }
 
-    /// Returns the [byte offset](TextSize) at `line` and `column`.
+    /// Returns the [byte offset](TextSize) at the [SourceLocation].
     ///
     /// ## Examples
     ///
     /// ### ASCII
     ///
     /// ```
-    /// use source_file::{SourceFile, OneIndexed};
+    /// use source_file::{SourceFile, SourceLocation, LineNumber, LineOffset, Encoding};
     /// use biome_text_size::TextSize;
+    ///
     /// let source = r#"a = 4
     /// c = "some string"
     /// x = b"#.to_string();
@@ -146,23 +148,48 @@ impl SourceFile {
     /// let source = SourceFile::new(source);
     ///
     /// // First line, first column
-    /// assert_eq!(source.offset(OneIndexed::from_zero_indexed(0), OneIndexed::from_zero_indexed(0)), TextSize::from(0));
+    /// assert_eq!(
+    ///     source.offset(SourceLocation::new(
+    ///         LineNumber::from(0),
+    ///         LineOffset::new(0, Encoding::UTF8)
+    ///     )),
+    ///     TextSize::from(0)
+    /// );
     ///
     /// // Second line, 4th column
-    /// assert_eq!(source.offset(OneIndexed::from_zero_indexed(1), OneIndexed::from_zero_indexed(4)), TextSize::from(10));
+    /// assert_eq!(
+    ///     source.offset(SourceLocation::new(
+    ///         LineNumber::from(1),
+    ///         LineOffset::new(4, Encoding::UTF8)
+    ///     )),
+    ///     TextSize::from(10)
+    /// );
     ///
     /// // Offset past the end of the first line
-    /// assert_eq!(source.offset(OneIndexed::from_zero_indexed(0), OneIndexed::from_zero_indexed(10)), TextSize::from(6));
+    /// assert_eq!(
+    ///     source.offset(SourceLocation::new(
+    ///         LineNumber::from(0),
+    ///         LineOffset::new(10, Encoding::UTF8)
+    ///     )),
+    ///     TextSize::from(6)
+    /// );
     ///
     /// // Offset past the end of the file
-    /// assert_eq!(source.offset(OneIndexed::from_zero_indexed(3), OneIndexed::from_zero_indexed(0)), TextSize::from(29));
+    /// assert_eq!(
+    ///     source.offset(SourceLocation::new(
+    ///         LineNumber::from(3),
+    ///         LineOffset::new(0, Encoding::UTF8)
+    ///     )),
+    ///     TextSize::from(29)
+    /// );
     /// ```
     ///
     /// ### UTF8
     ///
     /// ```
-    /// use source_file::{SourceFile, OneIndexed};
+    /// use source_file::{SourceFile, SourceLocation, LineNumber, LineOffset, Encoding};
     /// use biome_text_size::TextSize;
+    ///
     /// let source = r#"a = 4
     /// c = "❤️"
     /// x = b"#.to_string();
@@ -170,20 +197,62 @@ impl SourceFile {
     /// let source = SourceFile::new(source);
     ///
     /// // First line, first column
-    /// assert_eq!(source.offset(OneIndexed::from_zero_indexed(0), OneIndexed::from_zero_indexed(0)), TextSize::from(0));
+    /// assert_eq!(
+    ///     source.offset(SourceLocation::new(
+    ///         LineNumber::from(0),
+    ///         LineOffset::new(0, Encoding::UTF8)
+    ///     )),
+    ///     TextSize::from(0)
+    /// );
     ///
-    /// // Third line, 2nd column, after emoji
-    /// assert_eq!(source.offset(OneIndexed::from_zero_indexed(2), OneIndexed::from_zero_indexed(1)), TextSize::from(20));
+    /// // Third line, 2nd column, after emoji, UTF8
+    /// assert_eq!(
+    ///     source.offset(SourceLocation::new(
+    ///         LineNumber::from(2),
+    ///         LineOffset::new(1, Encoding::UTF8)
+    ///     )),
+    ///     TextSize::from(20)
+    /// );
     ///
-    /// // Offset past the end of the second line
-    /// assert_eq!(source.offset(OneIndexed::from_zero_indexed(1), OneIndexed::from_zero_indexed(10)), TextSize::from(19));
+    /// // Third line, 2nd column, after emoji, UTF16
+    /// assert_eq!(
+    ///     source.offset(SourceLocation::new(
+    ///         LineNumber::from(2),
+    ///         LineOffset::new(1, Encoding::UTF16)
+    ///     )),
+    ///     TextSize::from(20)
+    /// );
+    ///
+    /// // Offset past the end of the second line, UTF8
+    /// assert_eq!(
+    ///     source.offset(SourceLocation::new(
+    ///         LineNumber::from(1),
+    ///         LineOffset::new(10, Encoding::UTF8)
+    ///     )),
+    ///     TextSize::from(16)
+    /// );
+    ///
+    /// // Offset past the end of the second line, UTF32
+    /// assert_eq!(
+    ///     source.offset(SourceLocation::new(
+    ///         LineNumber::from(1),
+    ///         LineOffset::new(10, Encoding::UTF32)
+    ///     )),
+    ///     TextSize::from(19)
+    /// );
     ///
     /// // Offset past the end of the file
-    /// assert_eq!(source.offset(OneIndexed::from_zero_indexed(3), OneIndexed::from_zero_indexed(0)), TextSize::from(24));
+    /// assert_eq!(
+    ///     source.offset(SourceLocation::new(
+    ///         LineNumber::from(3),
+    ///         LineOffset::new(0, Encoding::UTF32)
+    ///     )),
+    ///     TextSize::from(24)
+    /// );
     /// ```
     ///
-    pub fn offset(&self, line: OneIndexed, column: OneIndexed) -> TextSize {
-        self.index.offset(line, column, self.contents())
+    pub fn offset(&self, source_location: SourceLocation) -> TextSize {
+        self.index.offset(source_location, self.contents())
     }
 
     /// Returns the [byte offsets](TextSize) for every line

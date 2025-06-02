@@ -9,18 +9,9 @@ homepage = { workspace = true }
 repository = { workspace = true }
 license = { workspace = true }
 
-[lib]
-
 [dependencies]
 biome_text_size = { workspace = true }
-
 memchr = { workspace = true }
-serde = { workspace = true, optional = true }
-
-[dev-dependencies]
-
-[features]
-serde = ["dep:serde", "biome_text_size/serde"]
 
 [lints]
 workspace = true

@@ -1,8 +1,9 @@
 use crate::document::PositionEncoding;
-use biome_rowan::TextRange;
 use biome_text_size::TextSize;
 use lsp_types as types;
-use source_file::OneIndexed;
+use source_file::LineNumber;
+use source_file::LineOffset;
+use source_file::LineOffsetEncoding;
 use source_file::{SourceFile, SourceLocation};
 
 // We don't own this type so we need a helper trait
@@ -18,7 +19,11 @@ pub(crate) trait TextSizeExt {
 
 impl TextSizeExt for TextSize {
     fn into_proto(self, source: &SourceFile, encoding: PositionEncoding) -> types::Position {
-        source_location_to_position(&offset_to_source_location(self, source, encoding))
+        let source_location = source.source_location(self, remap_encoding(encoding));
+        types::Position {
+            line: source_location.line_number().into(),
+            character: source_location.line_offset().raw(),
+        }
     }
 
     fn from_proto(
@@ -26,101 +31,87 @@ impl TextSizeExt for TextSize {
         source: &SourceFile,
         encoding: PositionEncoding,
     ) -> Self {
-        let line = source.line_range(OneIndexed::from_zero_indexed(u32_index_to_usize(
-            position.line,
-        )));
-
-        let column_offset = match encoding {
-            PositionEncoding::UTF8 => TextSize::from(position.character),
-
-            PositionEncoding::UTF16 => {
-                // Fast path for ASCII only documents
-                if source.is_ascii() {
-                    TextSize::from(position.character)
-                } else {
-                    // UTF-16 encodes characters either as one or two 16 bit words.
-                    // The `position` is the 16-bit word offset from the start of the line (and not the character offset)
-                    utf8_column_offset(position.character, &source.contents()[line])
-                }
-            }
-
-            PositionEncoding::UTF32 => {
-                // UTF-32 uses 4 bytes for each character. Meaning, the position is a character offset.
-                return source.offset(
-                    OneIndexed::from_zero_indexed(u32_index_to_usize(position.line)),
-                    OneIndexed::from_zero_indexed(u32_index_to_usize(position.character)),
-                );
-            }
-        };
-
-        line.start() + column_offset.clamp(TextSize::from(0), line.end())
+        let source_location = SourceLocation::new(
+            LineNumber::from(position.line),
+            LineOffset::new(position.character, remap_encoding(encoding)),
+        );
+        source.offset(source_location)
     }
 }
 
-fn u32_index_to_usize(index: u32) -> usize {
-    usize::try_from(index).expect("u32 fits in usize")
-}
-
-/// Converts a UTF-16 code unit offset for a given line into a UTF-8 column number.
-fn utf8_column_offset(utf16_code_unit_offset: u32, line: &str) -> TextSize {
-    let mut utf8_code_unit_offset = TextSize::from(0);
-
-    let mut i = 0u32;
-
-    for c in line.chars() {
-        if i >= utf16_code_unit_offset {
-            break;
-        }
-
-        // Count characters encoded as two 16 bit words as 2 characters.
-        {
-            utf8_code_unit_offset +=
-                TextSize::from(u32::try_from(c.len_utf8()).expect("utf8 len always <=4"));
-            i += u32::try_from(c.len_utf16()).expect("utf16 len always <=2");
-        }
-    }
-
-    utf8_code_unit_offset
-}
-
-fn offset_to_source_location(
-    offset: TextSize,
-    source: &SourceFile,
-    encoding: PositionEncoding,
-) -> SourceLocation {
+/// Here's how to think about these conversions:
+///
+/// [lsp_types::Position] contains a location encoded as `row` and `character`,
+/// where:
+/// - `row` represents the 0-indexed line number
+/// - `character` represents the 0-indexed column offset, with precise meaning decided
+///   by [lsp_types::PositionEncodingKind]
+///
+/// `character` is interpreted as:
+/// - With [lsp_types::PositionEncodingKind::UTF8], the number of UTF-8 code units.
+/// - With [lsp_types::PositionEncodingKind::UTF16], the number of UTF-16 code units.
+/// - With [lsp_types::PositionEncodingKind::UTF32], the number of UTF-32 code units.
+///
+/// Now, for some definitions:
+///
+/// - Code unit: The minimal bit combination that can represent a single character.
+///   - UTF-8:
+///     - 1 code unit = 1 byte = 8 bits
+///   - UTF-16:
+///     - 1 code unit = 2 bytes = 16 bits
+///   - UTF-32:
+///     - 1 code unit = 4 bytes = 32 bits
+///
+/// - Character: A combination of code units that construct a single UTF element.
+///   - UTF-8:
+///     - 1 character = 1,2,3,4 code units = 1,2,3,4 bytes = 8,16,24,32 bits
+///   - UTF-16:
+///     - 1 character = 1,2 code units = 2,4 bytes = 16,32 bits
+///   - UTF-16:
+///     - 1 character = 1 code units = 4 bytes = 32 bits
+///
+/// - Unicode Scalar Value: Any Unicode Code Point other than a Surrogate Code Point (
+///   which are only used by UTF-16). Technically this means any value in the range of
+///   [0 to 0x10FFFF] excluding the slice of [0xD800 to 0xDFFF].
+///
+/// - Unicode Code Point: Any value in the Unicode code space of [0 to 0x10FFFF]. This
+///   means that something representing an arbitrary code point must be 4 bytes, implying
+///   that something representing a Unicode Scalar Value must also be 4 bytes.
+///
+/// In Rust, [String] and [str] are in UTF-8. Figuring out how to go from the, say,
+/// 8th column `Position.character` of a line to the byte offset on that line requires
+/// knowing both the UTF-8 content of that line and the `PositionEncodingKind` that
+/// `Position.character` is encoded in.
+///
+/// Note that `chars()` returns an iterator over the individual `char` contained within a
+/// string. And each `char` is a Unicode Scalar Value. This means that each `char` is
+/// internally represented as a `u32` of exactly 4 bytes. It also means that you can
+/// think of iterating over `chars()` as equivalent to iterating over UTF-32 Characters
+/// or UTF-32 Code Points.
+///
+/// Also relevant is that [char::len_utf16] returns the number of UTF-16 code units that
+/// would be required to represent the `char`, and [char::len_utf8] returns the number
+/// of UTF-8 code units (and therefore bytes) that would be required to represent the
+/// `char`.
+///
+/// # Converting `character` UTF-8/16/32 code points -> UTF-8 String byte offset
+///
+/// An arbitrary algorithm to find the number of UTF-8 bytes required to represent `character` column offset would be:
+/// - Iterate over `chars()`
+/// - Figure out how many `char`s are required TODO??
+///
+/// - With [lsp_types::PositionEncodingKind::UTF8]:
+///   - `character` is the number of UTF-8 code units
+///   - 1 UTF-8 code unit is just 1 UTF-8 byte, so just return `character`
+/// - With [lsp_types::PositionEncodingKind::UTF16]:
+///   - `character` is the number of UTF-16 code units
+///   - 1 UTF-16 code unit must
+/// - With [lsp_types::PositionEncodingKind::UTF32]:
+///
+fn remap_encoding(encoding: PositionEncoding) -> LineOffsetEncoding {
     match encoding {
-        PositionEncoding::UTF8 => {
-            let row = source.line_index(offset);
-            let column = offset - source.line_start(row);
-
-            SourceLocation {
-                column: OneIndexed::from_zero_indexed(column.into()),
-                row,
-            }
-        }
-        PositionEncoding::UTF16 => {
-            let row = source.line_index(offset);
-
-            let column = if source.is_ascii() {
-                (offset - source.line_start(row)).into()
-            } else {
-                let up_to_line = &source.contents()[TextRange::new(source.line_start(row), offset)];
-                up_to_line.encode_utf16().count()
-            };
-
-            SourceLocation {
-                column: OneIndexed::from_zero_indexed(column),
-                row,
-            }
-        }
-        PositionEncoding::UTF32 => source.source_location(offset),
-    }
-}
-
-fn source_location_to_position(location: &SourceLocation) -> types::Position {
-    types::Position {
-        line: u32::try_from(location.row.to_zero_indexed()).expect("row usize fits in u32"),
-        character: u32::try_from(location.column.to_zero_indexed())
-            .expect("character usize fits in u32"),
+        PositionEncoding::UTF16 => LineOffsetEncoding::UTF16,
+        PositionEncoding::UTF32 => LineOffsetEncoding::UTF32,
+        PositionEncoding::UTF8 => LineOffsetEncoding::UTF8,
     }
 }
