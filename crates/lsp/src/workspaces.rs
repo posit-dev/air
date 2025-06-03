@@ -124,6 +124,7 @@ impl WorkspaceSettingsResolver {
         }
     }
 
+    #[allow(dead_code)]
     pub(crate) fn len(&self) -> usize {
         self.path_to_settings_resolver.len()
     }

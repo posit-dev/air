@@ -4,9 +4,10 @@
 // origin = "https://github.com/rust-lang/rust-analyzer/blob/8d5e91c9/crates/rust-analyzer/src/handlers/request.rs#L2483"
 // ---
 
-use biome_text_size::{TextRange, TextSize};
+use biome_text_size::TextRange;
+use biome_text_size::TextSize;
 
-use super::text_edit::TextEdit;
+use crate::text_edit::TextEdit;
 
 pub(crate) fn diff(left: &str, right: &str) -> TextEdit {
     use dissimilar::Chunk;

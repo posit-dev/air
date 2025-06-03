@@ -9,9 +9,8 @@ use std::array::IntoIter;
 
 use anyhow::anyhow;
 use anyhow::Context;
-use biome_lsp_converters::PositionEncoding;
-use biome_lsp_converters::WideEncoding;
 use serde_json::Value;
+use source_file::LineOffsetEncoding;
 use struct_field_names_as_array::FieldNamesAsArray;
 use tower_lsp::lsp_types;
 use tower_lsp::lsp_types::ConfigurationItem;
@@ -106,10 +105,10 @@ pub(crate) fn initialize(
         .position_encodings
         .contains(&lsp_types::PositionEncodingKind::UTF8)
     {
-        lsp_state.position_encoding = PositionEncoding::Utf8;
+        lsp_state.encoding = LineOffsetEncoding::UTF8;
         Some(lsp_types::PositionEncodingKind::UTF8)
     } else {
-        lsp_state.position_encoding = PositionEncoding::Wide(WideEncoding::Utf16);
+        lsp_state.encoding = LineOffsetEncoding::UTF16;
         Some(lsp_types::PositionEncodingKind::UTF16)
     };
 
@@ -147,7 +146,7 @@ pub(crate) async fn did_open(
     let uri = params.text_document.uri;
     let version = params.text_document.version;
 
-    let document = Document::new(contents, Some(version), lsp_state.position_encoding);
+    let document = Document::new(contents, Some(version), lsp_state.encoding);
     state.documents.insert(uri.clone(), document);
 
     // Propagate client settings to Air
@@ -168,8 +167,7 @@ pub(crate) fn did_change(
 ) -> anyhow::Result<()> {
     let uri = &params.text_document.uri;
     let doc = state.get_document_mut_or_error(uri)?;
-    doc.on_did_change(params);
-
+    doc.apply_changes(params.content_changes, params.text_document.version);
     Ok(())
 }
 

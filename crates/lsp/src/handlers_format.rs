@@ -51,14 +51,16 @@ pub(crate) fn document_formatting(
         return Ok(None);
     }
 
-    let format_options = workspace_settings.to_format_options(&doc.contents, &doc.settings);
+    let format_options =
+        workspace_settings.to_format_options(doc.source_file.contents(), &doc.settings);
 
-    match format_source_with_parse(&doc.contents, &doc.parse, format_options)? {
+    match format_source_with_parse(doc.source_file.contents(), &doc.parse, format_options)? {
         FormattedSource::Changed(formatted) => Ok(Some(to_proto::replace_all_edit(
-            &doc.line_index,
-            &doc.contents,
             &formatted,
-        )?)),
+            &doc.source_file,
+            doc.encoding,
+            doc.endings,
+        ))),
         FormattedSource::Unchanged => Ok(None),
     }
 }
@@ -97,8 +99,7 @@ pub(crate) fn document_range_formatting(
         return Ok(None);
     }
 
-    let range =
-        from_proto::text_range(&doc.line_index.index, params.range, doc.line_index.encoding)?;
+    let range = from_proto::text_range(params.range, &doc.source_file, doc.encoding);
 
     let logical_lines = find_deepest_enclosing_logical_lines(doc.parse.syntax(), range);
     if logical_lines.is_empty() {
@@ -134,7 +135,8 @@ pub(crate) fn document_range_formatting(
     let eof = air_r_syntax::RSyntaxToken::new_detached(RSyntaxKind::EOF, "", vec![], vec![]);
     let root = air_r_factory::r_root(list, eof).build();
 
-    let format_options = workspace_settings.to_format_options(&doc.contents, &doc.settings);
+    let format_options =
+        workspace_settings.to_format_options(doc.source_file.contents(), &doc.settings);
 
     let format_info = biome_formatter::format_sub_tree(
         root.syntax(),
@@ -150,7 +152,13 @@ pub(crate) fn document_range_formatting(
 
     // Remove last hard break line from our artifical expression list
     format_text.pop();
-    let edits = to_proto::replace_range_edit(&doc.line_index, format_range, format_text)?;
+    let edits = to_proto::replace_range_edit(
+        format_range,
+        format_text,
+        &doc.source_file,
+        doc.encoding,
+        doc.endings,
+    );
 
     Ok(Some(edits))
 }
@@ -279,7 +287,7 @@ mod tests {
     use crate::test::new_test_client;
     use crate::test::FileName;
     use crate::test::TestClientExt;
-    use biome_lsp_converters::PositionEncoding;
+    use source_file::LineOffsetEncoding;
     use std::path::Path;
     use tower_lsp::lsp_types::DidChangeWorkspaceFoldersParams;
     use tower_lsp::lsp_types::WorkspaceFolder;
@@ -685,7 +693,7 @@ mod tests {
         let output = "1 + 1\n";
         let url = as_file_url(tempdir.join("test.R").as_path());
         let filename = FileName::Url(url);
-        let doc = Document::new(input.to_string(), Some(0), PositionEncoding::Utf8);
+        let doc = Document::new(input.to_string(), Some(0), LineOffsetEncoding::UTF8);
         let result = client.format_document(&doc, filename).await;
         assert_eq!(result, output);
 
@@ -716,7 +724,7 @@ default-exclude = false
         let input = "1+1";
         let url = as_file_url(tempdir.join("test.R").as_path());
         let filename = FileName::Url(url);
-        let doc = Document::new(input.to_string(), Some(0), PositionEncoding::Utf8);
+        let doc = Document::new(input.to_string(), Some(0), LineOffsetEncoding::UTF8);
         let result = client.format_document(&doc, filename).await;
         assert_eq!(result, input);
 
@@ -725,7 +733,7 @@ default-exclude = false
         let output = "1 + 1\n";
         let url = as_file_url(tempdir.join("cpp11.R").as_path());
         let filename = FileName::Url(url);
-        let doc = Document::new(input.to_string(), Some(0), PositionEncoding::Utf8);
+        let doc = Document::new(input.to_string(), Some(0), LineOffsetEncoding::UTF8);
         let result = client.format_document(&doc, filename).await;
         assert_eq!(result, output);
     }
@@ -753,7 +761,7 @@ igraph::graph_from_literal(Alice + --+Jerry)
         .trim_start();
         let url = as_file_url(tempdir.join("test.R").as_path());
         let filename = FileName::Url(url);
-        let doc = Document::new(input.to_string(), Some(0), PositionEncoding::Utf8);
+        let doc = Document::new(input.to_string(), Some(0), LineOffsetEncoding::UTF8);
         let result = client.format_document(&doc, filename).await;
         assert_eq!(result, output);
 
@@ -792,7 +800,7 @@ igraph::graph_from_literal(Alice +--+ Jerry)
         .trim_start();
         let url = as_file_url(tempdir.join("test.R").as_path());
         let filename = FileName::Url(url);
-        let doc = Document::new(input.to_string(), Some(0), PositionEncoding::Utf8);
+        let doc = Document::new(input.to_string(), Some(0), LineOffsetEncoding::UTF8);
         let result = client.format_document(&doc, filename).await;
         assert_eq!(result, output);
     }
@@ -844,7 +852,7 @@ indent-width = 8
         let output = "list(\n  1\n)\n";
         let url = as_file_url(directory.join("test.R").as_path());
         let filename = FileName::Url(url);
-        let doc = Document::new(input.to_string(), Some(0), PositionEncoding::Utf8);
+        let doc = Document::new(input.to_string(), Some(0), LineOffsetEncoding::UTF8);
         let result = client.format_document(&doc, filename).await;
         assert_eq!(result, output);
 
@@ -853,7 +861,7 @@ indent-width = 8
         let output = "list(\n        1\n)\n";
         let url = as_file_url(workspace.join("test.R").as_path());
         let filename = FileName::Url(url);
-        let doc = Document::new(input.to_string(), Some(0), PositionEncoding::Utf8);
+        let doc = Document::new(input.to_string(), Some(0), LineOffsetEncoding::UTF8);
         let result = client.format_document(&doc, filename).await;
         assert_eq!(result, output);
     }

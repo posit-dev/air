@@ -1,37 +1,31 @@
-pub(crate) use biome_lsp_converters::from_proto::offset;
-pub(crate) use biome_lsp_converters::from_proto::text_range;
-
+use biome_text_size::TextRange;
+use biome_text_size::TextSize;
+use source_file::LineNumber;
+use source_file::LineOffset;
+use source_file::LineOffsetEncoding;
+use source_file::SourceFile;
+use source_file::SourceLocation;
 use tower_lsp::lsp_types;
 
-use crate::documents::Document;
+pub fn offset(
+    position: lsp_types::Position,
+    source: &SourceFile,
+    encoding: LineOffsetEncoding,
+) -> TextSize {
+    let source_location = SourceLocation::new(
+        LineNumber::from(position.line),
+        LineOffset::new(position.character, encoding),
+    );
+    source.offset(source_location)
+}
 
-pub fn apply_text_edits(
-    doc: &Document,
-    mut edits: Vec<lsp_types::TextEdit>,
-) -> anyhow::Result<String> {
-    let mut text = doc.contents.clone();
-
-    // Apply edits from bottom to top to avoid inserted newlines to invalidate
-    // positions in earlier parts of the doc (they are sent in reading order
-    // accorder to the LSP protocol)
-    edits.reverse();
-
-    for edit in edits {
-        let start: usize = offset(
-            &doc.line_index.index,
-            edit.range.start,
-            doc.line_index.encoding,
-        )?
-        .into();
-        let end: usize = offset(
-            &doc.line_index.index,
-            edit.range.end,
-            doc.line_index.encoding,
-        )?
-        .into();
-
-        text.replace_range(start..end, &edit.new_text);
-    }
-
-    Ok(text)
+pub fn text_range(
+    range: lsp_types::Range,
+    source: &SourceFile,
+    encoding: LineOffsetEncoding,
+) -> TextRange {
+    TextRange::new(
+        self::offset(range.start, source, encoding),
+        self::offset(range.end, source, encoding),
+    )
 }

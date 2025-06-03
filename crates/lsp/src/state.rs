@@ -34,9 +34,11 @@ pub(crate) struct WorldState {
     /// currently pushed to the LSP), and cache the symbols with Salsa. The
     /// performance is not currently an issue but this could change once we do
     /// more analysis of symbols in the search path.
+    #[allow(dead_code)]
     pub(crate) console_scopes: Vec<Vec<String>>,
 
     /// Currently installed packages
+    #[allow(dead_code)]
     pub(crate) installed_packages: Vec<String>,
 }
 
@@ -65,12 +67,5 @@ impl WorldState {
 
     pub(crate) fn workspace_uris(&self) -> Vec<Url> {
         self.documents.iter().map(|elt| elt.0.clone()).collect()
-    }
-
-    pub(crate) fn workspace_paths(&self) -> Vec<String> {
-        self.workspace_uris()
-            .into_iter()
-            .map(|uri| uri.to_string())
-            .collect()
     }
 }

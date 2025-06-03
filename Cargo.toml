@@ -43,7 +43,6 @@ assert_matches = "1.5.0"
 biome_console = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
 biome_diagnostics = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
 biome_formatter = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
-biome_lsp_converters = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
 biome_parser = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
 biome_rowan = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
 biome_string_case = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
@@ -53,7 +52,6 @@ bytes = "1.8.0"
 cargo_metadata = "0.19.1"
 clap = { version = "4.5.20", features = ["derive"] }
 colored = "3.0.0"
-crossbeam = "0.8.4"
 dissimilar = "1.0.9"
 futures = "0.3.31"
 futures-util = "0.3.31"
@@ -83,7 +81,6 @@ tracing = { version = "0.1.40", default-features = false, features = ["std"] }
 tracing-subscriber = "0.3.19"
 tree-sitter = "0.23.0"
 tree-sitter-r = { git = "https://github.com/r-lib/tree-sitter-r", rev = "a0d3e3307489c3ca54da8c7b5b4e0c5f5fd6953a" }
-triomphe = "0.1.14"
 url = "2.5.3"
 uuid = { version = "1.11.0", features = ["v4"] }
 

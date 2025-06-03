@@ -18,17 +18,13 @@ air_r_parser.workspace = true
 air_r_syntax.workspace = true
 anyhow.workspace = true
 biome_formatter.workspace = true
-biome_lsp_converters.workspace = true
-biome_parser.workspace = true
 biome_rowan.workspace = true
 biome_text_size.workspace = true
 crates.workspace = true
-crossbeam.workspace = true
 dissimilar.workspace = true
 futures.workspace = true
 itertools.workspace = true
 line_ending.workspace = true
-memchr.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 settings.workspace = true
@@ -42,7 +38,6 @@ tracing.workspace = true
 tracing-subscriber = { workspace = true, features = ["ansi", "local-time"] }
 tree-sitter.workspace = true
 tree-sitter-r.workspace = true
-triomphe.workspace = true
 url.workspace = true
 uuid = { workspace = true, features = ["v4"] }
 workspace = { workspace = true }
