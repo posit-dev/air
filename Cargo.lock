@@ -1996,6 +1996,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "source_file"
+version = "0.0.0"
+dependencies = [
+ "biome_text_size",
+]
+
+[[package]]
 name = "spdx"
 version = "0.10.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
