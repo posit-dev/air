@@ -5,26 +5,28 @@
 //
 //
 
-use biome_lsp_converters::{line_index, PositionEncoding};
 use settings::LineEnding;
+use source_file::LineOffsetEncoding;
+use source_file::SourceFile;
 use tower_lsp::lsp_types;
 
-use crate::rust_analyzer::line_index::LineIndex;
-use crate::rust_analyzer::utils::apply_document_changes;
 use crate::settings::DocumentSettings;
 
 #[derive(Clone)]
 pub struct Document {
     /// The normalized current contents of the document. UTF-8 Rust string with
     /// Unix line endings.
-    pub contents: String,
+    pub source_file: SourceFile,
 
-    /// Map of new lines in `contents`. Also contains line endings type in the
-    /// original document (we only store Unix lines) and the position encoding
-    /// type of the session. This provides all that is needed to send data back
-    /// to the client with positions in the correct coordinate space and
-    /// correctly formatted text.
-    pub line_index: LineIndex,
+    /// The encoding negotiated with the client for this document used when converting
+    /// line offsets to and from the client i.e. for ([lsp_types::Position] <->
+    /// [biome_text_size::TextSize])
+    pub encoding: LineOffsetEncoding,
+
+    /// The line endings used in the [SourceFile]. Always [LineEnding::Lf] due to
+    /// up front normalization, but we pull from this to pass to other helpers, so
+    /// we keep it around.
+    pub endings: LineEnding,
 
     /// We store the syntax tree in the document for now.
     /// We will think about laziness and incrementality in the future.
@@ -47,11 +49,7 @@ impl std::fmt::Debug for Document {
 }
 
 impl Document {
-    pub fn new(
-        contents: String,
-        version: Option<i32>,
-        position_encoding: PositionEncoding,
-    ) -> Self {
+    pub fn new(contents: String, version: Option<i32>, encoding: LineOffsetEncoding) -> Self {
         // Detect existing endings
         let endings = line_ending::infer(&contents);
 
@@ -61,23 +59,18 @@ impl Document {
             LineEnding::Crlf => line_ending::normalize(contents),
         };
 
-        // TODO: Handle user requested line ending preference here
-        // by potentially overwriting `endings` if the user didn't
-        // select `LineEndings::Auto`, and then pass that to `LineIndex`.
+        // Always Unix line endings
+        let endings = LineEnding::Lf;
 
-        // Create line index to keep track of newline offsets
-        let line_index = LineIndex {
-            index: triomphe::Arc::new(line_index::LineIndex::new(&contents)),
-            endings,
-            encoding: position_encoding,
-        };
+        let source_file = SourceFile::new(contents);
 
         // Parse document immediately for now
-        let parse = air_r_parser::parse(&contents, Default::default());
+        let parse = air_r_parser::parse(source_file.contents(), Default::default());
 
         Self {
-            contents,
-            line_index,
+            source_file,
+            encoding,
+            endings,
             parse,
             version,
             settings: Default::default(),
@@ -86,19 +79,21 @@ impl Document {
 
     /// For unit tests
     pub fn doodle(contents: &str) -> Self {
-        Self::new(contents.into(), None, PositionEncoding::Utf8)
+        Self::new(contents.into(), None, LineOffsetEncoding::UTF8)
     }
 
     #[cfg(test)]
     pub fn doodle_and_range(contents: &str) -> (Self, biome_text_size::TextRange) {
         let (contents, range) = crate::test::extract_marked_range(contents);
-        let doc = Self::new(contents, None, PositionEncoding::Utf8);
+        let doc = Self::new(contents, None, LineOffsetEncoding::UTF8);
         (doc, range)
     }
 
-    pub fn on_did_change(&mut self, mut params: lsp_types::DidChangeTextDocumentParams) {
-        let new_version = params.text_document.version;
-
+    pub fn apply_changes(
+        &mut self,
+        mut changes: Vec<lsp_types::TextDocumentContentChangeEvent>,
+        new_version: i32,
+    ) {
         // Check for out-of-order change notifications
         if let Some(old_version) = self.version {
             // According to the spec, versions might not be consecutive but they must be monotonically
@@ -116,23 +111,35 @@ impl Document {
         // replaced text can't invalidate the text change events, even those
         // applied subsequently, since those changes are specified with [line,
         // col] coordinates.
-        for event in &mut params.content_changes {
+        for event in &mut changes {
             let text = std::mem::take(&mut event.text);
             event.text = line_ending::normalize(text);
         }
 
-        let contents = apply_document_changes(
-            self.line_index.encoding,
-            &self.contents,
-            params.content_changes,
-        );
+        if let [lsp_types::TextDocumentContentChangeEvent { range: None, .. }] = changes.as_slice()
+        {
+            tracing::trace!("Fast path - replacing entire document");
+            // Unwrap: If-let ensures there is exactly 1 change event
+            let change = changes.pop().unwrap();
+            self.source_file = SourceFile::new(change.text);
+        } else {
+            // Handle all changes individually
+            for lsp_types::TextDocumentContentChangeEvent { range, text, .. } in changes {
+                if let Some(range) = range {
+                    // Replace a range and reanalyze the line starts
+                    let range =
+                        crate::from_proto::text_range(range, &self.source_file, self.encoding);
+                    self.source_file
+                        .replace_range(usize::from(range.start())..usize::from(range.end()), &text);
+                } else {
+                    // Replace the whole file
+                    self.source_file = SourceFile::new(text);
+                }
+            }
+        }
 
-        // No incrementality for now
-        let parse = air_r_parser::parse(&contents, Default::default());
-
-        self.parse = parse;
-        self.contents = contents;
-        self.line_index.index = triomphe::Arc::new(line_index::LineIndex::new(&self.contents));
+        // Update other fields
+        self.parse = air_r_parser::parse(self.source_file.contents(), Default::default());
         self.version = Some(new_version);
     }
 
@@ -147,17 +154,10 @@ mod tests {
     use air_r_syntax::RSyntaxNode;
     use biome_text_size::{TextRange, TextSize};
 
-    use crate::rust_analyzer::text_edit::TextEdit;
+    use crate::text_edit::TextEdit;
     use crate::to_proto;
 
     use super::*;
-
-    fn dummy_versioned_doc() -> lsp_types::VersionedTextDocumentIdentifier {
-        lsp_types::VersionedTextDocumentIdentifier {
-            uri: url::Url::parse("file:///foo").unwrap(),
-            version: 1,
-        }
-    }
 
     #[test]
     fn test_document_starts_at_0_with_leading_whitespace() {
@@ -180,13 +180,8 @@ mod tests {
             TextRange::new(TextSize::from(4_u32), TextSize::from(7)),
             String::from("1 + 2"),
         );
-        let edits = to_proto::doc_edit_vec(&doc.line_index, edit).unwrap();
-
-        let params = lsp_types::DidChangeTextDocumentParams {
-            text_document: dummy_versioned_doc(),
-            content_changes: edits,
-        };
-        doc.on_did_change(params);
+        let edits = to_proto::doc_change_vec(edit, &doc.source_file, doc.encoding, doc.endings);
+        doc.apply_changes(edits, 1);
 
         let updated_syntax: RSyntaxNode = doc.parse.syntax();
         insta::assert_debug_snapshot!(updated_syntax);
@@ -218,33 +213,23 @@ mod tests {
             },
         };
 
-        let mut utf8_replace_params = lsp_types::DidChangeTextDocumentParams {
-            text_document: dummy_versioned_doc(),
-            content_changes: vec![],
-        };
-        let mut utf16_replace_params = utf8_replace_params.clone();
-
-        utf8_replace_params.content_changes = vec![lsp_types::TextDocumentContentChangeEvent {
+        let utf8_content_changes = vec![lsp_types::TextDocumentContentChangeEvent {
             range: Some(utf8_range),
             range_length: None,
             text: String::from("bar"),
         }];
-        utf16_replace_params.content_changes = vec![lsp_types::TextDocumentContentChangeEvent {
+        let utf16_content_changes = vec![lsp_types::TextDocumentContentChangeEvent {
             range: Some(utf16_range),
             range_length: None,
             text: String::from("bar"),
         }];
 
-        let mut document = Document::new("a𐐀b".into(), None, PositionEncoding::Utf8);
-        document.on_did_change(utf8_replace_params);
-        assert_eq!(document.contents, "a𐐀bar");
+        let mut document = Document::new("a𐐀b".into(), None, LineOffsetEncoding::UTF8);
+        document.apply_changes(utf8_content_changes, 1);
+        assert_eq!(document.source_file.contents(), "a𐐀bar");
 
-        let mut document = Document::new(
-            "a𐐀b".into(),
-            None,
-            PositionEncoding::Wide(biome_lsp_converters::WideEncoding::Utf16),
-        );
-        document.on_did_change(utf16_replace_params);
-        assert_eq!(document.contents, "a𐐀bar");
+        let mut document = Document::new("a𐐀b".into(), None, LineOffsetEncoding::UTF16);
+        document.apply_changes(utf16_content_changes, 1);
+        assert_eq!(document.source_file.contents(), "a𐐀bar");
     }
 }

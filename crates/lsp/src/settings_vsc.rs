@@ -142,6 +142,7 @@ pub(crate) fn indent_style_from_vsc(insert_spaces: bool) -> settings::IndentStyl
     }
 }
 
+#[allow(dead_code)]
 pub(crate) fn line_width_from_vsc(rulers: &[usize]) -> Option<settings::LineWidth> {
     rulers.first().and_then(|w| (*w as u16).try_into().ok())
 }

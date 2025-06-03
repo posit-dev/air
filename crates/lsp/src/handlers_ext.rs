@@ -32,7 +32,7 @@ pub(crate) fn view_file(params: ViewFileParams, state: &WorldState) -> anyhow::R
                 .set_language(&tree_sitter_r::LANGUAGE.into())
                 .unwrap();
 
-            let ast = parser.parse(&doc.contents, None).unwrap();
+            let ast = parser.parse(doc.source_file.contents(), None).unwrap();
 
             if ast.root_node().has_error() {
                 return Ok(String::from("*Parse error*"));

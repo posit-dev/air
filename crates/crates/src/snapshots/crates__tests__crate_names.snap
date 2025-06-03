@@ -17,6 +17,7 @@ expression: AIR_CRATE_NAMES
     "lsp",
     "lsp_test",
     "settings",
+    "source_file",
     "tests_macros",
     "workspace",
     "xtask",
