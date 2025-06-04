@@ -81,7 +81,7 @@
     "href": "formatter.html",
     "title": "Formatter",
     "section": "",
-    "text": "Air is first and foremost a formatter of R code. On this page, you’ll find details about what a formatter is, why you’d want to use one, and you’ll learn about how Air makes decisions on how to format your R code.",
+    "text": "Air is first and foremost a formatter of R code. On this page, you’ll find details about what a formatter is, why you’d want to use one, and you’ll learn about features that help you anticipate how Air will format your R code.",
     "crumbs": [
       "Formatter"
     ]

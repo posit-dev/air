@@ -241,7 +241,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#whats-a-formatter" id="toc-whats-a-formatter" class="nav-link active" data-scroll-target="#whats-a-formatter">What’s a formatter?</a></li>
   <li><a href="#how-does-a-formatter-help-your-workflow" id="toc-how-does-a-formatter-help-your-workflow" class="nav-link" data-scroll-target="#how-does-a-formatter-help-your-workflow">How does a formatter help your workflow?</a></li>
-  <li><a href="#how-does-air-decide-how-to-format-your-code" id="toc-how-does-air-decide-how-to-format-your-code" class="nav-link" data-scroll-target="#how-does-air-decide-how-to-format-your-code">How does Air decide how to format your code?</a></li>
+  <li><a href="#when-does-a-formatter-run" id="toc-when-does-a-formatter-run" class="nav-link" data-scroll-target="#when-does-a-formatter-run">When does a formatter run?</a></li>
+  <li><a href="#persistent-line-breaks" id="toc-persistent-line-breaks" class="nav-link" data-scroll-target="#persistent-line-breaks">Persistent line breaks</a></li>
   <li><a href="#autobracing" id="toc-autobracing" class="nav-link" data-scroll-target="#autobracing">Autobracing</a>
   <ul class="collapse">
   <li><a href="#if-statements" id="toc-if-statements" class="nav-link" data-scroll-target="#if-statements">If statements</a>
@@ -259,7 +260,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#skip-comments" id="toc-skip-comments" class="nav-link" data-scroll-target="#skip-comments">Skip comments</a></li>
   <li><a href="#skip-configuration" id="toc-skip-configuration" class="nav-link" data-scroll-target="#skip-configuration">Skip configuration</a></li>
   </ul></li>
-  <li><a href="#when-does-a-formatter-run" id="toc-when-does-a-formatter-run" class="nav-link" data-scroll-target="#when-does-a-formatter-run">When does a formatter run?</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/formatter.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -285,7 +285,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Air is first and foremost a formatter of R code. On this page, you’ll find details about what a formatter is, why you’d want to use one, and you’ll learn about how Air makes decisions on how to format your R code.</p>
+<p>Air is first and foremost a formatter of R code. On this page, you’ll find details about what a formatter is, why you’d want to use one, and you’ll learn about features that help you anticipate how Air will format your R code.</p>
 <section id="whats-a-formatter" class="level1">
 <h1>What’s a formatter?</h1>
 <p>A formatter is in charge of the <em>layout</em> of your R code. Formatters do not change the meaning of code; instead they ensure that whitespace, newlines, and other punctuation conform to a set of rules and standards, such as:</p>
@@ -331,8 +331,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>First, it automatically forces you to write legible code that is neither too wide nor too narrow, with proper breathing room around syntactic elements. Having a formatter as a companion significantly improves the process of writing code as you no longer have to think about style as much - the formatter does that for you!</p>
 <p>Second, it reduces friction when working in a team. By agreeing to use a formatter in a project, collaborators no longer have to discuss styling and layout issues. Code sent to you by a colleague will adhere to the standards that you’re used to. Code review no longer has to be about style nitpicks and can focus on the substance of the changes instead.</p>
 </section>
-<section id="how-does-air-decide-how-to-format-your-code" class="level1">
-<h1>How does Air decide how to format your code?</h1>
+<section id="when-does-a-formatter-run" class="level1">
+<h1>When does a formatter run?</h1>
+<p>The most convenient way to run a formatter is when you save a file. Most editors don’t enable this by default, so check out the <a href="./editors.html">Editors</a> section to learn how to configure your editor to format on save. Once enabled, your code will be reformatted every time you save! This prevents your code from ever diverging from the standards set by Air.</p>
+<p>Air also provides a <a href="./cli.html">CLI tool</a>. It makes it easy to reformat whole directories, such as an R project or package, using a single call to <code>air format &lt;path&gt;</code>.</p>
+<p>Note that in both of these cases, the formatter will only run if your code is syntactically correct. If the formatter is seemingly no longer working, check your code for syntax errors.</p>
+</section>
+<section id="persistent-line-breaks" class="level1">
+<h1>Persistent line breaks</h1>
 <p>Air tries to strike a balance between enforcing rigid rules and allowing authors some control over the layout. Our main source of styling rules is the <a href="https://style.tidyverse.org">Tidyverse style guide</a>, but we occasionally deviate from these.</p>
 <p>There is a trend among modern formatters of being <em>opinionated</em>. Air certainly fits this trend and provides very few <a href="./configuration.html">configuration options</a>, mostly the indent style (spaces versus tabs), the indent width, and the line width. However, Air also puts code authors in charge of certain aspects of the layout through the notion of <strong>persistent line breaks</strong>.</p>
 <p>In general, Air is in control of deciding where to put vertical space (line breaks) in your code. For instance if you write:</p>
@@ -675,15 +681,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>If you use <code>graph_from_literal()</code> often, it would be annoying to add <code># fmt: skip</code> comments at every call site. Instead, <code>air.toml</code> supports a <a href="./configuration.html#configuration-skip"><code>skip</code> field</a> that allows you to specify function names that you never want formatting for. Specifying this would retain the original formatting of the <code>graph_from_literal()</code> call, even without a <code># fmt: skip</code> comment:</p>
 <div class="sourceCode" id="cb41"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="dt">skip</span> <span class="op">=</span> <span class="op">[</span><span class="st">"graph_from_literal"</span><span class="op">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>One particularly common use of this is <code>skip = ["tribble"]</code>, which you can use to avoid formatting of all <code>tibble::tribble()</code> calls. In the long term, Air may provide more sophisticated tooling for formatting using a specified alignment.</p>
-</section>
-</section>
-<section id="when-does-a-formatter-run" class="level1">
-<h1>When does a formatter run?</h1>
-<p>The most convenient way to run a formatter is when you save a file. Most editors don’t enable this by default, so check out the <a href="./editors.html">Editors</a> section to learn how to configure your editor to format on save. Once enabled, your code will be reformatted every time you save! This prevents your code from ever diverging from the standards set by Air.</p>
-<p>Air also provides a <a href="./cli.html">CLI tool</a>. It makes it easy to reformat whole directories such as an R project or package. If you’re incorporating Air into an existing project, you may want to use the CLI tool to run air format once on the entire project, commit those results, and then rely on per-file format on save from there on out.</p>
-<p>Note that in all of these cases, the formatter will only run if your code is syntactically correct. If the formatter is seemingly no longer working, check your code for syntax errors.</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
