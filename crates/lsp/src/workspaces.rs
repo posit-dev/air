@@ -124,10 +124,6 @@ impl WorkspaceSettingsResolver {
         }
     }
 
-    pub(crate) fn len(&self) -> usize {
-        self.path_to_settings_resolver.len()
-    }
-
     /// Return the appropriate [`WorkspaceSettings`] for a given document [`Url`].
     pub(crate) fn settings_for_url(&self, url: &Url) -> WorkspaceSettings {
         if let Ok(Some(path)) = Self::url_to_path(url) {

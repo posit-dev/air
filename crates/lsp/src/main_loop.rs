@@ -5,7 +5,6 @@
 //
 //
 
-use std::collections::HashMap;
 use std::future;
 use std::pin::Pin;
 
@@ -57,16 +56,19 @@ type TaskList<T> = futures::stream::FuturesUnordered<Pin<Box<dyn AnyhowJoinHandl
 #[derive(Debug)]
 pub(crate) enum Event {
     Lsp(LspMessage),
+    #[allow(dead_code)]
     Kernel(KernelNotification),
 }
 
 #[derive(Debug)]
 pub(crate) enum KernelNotification {
+    #[allow(dead_code)]
     DidChangeConsoleInputs(ConsoleInputs),
 }
 
 #[derive(Debug)]
 pub(crate) enum AuxiliaryEvent {
+    #[allow(dead_code)]
     PublishDiagnostics(Url, Vec<Diagnostic>, Option<i32>),
     SpawnedTask(JoinHandle<anyhow::Result<Option<AuxiliaryEvent>>>),
 }
@@ -161,9 +163,6 @@ pub(crate) struct LspState {
     /// translate UTF-16 positions sent by the client to UTF-8 ones.
     pub(crate) position_encoding: PositionEncoding,
 
-    /// The set of tree-sitter document parsers managed by the `GlobalState`.
-    pub(crate) parsers: HashMap<Url, tree_sitter::Parser>,
-
     /// List of client capabilities that we care about
     pub(crate) capabilities: AirClientCapabilities,
 
@@ -181,7 +180,6 @@ impl LspState {
             workspace_settings_resolver: Default::default(),
             // All servers and clients have to support UTF-16 so that's the default
             position_encoding: PositionEncoding::Wide(WideEncoding::Utf16),
-            parsers: Default::default(),
             capabilities: Default::default(),
             log_state: Default::default(),
             settings: Default::default(),

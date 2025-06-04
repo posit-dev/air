@@ -29,26 +29,6 @@ pub(crate) fn text_edit(
     Ok(lsp_types::TextEdit { range, new_text })
 }
 
-pub(crate) fn completion_text_edit(
-    line_index: &LineIndex,
-    insert_replace_support: Option<lsp_types::Position>,
-    indel: Indel,
-) -> anyhow::Result<lsp_types::CompletionTextEdit> {
-    let text_edit = text_edit(line_index, indel)?;
-    Ok(match insert_replace_support {
-        Some(cursor_pos) => lsp_types::InsertReplaceEdit {
-            new_text: text_edit.new_text,
-            insert: lsp_types::Range {
-                start: text_edit.range.start,
-                end: cursor_pos,
-            },
-            replace: text_edit.range,
-        }
-        .into(),
-        None => text_edit.into(),
-    })
-}
-
 pub(crate) fn text_edit_vec(
     line_index: &LineIndex,
     text_edit: TextEdit,
