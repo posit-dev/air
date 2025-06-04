@@ -9,8 +9,7 @@ use std::array::IntoIter;
 
 use anyhow::anyhow;
 use anyhow::Context;
-use biome_lsp_converters::PositionEncoding;
-use biome_lsp_converters::WideEncoding;
+use biome_line_index::WideEncoding;
 use serde_json::Value;
 use struct_field_names_as_array::FieldNamesAsArray;
 use tower_lsp::lsp_types;
@@ -39,6 +38,7 @@ use crate::documents::Document;
 use crate::logging;
 use crate::logging::LogMessageSender;
 use crate::main_loop::LspState;
+use crate::proto::PositionEncoding;
 use crate::settings::DocumentSettings;
 use crate::settings::InitializationOptions;
 use crate::settings_vsc::indent_style_from_vsc;

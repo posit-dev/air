@@ -7,13 +7,14 @@
 //! Enhances `ide::LineIndex` with additional info required to convert offsets
 //! into lsp positions.
 
-use biome_lsp_converters::line_index;
 use settings::LineEnding;
 use triomphe::Arc;
 
+use crate::proto::PositionEncoding;
+
 #[derive(Debug, Clone)]
 pub struct LineIndex {
-    pub index: Arc<line_index::LineIndex>,
+    pub index: Arc<biome_line_index::LineIndex>,
     pub endings: LineEnding,
-    pub encoding: biome_lsp_converters::PositionEncoding,
+    pub encoding: PositionEncoding,
 }
