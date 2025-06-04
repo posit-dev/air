@@ -1,17 +1,121 @@
-# Hard line break between `{}` tokens
-function() {}
-for (i in x) {}
-if (a) {}
-
-{}
-
 {
   1
 }
 
+{ 1 }
+
+# ------------------------------------------------------------------------
+# Empty `{}`
+
+{}
+{} # comment
+
+# Dangling comment forces it to expand
 {
   # comment
 }
+
+# Dangling comment forces it to expand
+{ # comment
+}
+
+({})
+
+# Some people use `{}` as an alternative to `NULL`
+switch(x, a = {}, b = 2, c = {}, d = 4)
+
+# ------------------------------------------------------------------------
+# Empty `{}` - function definition
+
+# Motivating case
+function() {}
+
+stub <- function() {}
+
+list(
+  a = function() {},
+  b = function() {}
+)
+
+# Even when parameters break, we don't expand the `{}`
+function(a_really_long_argument, another_really_long_argument, another_longgg) {}
+
+function() {} # comment
+
+function() # comment
+  {}
+
+function()
+  # comment
+  {}
+
+# ------------------------------------------------------------------------
+# Empty `{}` - loops
+
+# Want all these to be consistent
+for (x in xs) {}
+while (waiting()) {}
+repeat {}
+
+for (x in xs) {} # comment
+while (waiting()) {} # comment
+repeat {} # comment
+
+for (x in xs) # comment
+  {}
+while (waiting()) # comment
+  {}
+repeat # comment
+  {}
+
+for (x in xs)
+  # comment
+  {}
+while (waiting())
+  # comment
+  {}
+repeat
+  # comment
+  {}
+
+# ------------------------------------------------------------------------
+# Empty `{}` - if statement
+
+# These are a bit weird, but we deal with it for consistency reasons
+if (a) {}
+if (a) {} else {}
+
+if (a) {} # comment
+
+if (a) # comment
+  {}
+
+if (a)
+  # comment
+  {}
+
+{
+  if (a) {}
+  else {}
+}
+
+{
+  if (a) {} # comment1
+  else {} # comment2
+}
+
+{
+  if (a) {}
+  # comment
+  else {}
+}
+
+# Autobracing kicks in around `2` and spans multiple lines,
+# while the `{}` is left uncollapsed. It's weird, but it
+# is supposed to be so the user fixes it, because this is
+# almost certainly a programming mistake.
+if (a) {} else 2
+if (a) 2 else {}
 
 # ------------------------------------------------------------------------
 # Curly-curly

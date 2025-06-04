@@ -5,6 +5,7 @@ info: r/repeat_statement.R
 # Input
 
 ```R
+# Stays collapsed
 repeat {}
 
 repeat {
@@ -84,8 +85,8 @@ Skip: None
 -----
 
 ```R
-repeat {
-}
+# Stays collapsed
+repeat {}
 
 repeat {
   a + b
