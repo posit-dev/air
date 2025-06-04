@@ -16,6 +16,7 @@ use crate::rust_analyzer::{self, line_index::LineIndex, text_edit::TextEdit};
 use biome_text_size::TextRange;
 use tower_lsp::lsp_types;
 
+#[cfg(test)]
 pub(crate) fn doc_edit_vec(
     line_index: &LineIndex,
     text_edit: TextEdit,
