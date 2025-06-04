@@ -7,7 +7,7 @@ editor:
 ---
 
 Air is first and foremost a formatter of R code.
-On this page, you'll find details about what a formatter is, why you'd want to use one, and you'll learn about how Air makes decisions on how to format your R code.
+On this page, you'll find details about what a formatter is, why you'd want to use one, and you'll learn about features that help you anticipate how Air will format your R code.
 
 # What's a formatter?
 
@@ -92,7 +92,20 @@ By agreeing to use a formatter in a project, collaborators no longer have to dis
 Code sent to you by a colleague will adhere to the standards that you're used to.
 Code review no longer has to be about style nitpicks and can focus on the substance of the changes instead.
 
-# How does Air decide how to format your code?
+# When does a formatter run?
+
+The most convenient way to run a formatter is when you save a file.
+Most editors don't enable this by default, so check out the [Editors](editors.qmd) section to learn how to configure your editor to format on save.
+Once enabled, your code will be reformatted every time you save!
+This prevents your code from ever diverging from the standards set by Air.
+
+Air also provides a [CLI tool](cli.qmd).
+It makes it easy to reformat whole directories, such as an R project or package, using a single call to `air format <path>`.
+
+Note that in both of these cases, the formatter will only run if your code is syntactically correct.
+If the formatter is seemingly no longer working, check your code for syntax errors.
+
+# Persistent line breaks
 
 Air tries to strike a balance between enforcing rigid rules and allowing authors some control over the layout.
 Our main source of styling rules is the [Tidyverse style guide](https://style.tidyverse.org), but we occasionally deviate from these.
@@ -605,17 +618,3 @@ skip = ["graph_from_literal"]
 
 One particularly common use of this is `skip = ["tribble"]`, which you can use to avoid formatting of all `tibble::tribble()` calls.
 In the long term, Air may provide more sophisticated tooling for formatting using a specified alignment.
-
-# When does a formatter run?
-
-The most convenient way to run a formatter is when you save a file.
-Most editors don't enable this by default, so check out the [Editors](editors.qmd) section to learn how to configure your editor to format on save.
-Once enabled, your code will be reformatted every time you save!
-This prevents your code from ever diverging from the standards set by Air.
-
-Air also provides a [CLI tool](cli.qmd).
-It makes it easy to reformat whole directories such as an R project or package.
-If you're incorporating Air into an existing project, you may want to use the CLI tool to run air format once on the entire project, commit those results, and then rely on per-file format on save from there on out.
-
-Note that in all of these cases, the formatter will only run if your code is syntactically correct.
-If the formatter is seemingly no longer working, check your code for syntax errors.
