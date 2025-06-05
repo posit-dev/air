@@ -10,6 +10,25 @@ expression: snapshot
 1e6
 0x123F
 
+# Hexadecimal
+# `x` vs `X`
+0x123
+0X123
+# Numbers and letters
+0xDEAD
+0XDEAD
+0x1f2F3
+0X1f2F3
+# `p` vs `P`
+0x0p0
+0x0P0
+0x0p123
+0x0P123
+# `+` and `-`
+0x0p+0
+0x0p-0
+0x0p+123
+0x0p-123
 ```
 
 
@@ -31,17 +50,59 @@ RRoot {
         RDoubleValue {
             value_token: R_DOUBLE_LITERAL@9..16 "0x123F" [Newline("\n")] [],
         },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@16..50 "0x123" [Newline("\n"), Newline("\n"), Comments("# Hexadecimal"), Newline("\n"), Comments("# `x` vs `X`"), Newline("\n")] [],
+        },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@50..56 "0X123" [Newline("\n")] [],
+        },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@56..85 "0xDEAD" [Newline("\n"), Comments("# Numbers and letters"), Newline("\n")] [],
+        },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@85..92 "0XDEAD" [Newline("\n")] [],
+        },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@92..100 "0x1f2F3" [Newline("\n")] [],
+        },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@100..108 "0X1f2F3" [Newline("\n")] [],
+        },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@108..127 "0x0p0" [Newline("\n"), Comments("# `p` vs `P`"), Newline("\n")] [],
+        },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@127..133 "0x0P0" [Newline("\n")] [],
+        },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@133..141 "0x0p123" [Newline("\n")] [],
+        },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@141..149 "0x0P123" [Newline("\n")] [],
+        },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@149..170 "0x0p+0" [Newline("\n"), Comments("# `+` and `-`"), Newline("\n")] [],
+        },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@170..177 "0x0p-0" [Newline("\n")] [],
+        },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@177..186 "0x0p+123" [Newline("\n")] [],
+        },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@186..195 "0x0p-123" [Newline("\n")] [],
+        },
     ],
-    eof_token: EOF@16..17 "" [Newline("\n")] [],
+    eof_token: EOF@195..195 "" [] [],
 }
 ```
 
 ## CST
 
 ```
-0: R_ROOT@0..17
+0: R_ROOT@0..195
   0: (empty)
-  1: R_EXPRESSION_LIST@0..16
+  1: R_EXPRESSION_LIST@0..195
     0: R_DOUBLE_VALUE@0..1
       0: R_DOUBLE_LITERAL@0..1 "1" [] []
     1: R_DOUBLE_VALUE@1..5
@@ -50,6 +111,34 @@ RRoot {
       0: R_DOUBLE_LITERAL@5..9 "1e6" [Newline("\n")] []
     3: R_DOUBLE_VALUE@9..16
       0: R_DOUBLE_LITERAL@9..16 "0x123F" [Newline("\n")] []
-  2: EOF@16..17 "" [Newline("\n")] []
+    4: R_DOUBLE_VALUE@16..50
+      0: R_DOUBLE_LITERAL@16..50 "0x123" [Newline("\n"), Newline("\n"), Comments("# Hexadecimal"), Newline("\n"), Comments("# `x` vs `X`"), Newline("\n")] []
+    5: R_DOUBLE_VALUE@50..56
+      0: R_DOUBLE_LITERAL@50..56 "0X123" [Newline("\n")] []
+    6: R_DOUBLE_VALUE@56..85
+      0: R_DOUBLE_LITERAL@56..85 "0xDEAD" [Newline("\n"), Comments("# Numbers and letters"), Newline("\n")] []
+    7: R_DOUBLE_VALUE@85..92
+      0: R_DOUBLE_LITERAL@85..92 "0XDEAD" [Newline("\n")] []
+    8: R_DOUBLE_VALUE@92..100
+      0: R_DOUBLE_LITERAL@92..100 "0x1f2F3" [Newline("\n")] []
+    9: R_DOUBLE_VALUE@100..108
+      0: R_DOUBLE_LITERAL@100..108 "0X1f2F3" [Newline("\n")] []
+    10: R_DOUBLE_VALUE@108..127
+      0: R_DOUBLE_LITERAL@108..127 "0x0p0" [Newline("\n"), Comments("# `p` vs `P`"), Newline("\n")] []
+    11: R_DOUBLE_VALUE@127..133
+      0: R_DOUBLE_LITERAL@127..133 "0x0P0" [Newline("\n")] []
+    12: R_DOUBLE_VALUE@133..141
+      0: R_DOUBLE_LITERAL@133..141 "0x0p123" [Newline("\n")] []
+    13: R_DOUBLE_VALUE@141..149
+      0: R_DOUBLE_LITERAL@141..149 "0x0P123" [Newline("\n")] []
+    14: R_DOUBLE_VALUE@149..170
+      0: R_DOUBLE_LITERAL@149..170 "0x0p+0" [Newline("\n"), Comments("# `+` and `-`"), Newline("\n")] []
+    15: R_DOUBLE_VALUE@170..177
+      0: R_DOUBLE_LITERAL@170..177 "0x0p-0" [Newline("\n")] []
+    16: R_DOUBLE_VALUE@177..186
+      0: R_DOUBLE_LITERAL@177..186 "0x0p+123" [Newline("\n")] []
+    17: R_DOUBLE_VALUE@186..195
+      0: R_DOUBLE_LITERAL@186..195 "0x0p-123" [Newline("\n")] []
+  2: EOF@195..195 "" [] []
 
 ```

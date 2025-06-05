@@ -1,2 +1,22 @@
 1L
 1e5L
+
+# Hexadecimal
+# `x` vs `X`
+0x123L
+0X123L
+# Numbers and letters
+0xDEADL
+0XDEADL
+0x1f2F3L
+0X1f2F3L
+# `p` vs `P`
+0x0p0L
+0x0P0L
+0x0p123L
+0x0P123L
+# `+` and `-`
+0x0p+0L
+0x0p-0L
+0x0p+123L
+0x0p-123L

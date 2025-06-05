@@ -8,6 +8,25 @@ expression: snapshot
 1L
 1e5L
 
+# Hexadecimal
+# `x` vs `X`
+0x123L
+0X123L
+# Numbers and letters
+0xDEADL
+0XDEADL
+0x1f2F3L
+0X1f2F3L
+# `p` vs `P`
+0x0p0L
+0x0P0L
+0x0p123L
+0x0P123L
+# `+` and `-`
+0x0p+0L
+0x0p-0L
+0x0p+123L
+0x0p-123L
 ```
 
 
@@ -23,21 +42,91 @@ RRoot {
         RIntegerValue {
             value_token: R_INTEGER_LITERAL@2..7 "1e5L" [Newline("\n")] [],
         },
+        RIntegerValue {
+            value_token: R_INTEGER_LITERAL@7..42 "0x123L" [Newline("\n"), Newline("\n"), Comments("# Hexadecimal"), Newline("\n"), Comments("# `x` vs `X`"), Newline("\n")] [],
+        },
+        RIntegerValue {
+            value_token: R_INTEGER_LITERAL@42..49 "0X123L" [Newline("\n")] [],
+        },
+        RIntegerValue {
+            value_token: R_INTEGER_LITERAL@49..79 "0xDEADL" [Newline("\n"), Comments("# Numbers and letters"), Newline("\n")] [],
+        },
+        RIntegerValue {
+            value_token: R_INTEGER_LITERAL@79..87 "0XDEADL" [Newline("\n")] [],
+        },
+        RIntegerValue {
+            value_token: R_INTEGER_LITERAL@87..96 "0x1f2F3L" [Newline("\n")] [],
+        },
+        RIntegerValue {
+            value_token: R_INTEGER_LITERAL@96..105 "0X1f2F3L" [Newline("\n")] [],
+        },
+        RIntegerValue {
+            value_token: R_INTEGER_LITERAL@105..125 "0x0p0L" [Newline("\n"), Comments("# `p` vs `P`"), Newline("\n")] [],
+        },
+        RIntegerValue {
+            value_token: R_INTEGER_LITERAL@125..132 "0x0P0L" [Newline("\n")] [],
+        },
+        RIntegerValue {
+            value_token: R_INTEGER_LITERAL@132..141 "0x0p123L" [Newline("\n")] [],
+        },
+        RIntegerValue {
+            value_token: R_INTEGER_LITERAL@141..150 "0x0P123L" [Newline("\n")] [],
+        },
+        RIntegerValue {
+            value_token: R_INTEGER_LITERAL@150..172 "0x0p+0L" [Newline("\n"), Comments("# `+` and `-`"), Newline("\n")] [],
+        },
+        RIntegerValue {
+            value_token: R_INTEGER_LITERAL@172..180 "0x0p-0L" [Newline("\n")] [],
+        },
+        RIntegerValue {
+            value_token: R_INTEGER_LITERAL@180..190 "0x0p+123L" [Newline("\n")] [],
+        },
+        RIntegerValue {
+            value_token: R_INTEGER_LITERAL@190..200 "0x0p-123L" [Newline("\n")] [],
+        },
     ],
-    eof_token: EOF@7..8 "" [Newline("\n")] [],
+    eof_token: EOF@200..200 "" [] [],
 }
 ```
 
 ## CST
 
 ```
-0: R_ROOT@0..8
+0: R_ROOT@0..200
   0: (empty)
-  1: R_EXPRESSION_LIST@0..7
+  1: R_EXPRESSION_LIST@0..200
     0: R_INTEGER_VALUE@0..2
       0: R_INTEGER_LITERAL@0..2 "1L" [] []
     1: R_INTEGER_VALUE@2..7
       0: R_INTEGER_LITERAL@2..7 "1e5L" [Newline("\n")] []
-  2: EOF@7..8 "" [Newline("\n")] []
+    2: R_INTEGER_VALUE@7..42
+      0: R_INTEGER_LITERAL@7..42 "0x123L" [Newline("\n"), Newline("\n"), Comments("# Hexadecimal"), Newline("\n"), Comments("# `x` vs `X`"), Newline("\n")] []
+    3: R_INTEGER_VALUE@42..49
+      0: R_INTEGER_LITERAL@42..49 "0X123L" [Newline("\n")] []
+    4: R_INTEGER_VALUE@49..79
+      0: R_INTEGER_LITERAL@49..79 "0xDEADL" [Newline("\n"), Comments("# Numbers and letters"), Newline("\n")] []
+    5: R_INTEGER_VALUE@79..87
+      0: R_INTEGER_LITERAL@79..87 "0XDEADL" [Newline("\n")] []
+    6: R_INTEGER_VALUE@87..96
+      0: R_INTEGER_LITERAL@87..96 "0x1f2F3L" [Newline("\n")] []
+    7: R_INTEGER_VALUE@96..105
+      0: R_INTEGER_LITERAL@96..105 "0X1f2F3L" [Newline("\n")] []
+    8: R_INTEGER_VALUE@105..125
+      0: R_INTEGER_LITERAL@105..125 "0x0p0L" [Newline("\n"), Comments("# `p` vs `P`"), Newline("\n")] []
+    9: R_INTEGER_VALUE@125..132
+      0: R_INTEGER_LITERAL@125..132 "0x0P0L" [Newline("\n")] []
+    10: R_INTEGER_VALUE@132..141
+      0: R_INTEGER_LITERAL@132..141 "0x0p123L" [Newline("\n")] []
+    11: R_INTEGER_VALUE@141..150
+      0: R_INTEGER_LITERAL@141..150 "0x0P123L" [Newline("\n")] []
+    12: R_INTEGER_VALUE@150..172
+      0: R_INTEGER_LITERAL@150..172 "0x0p+0L" [Newline("\n"), Comments("# `+` and `-`"), Newline("\n")] []
+    13: R_INTEGER_VALUE@172..180
+      0: R_INTEGER_LITERAL@172..180 "0x0p-0L" [Newline("\n")] []
+    14: R_INTEGER_VALUE@180..190
+      0: R_INTEGER_LITERAL@180..190 "0x0p+123L" [Newline("\n")] []
+    15: R_INTEGER_VALUE@190..200
+      0: R_INTEGER_LITERAL@190..200 "0x0p-123L" [Newline("\n")] []
+  2: EOF@200..200 "" [] []
 
 ```

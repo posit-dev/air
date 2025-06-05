@@ -12,6 +12,22 @@ expression: snapshot
 "'"
 "multiline
 string"
+r"(")"
+r"("")"
+r"(')"
+r"('')"
+r"-(-)-"
+r"-()-)-"
+r"--()-")--"
+r"( () )"
+r"(())"
+r"( ())"
+r"(() )"
+r"-())-"
+r"-(())-)-"
+r"(raw
+string
+)"
 r"("some raw string
 business")"
 
@@ -43,19 +59,61 @@ RRoot {
             value_token: R_STRING_LITERAL@37..56 "\"multiline\nstring\"" [Newline("\n")] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@56..88 "r\"(\"some raw string\nbusiness\")\"" [Newline("\n")] [],
+            value_token: R_STRING_LITERAL@56..63 "r\"(\")\"" [Newline("\n")] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@63..71 "r\"(\"\")\"" [Newline("\n")] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@71..78 "r\"(')\"" [Newline("\n")] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@78..86 "r\"('')\"" [Newline("\n")] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@86..95 "r\"-(-)-\"" [Newline("\n")] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@95..105 "r\"-()-)-\"" [Newline("\n")] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@105..118 "r\"--()-\")--\"" [Newline("\n")] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@118..128 "r\"( () )\"" [Newline("\n")] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@128..136 "r\"(())\"" [Newline("\n")] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@136..145 "r\"( ())\"" [Newline("\n")] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@145..154 "r\"(() )\"" [Newline("\n")] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@154..163 "r\"-())-\"" [Newline("\n")] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@163..175 "r\"-(())-)-\"" [Newline("\n")] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@175..192 "r\"(raw\nstring\n)\"" [Newline("\n")] [],
+        },
+        RStringValue {
+            value_token: R_STRING_LITERAL@192..224 "r\"(\"some raw string\nbusiness\")\"" [Newline("\n")] [],
         },
     ],
-    eof_token: EOF@88..89 "" [Newline("\n")] [],
+    eof_token: EOF@224..225 "" [Newline("\n")] [],
 }
 ```
 
 ## CST
 
 ```
-0: R_ROOT@0..89
+0: R_ROOT@0..225
   0: (empty)
-  1: R_EXPRESSION_LIST@0..88
+  1: R_EXPRESSION_LIST@0..224
     0: R_STRING_VALUE@0..11
       0: R_STRING_LITERAL@0..11 "\"hi there!\"" [] []
     1: R_STRING_VALUE@11..16
@@ -68,8 +126,36 @@ RRoot {
       0: R_STRING_LITERAL@33..37 "\"'\"" [Newline("\n")] []
     5: R_STRING_VALUE@37..56
       0: R_STRING_LITERAL@37..56 "\"multiline\nstring\"" [Newline("\n")] []
-    6: R_STRING_VALUE@56..88
-      0: R_STRING_LITERAL@56..88 "r\"(\"some raw string\nbusiness\")\"" [Newline("\n")] []
-  2: EOF@88..89 "" [Newline("\n")] []
+    6: R_STRING_VALUE@56..63
+      0: R_STRING_LITERAL@56..63 "r\"(\")\"" [Newline("\n")] []
+    7: R_STRING_VALUE@63..71
+      0: R_STRING_LITERAL@63..71 "r\"(\"\")\"" [Newline("\n")] []
+    8: R_STRING_VALUE@71..78
+      0: R_STRING_LITERAL@71..78 "r\"(')\"" [Newline("\n")] []
+    9: R_STRING_VALUE@78..86
+      0: R_STRING_LITERAL@78..86 "r\"('')\"" [Newline("\n")] []
+    10: R_STRING_VALUE@86..95
+      0: R_STRING_LITERAL@86..95 "r\"-(-)-\"" [Newline("\n")] []
+    11: R_STRING_VALUE@95..105
+      0: R_STRING_LITERAL@95..105 "r\"-()-)-\"" [Newline("\n")] []
+    12: R_STRING_VALUE@105..118
+      0: R_STRING_LITERAL@105..118 "r\"--()-\")--\"" [Newline("\n")] []
+    13: R_STRING_VALUE@118..128
+      0: R_STRING_LITERAL@118..128 "r\"( () )\"" [Newline("\n")] []
+    14: R_STRING_VALUE@128..136
+      0: R_STRING_LITERAL@128..136 "r\"(())\"" [Newline("\n")] []
+    15: R_STRING_VALUE@136..145
+      0: R_STRING_LITERAL@136..145 "r\"( ())\"" [Newline("\n")] []
+    16: R_STRING_VALUE@145..154
+      0: R_STRING_LITERAL@145..154 "r\"(() )\"" [Newline("\n")] []
+    17: R_STRING_VALUE@154..163
+      0: R_STRING_LITERAL@154..163 "r\"-())-\"" [Newline("\n")] []
+    18: R_STRING_VALUE@163..175
+      0: R_STRING_LITERAL@163..175 "r\"-(())-)-\"" [Newline("\n")] []
+    19: R_STRING_VALUE@175..192
+      0: R_STRING_LITERAL@175..192 "r\"(raw\nstring\n)\"" [Newline("\n")] []
+    20: R_STRING_VALUE@192..224
+      0: R_STRING_LITERAL@192..224 "r\"(\"some raw string\nbusiness\")\"" [Newline("\n")] []
+  2: EOF@224..225 "" [Newline("\n")] []
 
 ```

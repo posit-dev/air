@@ -31,6 +31,14 @@ fn(..1, ..2)
 fn(..1 = 1, ..2 = 2)
 
 # ------------------------------------------------------------------------
+# `NULL` argument name (r-lib/tree-sitter-r#164)
+
+fn(NULL = 1)
+fn(NULL = 1,)
+fn(NULL = )
+fn(NULL = ,)
+
+# ------------------------------------------------------------------------
 # User requested line break
 
 # A line break before the first argument forces expansion

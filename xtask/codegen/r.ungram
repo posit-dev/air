@@ -127,11 +127,6 @@ RParameter =
 	name: AnyRParameterName
 	default: RParameterDefault?
 
-// TODO: tree-sitter-r currently allows the `value` to be optional,
-// but R's parser doesn't allow this. We plan to make it required,
-// so we go ahead and do that here.
-// https://github.com/r-lib/tree-sitter-r/issues/161
-
 RParameterDefault =
 	'='
 	value: AnyRExpression
@@ -267,6 +262,7 @@ AnyRArgumentName =
 	| RStringValue
 	| RDots
 	| RDotDotI
+	| RNullExpression
 
 // ----------------------------------------------------------------
 // Expression

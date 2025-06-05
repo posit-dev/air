@@ -1662,6 +1662,7 @@ pub enum AnyRArgumentName {
     RDotDotI(RDotDotI),
     RDots(RDots),
     RIdentifier(RIdentifier),
+    RNullExpression(RNullExpression),
     RStringValue(RStringValue),
 }
 impl AnyRArgumentName {
@@ -1680,6 +1681,12 @@ impl AnyRArgumentName {
     pub fn as_r_identifier(&self) -> Option<&RIdentifier> {
         match &self {
             AnyRArgumentName::RIdentifier(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_null_expression(&self) -> Option<&RNullExpression> {
+        match &self {
+            AnyRArgumentName::RNullExpression(item) => Some(item),
             _ => None,
         }
     }
@@ -3671,6 +3678,11 @@ impl From<RIdentifier> for AnyRArgumentName {
         AnyRArgumentName::RIdentifier(node)
     }
 }
+impl From<RNullExpression> for AnyRArgumentName {
+    fn from(node: RNullExpression) -> AnyRArgumentName {
+        AnyRArgumentName::RNullExpression(node)
+    }
+}
 impl From<RStringValue> for AnyRArgumentName {
     fn from(node: RStringValue) -> AnyRArgumentName {
         AnyRArgumentName::RStringValue(node)
@@ -3681,15 +3693,20 @@ impl AstNode for AnyRArgumentName {
     const KIND_SET: SyntaxKindSet<Language> = RDotDotI::KIND_SET
         .union(RDots::KIND_SET)
         .union(RIdentifier::KIND_SET)
+        .union(RNullExpression::KIND_SET)
         .union(RStringValue::KIND_SET);
     fn can_cast(kind: SyntaxKind) -> bool {
-        matches!(kind, R_DOT_DOT_I | R_DOTS | R_IDENTIFIER | R_STRING_VALUE)
+        matches!(
+            kind,
+            R_DOT_DOT_I | R_DOTS | R_IDENTIFIER | R_NULL_EXPRESSION | R_STRING_VALUE
+        )
     }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         let res = match syntax.kind() {
             R_DOT_DOT_I => AnyRArgumentName::RDotDotI(RDotDotI { syntax }),
             R_DOTS => AnyRArgumentName::RDots(RDots { syntax }),
             R_IDENTIFIER => AnyRArgumentName::RIdentifier(RIdentifier { syntax }),
+            R_NULL_EXPRESSION => AnyRArgumentName::RNullExpression(RNullExpression { syntax }),
             R_STRING_VALUE => AnyRArgumentName::RStringValue(RStringValue { syntax }),
             _ => return None,
         };
@@ -3700,6 +3717,7 @@ impl AstNode for AnyRArgumentName {
             AnyRArgumentName::RDotDotI(it) => &it.syntax,
             AnyRArgumentName::RDots(it) => &it.syntax,
             AnyRArgumentName::RIdentifier(it) => &it.syntax,
+            AnyRArgumentName::RNullExpression(it) => &it.syntax,
             AnyRArgumentName::RStringValue(it) => &it.syntax,
         }
     }
@@ -3708,6 +3726,7 @@ impl AstNode for AnyRArgumentName {
             AnyRArgumentName::RDotDotI(it) => it.syntax,
             AnyRArgumentName::RDots(it) => it.syntax,
             AnyRArgumentName::RIdentifier(it) => it.syntax,
+            AnyRArgumentName::RNullExpression(it) => it.syntax,
             AnyRArgumentName::RStringValue(it) => it.syntax,
         }
     }
@@ -3718,6 +3737,7 @@ impl std::fmt::Debug for AnyRArgumentName {
             AnyRArgumentName::RDotDotI(it) => std::fmt::Debug::fmt(it, f),
             AnyRArgumentName::RDots(it) => std::fmt::Debug::fmt(it, f),
             AnyRArgumentName::RIdentifier(it) => std::fmt::Debug::fmt(it, f),
+            AnyRArgumentName::RNullExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRArgumentName::RStringValue(it) => std::fmt::Debug::fmt(it, f),
         }
     }
@@ -3728,6 +3748,7 @@ impl From<AnyRArgumentName> for SyntaxNode {
             AnyRArgumentName::RDotDotI(it) => it.into(),
             AnyRArgumentName::RDots(it) => it.into(),
             AnyRArgumentName::RIdentifier(it) => it.into(),
+            AnyRArgumentName::RNullExpression(it) => it.into(),
             AnyRArgumentName::RStringValue(it) => it.into(),
         }
     }
