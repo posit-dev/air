@@ -81,7 +81,7 @@ tower-lsp = { git = "https://github.com/lionel-/tower-lsp", branch = "bugfix/pat
 tracing = { version = "0.1.40", default-features = false, features = ["std"] }
 tracing-subscriber = "0.3.19"
 tree-sitter = "0.23.0"
-tree-sitter-r = { git = "https://github.com/r-lib/tree-sitter-r", rev = "b92b2cf3fa89d0364f2abd5fb86bc7a9aa669827" }
+tree-sitter-r = { git = "https://github.com/r-lib/tree-sitter-r", rev = "f6f60a5c26a824dd5689cec4c165457259bcb614" }
 triomphe = "0.1.14"
 url = "2.5.3"
 uuid = { version = "1.11.0", features = ["v4"] }
