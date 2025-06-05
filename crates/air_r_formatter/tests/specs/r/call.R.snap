@@ -38,6 +38,14 @@ fn(..1, ..2)
 fn(..1 = 1, ..2 = 2)
 
 # ------------------------------------------------------------------------
+# `NULL` argument name (r-lib/tree-sitter-r#164)
+
+fn(NULL = 1)
+fn(NULL = 1,)
+fn(NULL = )
+fn(NULL = ,)
+
+# ------------------------------------------------------------------------
 # User requested line break
 
 # A line break before the first argument forces expansion
@@ -925,6 +933,14 @@ fn(
 
 fn(..1, ..2)
 fn(..1 = 1, ..2 = 2)
+
+# ------------------------------------------------------------------------
+# `NULL` argument name (r-lib/tree-sitter-r#164)
+
+fn(NULL = 1)
+fn(NULL = 1, )
+fn(NULL = )
+fn(NULL = , )
 
 # ------------------------------------------------------------------------
 # User requested line break
@@ -1832,9 +1848,9 @@ foo(bar[
 
 # Lines exceeding max width of 80 characters
 ```
-  308:   my_long_list_my_long_list_my_long_list_my_long_list_long_long_long_long_long_list,
-  781:   foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz
-  785: c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz()))
-  788: c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz(
-  801:   name = foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz(
+  316:   my_long_list_my_long_list_my_long_list_my_long_list_long_long_long_long_long_list,
+  789:   foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz
+  793: c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz()))
+  796: c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz(
+  809:   name = foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz(
 ```

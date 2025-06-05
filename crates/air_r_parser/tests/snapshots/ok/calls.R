@@ -42,3 +42,14 @@ fn(
 )
 
 {expr}(a = 1)
+
+# `NULL` argument name (r-lib/tree-sitter-r#164)
+fn(
+  NULL = 1
+)
+fn(
+  NULL = 
+)
+fn(
+  NULL = ,
+)

@@ -2,6 +2,8 @@
 
 # Development version
 
+- `NULL` is now allowed in function call argument name position.
+
 - Fixed a case where some valid raw strings would cause a parse error (#255).
 
 - Empty `{}` are no longer ever expanded (#43).

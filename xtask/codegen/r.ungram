@@ -262,6 +262,7 @@ AnyRArgumentName =
 	| RStringValue
 	| RDots
 	| RDotDotI
+	| RNullExpression
 
 // ----------------------------------------------------------------
 // Expression

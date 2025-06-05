@@ -955,7 +955,7 @@ impl<'src> RWalk<'src> {
 
         // A complication with arguments is that tree-sitter-r doesn't differentiate
         // between named and unnamed arguments at the node level. Named arguments
-        // have a `"name"` field node (identifier/string/dots/dotdoti) followed
+        // have a `"name"` field node (identifier/string/dots/dotdoti/null) followed
         // by an `=` sign. If we see that `"name"` field, we open the name clause
         // node and close it after we see the `=`.
         let mut seen_equal = false;
@@ -966,7 +966,8 @@ impl<'src> RWalk<'src> {
                     RSyntaxKind::R_IDENTIFIER
                     | RSyntaxKind::R_STRING_VALUE
                     | RSyntaxKind::R_DOTS
-                    | RSyntaxKind::R_DOT_DOT_I => {
+                    | RSyntaxKind::R_DOT_DOT_I
+                    | RSyntaxKind::R_NULL_EXPRESSION => {
                         if !seen_equal {
                             if let Some(next_field_name) = iter.peek_field_name() {
                                 if next_field_name == "name" {

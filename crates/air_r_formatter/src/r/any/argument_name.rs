@@ -11,6 +11,7 @@ impl FormatRule<AnyRArgumentName> for FormatAnyRArgumentName {
             AnyRArgumentName::RDotDotI(node) => node.format().fmt(f),
             AnyRArgumentName::RDots(node) => node.format().fmt(f),
             AnyRArgumentName::RIdentifier(node) => node.format().fmt(f),
+            AnyRArgumentName::RNullExpression(node) => node.format().fmt(f),
             AnyRArgumentName::RStringValue(node) => node.format().fmt(f),
         }
     }

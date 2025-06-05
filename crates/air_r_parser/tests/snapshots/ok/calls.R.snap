@@ -50,6 +50,16 @@ fn(
 
 {expr}(a = 1)
 
+# `NULL` argument name (r-lib/tree-sitter-r#164)
+fn(
+  NULL = 1
+)
+fn(
+  NULL = 
+)
+fn(
+  NULL = ,
+)
 ```
 
 
@@ -600,17 +610,84 @@ RRoot {
                 r_paren_token: R_PAREN@367..368 ")" [] [],
             },
         },
+        RCall {
+            function: RIdentifier {
+                name_token: IDENT@368..421 "fn" [Newline("\n"), Newline("\n"), Comments("# `NULL` argument nam ..."), Newline("\n")] [],
+            },
+            arguments: RCallArguments {
+                l_paren_token: L_PAREN@421..422 "(" [] [],
+                items: RArgumentList [
+                    RArgument {
+                        name_clause: RArgumentNameClause {
+                            name: RNullExpression {
+                                null_token: NULL_KW@422..429 "NULL" [Newline("\n"), Whitespace("  ")] [],
+                            },
+                            eq_token: EQUAL@429..431 "=" [Whitespace(" ")] [],
+                        },
+                        value: RDoubleValue {
+                            value_token: R_DOUBLE_LITERAL@431..433 "1" [Whitespace(" ")] [],
+                        },
+                    },
+                ],
+                r_paren_token: R_PAREN@433..435 ")" [Newline("\n")] [],
+            },
+        },
+        RCall {
+            function: RIdentifier {
+                name_token: IDENT@435..438 "fn" [Newline("\n")] [],
+            },
+            arguments: RCallArguments {
+                l_paren_token: L_PAREN@438..439 "(" [] [],
+                items: RArgumentList [
+                    RArgument {
+                        name_clause: RArgumentNameClause {
+                            name: RNullExpression {
+                                null_token: NULL_KW@439..446 "NULL" [Newline("\n"), Whitespace("  ")] [],
+                            },
+                            eq_token: EQUAL@446..449 "=" [Whitespace(" ")] [Whitespace(" ")],
+                        },
+                        value: missing (optional),
+                    },
+                ],
+                r_paren_token: R_PAREN@449..451 ")" [Newline("\n")] [],
+            },
+        },
+        RCall {
+            function: RIdentifier {
+                name_token: IDENT@451..454 "fn" [Newline("\n")] [],
+            },
+            arguments: RCallArguments {
+                l_paren_token: L_PAREN@454..455 "(" [] [],
+                items: RArgumentList [
+                    RArgument {
+                        name_clause: RArgumentNameClause {
+                            name: RNullExpression {
+                                null_token: NULL_KW@455..462 "NULL" [Newline("\n"), Whitespace("  ")] [],
+                            },
+                            eq_token: EQUAL@462..464 "=" [Whitespace(" ")] [],
+                        },
+                        value: missing (optional),
+                    },
+                    COMMA@464..466 "," [Whitespace(" ")] [],
+                    RArgument {
+                        name_clause: missing (optional),
+                        value: missing (optional),
+                    },
+                ],
+                r_paren_token: R_PAREN@466..468 ")" [Newline("\n")] [],
+            },
+        },
     ],
-    eof_token: EOF@368..369 "" [Newline("\n")] [],
+    eof_token: EOF@468..468 "" [] [],
 }
 ```
 
 ## CST
 
 ```
-0: R_ROOT@0..369
+0: R_ROOT@0..468
   0: (empty)
-  1: R_EXPRESSION_LIST@0..368
+  1: R_EXPRESSION_LIST@0..468
     0: R_CALL@0..4
       0: R_IDENTIFIER@0..2
         0: IDENT@0..2 "fn" [] []
@@ -973,6 +1050,50 @@ RRoot {
             1: R_DOUBLE_VALUE@365..367
               0: R_DOUBLE_LITERAL@365..367 "1" [Whitespace(" ")] []
         2: R_PAREN@367..368 ")" [] []
-  2: EOF@368..369 "" [Newline("\n")] []
+    23: R_CALL@368..435
+      0: R_IDENTIFIER@368..421
+        0: IDENT@368..421 "fn" [Newline("\n"), Newline("\n"), Comments("# `NULL` argument nam ..."), Newline("\n")] []
+      1: R_CALL_ARGUMENTS@421..435
+        0: L_PAREN@421..422 "(" [] []
+        1: R_ARGUMENT_LIST@422..433
+          0: R_ARGUMENT@422..433
+            0: R_ARGUMENT_NAME_CLAUSE@422..431
+              0: R_NULL_EXPRESSION@422..429
+                0: NULL_KW@422..429 "NULL" [Newline("\n"), Whitespace("  ")] []
+              1: EQUAL@429..431 "=" [Whitespace(" ")] []
+            1: R_DOUBLE_VALUE@431..433
+              0: R_DOUBLE_LITERAL@431..433 "1" [Whitespace(" ")] []
+        2: R_PAREN@433..435 ")" [Newline("\n")] []
+    24: R_CALL@435..451
+      0: R_IDENTIFIER@435..438
+        0: IDENT@435..438 "fn" [Newline("\n")] []
+      1: R_CALL_ARGUMENTS@438..451
+        0: L_PAREN@438..439 "(" [] []
+        1: R_ARGUMENT_LIST@439..449
+          0: R_ARGUMENT@439..449
+            0: R_ARGUMENT_NAME_CLAUSE@439..449
+              0: R_NULL_EXPRESSION@439..446
+                0: NULL_KW@439..446 "NULL" [Newline("\n"), Whitespace("  ")] []
+              1: EQUAL@446..449 "=" [Whitespace(" ")] [Whitespace(" ")]
+            1: (empty)
+        2: R_PAREN@449..451 ")" [Newline("\n")] []
+    25: R_CALL@451..468
+      0: R_IDENTIFIER@451..454
+        0: IDENT@451..454 "fn" [Newline("\n")] []
+      1: R_CALL_ARGUMENTS@454..468
+        0: L_PAREN@454..455 "(" [] []
+        1: R_ARGUMENT_LIST@455..466
+          0: R_ARGUMENT@455..464
+            0: R_ARGUMENT_NAME_CLAUSE@455..464
+              0: R_NULL_EXPRESSION@455..462
+                0: NULL_KW@455..462 "NULL" [Newline("\n"), Whitespace("  ")] []
+              1: EQUAL@462..464 "=" [Whitespace(" ")] []
+            1: (empty)
+          1: COMMA@464..466 "," [Whitespace(" ")] []
+          2: R_ARGUMENT@466..466
+            0: (empty)
+            1: (empty)
+        2: R_PAREN@466..468 ")" [Newline("\n")] []
+  2: EOF@468..468 "" [] []
 
 ```
