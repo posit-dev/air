@@ -2,7 +2,9 @@
 
 # Development version
 
-- `NULL` is now allowed in function call argument name position.
+- Binary exponents are now supported in hexadecimal constants (#357).
+
+- `NULL` is now allowed in function call argument name position (#357).
 
 - Fixed a case where some valid raw strings would cause a parse error (#255).
 
