@@ -2,6 +2,8 @@
 
 # Development version
 
+- Fixed a case where some valid raw strings would cause a parse error (#255).
+
 - Empty `{}` are no longer ever expanded (#43).
 
   This allows for syntax like:
