@@ -5,10 +5,7 @@
 
 # 0.7.0
 
-- Autobracing is a new feature applied to if statements, for loops, while loops,
-  repeat loops, and function definitions. This feature will automatically add
-  `{}` around the body of these code elements in certain cases to maximize
-  readability, consistency, and portability (#225, #334).
+- Autobracing is a new feature applied to if statements, for loops, while loops, repeat loops, and function definitions. This feature will automatically add `{}` around the body of these code elements in certain cases to maximize readability, consistency, and portability (#225, #334).
 
   For example:
 
