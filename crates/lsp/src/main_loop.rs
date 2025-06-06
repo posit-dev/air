@@ -9,8 +9,7 @@ use std::future;
 use std::pin::Pin;
 
 use anyhow::anyhow;
-use biome_lsp_converters::PositionEncoding;
-use biome_lsp_converters::WideEncoding;
+use biome_line_index::WideEncoding;
 use futures::StreamExt;
 use tokio::sync::mpsc::unbounded_channel as tokio_unbounded_channel;
 use tokio::task::JoinHandle;
@@ -27,6 +26,7 @@ use crate::handlers_state::ConsoleInputs;
 use crate::logging;
 use crate::logging::LogMessageSender;
 use crate::logging::LogThreadState;
+use crate::proto::PositionEncoding;
 use crate::settings::GlobalSettings;
 use crate::state::WorldState;
 use crate::tower_lsp::LspMessage;

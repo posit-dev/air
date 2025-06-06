@@ -276,10 +276,10 @@ fn find_expression_lists(node: &RSyntaxNode, offset: TextSize, end: bool) -> Vec
 #[cfg(test)]
 mod tests {
     use crate::documents::Document;
+    use crate::proto::PositionEncoding;
     use crate::test::new_test_client;
     use crate::test::FileName;
     use crate::test::TestClientExt;
-    use biome_lsp_converters::PositionEncoding;
     use std::path::Path;
     use tower_lsp::lsp_types::DidChangeWorkspaceFoldersParams;
     use tower_lsp::lsp_types::WorkspaceFolder;

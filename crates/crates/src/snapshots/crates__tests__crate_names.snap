@@ -9,6 +9,7 @@ expression: AIR_CRATE_NAMES
     "air_r_formatter",
     "air_r_parser",
     "air_r_syntax",
+    "biome_line_index",
     "biome_ungrammar",
     "comments",
     "crates",

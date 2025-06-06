@@ -26,6 +26,7 @@ air_r_factory = { path = "./crates/air_r_factory" }
 air_r_formatter = { path = "./crates/air_r_formatter" }
 air_r_parser = { path = "./crates/air_r_parser" }
 air_r_syntax = { path = "./crates/air_r_syntax" }
+biome_line_index = { path = "./crates/biome_line_index" }
 biome_ungrammar = { path = "./crates/biome_ungrammar" }
 comments = { path = "./crates/comments" }
 crates = { path = "./crates/crates" }
@@ -42,7 +43,6 @@ assert_matches = "1.5.0"
 biome_console = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
 biome_diagnostics = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
 biome_formatter = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
-biome_lsp_converters = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
 biome_parser = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
 biome_rowan = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
 biome_string_case = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }

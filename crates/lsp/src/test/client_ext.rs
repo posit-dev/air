@@ -121,7 +121,7 @@ impl TestClientExt for TestClient {
     ) -> Option<Vec<lsp_types::TextEdit>> {
         let lsp_doc = self.open_document(doc, filename).await;
 
-        let range = to_proto::range(&doc.line_index.index, range, doc.line_index.encoding).unwrap();
+        let range = to_proto::range(&doc.line_index, range, doc.line_index.encoding).unwrap();
 
         self.range_formatting(lsp_types::DocumentRangeFormattingParams {
             text_document: lsp_types::TextDocumentIdentifier {

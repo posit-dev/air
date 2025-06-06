@@ -371,14 +371,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "biome_lsp_converters"
+name = "biome_line_index"
 version = "0.1.0"
-source = "git+https://github.com/biomejs/biome?rev=2648fa4201be4afd26f44eca1a4e77aac0a67272#2648fa4201be4afd26f44eca1a4e77aac0a67272"
 dependencies = [
- "anyhow",
- "biome_rowan",
+ "biome_text_size",
  "rustc-hash",
- "tower-lsp 0.20.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1360,7 +1357,7 @@ dependencies = [
  "anyhow",
  "assert_matches",
  "biome_formatter",
- "biome_lsp_converters",
+ "biome_line_index",
  "biome_parser",
  "biome_rowan",
  "biome_text_size",
@@ -1386,7 +1383,7 @@ dependencies = [
  "time",
  "tokio",
  "tokio-util",
- "tower-lsp 0.20.0 (git+https://github.com/lionel-/tower-lsp?branch=bugfix%2Fpatches)",
+ "tower-lsp",
  "tracing",
  "tracing-subscriber",
  "tree-sitter",
@@ -1423,7 +1420,7 @@ dependencies = [
  "serde_json",
  "tokio",
  "tokio-util",
- "tower-lsp 0.20.0 (git+https://github.com/lionel-/tower-lsp?branch=bugfix%2Fpatches)",
+ "tower-lsp",
  "tracing",
  "url",
 ]
@@ -2346,29 +2343,6 @@ checksum = "121c2a6cda46980bb0fcd1647ffaf6cd3fc79a013de288782836f6df9c48780e"
 [[package]]
 name = "tower-lsp"
 version = "0.20.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4ba052b54a6627628d9b3c34c176e7eda8359b7da9acd497b9f20998d118508"
-dependencies = [
- "async-trait",
- "auto_impl",
- "bytes",
- "dashmap 5.5.3",
- "futures",
- "httparse",
- "lsp-types",
- "memchr",
- "serde",
- "serde_json",
- "tokio",
- "tokio-util",
- "tower",
- "tower-lsp-macros 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "tracing",
-]
-
-[[package]]
-name = "tower-lsp"
-version = "0.20.0"
 source = "git+https://github.com/lionel-/tower-lsp?branch=bugfix%2Fpatches#49ef549eaa9f74b71e212cf513283af4ad748a81"
 dependencies = [
  "async-trait",
@@ -2384,19 +2358,8 @@ dependencies = [
  "tokio",
  "tokio-util",
  "tower",
- "tower-lsp-macros 0.9.0 (git+https://github.com/lionel-/tower-lsp?branch=bugfix%2Fpatches)",
+ "tower-lsp-macros",
  "tracing",
-]
-
-[[package]]
-name = "tower-lsp-macros"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "84fd902d4e0b9a4b27f2f440108dc034e1758628a9b702f8ec61ad66355422fa"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.90",
 ]
 
 [[package]]

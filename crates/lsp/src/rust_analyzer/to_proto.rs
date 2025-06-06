@@ -17,11 +17,7 @@ pub(crate) fn text_edit(
     line_index: &LineIndex,
     indel: Indel,
 ) -> anyhow::Result<lsp_types::TextEdit> {
-    let range = biome_lsp_converters::to_proto::range(
-        &line_index.index,
-        indel.delete,
-        line_index.encoding,
-    )?;
+    let range = crate::to_proto::range(line_index, indel.delete, line_index.encoding)?;
     let new_text = match line_index.endings {
         LineEnding::Lf => indel.insert,
         LineEnding::Crlf => indel.insert.replace('\n', "\r\n"),
