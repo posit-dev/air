@@ -2,31 +2,6 @@
 
 # Development version
 
-- Binary exponents are now supported in hexadecimal constants (#357).
-
-- `NULL` is now allowed in function call argument name position (#357).
-
-- Fixed a case where some valid raw strings would cause a parse error (#255).
-
-- Empty `{}` are no longer ever expanded (#43).
-
-  This allows for syntax like:
-
-  ```r
-  dummy <- function() {}
-
-  while (waiting()) {}
-
-  switch(x, a = {}, b = 2)
-
-  function(
-    expr = {}
-  ) {
-    this_first()
-    expr
-  }
-  ```
-
 - Autobracing is a new feature applied to if statements, for loops, while loops,
   repeat loops, and function definitions. This feature will automatically add
   `{}` around the body of these code elements in certain cases to maximize
@@ -65,6 +40,31 @@
 
   map(xs, function(x) x + 1)
   ```
+
+- Empty `{}` are no longer ever expanded (#43).
+
+  This allows for syntax like:
+
+  ```r
+  dummy <- function() {}
+
+  while (waiting()) {}
+
+  switch(x, a = {}, b = 2)
+
+  function(
+    expr = {}
+  ) {
+    this_first()
+    expr
+  }
+  ```
+
+- Binary exponents are now supported in hexadecimal constants (#357).
+
+- `NULL` is now allowed in function call argument name position (#357).
+
+- Fixed a case where some valid raw strings would cause a parse error (#255).
 
 
 # 0.6.0
