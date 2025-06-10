@@ -1,4 +1,4 @@
-use super::js_kinds_src::AstSrc;
+use super::kind_src::AstSrc;
 use crate::language_kind::LanguageKind;
 use crate::Result;
 use biome_string_case::Case;

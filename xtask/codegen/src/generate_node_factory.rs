@@ -1,5 +1,5 @@
-use super::js_kinds_src::AstSrc;
-use crate::js_kinds_src::Field;
+use crate::kind_src::AstSrc;
+use crate::kind_src::Field;
 use crate::language_kind::LanguageKind;
 use biome_string_case::Case;
 use quote::{format_ident, quote};

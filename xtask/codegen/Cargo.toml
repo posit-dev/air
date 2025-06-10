@@ -9,12 +9,9 @@ anyhow = { workspace = true }
 bpaf = { version = "0.9.15", features = ["derive"] }
 git2 = { version = "0.19.0", default-features = false }
 proc-macro2 = { workspace = true, features = ["span-locations"] }
-quote = "1.0.37"
-serde_json = "1.0.113"
-ureq = "2.10.1"
-walkdir = "2.5.0"
+quote = { workspace = true }
+serde_json = { workspace = true }
 xtask = { path = '../', version = "0.0" }
-
 biome_string_case = { workspace = true }
 biome_ungrammar = { workspace = true }
 schemars = { workspace = true }
