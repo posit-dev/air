@@ -6,13 +6,13 @@
 
 use std::ops::Range;
 
-use biome_lsp_converters::line_index;
 use tower_lsp::lsp_types;
 
 use crate::from_proto;
+use crate::proto::PositionEncoding;
 
 pub(crate) fn apply_document_changes(
-    encoding: biome_lsp_converters::PositionEncoding,
+    encoding: PositionEncoding,
     file_contents: &str,
     mut content_changes: Vec<lsp_types::TextDocumentContentChangeEvent>,
 ) -> String {
@@ -32,7 +32,7 @@ pub(crate) fn apply_document_changes(
         return text;
     }
 
-    let mut line_index = line_index::LineIndex::new(&text);
+    let mut line_index = biome_line_index::LineIndex::new(&text);
 
     // The changes we got must be applied sequentially, but can cross lines so we
     // have to keep our line index updated.
@@ -44,7 +44,7 @@ pub(crate) fn apply_document_changes(
         // The None case can't happen as we have handled it above already
         if let Some(range) = change.range {
             if index_valid <= range.end.line {
-                line_index = line_index::LineIndex::new(&text);
+                line_index = biome_line_index::LineIndex::new(&text);
             }
             index_valid = range.start.line;
             if let Ok(range) = from_proto::text_range(&line_index, range, encoding) {

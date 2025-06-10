@@ -5,10 +5,10 @@
 //
 //
 
-use biome_lsp_converters::{line_index, PositionEncoding};
 use settings::LineEnding;
 use tower_lsp::lsp_types;
 
+use crate::proto::PositionEncoding;
 use crate::rust_analyzer::line_index::LineIndex;
 use crate::rust_analyzer::utils::apply_document_changes;
 use crate::settings::DocumentSettings;
@@ -67,7 +67,7 @@ impl Document {
 
         // Create line index to keep track of newline offsets
         let line_index = LineIndex {
-            index: triomphe::Arc::new(line_index::LineIndex::new(&contents)),
+            index: triomphe::Arc::new(biome_line_index::LineIndex::new(&contents)),
             endings,
             encoding: position_encoding,
         };
@@ -132,7 +132,8 @@ impl Document {
 
         self.parse = parse;
         self.contents = contents;
-        self.line_index.index = triomphe::Arc::new(line_index::LineIndex::new(&self.contents));
+        self.line_index.index =
+            triomphe::Arc::new(biome_line_index::LineIndex::new(&self.contents));
         self.version = Some(new_version);
     }
 
@@ -242,7 +243,7 @@ mod tests {
         let mut document = Document::new(
             "a𐐀b".into(),
             None,
-            PositionEncoding::Wide(biome_lsp_converters::WideEncoding::Utf16),
+            PositionEncoding::Wide(biome_line_index::WideEncoding::Utf16),
         );
         document.on_did_change(utf16_replace_params);
         assert_eq!(document.contents, "a𐐀bar");
