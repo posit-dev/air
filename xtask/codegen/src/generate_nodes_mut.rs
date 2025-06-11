@@ -1,4 +1,4 @@
-use crate::js_kinds_src::{AstSrc, Field};
+use crate::kind_src::{AstSrc, Field};
 use crate::language_kind::LanguageKind;
 use quote::{format_ident, quote};
 use xtask::Result;

@@ -1,28 +1,23 @@
 //! Generate SyntaxKind definitions as well as typed AST definitions for nodes and tokens.
 //! This is derived from rust-analyzer/xtask/codegen
 
-use std::collections::{HashMap, HashSet, VecDeque};
 use std::vec;
 
-use super::{
-    js_kinds_src::{AstSrc, Field},
-    Mode,
-};
 use crate::generate_node_factory::generate_node_factory;
 use crate::generate_nodes_mut::generate_nodes_mut;
 use crate::generate_syntax_factory::generate_syntax_factory;
-use crate::js_kinds_src::{
-    AstEnumSrc, AstListSeparatorConfiguration, AstListSrc, AstNodeSrc, TokenKind,
+use crate::kind_src::{
+    AstEnumSrc, AstListSeparatorConfiguration, AstListSrc, AstNodeSrc, AstSrc, Field, TokenKind,
 };
 use crate::language_kind::{LanguageKind, ALL_LANGUAGE_KIND};
 use crate::termcolorful::{println_string_with_fg_color, Color};
+use crate::Mode;
 use crate::{
     generate_macros::generate_macros, generate_nodes::generate_nodes,
     generate_syntax_kinds::generate_syntax_kinds, update,
 };
 use biome_string_case::Case;
 use biome_ungrammar::{Grammar, Rule, Token};
-use std::fmt::Write;
 use std::str::FromStr;
 use xtask::{project_root, Result};
 
@@ -60,9 +55,6 @@ pub(crate) fn load_ast(language: LanguageKind) -> AstSrc {
     let grammar_src = language.load_grammar();
     let grammar: Grammar = grammar_src.parse().unwrap();
     let mut ast: AstSrc = make_ast(&grammar);
-    if language == LanguageKind::Js {
-        check_unions(&ast.unions);
-    }
     ast.sort();
     ast
 }
@@ -106,71 +98,6 @@ pub(crate) fn generate_syntax(ast: AstSrc, mode: &Mode, language_kind: LanguageK
     Ok(())
 }
 
-fn check_unions(unions: &[AstEnumSrc]) {
-    // Setup a map to find the unions quickly
-    let union_map: HashMap<_, _> = unions.iter().map(|en| (&en.name, en)).collect();
-
-    // Iterate over all unions
-    for union in unions {
-        let mut stack_string = format!(
-            "\n******** START ERROR STACK ********\nChecking {}, variants : {:?}",
-            union.name, union.variants
-        );
-        let mut union_set: HashSet<_> = HashSet::from([&union.name]);
-        let mut union_queue: VecDeque<_> = VecDeque::new();
-
-        // Init queue for BFS
-        union_queue.extend(&union.variants);
-
-        // Loop over the queue getting the first variant
-        while let Some(variant) = union_queue.pop_front() {
-            if union_map.contains_key(variant) {
-                // The variant is a compound variant
-                // Get the struct from the map
-                let current_union = union_map[variant];
-                write!(
-                    stack_string,
-                    "\nSUB-ENUM CHECK : {}, variants : {:?}",
-                    current_union.name, current_union.variants
-                )
-                .unwrap();
-                // Try to insert the current variant into the set
-                if union_set.insert(&current_union.name) {
-                    // Add all variants into the BFS queue
-                    union_queue.extend(&current_union.variants);
-                } else {
-                    // We either have a circular dependency or 2 variants referencing the same type
-                    println!("{stack_string}");
-                    panic!("Variant '{variant}' used twice or circular dependency");
-                }
-            } else {
-                // The variant isn't another enum
-                // stack_string.push_str(&format!());
-                write!(stack_string, "\nBASE-VAR CHECK : {variant}").unwrap();
-                if !union_set.insert(variant) {
-                    // The variant already used
-                    println!("{stack_string}");
-                    panic!("Variant '{variant}' used twice");
-                }
-            }
-        }
-    }
-}
-
-pub(crate) fn append_css_property_value_implied_alternatives(variants: Vec<String>) -> Vec<String> {
-    let mut cloned = variants.clone();
-    if !cloned.iter().any(|v| v == "CssWideKeyword") {
-        cloned.push(String::from("CssWideKeyword"));
-    }
-    if !cloned.iter().any(|v| v == "CssUnknownPropertyValue") {
-        cloned.push(String::from("CssUnknownPropertyValue"));
-    }
-    if !cloned.iter().any(|v| v == "CssBogusPropertyValue") {
-        cloned.push(String::from("CssBogusPropertyValue"));
-    }
-    cloned
-}
-
 fn make_ast(grammar: &Grammar) -> AstSrc {
     let mut ast = AstSrc::default();
 
@@ -182,24 +109,12 @@ fn make_ast(grammar: &Grammar) -> AstSrc {
 
         let rule = &grammar[node].rule;
 
-        match classify_node_rule(grammar, rule, &name) {
-            NodeRuleClassification::Union(variants) => {
-                // TODO: This is CSS-specific and would be better handled with a per-language
-                // method for classifying or modifying rules before generation.
-                let variants = if name.trim().starts_with("AnyCss")
-                    && name.trim().ends_with("PropertyValue")
-                {
-                    append_css_property_value_implied_alternatives(variants)
-                } else {
-                    variants
-                };
-
-                ast.unions.push(AstEnumSrc {
-                    documentation: vec![],
-                    name,
-                    variants,
-                })
-            }
+        match classify_node_rule(grammar, rule) {
+            NodeRuleClassification::Union(variants) => ast.unions.push(AstEnumSrc {
+                documentation: vec![],
+                name,
+                variants,
+            }),
             NodeRuleClassification::Node => {
                 let mut fields = vec![];
                 handle_rule(&mut fields, grammar, rule, None, false, false);
@@ -267,7 +182,7 @@ enum NodeRuleClassification {
     },
 }
 
-fn classify_node_rule(grammar: &Grammar, rule: &Rule, name: &str) -> NodeRuleClassification {
+fn classify_node_rule(grammar: &Grammar, rule: &Rule) -> NodeRuleClassification {
     match rule {
         // this is for enums
         Rule::Alt(alternatives) => {
@@ -315,15 +230,6 @@ fn classify_node_rule(grammar: &Grammar, rule: &Rule, name: &str) -> NodeRuleCla
             }
         }
         Rule::UnorderedAll(_) | Rule::UnorderedSome(_) => NodeRuleClassification::DynamicNode,
-        Rule::Node(node) if name.starts_with("AnyCss") && name.ends_with("PropertyValue") => {
-            // TODO: This is CSS-specific and would be better handled with a per-language
-            // method for classifying or modifying rules before generation.
-            //
-            // We use the convention `AnyCss*PropertyValue` to automatically inject
-            // additional implicit variants. If there is only one normal production for
-            // the node, then it won't be a `Rule::Alt`, and needs to be handled
-            NodeRuleClassification::Union(vec![grammar[*node].name.clone()])
-        }
         _ => NodeRuleClassification::Node,
     }
 }

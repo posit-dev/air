@@ -28,17 +28,6 @@ pub fn project_root() -> PathBuf {
     .to_path_buf()
 }
 
-pub fn run_rustfmt(mode: Mode) -> Result<()> {
-    let _dir = pushd(project_root());
-    let _e = pushenv("RUSTUP_TOOLCHAIN", "stable");
-    ensure_rustfmt()?;
-    match mode {
-        Mode::Overwrite => run!("cargo fmt"),
-        Mode::Verify => run!("cargo fmt -- --check"),
-    }?;
-    Ok(())
-}
-
 pub fn reformat(text: impl Display) -> Result<String> {
     reformat_without_preamble(text).map(prepend_generated_preamble)
 }

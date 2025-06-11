@@ -1,90 +1,34 @@
 use std::str::FromStr;
 
-use crate::css_kinds_src::CSS_KINDS_SRC;
-use crate::graphql_kind_src::GRAPHQL_KINDS_SRC;
-use crate::grit_kinds_src::GRIT_KINDS_SRC;
-use crate::html_kinds_src::HTML_KINDS_SRC;
-use crate::js_kinds_src::JS_KINDS_SRC;
-use crate::json_kinds_src::JSON_KINDS_SRC;
 use crate::kind_src::KindsSrc;
-use crate::markdown_kinds_src::MARKDOWN_KINDS_SRC;
 use crate::r_kinds_src::R_KINDS_SRC;
-use crate::yaml_kinds_src::YAML_KINDS_SRC;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
 
-pub const LANGUAGE_PREFIXES: [&str; 11] = [
-    "js_",
-    "ts_",
-    "jsx_",
-    "tsx_",
-    "css_",
-    "json_",
-    "grit_",
-    "html_",
-    "yaml_",
-    "markdown_",
-    "r_",
-];
+pub const LANGUAGE_PREFIXES: [&str; 1] = ["r_"];
 
 #[derive(Debug, Eq, Copy, Clone, PartialEq)]
 pub enum LanguageKind {
-    Js,
-    Css,
-    Json,
-    Graphql,
-    Grit,
-    Html,
-    Yaml,
-    Markdown,
     R,
 }
 
 impl std::fmt::Display for LanguageKind {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            LanguageKind::Js => write!(f, "js"),
-            LanguageKind::Css => write!(f, "css"),
-            LanguageKind::Json => write!(f, "json"),
-            LanguageKind::Graphql => write!(f, "graphql"),
-            LanguageKind::Grit => write!(f, "grit"),
-            LanguageKind::Html => write!(f, "html"),
-            LanguageKind::Yaml => write!(f, "yaml"),
-            LanguageKind::Markdown => write!(f, "markdown"),
             LanguageKind::R => write!(f, "r"),
         }
     }
 }
 
-pub const ALL_LANGUAGE_KIND: [LanguageKind; 9] = [
-    LanguageKind::Js,
-    LanguageKind::Css,
-    LanguageKind::Json,
-    LanguageKind::Graphql,
-    LanguageKind::Grit,
-    LanguageKind::Html,
-    LanguageKind::Yaml,
-    LanguageKind::Markdown,
-    LanguageKind::R,
-];
+pub const ALL_LANGUAGE_KIND: [LanguageKind; 1] = [LanguageKind::R];
 
 impl FromStr for LanguageKind {
     type Err = String;
 
     fn from_str(kind: &str) -> Result<Self, Self::Err> {
         match kind {
-            "js" => Ok(LanguageKind::Js),
-            "css" => Ok(LanguageKind::Css),
-            "json" => Ok(LanguageKind::Json),
-            "graphql" => Ok(LanguageKind::Graphql),
-            "grit" => Ok(LanguageKind::Grit),
-            "html" => Ok(LanguageKind::Html),
-            "yaml" => Ok(LanguageKind::Yaml),
-            "markdown" => Ok(LanguageKind::Markdown),
             "r" => Ok(LanguageKind::R),
-            _ => Err(format!(
-                "Language {kind} not supported, please use: `js`, `css`, `json`, `grit`, `graphql`, `html`, `yaml`, `markdown`, or `r`."
-            )),
+            _ => Err(format!("Language {kind} not supported, please use: `r`.")),
         }
     }
 }
@@ -119,7 +63,7 @@ macro_rules! define_language_kind_functions {
 }
 
 impl LanguageKind {
-    define_language_kind_functions!([Js, Css, Json, Graphql, Grit, Html, Yaml, Markdown, R]);
+    define_language_kind_functions!([R]);
 
     pub(crate) fn syntax_crate_ident(&self) -> Ident {
         Ident::new(self.syntax_crate_name().as_str(), Span::call_site())
@@ -139,28 +83,12 @@ impl LanguageKind {
 
     pub fn kinds(&self) -> KindsSrc {
         match self {
-            LanguageKind::Js => JS_KINDS_SRC,
-            LanguageKind::Css => CSS_KINDS_SRC,
-            LanguageKind::Json => JSON_KINDS_SRC,
-            LanguageKind::Graphql => GRAPHQL_KINDS_SRC,
-            LanguageKind::Grit => GRIT_KINDS_SRC,
-            LanguageKind::Html => HTML_KINDS_SRC,
-            LanguageKind::Yaml => YAML_KINDS_SRC,
-            LanguageKind::Markdown => MARKDOWN_KINDS_SRC,
             LanguageKind::R => R_KINDS_SRC,
         }
     }
 
     pub fn load_grammar(&self) -> &'static str {
         match self {
-            LanguageKind::Js => include_str!("../js.ungram"),
-            LanguageKind::Css => include_str!("../css.ungram"),
-            LanguageKind::Json => include_str!("../json.ungram"),
-            LanguageKind::Graphql => include_str!("../graphql.ungram"),
-            LanguageKind::Grit => include_str!("../gritql.ungram"),
-            LanguageKind::Html => include_str!("../html.ungram"),
-            LanguageKind::Yaml => include_str!("../yaml.ungram"),
-            LanguageKind::Markdown => include_str!("../markdown.ungram"),
             LanguageKind::R => include_str!("../r.ungram"),
         }
     }

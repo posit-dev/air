@@ -1,4 +1,4 @@
-use crate::js_kinds_src::{AstNodeSrc, AstSrc, Field, TokenKind};
+use crate::kind_src::{AstNodeSrc, AstSrc, Field, TokenKind};
 use crate::language_kind::LanguageKind;
 use biome_string_case::Case;
 use proc_macro2::{Literal, TokenStream};

@@ -293,7 +293,7 @@ fn generate_formatter(repo: &GitRepo, language_kind: LanguageKind) {
         modules.insert(repo, &path);
 
         let node_id = Ident::new(&name, Span::call_site());
-        let node_fields_id = Ident::new(&format!("{name}Fields"), Span::call_site());
+        let _node_fields_id = Ident::new(&format!("{name}Fields"), Span::call_site());
         let format_id = Ident::new(&format!("Format{name}"), Span::call_site());
 
         let qualified_format_id = {
@@ -357,49 +357,18 @@ fn generate_formatter(repo: &GitRepo, language_kind: LanguageKind) {
                 }
             },
             NodeKind::Node => {
-                // TODO: This is CSS-specific and would be nice to handle in a
-                // per-language generator somehow.
-                if language_kind == LanguageKind::Css
-                    && matches!(
-                        get_node_concept(&kind, &module.dialect, &language_kind, &name),
-                        NodeConcept::Property
-                    )
-                {
-                    quote! {
-                        use crate::prelude::*;
+                quote! {
+                    use crate::prelude::*;
 
-                        use #syntax_crate_ident::{#node_id, #node_fields_id};
-                        use biome_formatter::write;
+                    use biome_rowan::AstNode;
+                    use #syntax_crate_ident::#node_id;
 
-                        #[derive(Debug, Clone, Default)]
-                        pub(crate) struct #format_id;
+                    #[derive(Debug, Clone, Default)]
+                    pub(crate) struct #format_id;
 
-                        impl FormatNodeRule<#node_id> for #format_id {
-                            fn fmt_fields(&self, node: &#node_id, f: &mut #formatter_ident) -> FormatResult<()> {
-                                let #node_fields_id {
-                                    name,
-                                    colon_token,
-                                    value
-                                } = node.as_fields();
-
-                                write!(f, [name.format(), colon_token.format(), space(), value.format()])
-                            }
-                        }
-                    }
-                } else {
-                    quote! {
-                        use crate::prelude::*;
-
-                        use biome_rowan::AstNode;
-                        use #syntax_crate_ident::#node_id;
-
-                        #[derive(Debug, Clone, Default)]
-                        pub(crate) struct #format_id;
-
-                        impl FormatNodeRule<#node_id> for #format_id {
-                            fn fmt_fields(&self, node: &#node_id, f: &mut #formatter_ident) -> FormatResult<()> {
-                                format_verbatim_node(node.syntax()).fmt(f)
-                            }
+                    impl FormatNodeRule<#node_id> for #format_id {
+                        fn fmt_fields(&self, node: &#node_id, f: &mut #formatter_ident) -> FormatResult<()> {
+                            format_verbatim_node(node.syntax()).fmt(f)
                         }
                     }
                 }
@@ -551,64 +520,25 @@ impl BoilerplateImpls {
 }
 
 enum NodeDialect {
-    Js,
-    Ts,
-    Jsx,
-    Json,
-    Css,
-    Grit,
-    Graphql,
-    Html,
     R,
 }
 
 impl NodeDialect {
     fn all() -> &'static [NodeDialect] {
-        &[
-            NodeDialect::Js,
-            NodeDialect::Ts,
-            NodeDialect::Jsx,
-            NodeDialect::Json,
-            NodeDialect::Css,
-            NodeDialect::Grit,
-            NodeDialect::Graphql,
-            NodeDialect::Html,
-            NodeDialect::R,
-        ]
-    }
-
-    fn is_jsx(&self) -> bool {
-        matches!(self, NodeDialect::Jsx)
+        &[NodeDialect::R]
     }
 
     fn as_str(&self) -> &'static str {
         match self {
-            NodeDialect::Js => "js",
-            NodeDialect::Ts => "ts",
-            NodeDialect::Jsx => "jsx",
-            NodeDialect::Json => "json",
-            NodeDialect::Css => "css",
-            NodeDialect::Grit => "grit",
-            NodeDialect::Graphql => "graphql",
-            NodeDialect::Html => "html",
             NodeDialect::R => "r",
         }
     }
 
     fn from_str(name: &str) -> NodeDialect {
         match name {
-            "Jsx" => NodeDialect::Jsx,
-            "Js" => NodeDialect::Js,
-            "Ts" => NodeDialect::Ts,
-            "Json" => NodeDialect::Json,
-            "Css" => NodeDialect::Css,
-            "Grit" => NodeDialect::Grit,
-            "Graphql" => NodeDialect::Graphql,
-            "Html" => NodeDialect::Html,
             "R" => NodeDialect::R,
             _ => {
-                eprintln!("missing prefix {name}");
-                NodeDialect::Js
+                panic!("missing prefix {name}");
             }
         }
     }
@@ -618,65 +548,27 @@ enum NodeConcept {
     Bogus,
     List,
     Union,
-    /// - auxiliary (everything else)
+    /// Auxiliary (everything else)
     Auxiliary,
-
-    Expression,
-    Statement,
-    Declaration,
-    Object,
-    Class,
-    Assignment,
-    Binding,
-    Type,
-    /// - module (import /export)
-    Module,
-    Tag,
-    Attribute,
-
-    // JSON
-    Value,
-
-    // CSS
-    Pseudo,
-    Selector,
-    Property,
-
-    // GritQL
-    Pattern,
-    Predicate,
-
-    // GraphQL
-    Definition,
-    Extension,
+    // TODO(air): Add concepts that make sense for us, which
+    // map to folder names that we want in the formatter
+    // Expression,
+    // Statement,
+    // Assignment,
+    // Value,
 }
 
 impl NodeConcept {
     fn as_str(&self) -> &'static str {
         match self {
-            NodeConcept::Expression => "expressions",
-            NodeConcept::Statement => "statements",
-            NodeConcept::Declaration => "declarations",
-            NodeConcept::Object => "objects",
-            NodeConcept::Class => "classes",
-            NodeConcept::Assignment => "assignments",
-            NodeConcept::Binding => "bindings",
-            NodeConcept::Type => "types",
-            NodeConcept::Module => "module",
+            // NodeConcept::Expression => "expressions",
+            // NodeConcept::Statement => "statements",
+            // NodeConcept::Assignment => "assignments",
             NodeConcept::Bogus => "bogus",
             NodeConcept::List => "lists",
             NodeConcept::Union => "any",
-            NodeConcept::Tag => "tag",
-            NodeConcept::Attribute => "attribute",
             NodeConcept::Auxiliary => "auxiliary",
-            NodeConcept::Value => "value",
-            NodeConcept::Pseudo => "pseudo",
-            NodeConcept::Selector => "selectors",
-            NodeConcept::Property => "properties",
-            NodeConcept::Pattern => "patterns",
-            NodeConcept::Predicate => "predicates",
-            NodeConcept::Definition => "definitions",
-            NodeConcept::Extension => "extensions",
+            // NodeConcept::Value => "value",
         }
     }
 }
@@ -702,9 +594,9 @@ impl NodeModuleInformation {
 
 fn get_node_concept(
     kind: &NodeKind,
-    dialect: &NodeDialect,
+    _dialect: &NodeDialect,
     language: &LanguageKind,
-    name: &str,
+    _name: &str,
 ) -> NodeConcept {
     if matches!(kind, NodeKind::Bogus) {
         NodeConcept::Bogus
@@ -714,124 +606,7 @@ fn get_node_concept(
         NodeConcept::Union
     } else {
         match language {
-            LanguageKind::Js => match name {
-                _ if name.ends_with("Statement") => NodeConcept::Statement,
-                _ if name.ends_with("Declaration") => NodeConcept::Declaration,
-
-                _ if name.ends_with("Expression")
-                    || name.ends_with("Argument")
-                    || name.ends_with("Arguments") =>
-                {
-                    NodeConcept::Expression
-                }
-
-                _ if name.ends_with("Binding")
-                    || name.starts_with("BindingPattern")
-                    || name.starts_with("ArrayBindingPattern")
-                    || name.starts_with("ObjectBindingPattern")
-                    || name.ends_with("Parameter")
-                    || name.ends_with("Parameters") =>
-                {
-                    NodeConcept::Binding
-                }
-
-                _ if name.ends_with("Assignment")
-                    || name.starts_with("ArrayAssignmentPattern")
-                    || name.starts_with("ObjectAssignmentPattern") =>
-                {
-                    NodeConcept::Assignment
-                }
-                "AssignmentWithDefault" => NodeConcept::Assignment,
-
-                _ if name.ends_with("ImportSpecifier")
-                    || name.ends_with("ImportSpecifiers")
-                    || name.starts_with("Export")
-                    || name.starts_with("Import") =>
-                {
-                    NodeConcept::Module
-                }
-                "Export" | "Import" | "ModuleSource" | "LiteralExportName" => NodeConcept::Module,
-
-                _ if name.ends_with("ClassMember") => NodeConcept::Class,
-                "ExtendsClause" => NodeConcept::Class,
-
-                _ if name.ends_with("ObjectMember") | name.ends_with("MemberName") => {
-                    NodeConcept::Object
-                }
-
-                // TypeScript
-                "Assertion" | "ConstAssertion" | "NonNull" | "TypeArgs" | "ExprWithTypeArgs" => {
-                    NodeConcept::Expression
-                }
-
-                "ExternalModuleRef" | "ModuleRef" => NodeConcept::Module,
-
-                _ if name.ends_with("Type") => NodeConcept::Type,
-
-                _ if dialect.is_jsx()
-                    && (name.ends_with("Element")
-                        || name.ends_with("Tag")
-                        || name.ends_with("Fragment")) =>
-                {
-                    NodeConcept::Tag
-                }
-                _ if dialect.is_jsx() && name.contains("Attribute") => NodeConcept::Attribute,
-
-                // Default to auxiliary
-                _ => NodeConcept::Auxiliary,
-            },
-
-            LanguageKind::Json => match name {
-                _ if name.ends_with("Value") => NodeConcept::Value,
-                _ => NodeConcept::Auxiliary,
-            },
-            LanguageKind::Markdown => NodeConcept::Auxiliary,
-            LanguageKind::Css => match name {
-                _ if name.ends_with("AtRule") => NodeConcept::Statement,
-                _ if name.ends_with("Selector") => NodeConcept::Selector,
-                _ if name.contains("Pseudo") => NodeConcept::Pseudo,
-                _ if name.ends_with("Property") => NodeConcept::Property,
-                _ if matches!(
-                    name,
-                    "Number"
-                        | "Percentage"
-                        | "Ratio"
-                        | "String"
-                        | "Color"
-                        | "Length"
-                        | "UrlValueRaw"
-                ) || name.ends_with("Dimension")
-                    || name.ends_with("Identifier") =>
-                {
-                    NodeConcept::Value
-                }
-                _ => NodeConcept::Auxiliary,
-            },
-
-            LanguageKind::Graphql => match name {
-                _ if name.contains("Extension") => NodeConcept::Extension,
-                _ if name.ends_with("Definition") => NodeConcept::Definition,
-                _ if name.ends_with("Value") => NodeConcept::Value,
-                _ => NodeConcept::Auxiliary,
-            },
-
-            LanguageKind::Grit => match name {
-                _ if name.contains("Operation") || name.contains("Pattern") => NodeConcept::Pattern,
-                _ if name.contains("Predicate") => NodeConcept::Predicate,
-                _ if name.ends_with("Definition") => NodeConcept::Declaration,
-                _ if name == "CodeSnippet" || name.ends_with("Literal") => NodeConcept::Value,
-                _ => NodeConcept::Auxiliary,
-            },
-
-            LanguageKind::Html => match name {
-                _ if name.ends_with("Value") => NodeConcept::Value,
-                _ => NodeConcept::Auxiliary,
-            },
-
-            // TODO: implement formatter
-            LanguageKind::Yaml => NodeConcept::Auxiliary,
-
-            // TODO: implement formatter
+            // TODO(air): implement additional concepts to clean up folder names
             LanguageKind::R => NodeConcept::Auxiliary,
         }
     }
@@ -891,14 +666,6 @@ fn name_to_module(kind: &NodeKind, in_name: &str, language: LanguageKind) -> Nod
 impl LanguageKind {
     fn formatter_ident(&self) -> Ident {
         let name = match self {
-            LanguageKind::Js => "JsFormatter",
-            LanguageKind::Css => "CssFormatter",
-            LanguageKind::Json => "JsonFormatter",
-            LanguageKind::Graphql => "GraphqlFormatter",
-            LanguageKind::Grit => "GritFormatter",
-            LanguageKind::Html => "HtmlFormatter",
-            LanguageKind::Yaml => "YamlFormatter",
-            LanguageKind::Markdown => "DemoFormatter",
             LanguageKind::R => "RFormatter",
         };
 
@@ -907,14 +674,6 @@ impl LanguageKind {
 
     fn format_context_ident(&self) -> Ident {
         let name = match self {
-            LanguageKind::Js => "JsFormatContext",
-            LanguageKind::Css => "CssFormatContext",
-            LanguageKind::Json => "JsonFormatContext",
-            LanguageKind::Graphql => "GraphqlFormatContext",
-            LanguageKind::Grit => "GritFormatContext",
-            LanguageKind::Html => "HtmlFormatContext",
-            LanguageKind::Yaml => "YamlFormatContext",
-            LanguageKind::Markdown => "DemoFormatterContext",
             LanguageKind::R => "RFormatContext",
         };
 

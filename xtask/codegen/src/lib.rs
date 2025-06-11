@@ -1,7 +1,6 @@
 //! Codegen tools for generating Syntax and AST definitions. Derived from Rust analyzer's codegen
 //!
 mod ast;
-mod css_kinds_src;
 mod formatter;
 mod generate_macros;
 mod generate_node_factory;
@@ -9,22 +8,12 @@ mod generate_nodes;
 mod generate_nodes_mut;
 mod generate_syntax_factory;
 mod generate_syntax_kinds;
-mod graphql_kind_src;
-mod grit_kinds_src;
-mod js_kinds_src;
-mod json_kinds_src;
-mod markdown_kinds_src;
 mod r_json_schema;
 mod r_kinds_src;
-mod yaml_kinds_src;
 
-mod generate_crate;
-mod html_kinds_src;
 mod kind_src;
 mod language_kind;
-mod parser_tests;
 mod termcolorful;
-mod unicode;
 
 use bpaf::Bpaf;
 use std::path::Path;
@@ -33,10 +22,7 @@ use xtask::{glue::fs2, Mode, Result};
 
 pub use self::ast::generate_ast;
 pub use self::formatter::generate_formatters;
-pub use self::generate_crate::generate_crate;
-pub use self::parser_tests::generate_parser_tests;
 pub use self::r_json_schema::generate_json_schema;
-pub use self::unicode::generate_tables;
 
 pub enum UpdateResult {
     NotUpdated,
@@ -84,22 +70,9 @@ pub enum TaskCommand {
     /// Transforms ungram files into AST
     #[bpaf(command)]
     Grammar(Vec<String>),
-    /// Extracts parser inline comments into test files
-    #[bpaf(command)]
-    Test,
-    /// Generates unicode table inside lexer
-    #[bpaf(command)]
-    Unicode,
     /// Runs ALL the codegen
     #[bpaf(command)]
     All,
-    /// Creates a new crate
-    #[bpaf(command, long("new-crate"))]
-    NewCrate {
-        /// The name of the crate
-        #[bpaf(long("name"), argument("STRING"))]
-        name: String,
-    },
     #[bpaf(command, long("json-schema"))]
     JsonSchema,
 }
