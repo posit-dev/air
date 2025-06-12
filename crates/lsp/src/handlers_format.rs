@@ -14,8 +14,8 @@ use workspace::format::FormattedSource;
 
 use crate::file_patterns::is_document_excluded_from_formatting;
 use crate::main_loop::LspState;
+use crate::proto::{from_proto, to_proto};
 use crate::state::WorldState;
-use crate::{from_proto, to_proto};
 
 #[tracing::instrument(level = "info", skip_all)]
 pub(crate) fn document_formatting(
@@ -55,9 +55,11 @@ pub(crate) fn document_formatting(
 
     match format_source_with_parse(&doc.contents, &doc.parse, format_options)? {
         FormattedSource::Changed(formatted) => Ok(Some(to_proto::replace_all_edit(
-            &doc.line_index,
             &doc.contents,
             &formatted,
+            &doc.line_index.index,
+            doc.position_encoding,
+            doc.endings,
         )?)),
         FormattedSource::Unchanged => Ok(None),
     }
@@ -97,8 +99,7 @@ pub(crate) fn document_range_formatting(
         return Ok(None);
     }
 
-    let range =
-        from_proto::text_range(&doc.line_index.index, params.range, doc.line_index.encoding)?;
+    let range = from_proto::text_range(params.range, &doc.line_index.index, doc.position_encoding)?;
 
     let logical_lines = find_deepest_enclosing_logical_lines(doc.parse.syntax(), range);
     if logical_lines.is_empty() {
@@ -150,7 +151,13 @@ pub(crate) fn document_range_formatting(
 
     // Remove last hard break line from our artifical expression list
     format_text.pop();
-    let edits = to_proto::replace_range_edit(&doc.line_index, format_range, format_text)?;
+    let edits = to_proto::replace_range_edit(
+        format_range,
+        format_text,
+        &doc.line_index.index,
+        doc.position_encoding,
+        doc.endings,
+    )?;
 
     Ok(Some(edits))
 }
