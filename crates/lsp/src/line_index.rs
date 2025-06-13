@@ -10,3 +10,11 @@ use triomphe::Arc;
 pub struct LineIndex {
     pub index: Arc<biome_line_index::LineIndex>,
 }
+
+impl LineIndex {
+    pub fn new(text: &str) -> Self {
+        Self {
+            index: Arc::new(biome_line_index::LineIndex::new(text)),
+        }
+    }
+}

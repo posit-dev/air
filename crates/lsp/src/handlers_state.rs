@@ -168,7 +168,7 @@ pub(crate) fn did_change(
 ) -> anyhow::Result<()> {
     let uri = &params.text_document.uri;
     let doc = state.get_document_mut_or_error(uri)?;
-    doc.on_did_change(params);
+    doc.on_did_change(params.content_changes, params.text_document.version);
 
     Ok(())
 }

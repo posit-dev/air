@@ -5,8 +5,9 @@
 //
 //
 
-use settings::LineEnding;
 use std::ops::Range;
+
+use settings::LineEnding;
 use tower_lsp::lsp_types;
 
 use crate::line_index::LineIndex;
@@ -73,9 +74,7 @@ impl Document {
         // select `LineEndings::Auto`, and then pass that to `LineIndex`.
 
         // Create line index to keep track of newline offsets
-        let line_index = LineIndex {
-            index: triomphe::Arc::new(biome_line_index::LineIndex::new(&contents)),
-        };
+        let line_index = LineIndex::new(&contents);
 
         // Parse document immediately for now
         let parse = air_r_parser::parse(&contents, Default::default());
@@ -103,9 +102,16 @@ impl Document {
         (doc, range)
     }
 
-    pub fn on_did_change(&mut self, mut params: lsp_types::DidChangeTextDocumentParams) {
-        let new_version = params.text_document.version;
-
+    // --- source
+    // authors = ["rust-analyzer team"]
+    // license = "MIT OR Apache-2.0"
+    // origin = "https://github.com/rust-lang/rust-analyzer/blob/master/crates/rust-analyzer/src/lsp/utils.rs"
+    // ---
+    pub fn on_did_change(
+        &mut self,
+        mut changes: Vec<lsp_types::TextDocumentContentChangeEvent>,
+        new_version: i32,
+    ) {
         // Check for out-of-order change notifications
         if let Some(old_version) = self.version {
             // According to the spec, versions might not be consecutive but they must be monotonically
@@ -119,78 +125,69 @@ impl Document {
             }
         }
 
-        // Normalize line endings. Changing the line length of inserted or
-        // replaced text can't invalidate the text change events, even those
-        // applied subsequently, since those changes are specified with [line,
-        // col] coordinates.
-        for event in &mut params.content_changes {
-            let text = std::mem::take(&mut event.text);
-            event.text = line_ending::normalize(text);
+        // If at least one of the changes is a full document change, use the last of them
+        // as the starting point and ignore all previous changes. We then know that all
+        // changes after this (if any!) are incremental changes.
+        //
+        // If we do have a full document change, that implies the `last_start_line`
+        // corresponding to that change is line 0, which will correctly force a rebuild
+        // of the line index before applying any incremental changes. We don't go ahead
+        // and rebuild the line index here, because it is guaranteed to be rebuilt for
+        // us on the way out.
+        let (changes, mut last_start_line) =
+            match changes.iter().rposition(|change| change.range.is_none()) {
+                Some(idx) => {
+                    let incremental = changes.split_off(idx + 1);
+                    // Unwrap: `rposition()` confirmed this index contains a full document change
+                    let change = changes.pop().unwrap();
+                    self.contents = line_ending::normalize(change.text);
+                    (incremental, 0)
+                }
+                None => (changes, u32::MAX),
+            };
+
+        // Handle all incremental changes after the last full document change. We don't
+        // typically get >1 incremental change as the user types, but we do get them in a
+        // batch after a find-and-replace, or after a format-on-save request.
+        //
+        // Some editors like VS Code send the edits in reverse order (from the bottom of
+        // file -> top of file). We can take advantage of this, because applying an edit
+        // on, say, line 10, doesn't invalidate the `line_index` if we then need to apply
+        // an additional edit on line 5. That said, we may still have edits that cross
+        // lines, so rebuilding the `line_index` is not always unavoidable.
+        //
+        // We also normalize line endings. Changing the line length of inserted or
+        // replaced text can't invalidate the text change events since the location of the
+        // change itself is specified with [line, col] coordinates, separate from the
+        // actual contents of the change.
+        for change in changes {
+            let range = change
+                .range
+                .expect("`None` case already handled by finding the last full document change.");
+
+            // If the end of this change is at or past the start of the last change, then
+            // the `line_index` needed to apply this change is now invalid, so we have to
+            // rebuild it.
+            if range.end.line >= last_start_line {
+                self.line_index = LineIndex::new(&self.contents);
+            }
+            last_start_line = range.start.line;
+
+            // This is a panic if we can't convert. It means we can't keep the document up
+            // to date and something is very wrong.
+            let range: Range<usize> =
+                from_proto::text_range(range, &self.line_index.index, self.position_encoding)
+                    .expect("Can convert `range` from `Position` to `TextRange`.")
+                    .into();
+
+            self.contents
+                .replace_range(range, &line_ending::normalize(change.text));
         }
 
-        let contents = Self::apply_document_changes(
-            self.position_encoding,
-            &self.contents,
-            params.content_changes,
-        );
-
-        // No incrementality for now
-        let parse = air_r_parser::parse(&contents, Default::default());
-
-        self.parse = parse;
-        self.contents = contents;
-        self.line_index.index =
-            triomphe::Arc::new(biome_line_index::LineIndex::new(&self.contents));
+        // Rebuild the `line_index` after applying the final edit, and sync other fields
+        self.line_index = LineIndex::new(&self.contents);
+        self.parse = air_r_parser::parse(&self.contents, Default::default());
         self.version = Some(new_version);
-    }
-
-    // --- source
-    // authors = ["rust-analyzer team"]
-    // license = "MIT OR Apache-2.0"
-    // origin = "https://github.com/rust-lang/rust-analyzer/blob/master/crates/rust-analyzer/src/lsp/utils.rs"
-    // ---
-    fn apply_document_changes(
-        encoding: PositionEncoding,
-        file_contents: &str,
-        mut content_changes: Vec<lsp_types::TextDocumentContentChangeEvent>,
-    ) -> String {
-        // If at least one of the changes is a full document change, use the last
-        // of them as the starting point and ignore all previous changes.
-        let (mut text, content_changes) = match content_changes
-            .iter()
-            .rposition(|change| change.range.is_none())
-        {
-            Some(idx) => {
-                let text = std::mem::take(&mut content_changes[idx].text);
-                (text, &content_changes[idx + 1..])
-            }
-            None => (file_contents.to_owned(), &content_changes[..]),
-        };
-        if content_changes.is_empty() {
-            return text;
-        }
-
-        let mut line_index = biome_line_index::LineIndex::new(&text);
-
-        // The changes we got must be applied sequentially, but can cross lines so we
-        // have to keep our line index updated.
-        // Some clients (e.g. Code) sort the ranges in reverse. As an optimization, we
-        // remember the last valid line in the index and only rebuild it if needed.
-        // The VFS will normalize the end of lines to `\n`.
-        let mut index_valid = !0u32;
-        for change in content_changes {
-            // The None case can't happen as we have handled it above already
-            if let Some(range) = change.range {
-                if index_valid <= range.end.line {
-                    line_index = biome_line_index::LineIndex::new(&text);
-                }
-                index_valid = range.start.line;
-                if let Ok(range) = from_proto::text_range(range, &line_index, encoding) {
-                    text.replace_range(Range::<usize>::from(range), &change.text);
-                }
-            }
-        }
-        text
     }
 
     /// Convenient accessor that returns an annotated `SyntaxNode` type
@@ -208,13 +205,6 @@ mod tests {
     use crate::text_edit::TextEdit;
 
     use super::*;
-
-    fn dummy_versioned_doc() -> lsp_types::VersionedTextDocumentIdentifier {
-        lsp_types::VersionedTextDocumentIdentifier {
-            uri: url::Url::parse("file:///foo").unwrap(),
-            version: 1,
-        }
-    }
 
     #[test]
     fn test_document_starts_at_0_with_leading_whitespace() {
@@ -244,12 +234,7 @@ mod tests {
             doc.endings,
         )
         .unwrap();
-
-        let params = lsp_types::DidChangeTextDocumentParams {
-            text_document: dummy_versioned_doc(),
-            content_changes: edits,
-        };
-        doc.on_did_change(params);
+        doc.on_did_change(edits, 1);
 
         let updated_syntax: RSyntaxNode = doc.parse.syntax();
         insta::assert_debug_snapshot!(updated_syntax);
@@ -281,25 +266,19 @@ mod tests {
             },
         };
 
-        let mut utf8_replace_params = lsp_types::DidChangeTextDocumentParams {
-            text_document: dummy_versioned_doc(),
-            content_changes: vec![],
-        };
-        let mut utf16_replace_params = utf8_replace_params.clone();
-
-        utf8_replace_params.content_changes = vec![lsp_types::TextDocumentContentChangeEvent {
+        let utf8_content_changes = vec![lsp_types::TextDocumentContentChangeEvent {
             range: Some(utf8_range),
             range_length: None,
             text: String::from("bar"),
         }];
-        utf16_replace_params.content_changes = vec![lsp_types::TextDocumentContentChangeEvent {
+        let utf16_content_changes = vec![lsp_types::TextDocumentContentChangeEvent {
             range: Some(utf16_range),
             range_length: None,
             text: String::from("bar"),
         }];
 
         let mut document = Document::new("a𐐀b".into(), None, PositionEncoding::Utf8);
-        document.on_did_change(utf8_replace_params);
+        document.on_did_change(utf8_content_changes, 1);
         assert_eq!(document.contents, "a𐐀bar");
 
         let mut document = Document::new(
@@ -307,7 +286,7 @@ mod tests {
             None,
             PositionEncoding::Wide(biome_line_index::WideEncoding::Utf16),
         );
-        document.on_did_change(utf16_replace_params);
+        document.on_did_change(utf16_content_changes, 1);
         assert_eq!(document.contents, "a𐐀bar");
     }
 }
