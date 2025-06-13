@@ -79,12 +79,6 @@ impl TextEdit {
         builder.finish()
     }
 
-    // --- Start Posit
-    pub fn diff(text: &str, replace_with: &str) -> TextEdit {
-        super::diff::diff(text, replace_with)
-    }
-    // --- End Posit
-
     pub fn len(&self) -> usize {
         self.indels.len()
     }

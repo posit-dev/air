@@ -6,11 +6,12 @@
 //
 
 use settings::LineEnding;
+use std::ops::Range;
 use tower_lsp::lsp_types;
 
+use crate::line_index::LineIndex;
+use crate::proto::from_proto;
 use crate::proto::PositionEncoding;
-use crate::rust_analyzer::line_index::LineIndex;
-use crate::rust_analyzer::utils::apply_document_changes;
 use crate::settings::DocumentSettings;
 
 #[derive(Clone)]
@@ -25,6 +26,12 @@ pub struct Document {
     /// to the client with positions in the correct coordinate space and
     /// correctly formatted text.
     pub line_index: LineIndex,
+
+    /// Original line endings, before normalization to Unix line endings
+    pub endings: LineEnding,
+
+    /// Encoding used by [tower_lsp::Position] `character` offsets
+    pub position_encoding: PositionEncoding,
 
     /// We store the syntax tree in the document for now.
     /// We will think about laziness and incrementality in the future.
@@ -68,8 +75,6 @@ impl Document {
         // Create line index to keep track of newline offsets
         let line_index = LineIndex {
             index: triomphe::Arc::new(biome_line_index::LineIndex::new(&contents)),
-            endings,
-            encoding: position_encoding,
         };
 
         // Parse document immediately for now
@@ -78,6 +83,8 @@ impl Document {
         Self {
             contents,
             line_index,
+            endings,
+            position_encoding,
             parse,
             version,
             settings: Default::default(),
@@ -121,8 +128,8 @@ impl Document {
             event.text = line_ending::normalize(text);
         }
 
-        let contents = apply_document_changes(
-            self.line_index.encoding,
+        let contents = Self::apply_document_changes(
+            self.position_encoding,
             &self.contents,
             params.content_changes,
         );
@@ -137,6 +144,55 @@ impl Document {
         self.version = Some(new_version);
     }
 
+    // --- source
+    // authors = ["rust-analyzer team"]
+    // license = "MIT OR Apache-2.0"
+    // origin = "https://github.com/rust-lang/rust-analyzer/blob/master/crates/rust-analyzer/src/lsp/utils.rs"
+    // ---
+    fn apply_document_changes(
+        encoding: PositionEncoding,
+        file_contents: &str,
+        mut content_changes: Vec<lsp_types::TextDocumentContentChangeEvent>,
+    ) -> String {
+        // If at least one of the changes is a full document change, use the last
+        // of them as the starting point and ignore all previous changes.
+        let (mut text, content_changes) = match content_changes
+            .iter()
+            .rposition(|change| change.range.is_none())
+        {
+            Some(idx) => {
+                let text = std::mem::take(&mut content_changes[idx].text);
+                (text, &content_changes[idx + 1..])
+            }
+            None => (file_contents.to_owned(), &content_changes[..]),
+        };
+        if content_changes.is_empty() {
+            return text;
+        }
+
+        let mut line_index = biome_line_index::LineIndex::new(&text);
+
+        // The changes we got must be applied sequentially, but can cross lines so we
+        // have to keep our line index updated.
+        // Some clients (e.g. Code) sort the ranges in reverse. As an optimization, we
+        // remember the last valid line in the index and only rebuild it if needed.
+        // The VFS will normalize the end of lines to `\n`.
+        let mut index_valid = !0u32;
+        for change in content_changes {
+            // The None case can't happen as we have handled it above already
+            if let Some(range) = change.range {
+                if index_valid <= range.end.line {
+                    line_index = biome_line_index::LineIndex::new(&text);
+                }
+                index_valid = range.start.line;
+                if let Ok(range) = from_proto::text_range(range, &line_index, encoding) {
+                    text.replace_range(Range::<usize>::from(range), &change.text);
+                }
+            }
+        }
+        text
+    }
+
     /// Convenient accessor that returns an annotated `SyntaxNode` type
     pub fn syntax(&self) -> air_r_syntax::RSyntaxNode {
         self.parse.syntax()
@@ -148,8 +204,8 @@ mod tests {
     use air_r_syntax::RSyntaxNode;
     use biome_text_size::{TextRange, TextSize};
 
-    use crate::rust_analyzer::text_edit::TextEdit;
-    use crate::to_proto;
+    use crate::proto::to_proto;
+    use crate::text_edit::TextEdit;
 
     use super::*;
 
@@ -181,7 +237,13 @@ mod tests {
             TextRange::new(TextSize::from(4_u32), TextSize::from(7)),
             String::from("1 + 2"),
         );
-        let edits = to_proto::doc_edit_vec(&doc.line_index, edit).unwrap();
+        let edits = to_proto::doc_edit_vec(
+            edit,
+            &doc.line_index.index,
+            doc.position_encoding,
+            doc.endings,
+        )
+        .unwrap();
 
         let params = lsp_types::DidChangeTextDocumentParams {
             text_document: dummy_versioned_doc(),
