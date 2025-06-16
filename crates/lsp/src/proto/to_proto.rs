@@ -8,27 +8,24 @@
 // Utilites for converting internal types to LSP types
 
 use anyhow::Context;
-pub(crate) use rust_analyzer::to_proto::text_edit_vec;
-
-use crate::proto::PositionEncoding;
-use crate::rust_analyzer::{self, line_index::LineIndex, text_edit::TextEdit};
+use biome_line_index::LineIndex;
 use biome_text_size::TextRange;
 use biome_text_size::TextSize;
+use settings::LineEnding;
 use tower_lsp::lsp_types;
 
-// TODO!: We use `rust_analyzer::LineIndex` here, but `biome_line_index::LineIndex`
-// in `from_proto.rs`. We should use `biome_line_index::LineIndex` everywhere, and
-// consider getting rid of `rust_analyzer::LineIndex` entirely.
+use crate::proto::PositionEncoding;
+use crate::text_edit::Indel;
+use crate::text_edit::TextEdit;
 
 /// The function is used to convert TextSize to a LSP position.
 /// From `biome_lsp_converters::to_proto::position()`.
-pub fn position(
-    line_index: &LineIndex,
+pub(crate) fn position(
     offset: TextSize,
+    line_index: &LineIndex,
     position_encoding: PositionEncoding,
 ) -> anyhow::Result<lsp_types::Position> {
     let line_col = line_index
-        .index
         .line_col(offset)
         .with_context(|| format!("Could not convert offset {offset:?} into a line-column index"))?;
 
@@ -36,7 +33,6 @@ pub fn position(
         PositionEncoding::Utf8 => lsp_types::Position::new(line_col.line, line_col.col),
         PositionEncoding::Wide(enc) => {
             let line_col = line_index
-                .index
                 .to_wide(enc, line_col)
                 .with_context(|| format!("Could not convert {line_col:?} into wide line column"))?;
             lsp_types::Position::new(line_col.line, line_col.col)
@@ -48,22 +44,50 @@ pub fn position(
 
 /// The function is used to convert TextRange to a LSP range.
 /// From `biome_lsp_converters::to_proto::range()`.
-pub fn range(
-    line_index: &LineIndex,
+pub(crate) fn range(
     range: TextRange,
+    line_index: &LineIndex,
     position_encoding: PositionEncoding,
 ) -> anyhow::Result<lsp_types::Range> {
-    let start = position(line_index, range.start(), position_encoding)?;
-    let end = position(line_index, range.end(), position_encoding)?;
+    let start = position(range.start(), line_index, position_encoding)?;
+    let end = position(range.end(), line_index, position_encoding)?;
     Ok(lsp_types::Range::new(start, end))
+}
+
+pub(crate) fn text_edit(
+    indel: Indel,
+    line_index: &LineIndex,
+    position_encoding: PositionEncoding,
+    endings: LineEnding,
+) -> anyhow::Result<lsp_types::TextEdit> {
+    let range = range(indel.delete, line_index, position_encoding)?;
+    let new_text = match endings {
+        LineEnding::Lf => indel.insert,
+        LineEnding::Crlf => indel.insert.replace('\n', "\r\n"),
+    };
+    Ok(lsp_types::TextEdit { range, new_text })
+}
+
+pub(crate) fn text_edit_vec(
+    text_edit: TextEdit,
+    line_index: &LineIndex,
+    position_encoding: PositionEncoding,
+    endings: LineEnding,
+) -> anyhow::Result<Vec<lsp_types::TextEdit>> {
+    text_edit
+        .into_iter()
+        .map(|indel| self::text_edit(indel, line_index, position_encoding, endings))
+        .collect()
 }
 
 #[cfg(test)]
 pub(crate) fn doc_edit_vec(
-    line_index: &LineIndex,
     text_edit: TextEdit,
+    line_index: &LineIndex,
+    position_encoding: PositionEncoding,
+    endings: LineEnding,
 ) -> anyhow::Result<Vec<lsp_types::TextDocumentContentChangeEvent>> {
-    let edits = text_edit_vec(line_index, text_edit)?;
+    let edits = text_edit_vec(text_edit, line_index, position_encoding, endings)?;
 
     Ok(edits
         .into_iter()
@@ -76,19 +100,23 @@ pub(crate) fn doc_edit_vec(
 }
 
 pub(crate) fn replace_range_edit(
-    line_index: &LineIndex,
     range: TextRange,
     replace_with: String,
+    line_index: &LineIndex,
+    position_encoding: PositionEncoding,
+    endings: LineEnding,
 ) -> anyhow::Result<Vec<lsp_types::TextEdit>> {
     let edit = TextEdit::replace(range, replace_with);
-    text_edit_vec(line_index, edit)
+    text_edit_vec(edit, line_index, position_encoding, endings)
 }
 
 pub(crate) fn replace_all_edit(
-    line_index: &LineIndex,
     text: &str,
     replace_with: &str,
+    line_index: &LineIndex,
+    position_encoding: PositionEncoding,
+    endings: LineEnding,
 ) -> anyhow::Result<Vec<lsp_types::TextEdit>> {
-    let edit = TextEdit::diff(text, replace_with);
-    text_edit_vec(line_index, edit)
+    let edit = crate::diff::diff(text, replace_with);
+    text_edit_vec(edit, line_index, position_encoding, endings)
 }
