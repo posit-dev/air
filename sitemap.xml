@@ -1,47 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://posit-dev.github.io/air/editor-rstudio.html</loc>
-    <lastmod>2025-06-11T13:44:01.361Z</lastmod>
-  </url>
-  <url>
-    <loc>https://posit-dev.github.io/air/editor-neovim.html</loc>
-    <lastmod>2025-06-11T13:44:01.361Z</lastmod>
-  </url>
-  <url>
     <loc>https://posit-dev.github.io/air/formatter.html</loc>
-    <lastmod>2025-06-11T13:44:01.361Z</lastmod>
-  </url>
-  <url>
-    <loc>https://posit-dev.github.io/air/editors.html</loc>
-    <lastmod>2025-06-11T13:44:01.361Z</lastmod>
-  </url>
-  <url>
-    <loc>https://posit-dev.github.io/air/editor-zed.html</loc>
-    <lastmod>2025-06-11T13:44:01.361Z</lastmod>
+    <lastmod>2025-06-16T13:07:19.446Z</lastmod>
   </url>
   <url>
     <loc>https://posit-dev.github.io/air/editor-vscode.html</loc>
-    <lastmod>2025-06-11T13:44:01.361Z</lastmod>
+    <lastmod>2025-06-16T13:07:19.446Z</lastmod>
   </url>
   <url>
-    <loc>https://posit-dev.github.io/air/cli.html</loc>
-    <lastmod>2025-06-11T13:44:01.361Z</lastmod>
+    <loc>https://posit-dev.github.io/air/editors.html</loc>
+    <lastmod>2025-06-16T13:07:19.446Z</lastmod>
   </url>
   <url>
     <loc>https://posit-dev.github.io/air/editor-helix.html</loc>
-    <lastmod>2025-06-11T13:44:01.361Z</lastmod>
+    <lastmod>2025-06-16T13:07:19.446Z</lastmod>
+  </url>
+  <url>
+    <loc>https://posit-dev.github.io/air/editor-neovim.html</loc>
+    <lastmod>2025-06-16T13:07:19.446Z</lastmod>
   </url>
   <url>
     <loc>https://posit-dev.github.io/air/configuration.html</loc>
-    <lastmod>2025-06-11T13:44:01.361Z</lastmod>
+    <lastmod>2025-06-16T13:07:19.445Z</lastmod>
   </url>
   <url>
     <loc>https://posit-dev.github.io/air/integration-github-actions.html</loc>
-    <lastmod>2025-06-11T13:44:01.368Z</lastmod>
+    <lastmod>2025-06-16T13:07:19.452Z</lastmod>
+  </url>
+  <url>
+    <loc>https://posit-dev.github.io/air/editor-zed.html</loc>
+    <lastmod>2025-06-16T13:07:19.446Z</lastmod>
+  </url>
+  <url>
+    <loc>https://posit-dev.github.io/air/cli.html</loc>
+    <lastmod>2025-06-16T13:07:19.445Z</lastmod>
   </url>
   <url>
     <loc>https://posit-dev.github.io/air/index.html</loc>
-    <lastmod>2025-06-11T13:44:01.368Z</lastmod>
+    <lastmod>2025-06-16T13:07:19.452Z</lastmod>
+  </url>
+  <url>
+    <loc>https://posit-dev.github.io/air/editor-rstudio.html</loc>
+    <lastmod>2025-06-16T13:07:19.446Z</lastmod>
   </url>
 </urlset>
