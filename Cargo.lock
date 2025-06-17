@@ -51,8 +51,6 @@ dependencies = [
 name = "air_formatter_test"
 version = "0.0.0"
 dependencies = [
- "biome_console",
- "biome_diagnostics",
  "biome_formatter",
  "biome_parser",
  "biome_rowan",
@@ -94,8 +92,6 @@ version = "0.0.0"
 dependencies = [
  "air_r_factory",
  "air_r_syntax",
- "biome_console",
- "biome_diagnostics",
  "biome_parser",
  "biome_rowan",
  "biome_unicode_table",

@@ -1,7 +1,3 @@
-use biome_diagnostics::console::fmt::{Formatter, Termcolor};
-use biome_diagnostics::console::markup;
-use biome_diagnostics::PrintDiagnostic;
-use biome_diagnostics::{termcolor, DiagnosticExt};
 use biome_formatter::Printed;
 use biome_parser::AnyParse;
 use std::ffi::OsStr;
@@ -124,35 +120,15 @@ impl<'a> SnapshotBuilder<'a> {
         self
     }
 
-    pub fn with_errors(mut self, parsed: &AnyParse, parse_input: &str) -> Self {
+    pub fn with_errors(mut self, parsed: &AnyParse) -> Self {
         if !parsed.has_errors() {
             return self;
         }
-
-        let file_name = self.input_file.file_name().and_then(OsStr::to_str).unwrap();
-
-        let mut buffer = termcolor::Buffer::no_color();
-
-        for diagnostic in parsed.diagnostics() {
-            let error = diagnostic
-                .clone()
-                .with_file_path(file_name)
-                .with_file_source_code(parse_input);
-            Formatter::new(&mut Termcolor(&mut buffer))
-                .write_markup(markup! {
-                    {PrintDiagnostic::verbose(&error)}
-                })
-                .expect("failed to emit diagnostic");
-        }
-
         writeln!(self.snapshot, "# Errors").unwrap();
         writeln!(self.snapshot, "```").unwrap();
-        writeln!(
-            self.snapshot,
-            "{}",
-            std::str::from_utf8(buffer.as_slice()).expect("non utf8 in error buffer")
-        )
-        .unwrap();
+        for diagnostic in parsed.diagnostics() {
+            writeln!(self.snapshot, "{message}", message = diagnostic.message).unwrap();
+        }
         writeln!(self.snapshot, "```").unwrap();
         writeln!(self.snapshot).unwrap();
 

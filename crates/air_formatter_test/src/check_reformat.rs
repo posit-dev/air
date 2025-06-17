@@ -1,8 +1,6 @@
+use std::io::Write;
+
 use crate::TestFormatLanguage;
-use biome_diagnostics::console::fmt::{Formatter, Termcolor};
-use biome_diagnostics::console::markup;
-use biome_diagnostics::termcolor;
-use biome_diagnostics::{DiagnosticExt, PrintDiagnostic};
 use biome_rowan::SyntaxNode;
 
 /// Perform a second pass of formatting on a file, printing a diff if the
@@ -14,7 +12,6 @@ where
 {
     root: &'a SyntaxNode<L::SyntaxLanguage>,
     text: &'a str,
-    file_name: &'a str,
 
     language: &'a L,
     format_language: L::FormatLanguage,
@@ -27,16 +24,12 @@ where
     pub fn new(
         root: &'a SyntaxNode<L::SyntaxLanguage>,
         text: &'a str,
-        file_name: &'a str,
-
         language: &'a L,
         format_language: L::FormatLanguage,
     ) -> Self {
         CheckReformat {
             root,
             text,
-            file_name,
-
             language,
             format_language,
         }
@@ -47,18 +40,10 @@ where
 
         // Panic if the result from the formatter has syntax errors
         if re_parse.has_errors() {
-            let mut buffer = termcolor::Buffer::ansi();
+            let mut buffer = Vec::new();
 
             for diagnostic in re_parse.diagnostics() {
-                let error = diagnostic
-                    .clone()
-                    .with_file_path(self.file_name)
-                    .with_file_source_code(self.text.to_string());
-                Formatter::new(&mut Termcolor(&mut buffer))
-                    .write_markup(markup! {
-                        {PrintDiagnostic::verbose(&error)}
-                    })
-                    .expect("failed to emit diagnostic");
+                writeln!(&mut buffer, "{message}", message = diagnostic.message).unwrap();
             }
 
             panic!(

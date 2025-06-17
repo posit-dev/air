@@ -154,13 +154,8 @@ where
             _ => {
                 let output_code = formatted.as_code();
 
-                let check_reformat = CheckReformat::new(
-                    &syntax,
-                    output_code,
-                    self.test_file.file_name(),
-                    &self.language,
-                    format_language,
-                );
+                let check_reformat =
+                    CheckReformat::new(&syntax, output_code, &self.language, format_language);
                 check_reformat.check_reformat();
 
                 output_code.to_string()

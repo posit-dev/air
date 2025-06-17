@@ -1,11 +1,5 @@
 use air_r_parser::{parse, RParserOptions};
 use air_r_syntax::RSyntaxNode;
-use biome_console::fmt::{Formatter, Termcolor};
-use biome_console::markup;
-use biome_diagnostics::display::PrintDiagnostic;
-use biome_diagnostics::termcolor;
-use biome_diagnostics::DiagnosticExt;
-use biome_parser::prelude::ParseDiagnostic;
 use biome_rowan::SyntaxKind;
 use biome_rowan::SyntaxNode;
 use biome_rowan::SyntaxSlot;
@@ -77,38 +71,12 @@ pub fn run(test_case: &str, _snapshot_name: &str, test_directory: &str, outcome_
     )
     .unwrap();
 
-    if parsed.has_error() {
-        // Safety: We just checked that there is an error
-        let diagnostics: Vec<ParseDiagnostic> = vec![parsed.error().unwrap().clone().into()];
-
-        let mut diagnostics_buffer = termcolor::Buffer::no_color();
-
-        let termcolor = &mut Termcolor(&mut diagnostics_buffer);
-        let mut formatter = Formatter::new(termcolor);
-
-        for diagnostic in diagnostics {
-            let error = diagnostic
-                .clone()
-                .with_file_path(file_name)
-                .with_file_source_code(&content);
-
-            formatter
-                .write_markup(markup! {
-                    {PrintDiagnostic::verbose(&error)}
-                })
-                .expect("failed to emit diagnostic");
-        }
-
-        let formatted_diagnostics =
-            std::str::from_utf8(diagnostics_buffer.as_slice()).expect("non utf8 in error buffer");
-
+    if let Some(error) = parsed.error() {
         if matches!(outcome, ExpectedOutcome::Pass) {
-            panic!("Expected no errors to be present in a test case that is expected to pass but the following diagnostics are present:\n{formatted_diagnostics}")
+            panic!("Expected no errors to be present in a test case that is expected to pass but the following errors are present:\n{error}")
         }
-
-        writeln!(snapshot, "## Diagnostics\n\n```").unwrap();
-        snapshot.write_str(formatted_diagnostics).unwrap();
-
+        writeln!(snapshot, "## Errors\n\n```").unwrap();
+        writeln!(snapshot, "{error}").unwrap();
         writeln!(snapshot, "```\n").unwrap();
     }
 

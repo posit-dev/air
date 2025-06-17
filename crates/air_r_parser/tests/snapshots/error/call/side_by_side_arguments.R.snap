@@ -39,11 +39,8 @@ RRoot {
 
 ```
 
-## Diagnostics
+## Errors
 
 ```
-side_by_side_arguments.R parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × Failed to parse due to syntax errors.
-  
+Failed to parse due to syntax errors.
 ```
