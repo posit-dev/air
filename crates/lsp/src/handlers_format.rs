@@ -57,7 +57,7 @@ pub(crate) fn document_formatting(
         FormattedSource::Changed(formatted) => Ok(Some(to_proto::replace_all_edit(
             &doc.contents,
             &formatted,
-            &doc.line_index.index,
+            &doc.line_index,
             doc.position_encoding,
             doc.endings,
         )?)),
@@ -99,7 +99,7 @@ pub(crate) fn document_range_formatting(
         return Ok(None);
     }
 
-    let range = from_proto::text_range(params.range, &doc.line_index.index, doc.position_encoding)?;
+    let range = from_proto::text_range(params.range, &doc.line_index, doc.position_encoding)?;
 
     let logical_lines = find_deepest_enclosing_logical_lines(doc.parse.syntax(), range);
     if logical_lines.is_empty() {
@@ -154,7 +154,7 @@ pub(crate) fn document_range_formatting(
     let edits = to_proto::replace_range_edit(
         format_range,
         format_text,
-        &doc.line_index.index,
+        &doc.line_index,
         doc.position_encoding,
         doc.endings,
     )?;

@@ -10,7 +10,6 @@ use std::ops::Range;
 use settings::LineEnding;
 use tower_lsp::lsp_types;
 
-use crate::line_index::LineIndex;
 use crate::proto::from_proto;
 use crate::proto::PositionEncoding;
 use crate::settings::DocumentSettings;
@@ -21,12 +20,10 @@ pub struct Document {
     /// Unix line endings.
     pub contents: String,
 
-    /// Map of new lines in `contents`. Also contains line endings type in the
-    /// original document (we only store Unix lines) and the position encoding
-    /// type of the session. This provides all that is needed to send data back
-    /// to the client with positions in the correct coordinate space and
-    /// correctly formatted text.
-    pub line_index: LineIndex,
+    /// Index of new lines and non-UTF-8 characters in `contents`. Used for converting
+    /// between line/col [tower_lsp::Position]s with a specified [PositionEncoding] to
+    /// [biome_text_size::TextSize] offsets.
+    pub line_index: biome_line_index::LineIndex,
 
     /// Original line endings, before normalization to Unix line endings
     pub endings: LineEnding,
@@ -74,7 +71,7 @@ impl Document {
         // select `LineEndings::Auto`, and then pass that to `LineIndex`.
 
         // Create line index to keep track of newline offsets
-        let line_index = LineIndex::new(&contents);
+        let line_index = biome_line_index::LineIndex::new(&contents);
 
         // Parse document immediately for now
         let parse = air_r_parser::parse(&contents, Default::default());
@@ -169,14 +166,14 @@ impl Document {
             // the `line_index` needed to apply this change is now invalid, so we have to
             // rebuild it.
             if range.end.line >= last_start_line {
-                self.line_index = LineIndex::new(&self.contents);
+                self.line_index = biome_line_index::LineIndex::new(&self.contents);
             }
             last_start_line = range.start.line;
 
             // This is a panic if we can't convert. It means we can't keep the document up
             // to date and something is very wrong.
             let range: Range<usize> =
-                from_proto::text_range(range, &self.line_index.index, self.position_encoding)
+                from_proto::text_range(range, &self.line_index, self.position_encoding)
                     .expect("Can convert `range` from `Position` to `TextRange`.")
                     .into();
 
@@ -185,7 +182,7 @@ impl Document {
         }
 
         // Rebuild the `line_index` after applying the final edit, and sync other fields
-        self.line_index = LineIndex::new(&self.contents);
+        self.line_index = biome_line_index::LineIndex::new(&self.contents);
         self.parse = air_r_parser::parse(&self.contents, Default::default());
         self.version = Some(new_version);
     }
@@ -227,13 +224,9 @@ mod tests {
             TextRange::new(TextSize::from(4_u32), TextSize::from(7)),
             String::from("1 + 2"),
         );
-        let edits = to_proto::doc_edit_vec(
-            edit,
-            &doc.line_index.index,
-            doc.position_encoding,
-            doc.endings,
-        )
-        .unwrap();
+        let edits =
+            to_proto::doc_edit_vec(edit, &doc.line_index, doc.position_encoding, doc.endings)
+                .unwrap();
         doc.on_did_change(edits, 1);
 
         let updated_syntax: RSyntaxNode = doc.parse.syntax();

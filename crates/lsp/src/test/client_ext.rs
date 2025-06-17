@@ -122,7 +122,7 @@ impl TestClientExt for TestClient {
     ) -> Option<Vec<lsp_types::TextEdit>> {
         let lsp_doc = self.open_document(doc, filename).await;
 
-        let range = to_proto::range(range, &doc.line_index.index, doc.position_encoding).unwrap();
+        let range = to_proto::range(range, &doc.line_index, doc.position_encoding).unwrap();
 
         self.range_formatting(lsp_types::DocumentRangeFormattingParams {
             text_document: lsp_types::TextDocumentIdentifier {
@@ -169,8 +169,7 @@ fn apply_text_edits(doc: &Document, mut edits: Vec<lsp_types::TextEdit>) -> anyh
     edits.reverse();
 
     for edit in edits {
-        let range =
-            from_proto::text_range(edit.range, &doc.line_index.index, doc.position_encoding)?;
+        let range = from_proto::text_range(edit.range, &doc.line_index, doc.position_encoding)?;
         let start: usize = range.start().into();
         let end: usize = range.end().into();
         text.replace_range(start..end, &edit.new_text);

@@ -1328,7 +1328,6 @@ dependencies = [
  "tracing-subscriber",
  "tree-sitter",
  "tree-sitter-r",
- "triomphe",
  "url",
  "uuid",
  "workspace",
@@ -2343,16 +2342,6 @@ source = "git+https://github.com/r-lib/tree-sitter-r?rev=daa26a2ff0d9546e9125c7d
 dependencies = [
  "cc",
  "tree-sitter-language",
-]
-
-[[package]]
-name = "triomphe"
-version = "0.1.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef8f7726da4807b58ea5c96fdc122f80702030edc33b35aff9190a51148ccc85"
-dependencies = [
- "serde",
- "stable_deref_trait",
 ]
 
 [[package]]
