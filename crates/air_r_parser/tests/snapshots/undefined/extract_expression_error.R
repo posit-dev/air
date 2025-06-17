@@ -1,4 +1,7 @@
-# FIXME: `a$1` currently produces:
+# TODO: tree-sitter-r currently allows an `optional()` RHS, but our grammar
+# requires a RHS, so we get `missing (required)`. These should eventually be
+# parse errors if we can switch tree-sitter-r away from using `optional()`.
+# For example, `a$1` gives:
 
 #> RExtractExpression {
 #>     left: RDoubleValue {

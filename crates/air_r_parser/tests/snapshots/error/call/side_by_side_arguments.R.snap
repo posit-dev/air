@@ -1,0 +1,49 @@
+---
+source: crates/air_r_parser/tests/spec_test.rs
+expression: snapshot
+---
+## Input
+
+```R
+# Can't have two arguments side by side without a delimiter
+fn(a b)
+
+```
+
+
+## AST
+
+```
+RRoot {
+    bom_token: missing (optional),
+    expressions: RExpressionList [
+        RBogusExpression {
+            items: [
+                R_BOGUS@0..68 "# Can't have two arguments side by side without a delimiter\nfn(a b)\n" [] [],
+            ],
+        },
+    ],
+    eof_token: EOF@68..68 "" [] [],
+}
+```
+
+## CST
+
+```
+0: R_ROOT@0..68
+  0: (empty)
+  1: R_EXPRESSION_LIST@0..68
+    0: R_BOGUS_EXPRESSION@0..68
+      0: R_BOGUS@0..68 "# Can't have two arguments side by side without a delimiter\nfn(a b)\n" [] []
+  2: EOF@68..68 "" [] []
+
+```
+
+## Diagnostics
+
+```
+side_by_side_arguments.R parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Failed to parse due to syntax errors.
+  
+```
