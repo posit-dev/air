@@ -33,6 +33,7 @@ impl Skip {
     /// Constructs [Skip] from a vector of function names
     ///
     /// Not exposed, as deserialization should be the only way to create this type.
+    #[cfg(feature = "serde")]
     fn new(mut names: Vec<String>) -> Self {
         names.sort_unstable();
         Self(names.into())
