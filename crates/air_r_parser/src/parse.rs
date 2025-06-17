@@ -131,19 +131,40 @@ pub fn parse_text(
         // TODO: In the long term we want an error resiliant parser.
         // This would probably only be able to happen if we swap out tree sitter
         // for a hand written recursive descent pratt parser using the Biome infra.
-        return parse_failure();
+        return parse_failure(text);
     }
 
     parse_tree(ast, text)
 }
 
-fn parse_failure() -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Option<ParseError>) {
-    // Must provide a root node on failures, otherwise `tree_sink.finish()` fails
+fn parse_failure(text: &str) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Option<ParseError>) {
+    // Safety: We don't allow files longer than a `u32` can support.
+    let end =
+        TextSize::try_from(text.len()).expect("`text` can't be longer than `TextSize` allows.");
+
+    // Must provide a valid root node on failures, otherwise `tree_sink.finish()` fails.
+    // An `R_ROOT` must have an `R_EXPRESSION_LIST`, and we force that to hold 1 bogus
+    // expression that spans the whole file. This allows the AST printer to work correctly
+    // in error tests, and during debugging.
     let events = vec![
         Event::Start {
             kind: RSyntaxKind::R_ROOT,
             forward_parent: None,
         },
+        Event::Start {
+            kind: RSyntaxKind::R_EXPRESSION_LIST,
+            forward_parent: None,
+        },
+        Event::Start {
+            kind: RSyntaxKind::R_BOGUS_EXPRESSION,
+            forward_parent: None,
+        },
+        Event::Token {
+            kind: RSyntaxKind::R_BOGUS,
+            end,
+        },
+        Event::Finish,
+        Event::Finish,
         Event::Finish,
     ];
 

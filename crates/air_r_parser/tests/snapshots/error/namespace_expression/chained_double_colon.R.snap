@@ -1,0 +1,47 @@
+---
+source: crates/air_r_parser/tests/spec_test.rs
+expression: snapshot
+---
+## Input
+
+```R
+a::b::c
+```
+
+
+## AST
+
+```
+RRoot {
+    bom_token: missing (optional),
+    expressions: RExpressionList [
+        RBogusExpression {
+            items: [
+                R_BOGUS@0..7 "a::b::c" [] [],
+            ],
+        },
+    ],
+    eof_token: EOF@7..7 "" [] [],
+}
+```
+
+## CST
+
+```
+0: R_ROOT@0..7
+  0: (empty)
+  1: R_EXPRESSION_LIST@0..7
+    0: R_BOGUS_EXPRESSION@0..7
+      0: R_BOGUS@0..7 "a::b::c" [] []
+  2: EOF@7..7 "" [] []
+
+```
+
+## Diagnostics
+
+```
+chained_double_colon.R parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Failed to parse due to syntax errors.
+  
+```
