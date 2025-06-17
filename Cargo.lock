@@ -109,7 +109,6 @@ name = "air_r_syntax"
 version = "0.0.0"
 dependencies = [
  "biome_rowan",
- "biome_string_case",
  "serde",
 ]
 

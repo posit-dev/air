@@ -16,7 +16,6 @@ version                = "0.0.0"
 
 [dependencies]
 biome_rowan       = { workspace = true, features = ["serde"] }
-biome_string_case = { workspace = true }
 serde             = { workspace = true, features = ["derive"] }
 
 [lints]
