@@ -14,6 +14,7 @@ use std::num::NonZeroU8;
 #[derive(Clone, Copy, Eq, Hash, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schemars", schemars(description = ""))]
 pub struct IndentWidth(
     #[cfg_attr(feature = "schemars", schemars(range(min = 1, max = 24)))] NonZeroU8,
 );

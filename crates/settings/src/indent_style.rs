@@ -16,9 +16,9 @@ use std::str::FromStr;
 )]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub enum IndentStyle {
-    /// Tab
+    /// Indent with tabs.
     Tab,
-    /// Space
+    /// Indent with spaces.
     #[default]
     Space,
 }

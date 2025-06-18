@@ -11,13 +11,13 @@ use std::fmt;
 #[serde(rename_all = "kebab-case")]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub enum LineEnding {
-    /// The newline style is detected automatically on a file per file basis.
-    /// Files with mixed line endings will be converted to the first detected line ending.
-    /// Defaults to [`LineEnding::Lf`] for a files that contain no line endings.
+    /// The newline style is detected automatically on a file per file basis. Files with
+    /// mixed line endings will be converted to the first detected line ending. Defaults
+    /// to `\n` for a files that contain no line endings.
     #[default]
     Auto,
 
-    ///  Line endings will be converted to `\n` as is common on Unix.
+    /// Line endings will be converted to `\n` as is common on Unix.
     Lf,
 
     /// Line endings will be converted to `\r\n` as is common on Windows.

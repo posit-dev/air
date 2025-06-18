@@ -27,6 +27,7 @@ use std::sync::Arc;
 /// This vector is sorted at creation, for use with binary search during lookups.
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schemars", schemars(description = ""))]
 pub struct Skip(Arc<[String]>);
 
 impl Skip {

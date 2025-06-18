@@ -1,11 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "TomlOptions",
-  "description": "The Rust representation of `air.toml`\n\n The names and types of the fields in this struct determine the names and types\n that can be specified in the `air.toml`.\n\n Every field is optional at this point, nothing is \"finalized\".\n Finalization is done in [TomlOptions::into_settings].\n\n Global options are specified at top level in the TOML file.\n All other options are nested within their own `[table]`.",
+  "description": "Configuration for Air",
   "type": "object",
   "properties": {
     "format": {
-      "description": "Options to configure code formatting.",
       "anyOf": [
         {
           "$ref": "#/$defs/FormatTomlOptions"
@@ -19,7 +18,7 @@
   "additionalProperties": false,
   "$defs": {
     "FormatTomlOptions": {
-      "description": "Configures the way air formats your code.",
+      "description": "Options to configure code formatting.",
       "type": "object",
       "properties": {
         "default-exclude": {
@@ -40,7 +39,7 @@
           }
         },
         "indent-style": {
-          "description": "Whether to use spaces or tabs for indentation.\n\n `indent-style = \"space\"` (default):\n\n ```r\n fn <- function() {\n   cat(\"Hello\") # Spaces indent the `cat()` call.\n }\n ```\n\n `indent-style = \"tab\"`:\n\n ```r\n fn <- function() {\n   cat(\"Hello\") # A tab `\\t` indents the `cat()` call.\n }\n ```\n\n Air defaults to spaces due to the overwhelming amount of existing R code written\n in this style, but consider using tabs for new projects to improve accessibility.\n\n See `indent-width` to configure the number of spaces per indentation and the tab width.",
+          "description": "Whether to use spaces or tabs for indentation.\n\n `indent-style = \"space\"` (default):\n\n ```r\n fn <- function() {\n   # Spaces indent `cat()`\n   cat(\"Hello\")\n }\n ```\n\n `indent-style = \"tab\"`:\n\n ```r\n fn <- function() {\n   # A tab `\\t` indents `cat()`\n   cat(\"Hello\")\n }\n ```\n\n Air defaults to spaces due to the overwhelming amount of existing R code written\n in this style, but consider using tabs for new projects to improve accessibility.\n\n See `indent-width` to configure the number of spaces per indentation and the tab\n width.",
           "anyOf": [
             {
               "$ref": "#/$defs/IndentStyle"
@@ -51,7 +50,7 @@
           ]
         },
         "indent-width": {
-          "description": "The number of spaces per indentation level (tab).\n\n The value must be greater than or equal to `1` and less than or equal to `24`. The\n default value is `2`.\n\n Used by the formatter to determine the visual width of a tab.\n\n This option changes the number of spaces the formatter inserts when\n using `indent-style = \"space\"`. It also represents the width of a tab when\n `indent-style = \"tab\"` for the purposes of computing the `line-width`.",
+          "description": "The number of spaces per indentation level.\n\n The value must be greater than or equal to `1` and less than or equal to `24`. The\n default value is `2`.\n\n Used by the formatter to determine the visual width of a tab.\n\n This option changes the number of spaces the formatter inserts when using\n `indent-style = \"space\"`. It also represents the width of a tab when `indent-style\n = \"tab\"` for the purposes of computing the `line-width`.",
           "anyOf": [
             {
               "$ref": "#/$defs/IndentWidth"
@@ -62,7 +61,7 @@
           ]
         },
         "line-ending": {
-          "description": "The character air uses at the end of a line.\n\n - `auto`: The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to `\\n` for files that contain no line endings.\n - `lf`: Line endings will be converted to `\\n`. The default line ending on Unix.\n - `crlf`: Line endings will be converted to `\\r\\n`. The default line ending on Windows.\n - `native`: Line endings will be converted to `\\n` on Unix and `\\r\\n` on Windows.",
+          "description": "The character air uses at the end of a line.\n\n - `auto`: The newline style is detected automatically on a file per file basis.\n   Files with mixed line endings will be converted to the first detected line\n   ending. Defaults to `\\n` for files that contain no line endings.\n\n - `lf`: Line endings will be converted to `\\n`. The default line ending on Unix.\n\n - `crlf`: Line endings will be converted to `\\r\\n`. The default line ending on\n   Windows.\n\n - `native`: Line endings will be converted to `\\n` on Unix and `\\r\\n` on Windows.",
           "anyOf": [
             {
               "$ref": "#/$defs/LineEnding"
@@ -73,7 +72,7 @@
           ]
         },
         "line-width": {
-          "description": "The line width at which the formatter prefers to wrap lines.\n\n The value must be greater than or equal to `1` and less than or equal to `320`.\n\n Note: While the formatter will attempt to format lines such that they remain\n within the `line-width`, it isn't a hard upper bound, and formatted lines may\n exceed the `line-width`.",
+          "description": "The line width at which the formatter prefers to wrap lines.\n\n The value must be greater than or equal to `1` and less than or equal to `320`.\n\n While the formatter will attempt to format lines such that they remain within the\n `line-width`, it isn't a hard upper bound, and formatted lines may exceed the\n `line-width`.",
           "anyOf": [
             {
               "$ref": "#/$defs/LineWidth"
@@ -107,19 +106,18 @@
     "IndentStyle": {
       "oneOf": [
         {
-          "description": "Tab",
+          "description": "Indent with tabs.",
           "type": "string",
           "const": "tab"
         },
         {
-          "description": "Space",
+          "description": "Indent with spaces.",
           "type": "string",
           "const": "space"
         }
       ]
     },
     "IndentWidth": {
-      "description": "Validated value for the `indent-width` formatter options\n\n The allowed range of values is 1..=24",
       "type": "integer",
       "format": "uint8",
       "maximum": 24,
@@ -128,7 +126,7 @@
     "LineEnding": {
       "oneOf": [
         {
-          "description": "The newline style is detected automatically on a file per file basis.\n Files with mixed line endings will be converted to the first detected line ending.\n Defaults to [`LineEnding::Lf`] for a files that contain no line endings.",
+          "description": "The newline style is detected automatically on a file per file basis. Files with\n mixed line endings will be converted to the first detected line ending. Defaults\n to `\\n` for a files that contain no line endings.",
           "type": "string",
           "const": "auto"
         },
@@ -150,14 +148,12 @@
       ]
     },
     "LineWidth": {
-      "description": "Validated value for the `line-width` formatter options\n\n The allowed range of values is 1..=320",
       "type": "integer",
       "format": "uint16",
       "maximum": 320,
       "minimum": 1
     },
     "Skip": {
-      "description": "Function names that are automatically skipped without the need\n for a `fmt: skip` comment.\n\n # Notes\n\n Internally wrapped in an [Arc] for cheap cloning, since we know the function names\n are immutable and can be shared. Must be an [Arc] because settings are shared across\n threads when doing parallel file discovery.\n\n Clippy recommends [Arc] wrapping the immutable `[String]` over the mutable\n `Vec<String>` because with [Arc] you are basically promising not to mutate the inner\n object, and [Arc] provides a special `From<Vec<T>> for Arc<[T]>` for exactly this use\n case, which we invoke in [Skip::new()].\n\n # Safety\n\n This vector is sorted at creation, for use with binary search during lookups.",
       "type": "array",
       "items": {
         "type": "string"
