@@ -236,7 +236,7 @@ fn find_deepest_enclosing_logical_lines(node: RSyntaxNode, range: TextRange) -> 
     // ```
     let logical_lines: Vec<RSyntaxNode> = iter
         .map(|expr| expr.into_syntax())
-        .skip_while(|node| !node.text_range().contains(range.start()))
+        .skip_while(|node| !node.text_range_with_trivia().contains(range.start()))
         .take_while(|node| node.text_trimmed_range().start() <= range.end())
         .collect();
 
@@ -258,7 +258,7 @@ fn find_expression_lists(node: &RSyntaxNode, offset: TextSize, end: bool) -> Vec
                     let trimmed_node_range = node.text_trimmed_range();
                     trimmed_node_range.contains_inclusive(offset)
                 } else {
-                    let node_range = node.text_range();
+                    let node_range = node.text_range_with_trivia();
                     node_range.contains(offset)
                 };
 

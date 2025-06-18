@@ -88,14 +88,14 @@ impl FormatNodeRule<RRoot> for FormatRRoot {
         // manually with `dynamic_text()`.
         mark_visited(node.syntax(), f);
 
-        // `node.text()` trims trivia so we get the raw text on the syntax
+        // `node.to_trimmed_string()` trims trivia so we get the raw text on the syntax
         // node instead
-        let text: String = node.syntax().text().into();
+        let text: String = node.syntax().text_with_trivia().into();
 
         // Formatting with `format_suppressed_node()` does not work well
         // here because it only formats the node verbatim, not the leading
         // and trailing trivia
-        dynamic_text(&text, node.syntax().text_range().start()).fmt(f)
+        dynamic_text(&text, node.syntax().text_range_with_trivia().start()).fmt(f)
     }
 }
 

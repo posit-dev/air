@@ -21,7 +21,7 @@ fn write_workspace_crate_names() {
     let mut packages: Vec<String> = metadata
         .workspace_packages()
         .into_iter()
-        .map(|package| package.name.clone())
+        .map(|package| package.name.clone().into_inner())
         .collect();
 
     // Sort for stability across `cargo metadata` versions
