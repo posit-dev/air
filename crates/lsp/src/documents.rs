@@ -208,7 +208,7 @@ mod tests {
         let document = Document::doodle("\n\n# hi there");
         let root = document.syntax();
         assert_eq!(
-            root.text_range(),
+            root.text_range_with_trivia(),
             TextRange::new(TextSize::from(0), TextSize::from(12))
         );
     }

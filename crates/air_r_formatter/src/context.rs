@@ -3,8 +3,6 @@ use std::rc::Rc;
 
 use air_r_syntax::RLanguage;
 use biome_formatter::printer::PrinterOptions;
-use biome_formatter::AttributePosition;
-use biome_formatter::BracketSpacing;
 use biome_formatter::CstFormatContext;
 use biome_formatter::FormatContext;
 use biome_formatter::FormatOptions;
@@ -175,16 +173,6 @@ impl FormatOptions for RFormatOptions {
 
     fn line_ending(&self) -> biome_formatter::LineEnding {
         self.line_ending.into()
-    }
-
-    fn attribute_position(&self) -> AttributePosition {
-        // TODO: Do we use this?
-        AttributePosition::Auto
-    }
-
-    fn bracket_spacing(&self) -> BracketSpacing {
-        // TODO: Do we use this?
-        BracketSpacing::default()
     }
 
     fn as_print_options(&self) -> PrinterOptions {

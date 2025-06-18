@@ -40,14 +40,14 @@ workspace = { path = "./crates/workspace" }
 
 anyhow = "1.0.89"
 assert_matches = "1.5.0"
-biome_formatter = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
-biome_parser = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
-biome_rowan = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
-biome_string_case = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
-biome_text_size = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
-biome_unicode_table = { git = "https://github.com/biomejs/biome", rev = "2648fa4201be4afd26f44eca1a4e77aac0a67272" }
+biome_formatter = { git = "https://github.com/biomejs/biome", rev = "be9076b2c6714eb5f76ceff59881cdec48475067" }
+biome_parser = { git = "https://github.com/biomejs/biome", rev = "be9076b2c6714eb5f76ceff59881cdec48475067" }
+biome_rowan = { git = "https://github.com/biomejs/biome", rev = "be9076b2c6714eb5f76ceff59881cdec48475067" }
+biome_string_case = { git = "https://github.com/biomejs/biome", rev = "be9076b2c6714eb5f76ceff59881cdec48475067" }
+biome_text_size = { git = "https://github.com/biomejs/biome", rev = "be9076b2c6714eb5f76ceff59881cdec48475067" }
+biome_unicode_table = { git = "https://github.com/biomejs/biome", rev = "be9076b2c6714eb5f76ceff59881cdec48475067" }
 bytes = "1.8.0"
-cargo_metadata = "0.19.1"
+cargo_metadata = "0.20.0"
 case = "1.0.0"
 clap = { version = "4.5.20", features = ["derive"] }
 colored = "3.0.0"
