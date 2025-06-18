@@ -49,7 +49,6 @@ fn quick_test() {
     let check_reformat = CheckReformat::new(
         root,
         result.as_code(),
-        "quick_test",
         &language,
         RFormatLanguage::new(options),
     );

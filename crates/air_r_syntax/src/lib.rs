@@ -2,13 +2,11 @@
 mod generated;
 pub mod argument_ext;
 pub mod call_ext;
-mod file_source;
 pub mod string_ext;
 mod syntax_node;
 
 pub use self::generated::*;
 pub use biome_rowan::{TextLen, TextRange, TextSize, TokenAtOffset, TriviaPieceKind, WalkEvent};
-pub use file_source::RFileSource;
 pub use syntax_node::*;
 
 use biome_rowan::{RawSyntaxKind, SyntaxKind, TokenText};

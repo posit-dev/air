@@ -15,7 +15,6 @@ version = "0.0.0"
 [dependencies]
 air_r_factory = { workspace = true }
 air_r_syntax = { workspace = true }
-biome_diagnostics = { workspace = true }
 biome_parser = { workspace = true }
 biome_rowan = { workspace = true }
 biome_unicode_table = { workspace = true }
@@ -25,8 +24,6 @@ tree-sitter = { workspace = true }
 tree-sitter-r = { workspace = true }
 
 [dev-dependencies]
-biome_console = { workspace = true }
-biome_diagnostics = { workspace = true }
 insta = { workspace = true }
 line_ending = { workspace = true }
 tests_macros = { workspace = true }
