@@ -1,14 +1,14 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "TomlOptions",
-  "description": "The Rust representation of `air.toml`\n\nThe names and types of the fields in this struct determine the names and types that can be specified in the `air.toml`.\n\nEvery field is optional at this point, nothing is \"finalized\". Finalization is done in [TomlOptions::into_settings].\n\nGlobal options are specified at top level in the TOML file. All other options are nested within their own `[table]`.",
+  "description": "The Rust representation of `air.toml`\n\n The names and types of the fields in this struct determine the names and types\n that can be specified in the `air.toml`.\n\n Every field is optional at this point, nothing is \"finalized\".\n Finalization is done in [TomlOptions::into_settings].\n\n Global options are specified at top level in the TOML file.\n All other options are nested within their own `[table]`.",
   "type": "object",
   "properties": {
     "format": {
       "description": "Options to configure code formatting.",
       "anyOf": [
         {
-          "$ref": "#/definitions/FormatTomlOptions"
+          "$ref": "#/$defs/FormatTomlOptions"
         },
         {
           "type": "null"
@@ -17,20 +17,20 @@
     }
   },
   "additionalProperties": false,
-  "definitions": {
+  "$defs": {
     "FormatTomlOptions": {
       "description": "Configures the way air formats your code.",
       "type": "object",
       "properties": {
         "default-exclude": {
-          "description": "Air automatically excludes a default set of folders and files. If this option is set to `false`, these files will be formatted as well.\n\nThe default set of excluded patterns are: - `.git/` - `renv/` - `revdep/` - `cpp11.R` - `RcppExports.R` - `extendr-wrappers.R` - `import-standalone-*.R`",
+          "description": "Air automatically excludes a default set of folders and files. If this option is\n set to `false`, these files will be formatted as well.\n\n The default set of excluded patterns are:\n - `.git/`\n - `renv/`\n - `revdep/`\n - `cpp11.R`\n - `RcppExports.R`\n - `extendr-wrappers.R`\n - `import-standalone-*.R`",
           "type": [
             "boolean",
             "null"
           ]
         },
         "exclude": {
-          "description": "By default, Air will refuse to format files matched by patterns listed in `default-exclude`. Use this option to supply an additional list of exclude patterns.\n\nExclude patterns are modeled after what you can provide in a [.gitignore](https://git-scm.com/docs/gitignore), and are resolved relative to the parent directory that your `air.toml` is contained within. For example, if your `air.toml` was located at `root/air.toml`, then:\n\n- `file.R` excludes a file named `file.R` located anywhere below `root/`. This is equivalent to `**/file.R`.\n\n- `folder/` excludes a directory named `folder` (and all of its children) located anywhere below `root/`. You can also just use `folder`, but this would technically also match a file named `folder`, so the trailing slash is preferred when targeting directories. This is equivalent to `**/folder/`.\n\n- `/file.R` excludes a file named `file.R` located at `root/file.R`.\n\n- `/folder/` excludes a directory named `folder` (and all of its children) located at `root/folder/`.\n\n- `file-*.R` excludes R files named like `file-this.R` and `file-that.R` located anywhere below `root/`.\n\n- `folder/*.R` excludes all R files located at `root/folder/`. Note that R files in directories under `folder/` are not excluded in this case (such as `root/folder/subfolder/file.R`).\n\n- `folder/**/*.R` excludes all R files located anywhere below `root/folder/`.\n\n- `**/folder/*.R` excludes all R files located directly inside a `folder/` directory, where the `folder/` directory itself can /// appear anywhere.\n\nSee the full [.gitignore](https://git-scm.com/docs/gitignore) documentation for all of the patterns you can provide.",
+          "description": "By default, Air will refuse to format files matched by patterns listed in\n `default-exclude`. Use this option to supply an additional list of exclude\n patterns.\n\n Exclude patterns are modeled after what you can provide in a\n [.gitignore](https://git-scm.com/docs/gitignore), and are resolved relative to the\n parent directory that your `air.toml` is contained within. For example, if your\n `air.toml` was located at `root/air.toml`, then:\n\n - `file.R` excludes a file named `file.R` located anywhere below `root/`. This is\n   equivalent to `**/file.R`.\n\n - `folder/` excludes a directory named `folder` (and all of its children) located\n   anywhere below `root/`. You can also just use `folder`, but this would\n   technically also match a file named `folder`, so the trailing slash is preferred\n   when targeting directories. This is equivalent to `**/folder/`.\n\n - `/file.R` excludes a file named `file.R` located at `root/file.R`.\n\n - `/folder/` excludes a directory named `folder` (and all of its children) located\n   at `root/folder/`.\n\n - `file-*.R` excludes R files named like `file-this.R` and `file-that.R` located\n   anywhere below `root/`.\n\n - `folder/*.R` excludes all R files located at `root/folder/`. Note that R files\n   in directories under `folder/` are not excluded in this case (such as\n   `root/folder/subfolder/file.R`).\n\n - `folder/**/*.R` excludes all R files located anywhere below `root/folder/`.\n\n - `**/folder/*.R` excludes all R files located directly inside a `folder/`\n   directory, where the `folder/` directory itself can /// appear anywhere.\n\n See the full [.gitignore](https://git-scm.com/docs/gitignore) documentation for\n all of the patterns you can provide.",
           "type": [
             "array",
             "null"
@@ -40,10 +40,10 @@
           }
         },
         "indent-style": {
-          "description": "Whether to use spaces or tabs for indentation.\n\n`indent-style = \"space\"` (default):\n\n```r fn <- function() { cat(\"Hello\") # Spaces indent the `cat()` call. } ```\n\n`indent-style = \"tab\"`:\n\n```r fn <- function() { cat(\"Hello\") # A tab `\\t` indents the `cat()` call. } ```\n\nAir defaults to spaces due to the overwhelming amount of existing R code written in this style, but consider using tabs for new projects to improve accessibility.\n\nSee `indent-width` to configure the number of spaces per indentation and the tab width.",
+          "description": "Whether to use spaces or tabs for indentation.\n\n `indent-style = \"space\"` (default):\n\n ```r\n fn <- function() {\n   cat(\"Hello\") # Spaces indent the `cat()` call.\n }\n ```\n\n `indent-style = \"tab\"`:\n\n ```r\n fn <- function() {\n   cat(\"Hello\") # A tab `\\t` indents the `cat()` call.\n }\n ```\n\n Air defaults to spaces due to the overwhelming amount of existing R code written\n in this style, but consider using tabs for new projects to improve accessibility.\n\n See `indent-width` to configure the number of spaces per indentation and the tab width.",
           "anyOf": [
             {
-              "$ref": "#/definitions/IndentStyle"
+              "$ref": "#/$defs/IndentStyle"
             },
             {
               "type": "null"
@@ -51,10 +51,10 @@
           ]
         },
         "indent-width": {
-          "description": "The number of spaces per indentation level (tab).\n\nThe value must be greater than or equal to `1` and less than or equal to `24`. The default value is `2`.\n\nUsed by the formatter to determine the visual width of a tab.\n\nThis option changes the number of spaces the formatter inserts when using `indent-style = \"space\"`. It also represents the width of a tab when `indent-style = \"tab\"` for the purposes of computing the `line-width`.",
+          "description": "The number of spaces per indentation level (tab).\n\n The value must be greater than or equal to `1` and less than or equal to `24`. The\n default value is `2`.\n\n Used by the formatter to determine the visual width of a tab.\n\n This option changes the number of spaces the formatter inserts when\n using `indent-style = \"space\"`. It also represents the width of a tab when\n `indent-style = \"tab\"` for the purposes of computing the `line-width`.",
           "anyOf": [
             {
-              "$ref": "#/definitions/IndentWidth"
+              "$ref": "#/$defs/IndentWidth"
             },
             {
               "type": "null"
@@ -62,10 +62,10 @@
           ]
         },
         "line-ending": {
-          "description": "The character air uses at the end of a line.\n\n- `auto`: The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to `\\n` for files that contain no line endings. - `lf`: Line endings will be converted to `\\n`. The default line ending on Unix. - `crlf`: Line endings will be converted to `\\r\\n`. The default line ending on Windows. - `native`: Line endings will be converted to `\\n` on Unix and `\\r\\n` on Windows.",
+          "description": "The character air uses at the end of a line.\n\n - `auto`: The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to `\\n` for files that contain no line endings.\n - `lf`: Line endings will be converted to `\\n`. The default line ending on Unix.\n - `crlf`: Line endings will be converted to `\\r\\n`. The default line ending on Windows.\n - `native`: Line endings will be converted to `\\n` on Unix and `\\r\\n` on Windows.",
           "anyOf": [
             {
-              "$ref": "#/definitions/LineEnding"
+              "$ref": "#/$defs/LineEnding"
             },
             {
               "type": "null"
@@ -73,10 +73,10 @@
           ]
         },
         "line-width": {
-          "description": "The line width at which the formatter prefers to wrap lines.\n\nThe value must be greater than or equal to `1` and less than or equal to `320`.\n\nNote: While the formatter will attempt to format lines such that they remain within the `line-width`, it isn't a hard upper bound, and formatted lines may exceed the `line-width`.",
+          "description": "The line width at which the formatter prefers to wrap lines.\n\n The value must be greater than or equal to `1` and less than or equal to `320`.\n\n Note: While the formatter will attempt to format lines such that they remain\n within the `line-width`, it isn't a hard upper bound, and formatted lines may\n exceed the `line-width`.",
           "anyOf": [
             {
-              "$ref": "#/definitions/LineWidth"
+              "$ref": "#/$defs/LineWidth"
             },
             {
               "type": "null"
@@ -84,17 +84,17 @@
           ]
         },
         "persistent-line-breaks": {
-          "description": "Air respects a small set of persistent line breaks as an indication that certain function calls or function signatures should be left expanded. If this option is set to `false`, persistent line breaks are ignored.\n\nIt may be preferable to ignore persistent line breaks if you prefer that `line-width` should be the only value that influences line breaks.",
+          "description": "Air respects a small set of persistent line breaks as an indication that certain\n function calls or function signatures should be left expanded. If this option\n is set to `false`, persistent line breaks are ignored.\n\n It may be preferable to ignore persistent line breaks if you prefer that `line-width`\n should be the only value that influences line breaks.",
           "type": [
             "boolean",
             "null"
           ]
         },
         "skip": {
-          "description": "Air typically formats every function call it comes across. To skip formatting of a single one-off function call, you can use a `# fmt: skip` comment. However, if you know of particular functions that you use a lot that are part of a custom domain specific language that doesn't follow conventional formatting rules, you can entirely opt out of formatting for those functions by providing them here.\n\nFor example, using `skip = [\"graph_from_literal\"]` would automatically skip formatting of:\n\n```r igraph::graph_from_literal(Alice +--+ Bob) ```\n\nIn the short term, we also anticipate that this will be useful to avoid formatting of `tibble::tribble()` calls. In the long term, we may have more sophisticated features for automatically formatting using a specified alignment.",
+          "description": "Air typically formats every function call it comes across. To skip formatting of\n a single one-off function call, you can use a `# fmt: skip` comment. However, if\n you know of particular functions that you use a lot that are part of a custom\n domain specific language that doesn't follow conventional formatting rules, you\n can entirely opt out of formatting for those functions by providing them here.\n\n For example, using `skip = [\"graph_from_literal\"]` would automatically skip\n formatting of:\n\n ```r\n igraph::graph_from_literal(Alice +--+ Bob)\n ```\n\n In the short term, we also anticipate that this will be useful to avoid formatting\n of `tibble::tribble()` calls. In the long term, we may have more sophisticated\n features for automatically formatting using a specified alignment.",
           "anyOf": [
             {
-              "$ref": "#/definitions/Skip"
+              "$ref": "#/$defs/Skip"
             },
             {
               "type": "null"
@@ -109,67 +109,55 @@
         {
           "description": "Tab",
           "type": "string",
-          "enum": [
-            "tab"
-          ]
+          "const": "tab"
         },
         {
           "description": "Space",
           "type": "string",
-          "enum": [
-            "space"
-          ]
+          "const": "space"
         }
       ]
     },
     "IndentWidth": {
-      "description": "Validated value for the `indent-width` formatter options\n\nThe allowed range of values is 1..=24",
+      "description": "Validated value for the `indent-width` formatter options\n\n The allowed range of values is 1..=24",
       "type": "integer",
       "format": "uint8",
-      "maximum": 24.0,
-      "minimum": 1.0
+      "maximum": 24,
+      "minimum": 1
     },
     "LineEnding": {
       "oneOf": [
         {
-          "description": "The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to [`LineEnding::Lf`] for a files that contain no line endings.",
+          "description": "The newline style is detected automatically on a file per file basis.\n Files with mixed line endings will be converted to the first detected line ending.\n Defaults to [`LineEnding::Lf`] for a files that contain no line endings.",
           "type": "string",
-          "enum": [
-            "auto"
-          ]
+          "const": "auto"
         },
         {
           "description": "Line endings will be converted to `\\n` as is common on Unix.",
           "type": "string",
-          "enum": [
-            "lf"
-          ]
+          "const": "lf"
         },
         {
           "description": "Line endings will be converted to `\\r\\n` as is common on Windows.",
           "type": "string",
-          "enum": [
-            "crlf"
-          ]
+          "const": "crlf"
         },
         {
           "description": "Line endings will be converted to `\\n` on Unix and `\\r\\n` on Windows.",
           "type": "string",
-          "enum": [
-            "native"
-          ]
+          "const": "native"
         }
       ]
     },
     "LineWidth": {
-      "description": "Validated value for the `line-width` formatter options\n\nThe allowed range of values is 1..=320",
+      "description": "Validated value for the `line-width` formatter options\n\n The allowed range of values is 1..=320",
       "type": "integer",
       "format": "uint16",
-      "maximum": 320.0,
-      "minimum": 1.0
+      "maximum": 320,
+      "minimum": 1
     },
     "Skip": {
-      "description": "Function names that are automatically skipped without the need for a `fmt: skip` comment.\n\n# Notes\n\nInternally wrapped in an [Arc] for cheap cloning, since we know the function names are immutable and can be shared. Must be an [Arc] because settings are shared across threads when doing parallel file discovery.\n\nClippy recommends [Arc] wrapping the immutable `[String]` over the mutable `Vec<String>` because with [Arc] you are basically promising not to mutate the inner object, and [Arc] provides a special `From<Vec<T>> for Arc<[T]>` for exactly this use case, which we invoke in [Skip::new()].\n\n# Safety\n\nThis vector is sorted at creation, for use with binary search during lookups.",
+      "description": "Function names that are automatically skipped without the need\n for a `fmt: skip` comment.\n\n # Notes\n\n Internally wrapped in an [Arc] for cheap cloning, since we know the function names\n are immutable and can be shared. Must be an [Arc] because settings are shared across\n threads when doing parallel file discovery.\n\n Clippy recommends [Arc] wrapping the immutable `[String]` over the mutable\n `Vec<String>` because with [Arc] you are basically promising not to mutate the inner\n object, and [Arc] provides a special `From<Vec<T>> for Arc<[T]>` for exactly this use\n case, which we invoke in [Skip::new()].\n\n # Safety\n\n This vector is sorted at creation, for use with binary search during lookups.",
       "type": "array",
       "items": {
         "type": "string"
