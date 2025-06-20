@@ -127,7 +127,7 @@ impl Write for LogWriter<'_> {
         // which is in charge of forwarding to the client in an async manner.
         self.log_tx
             .send(LogMessage { contents })
-            .map_err(|e| IoError::new(ErrorKind::Other, e))?;
+            .map_err(IoError::other)?;
 
         Ok(buf.len())
     }

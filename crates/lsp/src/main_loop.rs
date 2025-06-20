@@ -53,6 +53,7 @@ impl<T, F> AnyhowJoinHandleFut<T> for F where
 // Alias for a list of join handle futures
 type TaskList<T> = futures::stream::FuturesUnordered<Pin<Box<dyn AnyhowJoinHandleFut<T> + Send>>>;
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub(crate) enum Event {
     Lsp(LspMessage),
