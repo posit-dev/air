@@ -48,7 +48,7 @@ pub struct GlobalTomlOptions {}
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct FormatTomlOptions {
-    /// The line width at which the formatter prefers to wrap lines.
+    /// # The line width at which the formatter prefers to wrap lines
     ///
     /// The value must be greater than or equal to `1` and less than or equal to `320`.
     ///
@@ -57,7 +57,7 @@ pub struct FormatTomlOptions {
     /// `line-width`.
     pub line_width: Option<LineWidth>,
 
-    /// The number of spaces per indentation level.
+    /// # The number of spaces per indentation level
     ///
     /// The value must be greater than or equal to `1` and less than or equal to `24`. The
     /// default value is `2`.
@@ -69,7 +69,7 @@ pub struct FormatTomlOptions {
     /// = "tab"` for the purposes of computing the `line-width`.
     pub indent_width: Option<IndentWidth>,
 
-    /// Whether to use spaces or tabs for indentation.
+    /// # Whether to use spaces or tabs for indentation
     ///
     /// `indent-style = "space"` (default):
     ///
@@ -96,7 +96,7 @@ pub struct FormatTomlOptions {
     /// width.
     pub indent_style: Option<IndentStyle>,
 
-    /// The character air uses at the end of a line.
+    /// # The character used at the end of a line
     ///
     /// - `auto`: The newline style is detected automatically on a file per file basis.
     ///   Files with mixed line endings will be converted to the first detected line
@@ -110,6 +110,8 @@ pub struct FormatTomlOptions {
     /// - `native`: Line endings will be converted to `\n` on Unix and `\r\n` on Windows.
     pub line_ending: Option<LineEnding>,
 
+    /// # Whether or not to respect persistent line breaks
+    ///
     /// Air respects a small set of persistent line breaks as an indication that certain
     /// function calls or function signatures should be left expanded. If this option
     /// is set to `false`, persistent line breaks are ignored.
@@ -118,6 +120,8 @@ pub struct FormatTomlOptions {
     /// should be the only value that influences line breaks.
     pub persistent_line_breaks: Option<bool>,
 
+    /// # Patterns to exclude from formatting
+    ///
     /// By default, Air will refuse to format files matched by patterns listed in
     /// `default-exclude`. Use this option to supply an additional list of exclude
     /// patterns.
@@ -156,6 +160,8 @@ pub struct FormatTomlOptions {
     /// all of the patterns you can provide.
     pub exclude: Option<Vec<String>>,
 
+    /// # Whether or not to use default exclude patterns
+    ///
     /// Air automatically excludes a default set of folders and files. If this option is
     /// set to `false`, these files will be formatted as well.
     ///
@@ -169,6 +175,8 @@ pub struct FormatTomlOptions {
     /// - `import-standalone-*.R`
     pub default_exclude: Option<bool>,
 
+    /// # Function calls to skip formatting for
+    ///
     /// Air typically formats every function call it comes across. To skip formatting of
     /// a single one-off function call, you can use a `# fmt: skip` comment. However, if
     /// you know of particular functions that you use a lot that are part of a custom
