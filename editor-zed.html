@@ -243,6 +243,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#features" id="toc-features" class="nav-link" data-scroll-target="#features">Features</a>
   <ul class="collapse">
   <li><a href="#format-on-save" id="toc-format-on-save" class="nav-link" data-scroll-target="#format-on-save">Format on save</a></li>
+  <li><a href="#configuration-autocompletion-and-validation" id="toc-configuration-autocompletion-and-validation" class="nav-link" data-scroll-target="#configuration-autocompletion-and-validation">Configuration autocompletion and validation</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/editor-zed.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -330,6 +331,20 @@ It’s important that <code>"air"</code> is provided before <code>"r_language_se
 <h2 class="anchored" data-anchor-id="format-on-save">Format on save</h2>
 <p>The Zed setting <code>format_on_save</code> is <code>"on"</code> by default, so there is no additional configuration required to get Zed to format your R files on save using Air.</p>
 <!--# Come back and add video -->
+</section>
+<section id="configuration-autocompletion-and-validation" class="level2">
+<h2 class="anchored" data-anchor-id="configuration-autocompletion-and-validation">Configuration autocompletion and validation</h2>
+<p>Installing the <a href="https://github.com/tombi-toml/tombi">Tombi</a> extension from the <code>zed: extensions</code> command activates autocompletion and validation while inside an <code>air.toml</code> file. We highly recommend using this extension for an enjoyable <code>air.toml</code> editing experience!</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/zed/autocomplete-overview.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/zed/autocomplete-line-ending.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
 
 
 </section>

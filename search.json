@@ -150,7 +150,7 @@
     "href": "editor-vscode.html#configuration-autocompletion-and-validation",
     "title": "VS Code and Positron",
     "section": "Configuration autocompletion and validation",
-    "text": "Configuration autocompletion and validation\nInstalling the Even Better TOML extension activates autocompletion and validation while inside an air.toml file. There is a known issue regarding autocompletion duplication, but we still find this extension very useful!",
+    "text": "Configuration autocompletion and validation\nInstalling the Tombi extension from the VS Code Marketplace or the OpenVSX Marketplace activates autocompletion and validation while inside an air.toml file. We highly recommend using this extension for an enjoyable air.toml editing experience!",
     "crumbs": [
       "Editors",
       "VS Code and Positron"
@@ -352,6 +352,17 @@
     "title": "Zed",
     "section": "Format on save",
     "text": "Format on save\nThe Zed setting format_on_save is \"on\" by default, so there is no additional configuration required to get Zed to format your R files on save using Air.",
+    "crumbs": [
+      "Editors",
+      "Zed"
+    ]
+  },
+  {
+    "objectID": "editor-zed.html#configuration-autocompletion-and-validation",
+    "href": "editor-zed.html#configuration-autocompletion-and-validation",
+    "title": "Zed",
+    "section": "Configuration autocompletion and validation",
+    "text": "Configuration autocompletion and validation\nInstalling the Tombi extension from the zed: extensions command activates autocompletion and validation while inside an air.toml file. We highly recommend using this extension for an enjoyable air.toml editing experience!",
     "crumbs": [
       "Editors",
       "Zed"
