@@ -100,6 +100,6 @@ When inside an R cell in a Quarto document, use the chorded key combination `Cmd
 Installing the [Tombi](https://github.com/tombi-toml/tombi) extension from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=tombi-toml.tombi) or the [OpenVSX Marketplace](https://open-vsx.org/namespace/tombi-toml) activates autocompletion and validation while inside an `air.toml` file.
 We highly recommend using this extension for an enjoyable `air.toml` editing experience!
 
-![](images/autocomplete-overview.png){fig-align="center"}
+![](images/vscode/autocomplete-overview.png){fig-align="center"}
 
-![](images/autocomplete-line-ending.png){fig-align="center"}
+![](images/vscode/autocomplete-line-ending.png){fig-align="center"}
