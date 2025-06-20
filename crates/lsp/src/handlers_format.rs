@@ -9,8 +9,8 @@ use air_r_syntax::{RExpressionList, RSyntaxKind, RSyntaxNode, WalkEvent};
 use biome_rowan::{AstNode, Language, SyntaxElement};
 use biome_text_size::{TextRange, TextSize};
 use tower_lsp::lsp_types;
-use workspace::format::format_source_with_parse;
 use workspace::format::FormattedSource;
+use workspace::format::format_source_with_parse;
 
 use crate::file_patterns::is_document_excluded_from_formatting;
 use crate::main_loop::LspState;
@@ -284,9 +284,9 @@ fn find_expression_lists(node: &RSyntaxNode, offset: TextSize, end: bool) -> Vec
 mod tests {
     use crate::documents::Document;
     use crate::proto::PositionEncoding;
-    use crate::test::new_test_client;
     use crate::test::FileName;
     use crate::test::TestClientExt;
+    use crate::test::new_test_client;
     use std::path::Path;
     use tower_lsp::lsp_types::DidChangeWorkspaceFoldersParams;
     use tower_lsp::lsp_types::WorkspaceFolder;

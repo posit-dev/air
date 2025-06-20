@@ -1,10 +1,10 @@
 use std::path::Path;
 use std::path::PathBuf;
 
+use ignore::Match;
 use ignore::gitignore::Gitignore;
 use ignore::gitignore::GitignoreBuilder;
 use ignore::gitignore::Glob;
-use ignore::Match;
 
 /// Matcher for globs that follow a `.gitignore` style
 ///
@@ -298,13 +298,17 @@ mod test {
         // These look like they have a `root`, which `Gitignore::matched_path_or_any_parents()`
         // would typically panic on, so we have our own version to avoid this, since all
         // of our default patterns include `**/` and are root agnostic.
-        assert!(patterns
-            .matched_path_or_any_parents("/etc/cpp11.R", false)
-            .is_some());
+        assert!(
+            patterns
+                .matched_path_or_any_parents("/etc/cpp11.R", false)
+                .is_some()
+        );
 
-        assert!(patterns
-            .matched_path_or_any_parents("C:/etc/cpp11.R", false)
-            .is_some());
+        assert!(
+            patterns
+                .matched_path_or_any_parents("C:/etc/cpp11.R", false)
+                .is_some()
+        );
 
         Ok(())
     }

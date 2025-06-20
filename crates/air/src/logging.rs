@@ -1,9 +1,9 @@
 use std::fmt::Display;
 use std::str::FromStr;
-use tracing_subscriber::filter;
-use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::Layer;
 use tracing_subscriber::Registry;
+use tracing_subscriber::filter;
+use tracing_subscriber::layer::SubscriberExt;
 
 pub(crate) fn init_logging(log_level: LogLevel, no_color: bool) {
     let log_level = log_level.tracing_level();

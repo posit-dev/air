@@ -1,9 +1,6 @@
 use air_r_syntax::RLanguage;
 use air_r_syntax::RSyntaxNode;
 use air_r_syntax::RSyntaxToken;
-use biome_formatter::comments::Comments;
-use biome_formatter::prelude::*;
-use biome_formatter::write;
 use biome_formatter::CstFormatContext;
 use biome_formatter::FormatLanguage;
 use biome_formatter::FormatOwnedWithRule;
@@ -11,6 +8,9 @@ use biome_formatter::FormatRefWithRule;
 use biome_formatter::FormatToken;
 use biome_formatter::Formatted;
 use biome_formatter::TransformSourceMap;
+use biome_formatter::comments::Comments;
+use biome_formatter::prelude::*;
+use biome_formatter::write;
 use biome_rowan::AstNode;
 
 use crate::comments::RCommentStyle;

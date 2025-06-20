@@ -5,7 +5,7 @@ resolver = "2"
 [workspace.package]
 authors = ["Posit Software, PBC"]
 categories = ["development-tools"]
-edition = "2021"
+edition = "2024"
 homepage = "https://github.com/posit-dev/air"
 keywords = ["parser", "formatter"]
 license = "MIT"

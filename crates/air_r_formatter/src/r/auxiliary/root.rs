@@ -4,11 +4,11 @@ use crate::r::lists::expression_list::FormatRExpressionListOptions;
 use air_r_syntax::RRoot;
 use air_r_syntax::RRootFields;
 use air_r_syntax::RSyntaxNode;
-use biome_formatter::write;
 use biome_formatter::CstFormatContext;
+use biome_formatter::write;
 use biome_rowan::Direction;
 use biome_rowan::SyntaxElement;
-use comments::{parse_comment_directive, parse_special_skip_file, Directive, FormatDirective};
+use comments::{Directive, FormatDirective, parse_comment_directive, parse_special_skip_file};
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct FormatRRoot;

@@ -1,5 +1,5 @@
-use crate::args::LanguageServerCommand;
 use crate::ExitStatus;
+use crate::args::LanguageServerCommand;
 
 #[tokio::main]
 pub(crate) async fn language_server(_command: LanguageServerCommand) -> anyhow::Result<ExitStatus> {

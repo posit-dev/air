@@ -7,8 +7,8 @@
 
 use std::array::IntoIter;
 
-use anyhow::anyhow;
 use anyhow::Context;
+use anyhow::anyhow;
 use biome_line_index::WideEncoding;
 use serde_json::Value;
 use struct_field_names_as_array::FieldNamesAsArray;
@@ -41,11 +41,11 @@ use crate::main_loop::LspState;
 use crate::proto::PositionEncoding;
 use crate::settings::DocumentSettings;
 use crate::settings::InitializationOptions;
-use crate::settings_vsc::indent_style_from_vsc;
-use crate::settings_vsc::indent_width_from_usize;
 use crate::settings_vsc::VscDiagnosticsSettings;
 use crate::settings_vsc::VscDocumentSettings;
 use crate::settings_vsc::VscGlobalSettings;
+use crate::settings_vsc::indent_style_from_vsc;
+use crate::settings_vsc::indent_width_from_usize;
 use crate::state::WorldState;
 use crate::workspaces::WorkspaceSettingsResolver;
 

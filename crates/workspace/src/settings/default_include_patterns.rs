@@ -49,8 +49,8 @@ impl DerefMut for DefaultIncludePatterns {
 
 #[cfg(test)]
 mod test {
-    use crate::settings::default_include_patterns::DefaultIncludePatterns;
     use crate::settings::default_include_patterns::DEFAULT_INCLUDE_PATTERN_NAMES;
+    use crate::settings::default_include_patterns::DefaultIncludePatterns;
 
     #[test]
     fn test_doublestar_default_patterns() {

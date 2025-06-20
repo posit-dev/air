@@ -8,7 +8,7 @@ use std::borrow::Cow;
 use std::fmt::{self, Display, Formatter};
 use std::str::FromStr;
 
-use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer, de};
 use serde_json::Value;
 
 // use super::{Id, Version};
