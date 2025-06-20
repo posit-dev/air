@@ -1,4 +1,4 @@
-use biome_formatter::{prelude::*, write, Format, FormatResult};
+use biome_formatter::{Format, FormatResult, prelude::*, write};
 use biome_rowan::{Language, SyntaxNode};
 
 /// The maximum number of empty lines allowed between elements

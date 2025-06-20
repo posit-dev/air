@@ -1,4 +1,4 @@
-use biome_formatter::prelude::{hard_line_break, Formatter, Line};
+use biome_formatter::prelude::{Formatter, Line, hard_line_break};
 
 use crate::joiner_ext::{EmptyLines, JoinNodesBuilderExt};
 

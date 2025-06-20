@@ -1,9 +1,9 @@
 use air_r_syntax::RRoot;
 use air_r_syntax::RSyntaxKind;
 use air_r_syntax::RSyntaxNode;
+use biome_parser::AnyParse;
 use biome_parser::event::Event;
 use biome_parser::prelude::Trivia;
-use biome_parser::AnyParse;
 use biome_rowan::AstNode;
 use biome_rowan::NodeCache;
 use biome_rowan::SendNode;
@@ -13,12 +13,12 @@ use biome_rowan::TriviaPieceKind;
 use biome_unicode_table::Dispatch;
 use tree_sitter::Tree;
 
-use crate::treesitter::NodeTypeExt;
-use crate::treesitter::Preorder;
-use crate::treesitter::WalkEvent;
 use crate::ParseError;
 use crate::RLosslessTreeSink;
 use crate::RParserOptions;
+use crate::treesitter::NodeTypeExt;
+use crate::treesitter::Preorder;
+use crate::treesitter::WalkEvent;
 
 /// A utility struct for managing the result of a parser job
 ///

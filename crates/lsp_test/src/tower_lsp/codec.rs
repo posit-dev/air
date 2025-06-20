@@ -16,7 +16,7 @@ use std::str::Utf8Error;
 use bytes::buf::BufMut;
 use bytes::{Buf, BytesMut};
 use memchr::memmem;
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 use tracing::warn;
 
 use tokio_util::codec::{Decoder, Encoder};

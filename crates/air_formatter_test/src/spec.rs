@@ -1,6 +1,6 @@
+use crate::TestFormatLanguage;
 use crate::check_reformat::CheckReformat;
 use crate::snapshot_builder::{SnapshotBuilder, SnapshotOutput};
-use crate::TestFormatLanguage;
 use biome_formatter::{FormatLanguage, FormatOptions, Printed};
 use biome_parser::AnyParse;
 use biome_rowan::{TextRange, TextSize};

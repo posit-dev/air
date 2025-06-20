@@ -1,4 +1,4 @@
-use biome_formatter::{prelude::Formatter, Format, FormatResult};
+use biome_formatter::{Format, FormatResult, prelude::Formatter};
 
 /// An owned value that generically represents two `Format` types
 ///

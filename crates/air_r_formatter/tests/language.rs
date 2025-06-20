@@ -1,7 +1,7 @@
 use air_formatter_test::TestFormatLanguage;
+use air_r_formatter::RFormatLanguage;
 use air_r_formatter::context::RFormatContext;
 use air_r_formatter::context::RFormatOptions;
-use air_r_formatter::RFormatLanguage;
 use air_r_parser::RParserOptions;
 use air_r_syntax::RLanguage;
 use biome_parser::AnyParse;

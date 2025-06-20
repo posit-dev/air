@@ -10,8 +10,8 @@ use std::ops::Range;
 use settings::LineEnding;
 use tower_lsp::lsp_types;
 
-use crate::proto::from_proto;
 use crate::proto::PositionEncoding;
+use crate::proto::from_proto;
 use crate::settings::DocumentSettings;
 
 #[derive(Clone)]

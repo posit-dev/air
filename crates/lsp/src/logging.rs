@@ -52,15 +52,15 @@ use std::fmt::Display;
 use std::io::{Error as IoError, ErrorKind, Write};
 use std::str::FromStr;
 use tokio::sync::mpsc::unbounded_channel;
+use tower_lsp::Client;
 use tower_lsp::lsp_types::ClientInfo;
 use tower_lsp::lsp_types::MessageType;
-use tower_lsp::Client;
 use tracing_subscriber::filter;
-use tracing_subscriber::fmt::time::LocalTime;
 use tracing_subscriber::fmt::TestWriter;
+use tracing_subscriber::fmt::time::LocalTime;
 use tracing_subscriber::reload;
 use tracing_subscriber::{
-    fmt::{writer::BoxMakeWriter, MakeWriter},
+    fmt::{MakeWriter, writer::BoxMakeWriter},
     layer::SubscriberExt,
 };
 
@@ -127,7 +127,7 @@ impl Write for LogWriter<'_> {
         // which is in charge of forwarding to the client in an async manner.
         self.log_tx
             .send(LogMessage { contents })
-            .map_err(|e| IoError::new(ErrorKind::Other, e))?;
+            .map_err(IoError::other)?;
 
         Ok(buf.len())
     }

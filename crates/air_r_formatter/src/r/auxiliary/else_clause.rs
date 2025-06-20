@@ -3,8 +3,8 @@ use crate::r::auxiliary::if_statement::BracedExpressions;
 use crate::r::auxiliary::if_statement::FormatIfBody;
 use air_r_syntax::RElseClause;
 use air_r_syntax::RElseClauseFields;
-use biome_formatter::write;
 use biome_formatter::FormatRuleWithOptions;
+use biome_formatter::write;
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct FormatRElseClause {

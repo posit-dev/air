@@ -1,4 +1,4 @@
-use crate::{inner_string_text, RStringValue};
+use crate::{RStringValue, inner_string_text};
 use biome_rowan::{SyntaxResult, TokenText};
 
 impl RStringValue {

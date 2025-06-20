@@ -1,9 +1,9 @@
 use air_formatter_test::check_reformat::CheckReformat;
+use air_r_formatter::RFormatLanguage;
 use air_r_formatter::context::RFormatOptions;
 use air_r_formatter::format_node;
-use air_r_formatter::RFormatLanguage;
-use air_r_parser::parse;
 use air_r_parser::RParserOptions;
+use air_r_parser::parse;
 use settings::IndentStyle;
 use settings::LineWidth;
 

@@ -13,8 +13,8 @@ use biome_line_index::WideEncoding;
 use futures::StreamExt;
 use tokio::sync::mpsc::unbounded_channel as tokio_unbounded_channel;
 use tokio::task::JoinHandle;
-use tower_lsp::lsp_types::Diagnostic;
 use tower_lsp::Client;
+use tower_lsp::lsp_types::Diagnostic;
 use url::Url;
 
 use crate::capabilities::AirClientCapabilities;
@@ -53,6 +53,7 @@ impl<T, F> AnyhowJoinHandleFut<T> for F where
 // Alias for a list of join handle futures
 type TaskList<T> = futures::stream::FuturesUnordered<Pin<Box<dyn AnyhowJoinHandleFut<T> + Send>>>;
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub(crate) enum Event {
     Lsp(LspMessage),

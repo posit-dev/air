@@ -78,9 +78,9 @@ pub fn parse_special_skip_file(text: &str) -> Option<Directive> {
 
 #[cfg(test)]
 mod test {
+    use crate::Directive;
     use crate::parse_comment_directive;
     use crate::parse_special_skip_file;
-    use crate::Directive;
 
     #[test]
     fn test_format_directive() {
