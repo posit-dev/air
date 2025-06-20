@@ -1,9 +1,16 @@
-//
-// toml_options.rs
-//
-// Copyright (C) 2025 Posit Software, PBC. All rights reserved.
-//
-//
+//! The Rust representation of `air.toml`
+//!
+//! The names and types of the fields in this struct determine the names and types
+//! that can be specified in the `air.toml`.
+//!
+//! Every field is optional at this point, nothing is "finalized".
+//! Finalization is done in [TomlOptions::into_settings].
+//!
+//! Global options are specified at top level in the TOML file (though we don't have
+//! any of those at the moment). All other options are nested within their own `[table]`.
+//!
+//! Note that the doc comments in this file directly influence `air.schema.json`, which
+//! is generated with `just gen-schema`.
 
 use std::path::Path;
 
@@ -19,67 +26,57 @@ use settings::LineWidth;
 use settings::PersistentLineBreaks;
 use settings::Skip;
 
-/// The Rust representation of `air.toml`
-///
-/// The names and types of the fields in this struct determine the names and types
-/// that can be specified in the `air.toml`.
-///
-/// Every field is optional at this point, nothing is "finalized".
-/// Finalization is done in [TomlOptions::into_settings].
-///
-/// Global options are specified at top level in the TOML file.
-/// All other options are nested within their own `[table]`.
+/// Configuration for Air
 #[derive(Clone, Debug, PartialEq, Eq, Default, serde::Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct TomlOptions {
-    /// Global options affecting multiple commands.
     #[serde(flatten)]
     pub global: GlobalTomlOptions,
-
-    /// Options to configure code formatting.
     pub format: Option<FormatTomlOptions>,
 }
 
 // NOTE: Just a placeholder for now, we don't currently have any global settings
+/// Global options affecting multiple commands.
 #[derive(Clone, Debug, PartialEq, Eq, Default, serde::Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct GlobalTomlOptions {}
 
-/// Configures the way air formats your code.
+/// Options to configure code formatting.
 #[derive(Clone, Debug, PartialEq, Eq, Default, serde::Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct FormatTomlOptions {
-    /// The line width at which the formatter prefers to wrap lines.
+    /// # The line width at which the formatter prefers to wrap lines
     ///
     /// The value must be greater than or equal to `1` and less than or equal to `320`.
     ///
-    /// Note: While the formatter will attempt to format lines such that they remain
-    /// within the `line-width`, it isn't a hard upper bound, and formatted lines may
-    /// exceed the `line-width`.
+    /// While the formatter will attempt to format lines such that they remain within the
+    /// `line-width`, it isn't a hard upper bound, and formatted lines may exceed the
+    /// `line-width`.
     pub line_width: Option<LineWidth>,
 
-    /// The number of spaces per indentation level (tab).
+    /// # The number of spaces per indentation level
     ///
     /// The value must be greater than or equal to `1` and less than or equal to `24`. The
     /// default value is `2`.
     ///
     /// Used by the formatter to determine the visual width of a tab.
     ///
-    /// This option changes the number of spaces the formatter inserts when
-    /// using `indent-style = "space"`. It also represents the width of a tab when
-    /// `indent-style = "tab"` for the purposes of computing the `line-width`.
+    /// This option changes the number of spaces the formatter inserts when using
+    /// `indent-style = "space"`. It also represents the width of a tab when `indent-style
+    /// = "tab"` for the purposes of computing the `line-width`.
     pub indent_width: Option<IndentWidth>,
 
-    /// Whether to use spaces or tabs for indentation.
+    /// # Whether to use spaces or tabs for indentation
     ///
     /// `indent-style = "space"` (default):
     ///
     /// ```r
     /// fn <- function() {
-    ///   cat("Hello") # Spaces indent the `cat()` call.
+    ///   # Spaces indent `cat()`
+    ///   cat("Hello")
     /// }
     /// ```
     ///
@@ -87,24 +84,34 @@ pub struct FormatTomlOptions {
     ///
     /// ```r
     /// fn <- function() {
-    ///   cat("Hello") # A tab `\t` indents the `cat()` call.
+    ///   # A tab `\t` indents `cat()`
+    ///   cat("Hello")
     /// }
     /// ```
     ///
     /// Air defaults to spaces due to the overwhelming amount of existing R code written
     /// in this style, but consider using tabs for new projects to improve accessibility.
     ///
-    /// See `indent-width` to configure the number of spaces per indentation and the tab width.
+    /// See `indent-width` to configure the number of spaces per indentation and the tab
+    /// width.
     pub indent_style: Option<IndentStyle>,
 
-    /// The character air uses at the end of a line.
+    /// # The character used at the end of a line
     ///
-    /// - `auto`: The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to `\n` for files that contain no line endings.
+    /// - `auto`: The newline style is detected automatically on a file per file basis.
+    ///   Files with mixed line endings will be converted to the first detected line
+    ///   ending. Defaults to `\n` for files that contain no line endings.
+    ///
     /// - `lf`: Line endings will be converted to `\n`. The default line ending on Unix.
-    /// - `crlf`: Line endings will be converted to `\r\n`. The default line ending on Windows.
+    ///
+    /// - `crlf`: Line endings will be converted to `\r\n`. The default line ending on
+    ///   Windows.
+    ///
     /// - `native`: Line endings will be converted to `\n` on Unix and `\r\n` on Windows.
     pub line_ending: Option<LineEnding>,
 
+    /// # Whether or not to respect persistent line breaks
+    ///
     /// Air respects a small set of persistent line breaks as an indication that certain
     /// function calls or function signatures should be left expanded. If this option
     /// is set to `false`, persistent line breaks are ignored.
@@ -113,6 +120,8 @@ pub struct FormatTomlOptions {
     /// should be the only value that influences line breaks.
     pub persistent_line_breaks: Option<bool>,
 
+    /// # Patterns to exclude from formatting
+    ///
     /// By default, Air will refuse to format files matched by patterns listed in
     /// `default-exclude`. Use this option to supply an additional list of exclude
     /// patterns.
@@ -151,6 +160,8 @@ pub struct FormatTomlOptions {
     /// all of the patterns you can provide.
     pub exclude: Option<Vec<String>>,
 
+    /// # Whether or not to use default exclude patterns
+    ///
     /// Air automatically excludes a default set of folders and files. If this option is
     /// set to `false`, these files will be formatted as well.
     ///
@@ -164,6 +175,8 @@ pub struct FormatTomlOptions {
     /// - `import-standalone-*.R`
     pub default_exclude: Option<bool>,
 
+    /// # Function calls to skip formatting for
+    ///
     /// Air typically formats every function call it comes across. To skip formatting of
     /// a single one-off function call, you can use a `# fmt: skip` comment. However, if
     /// you know of particular functions that you use a lot that are part of a custom

@@ -31,9 +31,9 @@ Next, you'll need to tell RStudio to use Air as an external formatter:
 -   Apply the changes and exit the settings.
 
 At this point, explicit calls to `Reformat Selection` and `Reformat Document` should use Air.
-If you'd also like RStudio to invoke Air on save, follow the instructions in [Format on Save].
+If you'd also like RStudio to invoke Air on save, follow the instructions in [Format on Save](#rstudio-format-on-save).
 
-![](./images/rstudio-external-formatter.png){fig-alt="Setting Air as an external formatter with Tools -> Global Options -> Code -> Formatting" fig-align="center"}
+![](./images/rstudio/external-formatter.png){fig-alt="Setting Air as an external formatter with Tools -> Global Options -> Code -> Formatting" fig-align="center"}
 
 # Features
 
@@ -43,11 +43,11 @@ After you've set Air as an external formatter, you can either tell RStudio to fo
 
 To format all documents on save, open `Tools -> Global Options -> Code -> Saving` and check `Reformat documents on save`.
 
-![](images/rstudio-format-on-save.png){fig-alt="Setting RStudio to format all documents on save in Tools -> Global Options -> Code -> Saving" fig-align="center"}
+![](images/rstudio/format-on-save.png){fig-alt="Setting RStudio to format all documents on save in Tools -> Global Options -> Code -> Saving" fig-align="center"}
 
 To format individual documents on save, open the file specific settings and check `Reformat Document on Save`.
 
-![](images/rstudio-reformat-document-on-save.png){fig-align="center"}
+![](images/rstudio/reformat-document-on-save.png){fig-align="center"}
 
 <!--# Come back and add video of formatting in action -->
 

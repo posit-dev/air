@@ -24,8 +24,7 @@ To use Air in Zed, you currently need to install the following two Zed extension
 
 -   `Air`
 
-    -   Adds *language server* support for R, backed by Air.
-        The Air language server is primarily used for document formatting.
+    -   Adds *language server* support for R, backed by Air. The Air language server is primarily used for document formatting.
 
 You won't need to install the Air command line tool - the Zed extension will download it for you as needed.
 
@@ -79,3 +78,12 @@ If you don't want this and would like Air to be fully in charge of formatting, t
 The Zed setting `format_on_save` is `"on"` by default, so there is no additional configuration required to get Zed to format your R files on save using Air.
 
 <!--# Come back and add video -->
+
+## Configuration autocompletion and validation
+
+Installing the [Tombi](https://github.com/tombi-toml/tombi) extension from the `zed: extensions` command activates autocompletion and validation while inside an `air.toml` file.
+We highly recommend using this extension for an enjoyable `air.toml` editing experience!
+
+![](images/zed/autocomplete-overview.png){fig-align="center"}
+
+![](images/zed/autocomplete-line-ending.png){fig-align="center"}
