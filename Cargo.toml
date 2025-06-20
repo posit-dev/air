@@ -10,7 +10,7 @@ homepage = "https://github.com/posit-dev/air"
 keywords = ["parser", "formatter"]
 license = "MIT"
 repository = "https://github.com/posit-dev/air"
-rust-version = "1.85"
+rust-version = "1.86"
 
 [profile.release-with-debug]
 debug = true
@@ -122,7 +122,6 @@ mismatching_type_param_order = "warn"
 mut_mut = "warn"
 naive_bytecount = "warn"
 needless_bitwise_bool = "warn"
-needless_continue = "warn"
 needless_for_each = "warn"
 no_effect_underscore_binding = "warn"
 option_as_ref_cloned = "warn"
