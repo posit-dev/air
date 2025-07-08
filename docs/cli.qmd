@@ -16,6 +16,12 @@ On macOS and Linux:
 curl -LsSf https://github.com/posit-dev/air/releases/latest/download/air-installer.sh | sh
 ```
 
+Or, if you're familiar with [Homebrew](https://brew.sh/), install the [air formula](https://formulae.brew.sh/formula/air) with:
+
+```bash
+brew install air
+```
+
 On Windows:
 
 ``` powershell
