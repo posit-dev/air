@@ -106,7 +106,7 @@
     "href": "editor-vscode.html#editor-vs-code-format-on-save",
     "title": "VS Code and Positron",
     "section": "Format on save",
-    "text": "Format on save\nOnce you have the extension installed, turn on Format on Save for R documents by opening your settings.json and adding:\n{\n    \"[r]\": {\n        \"editor.formatOnSave\": true\n    }\n}\nYou should now be able to simply open an R document, save it, and have the entire document formatted by Air. You can also explicitly call the command Format Document if you’d like to control this manually.",
+    "text": "Format on save\nOnce you have the extension installed, turn on Format on Save for R documents by opening your settings.json and adding:\n{\n    \"[r]\": {\n        \"editor.formatOnSave\": true,\n        \"editor.defaultFormatter\": \"Posit.air-vscode\"\n    }\n}\nYou should now be able to simply open an R document, save it, and have the entire document formatted by Air. You can also explicitly call the command Format Document if you’d like to control this manually.",
     "crumbs": [
       "Editors",
       "VS Code and Positron"
@@ -139,7 +139,7 @@
     "href": "editor-vscode.html#quarto",
     "title": "VS Code and Positron",
     "section": "Quarto",
-    "text": "Quarto\nQuarto can automatically invoke Air on R code cells when the Quarto extension is active.\n\nFormat on save\nTo format all R code cells on save, set this in your settings.json:\n{\n    \"[quarto]\": {\n        \"editor.formatOnSave\": true\n    },\n    \"[r]\": {\n        \"editor.formatOnSave\": true\n    }\n}\n\n\n\nFormat cell\nWhen inside an R cell in a Quarto document, use the chorded key combination Cmd+K Cmd+F or the command Quarto: Format Cell to format a single cell.",
+    "text": "Quarto\nQuarto can automatically invoke Air on R code cells when the Quarto extension is active.\n\nFormat on save\nTo format all R code cells on save, set this in your settings.json:\n{\n    \"[r]\": {\n        \"editor.formatOnSave\": true,\n        \"editor.defaultFormatter\": \"Posit.air-vscode\"\n    },\n    \"[quarto]\": {\n        \"editor.formatOnSave\": true,\n        \"editor.defaultFormatter\": \"quarto.quarto\"\n    }\n}\n\n\n\nFormat cell\nWhen inside an R cell in a Quarto document, use the chorded key combination Cmd+K Cmd+F or the command Quarto: Format Cell to format a single cell.",
     "crumbs": [
       "Editors",
       "VS Code and Positron"
