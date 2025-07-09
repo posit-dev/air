@@ -43,7 +43,8 @@ Once you have the extension installed, turn on Format on Save for R documents by
 ``` json
 {
     "[r]": {
-        "editor.formatOnSave": true
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "Posit.air-vscode"
     }
 }
 ```
@@ -78,11 +79,13 @@ To format all R code cells on save, set this in your `settings.json`:
 
 ``` json
 {
-    "[quarto]": {
-        "editor.formatOnSave": true
-    },
     "[r]": {
-        "editor.formatOnSave": true
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "Posit.air-vscode"
+    },
+    "[quarto]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "quarto.quarto"
     }
 }
 ```
