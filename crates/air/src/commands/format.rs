@@ -2,6 +2,7 @@ use std::fmt::Display;
 use std::fmt::Formatter;
 use std::io;
 use std::io::stderr;
+use std::io::stdout;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
@@ -28,6 +29,13 @@ use crate::ExitStatus;
 enum FormatMode {
     Write,
     Check,
+    Output(OutputMode),
+}
+
+#[derive(Copy, Clone, Debug)]
+enum OutputMode {
+    File,
+    Stdout,
 }
 
 #[derive(Error, Debug)]
@@ -38,7 +46,7 @@ enum FormatPathError {
 }
 
 pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
-    let mode = FormatMode::from_command(&command);
+    let mode = FormatMode::from_command(&command)?;
 
     let mut resolver = PathResolver::new(Settings::default());
 
@@ -83,15 +91,48 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
                 Ok(ExitStatus::Error)
             }
         }
+        FormatMode::Output(output_mode) => {
+            let errors = format_paths_output(&command, output_mode, &resolver)?;
+
+            for error in &errors {
+                tracing::error!("{error}");
+            }
+
+            if errors.is_empty() {
+                Ok(ExitStatus::Success)
+            } else {
+                Ok(ExitStatus::Error)
+            }
+        }
     }
 }
 
 impl FormatMode {
-    fn from_command(command: &FormatCommand) -> Self {
-        if command.check {
-            FormatMode::Check
+    fn from_command(command: &FormatCommand) -> anyhow::Result<Self> {
+        // Validate mutually exclusive options
+        let has_output = command.output.is_some();
+        let has_stdout = command.stdout;
+        let has_check = command.check;
+
+        let option_count = [has_output, has_stdout, has_check].iter().filter(|&&x| x).count();
+        
+        if option_count > 1 {
+            anyhow::bail!("Cannot use --check, --output, and --stdout together");
+        }
+
+        // Validate single file requirement for output options
+        if (has_output || has_stdout) && command.paths.len() != 1 {
+            anyhow::bail!("--output and --stdout can only be used with a single input file");
+        }
+
+        if has_check {
+            Ok(FormatMode::Check)
+        } else if has_output {
+            Ok(FormatMode::Output(OutputMode::File))
+        } else if has_stdout {
+            Ok(FormatMode::Output(OutputMode::Stdout))
         } else {
-            FormatMode::Write
+            Ok(FormatMode::Write)
         }
     }
 }
@@ -155,6 +196,41 @@ fn format_paths_check<P: AsRef<Path>>(
         })
 }
 
+fn format_paths_output(
+    command: &FormatCommand,
+    output_mode: OutputMode,
+    resolver: &PathResolver<Settings>,
+) -> anyhow::Result<Vec<FormatPathError>> {
+    // Should only have one path due to validation in from_command
+    let path = &command.paths[0];
+    let settings = resolver.resolve_or_fallback(path);
+    
+    match format_path(path, &settings.format) {
+        Ok(file) => {
+            match output_mode {
+                OutputMode::File => {
+                    let output_path = command.output.as_ref().unwrap();
+                    match write_path_to_file(output_path, file, path) {
+                        Ok(()) => Ok(vec![]),
+                        Err(err) => Ok(vec![FormatPathError::Write(output_path.clone(), err)]),
+                    }
+                }
+                OutputMode::Stdout => {
+                    match write_path_to_stdout(file, path) {
+                        Ok(()) => Ok(vec![]),
+                        Err(err) => {
+                            // Create a dummy path for error reporting
+                            let dummy_path = PathBuf::from("<stdout>");
+                            Ok(vec![FormatPathError::Write(dummy_path, err)])
+                        }
+                    }
+                }
+            }
+        }
+        Err(err) => Ok(vec![FormatPathError::FormatFile(path.clone(), err)]),
+    }
+}
+
 fn format_path<P: AsRef<Path>>(
     path: P,
     settings: &FormatSettings,
@@ -171,6 +247,33 @@ fn write_path<P: AsRef<Path>>(path: P, file: FormattedFile) -> io::Result<()> {
         FormattedFile::Changed(file) => std::fs::write(path, file.new()),
         FormattedFile::Unchanged => Ok(()),
     }
+}
+
+/// Write formatted content to a specific file path
+fn write_path_to_file<P: AsRef<Path>>(path: P, file: FormattedFile, original_path: &Path) -> io::Result<()> {
+    match file {
+        FormattedFile::Changed(file) => std::fs::write(path, file.new()),
+        FormattedFile::Unchanged => {
+            // Read the original file content since Unchanged doesn't contain it
+            let original_content = std::fs::read_to_string(original_path)?;
+            std::fs::write(path, original_content)
+        }
+    }
+}
+
+/// Write formatted content to stdout
+fn write_path_to_stdout(file: FormattedFile, original_path: &Path) -> io::Result<()> {
+    let content = match file {
+        FormattedFile::Changed(file) => file.new().to_string(),
+        FormattedFile::Unchanged => {
+            // Read the original file content since Unchanged doesn't contain it
+            std::fs::read_to_string(original_path)?
+        }
+    };
+    
+    let mut stdout = stdout().lock();
+    stdout.write_all(content.as_bytes())?;
+    stdout.flush()
 }
 
 /// Returns `Some(path)` if a change occurred, otherwise returns `None`

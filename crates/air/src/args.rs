@@ -40,6 +40,16 @@ pub(crate) struct FormatCommand {
     /// and zero otherwise.
     #[arg(long)]
     pub check: bool,
+
+    /// Write formatted output to this file instead of overwriting the input file.
+    /// Only valid when formatting a single file.
+    #[arg(long, short = 'o', value_name = "FILE")]
+    pub output: Option<PathBuf>,
+
+    /// Write formatted output to stdout instead of overwriting the input file.
+    /// Only valid when formatting a single file.
+    #[arg(long)]
+    pub stdout: bool,
 }
 
 #[derive(Clone, Debug, Parser)]
