@@ -1,8 +1,8 @@
 use std::fmt::Display;
 use std::fmt::Formatter;
 use std::io;
-use std::io::stderr;
 use std::io::Write;
+use std::io::stderr;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -11,18 +11,18 @@ use fs::relativize_path;
 use itertools::Either;
 use itertools::Itertools;
 use thiserror::Error;
+use workspace::discovery::DiscoveredSettings;
 use workspace::discovery::discover_r_file_paths;
 use workspace::discovery::discover_settings;
-use workspace::discovery::DiscoveredSettings;
-use workspace::format::format_file;
 use workspace::format::FormatFileError;
 use workspace::format::FormattedFile;
+use workspace::format::format_file;
 use workspace::resolve::PathResolver;
 use workspace::settings::FormatSettings;
 use workspace::settings::Settings;
 
-use crate::args::FormatCommand;
 use crate::ExitStatus;
+use crate::args::FormatCommand;
 
 #[derive(Copy, Clone, Debug)]
 enum FormatMode {

@@ -1,4 +1,4 @@
-use air_r_parser::{parse, RParserOptions};
+use air_r_parser::{RParserOptions, parse};
 use air_r_syntax::RSyntaxNode;
 use biome_rowan::SyntaxKind;
 use biome_rowan::SyntaxNode;
@@ -73,7 +73,9 @@ pub fn run(test_case: &str, _snapshot_name: &str, test_directory: &str, outcome_
 
     if let Some(error) = parsed.error() {
         if matches!(outcome, ExpectedOutcome::Pass) {
-            panic!("Expected no errors to be present in a test case that is expected to pass but the following errors are present:\n{error}")
+            panic!(
+                "Expected no errors to be present in a test case that is expected to pass but the following errors are present:\n{error}"
+            )
         }
         writeln!(snapshot, "## Errors\n\n```").unwrap();
         writeln!(snapshot, "{error}").unwrap();
@@ -89,7 +91,9 @@ pub fn run(test_case: &str, _snapshot_name: &str, test_directory: &str, outcome_
                     .descendants()
                     .any(|node: RSyntaxNode| node.kind().is_bogus())
             {
-                panic!("Parsed tree of a 'OK' test case should not contain any missing required children or bogus nodes: \n {formatted_ast:#?} \n\n {formatted_ast}");
+                panic!(
+                    "Parsed tree of a 'OK' test case should not contain any missing required children or bogus nodes: \n {formatted_ast:#?} \n\n {formatted_ast}"
+                );
             }
 
             let syntax = parsed.syntax();

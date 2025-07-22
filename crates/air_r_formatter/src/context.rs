@@ -2,11 +2,11 @@ use std::fmt;
 use std::rc::Rc;
 
 use air_r_syntax::RLanguage;
-use biome_formatter::printer::PrinterOptions;
 use biome_formatter::CstFormatContext;
 use biome_formatter::FormatContext;
 use biome_formatter::FormatOptions;
 use biome_formatter::TransformSourceMap;
+use biome_formatter::printer::PrinterOptions;
 use settings::IndentStyle;
 use settings::IndentWidth;
 use settings::LineEnding;

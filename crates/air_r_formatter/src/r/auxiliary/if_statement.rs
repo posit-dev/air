@@ -6,9 +6,9 @@ use air_r_syntax::RIfStatement;
 use air_r_syntax::RIfStatementFields;
 use air_r_syntax::RRoot;
 use air_r_syntax::RSyntaxNode;
+use biome_formatter::FormatRuleWithOptions;
 use biome_formatter::format_args;
 use biome_formatter::write;
-use biome_formatter::FormatRuleWithOptions;
 use biome_rowan::SyntaxResult;
 
 #[derive(Debug, Clone, Default)]

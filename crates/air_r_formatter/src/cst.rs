@@ -1,6 +1,6 @@
 use crate::prelude::*;
 use crate::{AsFormat, IntoFormat, RFormatContext};
-use air_r_syntax::{map_syntax_node, RSyntaxNode};
+use air_r_syntax::{RSyntaxNode, map_syntax_node};
 use biome_formatter::{FormatOwnedWithRule, FormatRefWithRule, FormatResult};
 
 #[derive(Debug, Copy, Clone, Default)]

@@ -70,8 +70,8 @@ impl DerefMut for DefaultExcludePatterns {
 
 #[cfg(test)]
 mod test {
-    use crate::settings::default_exclude_patterns::DefaultExcludePatterns;
     use crate::settings::default_exclude_patterns::DEFAULT_EXCLUDE_PATTERN_NAMES;
+    use crate::settings::default_exclude_patterns::DefaultExcludePatterns;
 
     #[test]
     fn test_doublestar_default_patterns() {
@@ -86,22 +86,30 @@ mod test {
 
         assert!(default_patterns.matched("renv", true).is_some());
         assert!(default_patterns.matched("renv", false).is_none());
-        assert!(default_patterns
-            .matched_path_or_any_parents("renv/activate.R", false)
-            .is_some());
+        assert!(
+            default_patterns
+                .matched_path_or_any_parents("renv/activate.R", false)
+                .is_some()
+        );
 
         assert!(default_patterns.matched("cpp11.R", false).is_some());
         assert!(default_patterns.matched("foo/cpp11.R", false).is_some());
 
-        assert!(default_patterns
-            .matched("import-standalone-types-check.R", false)
-            .is_some());
-        assert!(default_patterns
-            .matched("R/import-standalone-foo.R", false)
-            .is_some());
-        assert!(default_patterns
-            .matched("pkg/R/import-standalone-foo.R", false)
-            .is_some());
+        assert!(
+            default_patterns
+                .matched("import-standalone-types-check.R", false)
+                .is_some()
+        );
+        assert!(
+            default_patterns
+                .matched("R/import-standalone-foo.R", false)
+                .is_some()
+        );
+        assert!(
+            default_patterns
+                .matched("pkg/R/import-standalone-foo.R", false)
+                .is_some()
+        );
 
         Ok(())
     }

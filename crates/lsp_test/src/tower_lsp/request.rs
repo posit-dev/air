@@ -8,7 +8,7 @@ use std::borrow::Cow;
 use std::fmt::{self, Display, Formatter};
 use std::str::FromStr;
 
-use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer, de};
 use serde_json::Value;
 
 // use super::{Id, Version};
@@ -153,7 +153,7 @@ impl Display for Request {
                 fn io_error<E>(_: E) -> io::Error {
                     // Error value does not matter because fmt::Display impl below just
                     // maps it to fmt::Error
-                    io::Error::new(io::ErrorKind::Other, "fmt error")
+                    io::Error::other("fmt error")
                 }
                 let s = str::from_utf8(buf).map_err(io_error)?;
                 self.inner.write_str(s).map_err(io_error)?;

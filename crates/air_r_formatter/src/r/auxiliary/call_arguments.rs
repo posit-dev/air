@@ -4,8 +4,8 @@ use crate::comments::RComments;
 use crate::context::RFormatOptions;
 use crate::either::Either;
 use crate::prelude::*;
-use crate::r::auxiliary::braced_expressions::braced_expressions_variant;
 use crate::r::auxiliary::braced_expressions::BracedExpressionsVariant;
+use crate::r::auxiliary::braced_expressions::braced_expressions_variant;
 use crate::r::auxiliary::function_definition::FormatFunctionOptions;
 use crate::separated::FormatAstSeparatedListExtension;
 use air_r_syntax::AnyRExpression;
@@ -20,7 +20,7 @@ use air_r_syntax::RSubsetArguments;
 use air_r_syntax::RSyntaxNode;
 use air_r_syntax::RSyntaxToken;
 use biome_formatter::separated::TrailingSeparator;
-use biome_formatter::{format_args, format_element, write, VecBuffer};
+use biome_formatter::{VecBuffer, format_args, format_element, write};
 use biome_rowan::{AstSeparatedElement, AstSeparatedList, SyntaxResult};
 use itertools::Itertools;
 
