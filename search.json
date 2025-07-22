@@ -1,82 +1,111 @@
 [
   {
-    "objectID": "formatter.html",
-    "href": "formatter.html",
-    "title": "Formatter",
+    "objectID": "editor-zed.html",
+    "href": "editor-zed.html",
+    "title": "Zed",
     "section": "",
-    "text": "Air is first and foremost a formatter of R code. On this page, you’ll find details about what a formatter is, why you’d want to use one, and you’ll learn about features that help you anticipate how Air will format your R code.",
+    "text": "Zed is a collaborative editor with an extension system and builtin support for the Language Server Protocol.",
     "crumbs": [
-      "Formatter"
+      "Editors",
+      "Zed"
     ]
   },
   {
-    "objectID": "formatter.html#if-statements",
-    "href": "formatter.html#if-statements",
-    "title": "Formatter",
-    "section": "If statements",
-    "text": "If statements\nAir will autobrace if statements if:\n\nAny existing part of the if statement spans multiple lines\nAny existing part of the if statement is already braced\nThe if statement is nested, i.e. there is an else if {\nThe if statement exceeds the line length\n\nFor example, the following will all be autobraced:\nif (condition)\n  a\n\n# Becomes:\nif (condition) {\n  a\n}\nif (condition) a else { b }\n\n# Becomes:\nif (condition) {\n  a\n} else {\n  b\n}\nif (condition) a else if (condition2) b else c\n\n# Becomes:\nif (condition) {\n  a\n} else if (condition2) {\n  b\n} else {\n  c\n}\nSimple if statements that don’t hit any of the autobracing criteria mentioned above are allowed to stay on one line as long as they are also in value position, as opposed to effect position.\n\nTop level if statements are in effect position.\nIf statements that are direct children of {} are in effect position, unless the if statement is the last child of the {} expression list, in which case it is in value position (because it is the returned value from that scope).\nOtherwise, the if statement is in value position.\n\nThis if statement is at top level, putting it in effect position, and would be autobraced:\nif (condition) a else b\n\n# Becomes:\nif (condition) {\n  a\n} else {\n  b\n}\nThese if statements are children of {} (but aren’t the last child!), putting them in effect position, and would be autobraced:\nfn &lt;- function(x) {\n  if (condition) stop(\"oh no\")\n  if (condition) return(1)\n  if (condition) x &lt;- 1\n  x + 1\n}\n\n# Becomes:\nfn &lt;- function(x) {\n  if (condition) {\n    stop(\"oh no\")\n  }\n  if (condition) {\n    return(1)\n  }\n  if (condition) {\n    x &lt;- 1\n  }\n  x + 1\n}\nIt’s particularly important for code involving stop(), return(), and &lt;- to be easily readable on their own line because they cause side effects that affect control flow or state.\nThese if statements are in value position, and would not be autobraced:\nx &lt;- if (condition) 1 else 2\n\nx &lt;- x %||% if (condition) 1 else 2\n\nlist(a = if (condition) 1 else 2)\n\nfunction(\n  a,\n  optional = if (is.null(a)) 1 else 2\n) {\n}\n\n# If statement is the last expression of the `{}` scope\nmap(xs, function(x) {\n  if (is.null(x)) 1 else 2\n})\n\nPortability\nIt is particularly important to autobrace multiline if statements for portability, which is the ability to copy and paste that if statement into any context and have it still parse. Consider the following if statement:\nfn &lt;- function(a) {\n  if (is.null(a))\n    1\n  else\n    2\n}\nThis parses and runs correctly while the if statement is nested within the {} braces of the function. But if you’re testing this code and you copy and paste it out of the function, then it no longer parses:\nif (is.null(a))\n  1\nelse\n  2\nIf you try and run this, then you’ll see an error like Error: unexpected 'else'. This is particularly annoying when you’re working inside a debugger. Most R debuggers allow you to pause inside functions and highlight and run chunks of that function. If you’re paused inside fn() and try to highlight and run the if statement, then it will confusingly fail to parse. Autobracing multiline if statements avoids this problem entirely.",
+    "objectID": "editor-zed.html#format-on-save",
+    "href": "editor-zed.html#format-on-save",
+    "title": "Zed",
+    "section": "Format on save",
+    "text": "Format on save\nThe Zed setting format_on_save is \"on\" by default, so there is no additional configuration required to get Zed to format your R files on save using Air.",
     "crumbs": [
-      "Formatter"
+      "Editors",
+      "Zed"
     ]
   },
   {
-    "objectID": "formatter.html#for-while-and-repeat-loops",
-    "href": "formatter.html#for-while-and-repeat-loops",
-    "title": "Formatter",
-    "section": "For, while, and repeat loops",
-    "text": "For, while, and repeat loops\nAir unconditionally autobraces the body of all R loops. This is mostly for consistency with if statements, as it is fairly uncommon to see braceless loops in practice.\nfor (i in 1:5) x &lt;- x + i\n\n# Becomes:\nfor (i in 1:5) {\n  x &lt;- x + i\n}\nwhile (x &lt; 5) x &lt;- x + 1\n\n# Becomes:\nwhile (x &lt; 5) {\n  x &lt;- x + 1\n}",
+    "objectID": "editor-zed.html#configuration-autocompletion-and-validation",
+    "href": "editor-zed.html#configuration-autocompletion-and-validation",
+    "title": "Zed",
+    "section": "Configuration autocompletion and validation",
+    "text": "Configuration autocompletion and validation\nInstalling the Tombi extension from the zed: extensions command activates autocompletion and validation while inside an air.toml file. We highly recommend using this extension for an enjoyable air.toml editing experience!",
     "crumbs": [
-      "Formatter"
+      "Editors",
+      "Zed"
     ]
   },
   {
-    "objectID": "formatter.html#function-definitions",
-    "href": "formatter.html#function-definitions",
-    "title": "Formatter",
-    "section": "Function definitions",
-    "text": "Function definitions\nAir will autobrace the body of a function definition if:\n\nAny existing part of the function definition spans multiple lines\nThe function definition exceeds the line length\n\nfn &lt;- function(a, b)\n  a + b\n\n# Becomes:\nfn &lt;- function(a, b) {\n  a + b\n}\nfn &lt;- function(\n  a,\n  b\n) a + b\n\n# Becomes:\nfn &lt;- function(\n  a,\n  b\n) {\n  a + b\n}\nfn &lt;- function(a_really_long_variable_name, another_really_long_name) a_really_long_variable_name + another_really_long_name\n\n# Becomes:\nfn &lt;- function(\n  a_really_long_variable_name,\n  another_really_long_name\n) {\n  a_really_long_variable_name + another_really_long_name\n}\nShort function definitions are allowed on one line and will not be autobraced. These are all allowed by Air:\nadd_one &lt;- function(x) x + 1\n\nmap_lgl(xs, function(x) is.logical(x) && length(x) == 1L && !is.na(x))\n\n# This includes anonymous functions\nmap_lgl(xs, \\(x) is.list(x) && length(x) == 0L)",
+    "objectID": "editor-rstudio.html",
+    "href": "editor-rstudio.html",
+    "title": "RStudio",
+    "section": "",
+    "text": "RStudio does not support the Language Server Protocol, but you can still use Air as an external formatter.",
     "crumbs": [
-      "Formatter"
+      "Editors",
+      "RStudio"
     ]
   },
   {
-    "objectID": "formatter.html#with-persistent-line-breaks",
-    "href": "formatter.html#with-persistent-line-breaks",
-    "title": "Formatter",
-    "section": "With persistent line breaks",
-    "text": "With persistent line breaks\nAutobracing is particularly useful as a code rewriting tool when combined with persistent line breaks. Consider:\nresult &lt;- map_lgl(xs, function(x) is.logical(x) && length(x) == 1L && !is.na(x))\nThis may be easier to read if it spanned across multiple lines. You could manually rework this, or you could let Air help you! There are two places you could put a persistent line break depending on what your desired final result is:\n# Adding a line break before `xs` expands the call\nresult &lt;- map_lgl(\n  xs, function(x) is.logical(x) && length(x) == 1L && !is.na(x))\n\n# Becomes:\nresult &lt;- map_lgl(\n  xs,\n  function(x) is.logical(x) && length(x) == 1L && !is.na(x)\n)\n# Adding a line break before `is.logical(x)` forces autobracing\nresult &lt;- map_lgl(xs, function(x)\n    is.logical(x) && length(x) == 1L && !is.na(x))\n\n# Becomes:\nresult &lt;- map_lgl(xs, function(x) {\n  is.logical(x) && length(x) == 1L && !is.na(x)\n})",
+    "objectID": "editor-rstudio.html#rstudio-format-on-save",
+    "href": "editor-rstudio.html#rstudio-format-on-save",
+    "title": "RStudio",
+    "section": "Format on save",
+    "text": "Format on save\nAfter you’ve set Air as an external formatter, you can either tell RStudio to format all documents on save, or set this on a per document basis.\nTo format all documents on save, open Tools -&gt; Global Options -&gt; Code -&gt; Saving and check Reformat documents on save.\n\n\n\n\n\nTo format individual documents on save, open the file specific settings and check Reformat Document on Save.",
     "crumbs": [
-      "Formatter"
+      "Editors",
+      "RStudio"
     ]
   },
   {
-    "objectID": "formatter.html#comments",
-    "href": "formatter.html#comments",
-    "title": "Formatter",
-    "section": "Comments",
-    "text": "Comments\nAir generally avoids moving your comments. However, when Air autobraces code, it may have to adjust them. This generally works quite well for most code, but is impossible to do perfectly. It is possible that you will have to adjust the placement of your comments after Air runs.\nFor example, leading comments on autobraced elements are generally placed in a way that you’d expect:\nif (condition)\n  # My comment\n  a\n\n# Becomes:\nif (condition) {\n  # My comment\n  a\n}\nBut trailing comments might need manual adjustment:\nif (condition)\n  a # My comment\n\n# Becomes:\nif (condition) {\n  a\n} # My comment\n\n# You may want to adjust it to:\nif (condition) {\n  a # My comment\n}\nIn general, prefer leading comments over trailing comments for readability and to have the highest chance of Air placing it in the correct location when comment adjustment is required.",
+    "objectID": "editor-rstudio.html#quarto",
+    "href": "editor-rstudio.html#quarto",
+    "title": "RStudio",
+    "section": "Quarto",
+    "text": "Quarto\nThere is currently no way to use Air in RStudio with Quarto documents.",
     "crumbs": [
-      "Formatter"
+      "Editors",
+      "RStudio"
     ]
   },
   {
-    "objectID": "formatter.html#skip-comments",
-    "href": "formatter.html#skip-comments",
-    "title": "Formatter",
-    "section": "Skip comments",
-    "text": "Skip comments\nAir supports two special comments to disable formatting, # fmt: skip and # fmt: skip file.\n# fmt: skip skips formatting for the following syntax node (including all of its children).\n# This skips formatting for `list()` and its arguments, retaining the manual alignment\n# fmt: skip\nlist(\n  dollar = \"USA\",\n  yen    = \"Japan\",\n  yuan   = \"China\"\n)\n\n# This skips formatting for `tribble()` and its arguments\n# fmt: skip\ntribble(\n  ~x, ~y,\n   1,  2,\n)\n\n# This skips formatting for `graph_from_literal()` and its arguments,\n# retaining the formatting of the domain specific language\n# fmt: skip\nigraph::graph_from_literal(Alice +--+ Bob)\n# fmt: skip file skips the entire file. This must be placed at the top of the file before the first non-comment R code, otherwise the comment is ignored. This is useful for generated files, or as an alternative to exclude for individual files that you know you’d like to exclude from formatting.\n# This is a generated file. Don't modify by hand!\n# fmt: skip file\n\n# This won't be formatted\ngenerated_function_signature &lt;- function(which, might, overflow, the, line, width, but, we, dont, really, care) {\n    body\n}\n\n# Neither will this\nanother_generated_function_signature &lt;- function(which, might, overflow, the, line, width, but, we, dont, really, care) {\n    body\n}\nFor generated files we also support the convention of a comment starting with Generated by at the top of the file:\n# Generated by myPackage: don't modify by hand",
+    "objectID": "editor-helix.html",
+    "href": "editor-helix.html",
+    "title": "Helix",
+    "section": "",
+    "text": "Helix is a modal editor with builtin support for the Language Server Protocol.",
     "crumbs": [
-      "Formatter"
+      "Editors",
+      "Helix"
     ]
   },
   {
-    "objectID": "formatter.html#skip-configuration",
-    "href": "formatter.html#skip-configuration",
-    "title": "Formatter",
-    "section": "Skip configuration",
-    "text": "Skip configuration\nSkip comments are useful for disabling formatting for one-off function calls, but sometimes you may find yourself repeatedly using functions from a domain specific language (DSL) that doesn’t follow conventional formatting rules. For example, the igraph package contains a DSL for constructing a graph from a literal representation:\nigraph::graph_from_literal(A +-+ B +---+ C ++ D + E)\nAir would format this as:\nigraph::graph_from_literal(A + -+B + ---+C + +D + E)\nIf you use graph_from_literal() often, it would be annoying to add # fmt: skip comments at every call site. Instead, air.toml supports a skip field that allows you to specify function names that you never want formatting for. Specifying this would retain the original formatting of the graph_from_literal() call, even without a # fmt: skip comment:\nskip = [\"graph_from_literal\"]\nOne particularly common use of this is skip = [\"tribble\"], which you can use to avoid formatting of all tibble::tribble() calls. In the long term, Air may provide more sophisticated tooling for formatting using a specified alignment.",
+    "objectID": "editor-helix.html#languageserver",
+    "href": "editor-helix.html#languageserver",
+    "title": "Helix",
+    "section": "languageserver",
+    "text": "languageserver\nCurrently, Air only supports formatting. It’s possible to use Air and languageserver simultaneously for a better editing experience. Use the following configuration to enable both language servers (make sure that the languageserver R package is installed, Helix is able to use it without any additional configuration).\n[[language]]\nname = \"r\"\nlanguage-servers = [\"air\", \"r\"]",
     "crumbs": [
-      "Formatter"
+      "Editors",
+      "Helix"
+    ]
+  },
+  {
+    "objectID": "editor-helix.html#format-on-save",
+    "href": "editor-helix.html#format-on-save",
+    "title": "Helix",
+    "section": "Format on save",
+    "text": "Format on save\nAdd auto-format = true to your R language configuration block to enable formatting on save.\n[[language]]\nname = \"r\"\nlanguage-servers = [\"air\"]\nauto-format = true",
+    "crumbs": [
+      "Editors",
+      "Helix"
+    ]
+  },
+  {
+    "objectID": "cli.html",
+    "href": "cli.html",
+    "title": "Command line interface",
+    "section": "",
+    "text": "Installation\nIf you’d like to use Air at the command line, you can use one of our standalone installers.\nOn macOS and Linux:\ncurl -LsSf https://github.com/posit-dev/air/releases/latest/download/air-installer.sh | sh\nOr, if you’re familiar with Homebrew, install the air formula with:\nbrew install air\nOn Windows:\npowershell -ExecutionPolicy Bypass -c \"irm https://github.com/posit-dev/air/releases/latest/download/air-installer.ps1 | iex\"\nFor a specific version:\ncurl -LsSf https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.sh | sh\npowershell -ExecutionPolicy Bypass -c \"irm https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.ps1 | iex\"\nThe installer scripts will automatically add Air to your PATH. The very first time you install Air, for the PATH modifications to be applied you’ll need to restart your terminal.\nNote that if you’d like to use Air inside VS Code or Positron, then the Extension for those editors comes pre-bundled with an Air binary, so there’s nothing you need to do besides download the Extension.",
+    "crumbs": [
+      "Command line"
     ]
   },
   {
@@ -167,80 +196,35 @@
     ]
   },
   {
-    "objectID": "editor-helix.html",
-    "href": "editor-helix.html",
-    "title": "Helix",
+    "objectID": "integration-github-actions.html",
+    "href": "integration-github-actions.html",
+    "title": "GitHub Actions",
     "section": "",
-    "text": "Helix is a modal editor with builtin support for the Language Server Protocol.",
+    "text": "Air integrates with GitHub Actions through the posit-dev/setup-air action. The action is in charge of:\nYou can install Air in one step, and then invoke Air in the next step, like:",
     "crumbs": [
-      "Editors",
-      "Helix"
+      "Integrations",
+      "GitHub Actions"
     ]
   },
   {
-    "objectID": "editor-helix.html#languageserver",
-    "href": "editor-helix.html#languageserver",
-    "title": "Helix",
-    "section": "languageserver",
-    "text": "languageserver\nCurrently, Air only supports formatting. It’s possible to use Air and languageserver simultaneously for a better editing experience. Use the following configuration to enable both language servers (make sure that the languageserver R package is installed, Helix is able to use it without any additional configuration).\n[[language]]\nname = \"r\"\nlanguage-servers = [\"air\", \"r\"]",
+    "objectID": "integration-github-actions.html#example-actions",
+    "href": "integration-github-actions.html#example-actions",
+    "title": "GitHub Actions",
+    "section": "Example actions",
+    "text": "Example actions\nWe provide full example actions to get you started quickly, described below. We recommend that you use usethis to copy one of the following into your .github/workflows folder.\n\nFormat with GitHub Suggestions\nusethis::use_github_action(url = \"https://github.com/posit-dev/setup-air/blob/main/examples/format-suggest.yaml\")\nThis action runs air format . on every pull request. If formatting is required, the check fails and suggestion comments are added directly to the pull request. We recommend committing the suggestions in a single batch from the Files changed view, which will trigger a rerun of the check and delete the outdated suggestion comments. Before using this action, ensure that you’ve locally run Air on your entire project at least once using air format . or the Air: Format Workspace Folder command in VS Code or Positron, otherwise you can end up with a very large amount of suggestions.\nThis action is great for managing pull requests from external contributors. Even if they don’t use Air themselves, they can commit the suggestions to pass Air’s formatting checks.\nNote that this does not run on pushes straight to main.\n\n\n\nFormat with --check\nusethis::use_github_action(url = \"https://github.com/posit-dev/setup-air/blob/main/examples/format-check.yaml\")\nThis runs air format . --check on every push to main and on every pull request. This is a very simple action that fails if any files would be reformatted. When this happens, reformat locally using air format . or the Air: Format Workspace Folder command in VS Code or Positron, and commit and push the results.",
     "crumbs": [
-      "Editors",
-      "Helix"
+      "Integrations",
+      "GitHub Actions"
     ]
   },
   {
-    "objectID": "editor-helix.html#format-on-save",
-    "href": "editor-helix.html#format-on-save",
-    "title": "Helix",
-    "section": "Format on save",
-    "text": "Format on save\nAdd auto-format = true to your R language configuration block to enable formatting on save.\n[[language]]\nname = \"r\"\nlanguage-servers = [\"air\"]\nauto-format = true",
-    "crumbs": [
-      "Editors",
-      "Helix"
-    ]
-  },
-  {
-    "objectID": "editor-neovim.html",
-    "href": "editor-neovim.html",
-    "title": "Neovim",
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Air",
     "section": "",
-    "text": "Air provides first class support for Neovim, which supports the Language Server Protocol.",
+    "text": "Air is currently in beta. Expect breaking changes both in the API and in formatting results. We also recommend that you use a version control system like git so you can easily see the changes that Air makes.\n\n\n\n\n\n\nAir is an R formatter and language server, written in Rust.\n\nIntegrates with your favorite editor with support for\n\nFormat on save\nFormat selection\n\nUsable from the command line with support for\n\nFormatting individual files\nRecursively formatting entire directories\n--check mode, suitable for a git pre-commit hook or a GitHub Actions workflow\n\n\nIf you’d like to use Air from the command line, read our installation guide. If you’d like to use Air inside a code editor, read our editors guide.",
     "crumbs": [
-      "Editors",
-      "Neovim"
-    ]
-  },
-  {
-    "objectID": "editor-neovim.html#languageserver",
-    "href": "editor-neovim.html#languageserver",
-    "title": "Neovim",
-    "section": "languageserver",
-    "text": "languageserver\nIf both Air and languageserver are installed, you can use the following configuration to disable languageserver formatting, ensuring that only Air handles formatting:\nrequire(\"lspconfig\").r_language_server.setup({\n    on_attach = function(client, _)\n        client.server_capabilities.documentFormattingProvider = false\n        client.server_capabilities.documentRangeFormattingProvider = false\n    end,\n})",
-    "crumbs": [
-      "Editors",
-      "Neovim"
-    ]
-  },
-  {
-    "objectID": "editor-neovim.html#format-on-save",
-    "href": "editor-neovim.html#format-on-save",
-    "title": "Neovim",
-    "section": "Format on save",
-    "text": "Format on save\nWith the BufWritePre hook recommended in the configuration step, Air will format your R files on every save.",
-    "crumbs": [
-      "Editors",
-      "Neovim"
-    ]
-  },
-  {
-    "objectID": "editor-neovim.html#quarto",
-    "href": "editor-neovim.html#quarto",
-    "title": "Neovim",
-    "section": "Quarto",
-    "text": "Quarto\nAs an LSP, Air itself does not provide direct support for Quarto or RMarkdown documents. However, Air can additionally be configured as a formatter plugin for conform.nvim, which supports “injected language formatting” for code blocks in Markdown, Quarto, and RMarkdown. Conform can be configured by adding the following to your nvim/lua/plugins/conform.lua:\nrequire(\"conform\").setup({\n    formatters_by_ft = {\n        quarto = { \"injected\" },\n        rmd = { \"injected\" },\n        r = { \"air\" },\n    },\n})\nSee the conform.nvim documentation for more information on how to configure conform.nvim with your favorite plugin manager.",
-    "crumbs": [
-      "Editors",
-      "Neovim"
+      "Air"
     ]
   },
   {
@@ -314,111 +298,127 @@
     ]
   },
   {
-    "objectID": "integration-github-actions.html",
-    "href": "integration-github-actions.html",
-    "title": "GitHub Actions",
+    "objectID": "editor-neovim.html",
+    "href": "editor-neovim.html",
+    "title": "Neovim",
     "section": "",
-    "text": "Air integrates with GitHub Actions through the posit-dev/setup-air action. The action is in charge of:\nYou can install Air in one step, and then invoke Air in the next step, like:",
-    "crumbs": [
-      "Integrations",
-      "GitHub Actions"
-    ]
-  },
-  {
-    "objectID": "integration-github-actions.html#example-actions",
-    "href": "integration-github-actions.html#example-actions",
-    "title": "GitHub Actions",
-    "section": "Example actions",
-    "text": "Example actions\nWe provide full example actions to get you started quickly, described below. We recommend that you use usethis to copy one of the following into your .github/workflows folder.\n\nFormat with GitHub Suggestions\nusethis::use_github_action(url = \"https://github.com/posit-dev/setup-air/blob/main/examples/format-suggest.yaml\")\nThis action runs air format . on every pull request. If formatting is required, the check fails and suggestion comments are added directly to the pull request. We recommend committing the suggestions in a single batch from the Files changed view, which will trigger a rerun of the check and delete the outdated suggestion comments. Before using this action, ensure that you’ve locally run Air on your entire project at least once using air format . or the Air: Format Workspace Folder command in VS Code or Positron, otherwise you can end up with a very large amount of suggestions.\nThis action is great for managing pull requests from external contributors. Even if they don’t use Air themselves, they can commit the suggestions to pass Air’s formatting checks.\nNote that this does not run on pushes straight to main.\n\n\n\nFormat with --check\nusethis::use_github_action(url = \"https://github.com/posit-dev/setup-air/blob/main/examples/format-check.yaml\")\nThis runs air format . --check on every push to main and on every pull request. This is a very simple action that fails if any files would be reformatted. When this happens, reformat locally using air format . or the Air: Format Workspace Folder command in VS Code or Positron, and commit and push the results.",
-    "crumbs": [
-      "Integrations",
-      "GitHub Actions"
-    ]
-  },
-  {
-    "objectID": "editor-zed.html",
-    "href": "editor-zed.html",
-    "title": "Zed",
-    "section": "",
-    "text": "Zed is a collaborative editor with an extension system and builtin support for the Language Server Protocol.",
+    "text": "Air provides first class support for Neovim, which supports the Language Server Protocol.",
     "crumbs": [
       "Editors",
-      "Zed"
+      "Neovim"
     ]
   },
   {
-    "objectID": "editor-zed.html#format-on-save",
-    "href": "editor-zed.html#format-on-save",
-    "title": "Zed",
+    "objectID": "editor-neovim.html#languageserver",
+    "href": "editor-neovim.html#languageserver",
+    "title": "Neovim",
+    "section": "languageserver",
+    "text": "languageserver\nIf both Air and languageserver are installed, you can use the following configuration to disable languageserver formatting, ensuring that only Air handles formatting:\nrequire(\"lspconfig\").r_language_server.setup({\n    on_attach = function(client, _)\n        client.server_capabilities.documentFormattingProvider = false\n        client.server_capabilities.documentRangeFormattingProvider = false\n    end,\n})",
+    "crumbs": [
+      "Editors",
+      "Neovim"
+    ]
+  },
+  {
+    "objectID": "editor-neovim.html#format-on-save",
+    "href": "editor-neovim.html#format-on-save",
+    "title": "Neovim",
     "section": "Format on save",
-    "text": "Format on save\nThe Zed setting format_on_save is \"on\" by default, so there is no additional configuration required to get Zed to format your R files on save using Air.",
+    "text": "Format on save\nWith the BufWritePre hook recommended in the configuration step, Air will format your R files on every save.",
     "crumbs": [
       "Editors",
-      "Zed"
+      "Neovim"
     ]
   },
   {
-    "objectID": "editor-zed.html#configuration-autocompletion-and-validation",
-    "href": "editor-zed.html#configuration-autocompletion-and-validation",
-    "title": "Zed",
-    "section": "Configuration autocompletion and validation",
-    "text": "Configuration autocompletion and validation\nInstalling the Tombi extension from the zed: extensions command activates autocompletion and validation while inside an air.toml file. We highly recommend using this extension for an enjoyable air.toml editing experience!",
-    "crumbs": [
-      "Editors",
-      "Zed"
-    ]
-  },
-  {
-    "objectID": "cli.html",
-    "href": "cli.html",
-    "title": "Command line interface",
-    "section": "",
-    "text": "Installation\nIf you’d like to use Air at the command line, you can use one of our standalone installers.\nOn macOS and Linux:\ncurl -LsSf https://github.com/posit-dev/air/releases/latest/download/air-installer.sh | sh\nOr, if you’re familiar with Homebrew, install the air formula with:\nbrew install air\nOn Windows:\npowershell -ExecutionPolicy Bypass -c \"irm https://github.com/posit-dev/air/releases/latest/download/air-installer.ps1 | iex\"\nFor a specific version:\ncurl -LsSf https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.sh | sh\npowershell -ExecutionPolicy Bypass -c \"irm https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.ps1 | iex\"\nThe installer scripts will automatically add Air to your PATH. The very first time you install Air, for the PATH modifications to be applied you’ll need to restart your terminal.\nNote that if you’d like to use Air inside VS Code or Positron, then the Extension for those editors comes pre-bundled with an Air binary, so there’s nothing you need to do besides download the Extension.",
-    "crumbs": [
-      "Command line"
-    ]
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Air",
-    "section": "",
-    "text": "Air is currently in beta. Expect breaking changes both in the API and in formatting results. We also recommend that you use a version control system like git so you can easily see the changes that Air makes.\n\n\n\n\n\n\nAir is an R formatter and language server, written in Rust.\n\nIntegrates with your favorite editor with support for\n\nFormat on save\nFormat selection\n\nUsable from the command line with support for\n\nFormatting individual files\nRecursively formatting entire directories\n--check mode, suitable for a git pre-commit hook or a GitHub Actions workflow\n\n\nIf you’d like to use Air from the command line, read our installation guide. If you’d like to use Air inside a code editor, read our editors guide.",
-    "crumbs": [
-      "Air"
-    ]
-  },
-  {
-    "objectID": "editor-rstudio.html",
-    "href": "editor-rstudio.html",
-    "title": "RStudio",
-    "section": "",
-    "text": "RStudio does not support the Language Server Protocol, but you can still use Air as an external formatter.",
-    "crumbs": [
-      "Editors",
-      "RStudio"
-    ]
-  },
-  {
-    "objectID": "editor-rstudio.html#rstudio-format-on-save",
-    "href": "editor-rstudio.html#rstudio-format-on-save",
-    "title": "RStudio",
-    "section": "Format on save",
-    "text": "Format on save\nAfter you’ve set Air as an external formatter, you can either tell RStudio to format all documents on save, or set this on a per document basis.\nTo format all documents on save, open Tools -&gt; Global Options -&gt; Code -&gt; Saving and check Reformat documents on save.\n\n\n\n\n\nTo format individual documents on save, open the file specific settings and check Reformat Document on Save.",
-    "crumbs": [
-      "Editors",
-      "RStudio"
-    ]
-  },
-  {
-    "objectID": "editor-rstudio.html#quarto",
-    "href": "editor-rstudio.html#quarto",
-    "title": "RStudio",
+    "objectID": "editor-neovim.html#quarto",
+    "href": "editor-neovim.html#quarto",
+    "title": "Neovim",
     "section": "Quarto",
-    "text": "Quarto\nThere is currently no way to use Air in RStudio with Quarto documents.",
+    "text": "Quarto\nAs an LSP, Air itself does not provide direct support for Quarto or RMarkdown documents. However, Air can additionally be configured as a formatter plugin for conform.nvim, which supports “injected language formatting” for code blocks in Markdown, Quarto, and RMarkdown. Conform can be configured by adding the following to your nvim/lua/plugins/conform.lua:\nrequire(\"conform\").setup({\n    formatters_by_ft = {\n        quarto = { \"injected\" },\n        rmd = { \"injected\" },\n        r = { \"air\" },\n    },\n})\nSee the conform.nvim documentation for more information on how to configure conform.nvim with your favorite plugin manager.",
     "crumbs": [
       "Editors",
-      "RStudio"
+      "Neovim"
+    ]
+  },
+  {
+    "objectID": "formatter.html",
+    "href": "formatter.html",
+    "title": "Formatter",
+    "section": "",
+    "text": "Air is first and foremost a formatter of R code. On this page, you’ll find details about what a formatter is, why you’d want to use one, and you’ll learn about features that help you anticipate how Air will format your R code.",
+    "crumbs": [
+      "Formatter"
+    ]
+  },
+  {
+    "objectID": "formatter.html#if-statements",
+    "href": "formatter.html#if-statements",
+    "title": "Formatter",
+    "section": "If statements",
+    "text": "If statements\nAir will autobrace if statements if:\n\nAny existing part of the if statement spans multiple lines\nAny existing part of the if statement is already braced\nThe if statement is nested, i.e. there is an else if {\nThe if statement exceeds the line length\n\nFor example, the following will all be autobraced:\nif (condition)\n  a\n\n# Becomes:\nif (condition) {\n  a\n}\nif (condition) a else { b }\n\n# Becomes:\nif (condition) {\n  a\n} else {\n  b\n}\nif (condition) a else if (condition2) b else c\n\n# Becomes:\nif (condition) {\n  a\n} else if (condition2) {\n  b\n} else {\n  c\n}\nSimple if statements that don’t hit any of the autobracing criteria mentioned above are allowed to stay on one line as long as they are also in value position, as opposed to effect position.\n\nTop level if statements are in effect position.\nIf statements that are direct children of {} are in effect position, unless the if statement is the last child of the {} expression list, in which case it is in value position (because it is the returned value from that scope).\nOtherwise, the if statement is in value position.\n\nThis if statement is at top level, putting it in effect position, and would be autobraced:\nif (condition) a else b\n\n# Becomes:\nif (condition) {\n  a\n} else {\n  b\n}\nThese if statements are children of {} (but aren’t the last child!), putting them in effect position, and would be autobraced:\nfn &lt;- function(x) {\n  if (condition) stop(\"oh no\")\n  if (condition) return(1)\n  if (condition) x &lt;- 1\n  x + 1\n}\n\n# Becomes:\nfn &lt;- function(x) {\n  if (condition) {\n    stop(\"oh no\")\n  }\n  if (condition) {\n    return(1)\n  }\n  if (condition) {\n    x &lt;- 1\n  }\n  x + 1\n}\nIt’s particularly important for code involving stop(), return(), and &lt;- to be easily readable on their own line because they cause side effects that affect control flow or state.\nThese if statements are in value position, and would not be autobraced:\nx &lt;- if (condition) 1 else 2\n\nx &lt;- x %||% if (condition) 1 else 2\n\nlist(a = if (condition) 1 else 2)\n\nfunction(\n  a,\n  optional = if (is.null(a)) 1 else 2\n) {\n}\n\n# If statement is the last expression of the `{}` scope\nmap(xs, function(x) {\n  if (is.null(x)) 1 else 2\n})\n\nPortability\nIt is particularly important to autobrace multiline if statements for portability, which is the ability to copy and paste that if statement into any context and have it still parse. Consider the following if statement:\nfn &lt;- function(a) {\n  if (is.null(a))\n    1\n  else\n    2\n}\nThis parses and runs correctly while the if statement is nested within the {} braces of the function. But if you’re testing this code and you copy and paste it out of the function, then it no longer parses:\nif (is.null(a))\n  1\nelse\n  2\nIf you try and run this, then you’ll see an error like Error: unexpected 'else'. This is particularly annoying when you’re working inside a debugger. Most R debuggers allow you to pause inside functions and highlight and run chunks of that function. If you’re paused inside fn() and try to highlight and run the if statement, then it will confusingly fail to parse. Autobracing multiline if statements avoids this problem entirely.",
+    "crumbs": [
+      "Formatter"
+    ]
+  },
+  {
+    "objectID": "formatter.html#for-while-and-repeat-loops",
+    "href": "formatter.html#for-while-and-repeat-loops",
+    "title": "Formatter",
+    "section": "For, while, and repeat loops",
+    "text": "For, while, and repeat loops\nAir unconditionally autobraces the body of all R loops. This is mostly for consistency with if statements, as it is fairly uncommon to see braceless loops in practice.\nfor (i in 1:5) x &lt;- x + i\n\n# Becomes:\nfor (i in 1:5) {\n  x &lt;- x + i\n}\nwhile (x &lt; 5) x &lt;- x + 1\n\n# Becomes:\nwhile (x &lt; 5) {\n  x &lt;- x + 1\n}",
+    "crumbs": [
+      "Formatter"
+    ]
+  },
+  {
+    "objectID": "formatter.html#function-definitions",
+    "href": "formatter.html#function-definitions",
+    "title": "Formatter",
+    "section": "Function definitions",
+    "text": "Function definitions\nAir will autobrace the body of a function definition if:\n\nAny existing part of the function definition spans multiple lines\nThe function definition exceeds the line length\n\nfn &lt;- function(a, b)\n  a + b\n\n# Becomes:\nfn &lt;- function(a, b) {\n  a + b\n}\nfn &lt;- function(\n  a,\n  b\n) a + b\n\n# Becomes:\nfn &lt;- function(\n  a,\n  b\n) {\n  a + b\n}\nfn &lt;- function(a_really_long_variable_name, another_really_long_name) a_really_long_variable_name + another_really_long_name\n\n# Becomes:\nfn &lt;- function(\n  a_really_long_variable_name,\n  another_really_long_name\n) {\n  a_really_long_variable_name + another_really_long_name\n}\nShort function definitions are allowed on one line and will not be autobraced. These are all allowed by Air:\nadd_one &lt;- function(x) x + 1\n\nmap_lgl(xs, function(x) is.logical(x) && length(x) == 1L && !is.na(x))\n\n# This includes anonymous functions\nmap_lgl(xs, \\(x) is.list(x) && length(x) == 0L)",
+    "crumbs": [
+      "Formatter"
+    ]
+  },
+  {
+    "objectID": "formatter.html#with-persistent-line-breaks",
+    "href": "formatter.html#with-persistent-line-breaks",
+    "title": "Formatter",
+    "section": "With persistent line breaks",
+    "text": "With persistent line breaks\nAutobracing is particularly useful as a code rewriting tool when combined with persistent line breaks. Consider:\nresult &lt;- map_lgl(xs, function(x) is.logical(x) && length(x) == 1L && !is.na(x))\nThis may be easier to read if it spanned across multiple lines. You could manually rework this, or you could let Air help you! There are two places you could put a persistent line break depending on what your desired final result is:\n# Adding a line break before `xs` expands the call\nresult &lt;- map_lgl(\n  xs, function(x) is.logical(x) && length(x) == 1L && !is.na(x))\n\n# Becomes:\nresult &lt;- map_lgl(\n  xs,\n  function(x) is.logical(x) && length(x) == 1L && !is.na(x)\n)\n# Adding a line break before `is.logical(x)` forces autobracing\nresult &lt;- map_lgl(xs, function(x)\n    is.logical(x) && length(x) == 1L && !is.na(x))\n\n# Becomes:\nresult &lt;- map_lgl(xs, function(x) {\n  is.logical(x) && length(x) == 1L && !is.na(x)\n})",
+    "crumbs": [
+      "Formatter"
+    ]
+  },
+  {
+    "objectID": "formatter.html#comments",
+    "href": "formatter.html#comments",
+    "title": "Formatter",
+    "section": "Comments",
+    "text": "Comments\nAir generally avoids moving your comments. However, when Air autobraces code, it may have to adjust them. This generally works quite well for most code, but is impossible to do perfectly. It is possible that you will have to adjust the placement of your comments after Air runs.\nFor example, leading comments on autobraced elements are generally placed in a way that you’d expect:\nif (condition)\n  # My comment\n  a\n\n# Becomes:\nif (condition) {\n  # My comment\n  a\n}\nBut trailing comments might need manual adjustment:\nif (condition)\n  a # My comment\n\n# Becomes:\nif (condition) {\n  a\n} # My comment\n\n# You may want to adjust it to:\nif (condition) {\n  a # My comment\n}\nIn general, prefer leading comments over trailing comments for readability and to have the highest chance of Air placing it in the correct location when comment adjustment is required.",
+    "crumbs": [
+      "Formatter"
+    ]
+  },
+  {
+    "objectID": "formatter.html#skip-comments",
+    "href": "formatter.html#skip-comments",
+    "title": "Formatter",
+    "section": "Skip comments",
+    "text": "Skip comments\nAir supports two special comments to disable formatting, # fmt: skip and # fmt: skip file.\n# fmt: skip skips formatting for the following syntax node (including all of its children).\n# This skips formatting for `list()` and its arguments, retaining the manual alignment\n# fmt: skip\nlist(\n  dollar = \"USA\",\n  yen    = \"Japan\",\n  yuan   = \"China\"\n)\n\n# This skips formatting for `tribble()` and its arguments\n# fmt: skip\ntribble(\n  ~x, ~y,\n   1,  2,\n)\n\n# This skips formatting for `graph_from_literal()` and its arguments,\n# retaining the formatting of the domain specific language\n# fmt: skip\nigraph::graph_from_literal(Alice +--+ Bob)\n# fmt: skip file skips the entire file. This must be placed at the top of the file before the first non-comment R code, otherwise the comment is ignored. This is useful for generated files, or as an alternative to exclude for individual files that you know you’d like to exclude from formatting.\n# This is a generated file. Don't modify by hand!\n# fmt: skip file\n\n# This won't be formatted\ngenerated_function_signature &lt;- function(which, might, overflow, the, line, width, but, we, dont, really, care) {\n    body\n}\n\n# Neither will this\nanother_generated_function_signature &lt;- function(which, might, overflow, the, line, width, but, we, dont, really, care) {\n    body\n}\nFor generated files we also support the convention of a comment starting with Generated by at the top of the file:\n# Generated by myPackage: don't modify by hand",
+    "crumbs": [
+      "Formatter"
+    ]
+  },
+  {
+    "objectID": "formatter.html#skip-configuration",
+    "href": "formatter.html#skip-configuration",
+    "title": "Formatter",
+    "section": "Skip configuration",
+    "text": "Skip configuration\nSkip comments are useful for disabling formatting for one-off function calls, but sometimes you may find yourself repeatedly using functions from a domain specific language (DSL) that doesn’t follow conventional formatting rules. For example, the igraph package contains a DSL for constructing a graph from a literal representation:\nigraph::graph_from_literal(A +-+ B +---+ C ++ D + E)\nAir would format this as:\nigraph::graph_from_literal(A + -+B + ---+C + +D + E)\nIf you use graph_from_literal() often, it would be annoying to add # fmt: skip comments at every call site. Instead, air.toml supports a skip field that allows you to specify function names that you never want formatting for. Specifying this would retain the original formatting of the graph_from_literal() call, even without a # fmt: skip comment:\nskip = [\"graph_from_literal\"]\nOne particularly common use of this is skip = [\"tribble\"], which you can use to avoid formatting of all tibble::tribble() calls. In the long term, Air may provide more sophisticated tooling for formatting using a specified alignment.",
+    "crumbs": [
+      "Formatter"
     ]
   }
 ]
