@@ -356,6 +356,7 @@ dependencies = [
 [[package]]
 name = "biome_line_index"
 version = "0.1.0"
+source = "git+https://github.com/biomejs/biome?rev=c13fc60726883781e4530a4437724273b560c8e0#c13fc60726883781e4530a4437724273b560c8e0"
 dependencies = [
  "biome_text_size",
  "rustc-hash",
