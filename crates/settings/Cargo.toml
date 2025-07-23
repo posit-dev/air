@@ -1,21 +1,15 @@
 [package]
 name = "settings"
-description = "Source of truth for Air settings"
 version = "0.0.0"
-publish = false
 authors.workspace = true
-categories.workspace = true
 edition.workspace = true
+description = "Source of truth for Air settings"
 homepage.workspace = true
-keywords.workspace = true
-license.workspace = true
 repository.workspace = true
-
-[features]
-default = []
-biome = ["dep:biome_formatter"]
-schemars = ["dep:schemars"]
-serde = ["dep:serde"]
+license.workspace = true
+keywords.workspace = true
+categories.workspace = true
+publish = false
 
 [dependencies]
 biome_formatter = { workspace = true, optional = true }
@@ -28,8 +22,14 @@ biome_formatter = { workspace = true }
 insta = { workspace = true }
 serde = { workspace = true }
 # Self dependency to activate optional features for tests
-settings = { path = "./", features = ["biome", "serde"] }
+settings = { features = ["biome", "serde"], path = "./" }
 toml = { workspace = true }
+
+[features]
+biome = ["dep:biome_formatter"]
+default = []
+schemars = ["dep:schemars"]
+serde = ["dep:serde"]
 
 [lints]
 workspace = true

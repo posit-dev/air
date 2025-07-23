@@ -1,15 +1,15 @@
 [package]
 name = "line_ending"
-description = "Utilities for normalizing line endings"
 version = "0.0.0"
-publish = false
 authors.workspace = true
-categories.workspace = true
 edition.workspace = true
+description = "Utilities for normalizing line endings"
 homepage.workspace = true
-keywords.workspace = true
-license.workspace = true
 repository.workspace = true
+license.workspace = true
+keywords.workspace = true
+categories.workspace = true
+publish = false
 
 [dependencies]
 memchr.workspace = true
