@@ -26,7 +26,6 @@ air_r_factory = { path = "./crates/air_r_factory" }
 air_r_formatter = { path = "./crates/air_r_formatter" }
 air_r_parser = { path = "./crates/air_r_parser" }
 air_r_syntax = { path = "./crates/air_r_syntax" }
-biome_line_index = { path = "./crates/biome_line_index" }
 biome_ungrammar = { path = "./crates/biome_ungrammar" }
 comments = { path = "./crates/comments" }
 crates = { path = "./crates/crates" }
@@ -40,12 +39,13 @@ workspace = { path = "./crates/workspace" }
 
 anyhow = "1.0.89"
 assert_matches = "1.5.0"
-biome_formatter = { git = "https://github.com/biomejs/biome", rev = "be9076b2c6714eb5f76ceff59881cdec48475067" }
-biome_parser = { git = "https://github.com/biomejs/biome", rev = "be9076b2c6714eb5f76ceff59881cdec48475067" }
-biome_rowan = { git = "https://github.com/biomejs/biome", rev = "be9076b2c6714eb5f76ceff59881cdec48475067" }
-biome_string_case = { git = "https://github.com/biomejs/biome", rev = "be9076b2c6714eb5f76ceff59881cdec48475067" }
-biome_text_size = { git = "https://github.com/biomejs/biome", rev = "be9076b2c6714eb5f76ceff59881cdec48475067" }
-biome_unicode_table = { git = "https://github.com/biomejs/biome", rev = "be9076b2c6714eb5f76ceff59881cdec48475067" }
+biome_formatter = { git = "https://github.com/biomejs/biome", rev = "c13fc60726883781e4530a4437724273b560c8e0" }
+biome_line_index = { git = "https://github.com/biomejs/biome", rev = "c13fc60726883781e4530a4437724273b560c8e0" }
+biome_parser = { git = "https://github.com/biomejs/biome", rev = "c13fc60726883781e4530a4437724273b560c8e0" }
+biome_rowan = { git = "https://github.com/biomejs/biome", rev = "c13fc60726883781e4530a4437724273b560c8e0" }
+biome_string_case = { git = "https://github.com/biomejs/biome", rev = "c13fc60726883781e4530a4437724273b560c8e0" }
+biome_text_size = { git = "https://github.com/biomejs/biome", rev = "c13fc60726883781e4530a4437724273b560c8e0" }
+biome_unicode_table = { git = "https://github.com/biomejs/biome", rev = "c13fc60726883781e4530a4437724273b560c8e0" }
 bytes = "1.8.0"
 cargo_metadata = "0.20.0"
 case = "1.0.0"
