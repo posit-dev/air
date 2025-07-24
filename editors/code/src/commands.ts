@@ -5,6 +5,7 @@ import AdmZip from "adm-zip";
 import { Cmd, Ctx } from "./context";
 import { viewFileUsingTextDocumentContentProvider } from "./request/viewFile";
 import { VIEW_FILE } from "./request/viewFile";
+import { workspaceFolderInitializationCallback } from "./command/workspace-folder-initialization";
 import { workspaceFolderFormattingCallback } from "./command/workspace-folder-formatting";
 
 export function registerCommands(ctx: Ctx) {
@@ -12,6 +13,13 @@ export function registerCommands(ctx: Ctx) {
 		vscode.commands.registerCommand(
 			"air.restart",
 			async () => await ctx.lsp.restart(),
+		),
+	);
+
+	ctx.extension.subscriptions.push(
+		vscode.commands.registerCommand(
+			"air.workspaceFolderInitialization",
+			workspaceFolderInitializationCallback(ctx),
 		),
 	);
 
