@@ -75,7 +75,7 @@ export async function selectWorkspaceFolder(): Promise<
 
 	if (!workspaceFolders || workspaceFolders.length === 0) {
 		vscode.window.showErrorMessage(
-			"You must be inside a workspace to format a workspace folder.",
+			"You must be inside a workspace to perform this action.",
 		);
 		return undefined;
 	}
@@ -104,7 +104,7 @@ async function selectWorkspaceFolderFromQuickPick(
 		workspaceFolderNames,
 		{
 			canPickMany: false,
-			title: "Which workspace folder should be formatted?",
+			title: "Select a workspace folder",
 		},
 	);
 
