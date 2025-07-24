@@ -99,13 +99,16 @@ async function createExtensionsJson(
 		await vscode.workspace.fs.createDirectory(vscodeUri);
 	}
 
-	const contents = `
+	let contents = `
 {
     "recommendations": [
         "Posit.air-vscode"
     ]
 }
 	`;
+	contents = contents.trim();
+	contents = contents + "\n";
+
 	const bytes = new TextEncoder().encode(contents);
 
 	await vscode.workspace.fs.writeFile(extensionsUri, bytes);
