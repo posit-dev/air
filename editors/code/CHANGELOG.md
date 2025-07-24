@@ -7,7 +7,7 @@
 
 ## Development version
 
-- New `Air: Initialize Workspace Folder` command to initialize a project for use with Air. This supercedes `usethis::use_air()` for VS Code and Positron users by providing an holistic setup experience from within the IDE (#323).
+- New `Air: Initialize Workspace Folder` command to initialize a project for use with Air. This supercedes `usethis::use_air()` for VS Code and Positron users by providing a holistic setup experience from within the IDE (#323).
 
 
 ## 0.14.0
