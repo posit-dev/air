@@ -5,7 +5,7 @@ import AdmZip from "adm-zip";
 import { Cmd, Ctx } from "./context";
 import { viewFileUsingTextDocumentContentProvider } from "./request/viewFile";
 import { VIEW_FILE } from "./request/viewFile";
-import { workspaceFolderFormatting } from "./command/workspace-folder-formatting";
+import { workspaceFolderFormattingCallback } from "./command/workspace-folder-formatting";
 
 export function registerCommands(ctx: Ctx) {
 	ctx.extension.subscriptions.push(
@@ -18,7 +18,7 @@ export function registerCommands(ctx: Ctx) {
 	ctx.extension.subscriptions.push(
 		vscode.commands.registerCommand(
 			"air.workspaceFolderFormatting",
-			workspaceFolderFormatting(ctx),
+			workspaceFolderFormattingCallback(ctx),
 		),
 	);
 
