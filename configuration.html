@@ -296,7 +296,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="configuration-recommendations" class="level2">
 <h2 class="anchored" data-anchor-id="configuration-recommendations">Configuration recommendations</h2>
-<p>For collaborative projects, we recommend creating an <code>air.toml</code> and placing it at your project root even if you plan to use the default Air settings. The easiest way to do this is by running <a href="https://usethis.r-lib.org/dev/reference/use_air.html"><code>usethis::use_air()</code></a> (note that this currently requires the development version of usethis).</p>
+<p>For collaborative projects, we recommend creating an <code>air.toml</code> and placing it at your project root even if you plan to use the default Air settings. The easiest way to do this is by running the VS Code or Positron command <code>Air: Initialize Workspace Folder</code>, or by running <a href="https://usethis.r-lib.org/dev/reference/use_air.html"><code>usethis::use_air()</code></a> if you are using another IDE.</p>
 <p>The existence of an <code>air.toml</code> has a number of benefits:</p>
 <ul>
 <li><p>It stops Air from using user level editor settings. When an <code>air.toml</code> is not present, Air respects some user level editor settings, such as <code>editor.tabWidth</code> in VS Code or Positron. The presence of an <code>air.toml</code> (even an empty one) disables this, instead pulling all settings from the configuration file. This ensures that settings are the same across team members, code editors, and in CI.</p></li>
