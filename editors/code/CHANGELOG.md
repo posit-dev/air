@@ -7,6 +7,11 @@
 
 ## Development version
 
+
+## 0.16.0
+
+- [Air 0.7.1](https://github.com/posit-dev/air/blob/main/CHANGELOG.md) is now bundled with the extension.
+
 - New `Air: Initialize Workspace Folder` command to initialize a project for use with Air. This supercedes `usethis::use_air()` for VS Code and Positron users by providing a holistic setup experience from within the IDE (#323).
 
 
