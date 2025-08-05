@@ -64,7 +64,7 @@ function getWorkspaceFolders(): readonly vscode.WorkspaceFolder[] {
 /*
  * Select a workspace folder to act on
  *
- * - If 0 workspaces are open, returns `undefined` with an error message.
+ * - If 0 workspaces are open, returns `undefined` after showing an error message.
  * - If 1 workspace is open, returns it.
  * - If >1 workspaces are open, shows the user a quick-pick menu to select their preference.
  */
