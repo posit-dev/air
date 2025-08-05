@@ -131,6 +131,7 @@ async function selectWorkspaceFolderFromQuickPick(
  * Save all open dirty editor tabs relevant to the workspace folder
  *
  * - Filters to only tabs living under the chosen workspace folder
+ *   (note that this rules out untitled editors)
  * - Asks the user if they are okay with us saving the editor tabs
  */
 export async function saveAllDirtyWorkspaceTextDocuments(
