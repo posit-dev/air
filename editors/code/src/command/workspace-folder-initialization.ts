@@ -172,7 +172,8 @@ async function updateRbuildignore(
 	);
 
 	if (!(await fileExists(rbuildignoreUri))) {
-		// Do nothing if the user doesn't have one
+		// Do nothing if the user doesn't have one, i.e. an R project
+		// or the rare R package without an `.Rbuildignore`
 		return;
 	}
 
