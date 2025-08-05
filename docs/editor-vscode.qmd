@@ -10,9 +10,12 @@ Air provides first class support for both VS Code and Positron, which both suppo
 
 # Installation
 
-Air is available [as an Extension](https://marketplace.visualstudio.com/items?itemName=Posit.air-vscode) for both VS Code and Positron.
-The extension comes pre-bundled with an Air binary, so you don't need anything else to get going!
-The Air extension is hosted in the VS Code Marketplace and on OpenVSX.
+Air is available as a [VS Code Extension](https://marketplace.visualstudio.com/items?itemName=Posit.air-vscode) for VS Code.
+
+Air comes pre-bundled with Positron.
+It is available as an [OpenVSX Extension](https://open-vsx.org/extension/posit/air-vscode) that is already installed for you.
+
+The extension for both VS Code and Positron comes with an Air binary, so you don't need anything else to get going!
 
 ## User vs Workspace settings
 
@@ -27,7 +30,8 @@ We generally recommend modifying workspace level settings for two reasons:
 -   User level settings are automatically applied for *all* projects that you open.
     While this sounds nice, if you open an older project (or a project you don't own) that doesn't use Air, then you'll have to remember to turn off your user level Air settings before committing to that project, otherwise you may create a large amount of format related diffs that the project may not want.
 
-The easiest way to set up a workspace level `settings.json` with the recommended settings is by running [`usethis::use_air()`](https://usethis.r-lib.org/dev/reference/use_air.html) (note that this currently requires the development version of usethis).
+The easiest way to set up a workspace level `settings.json` with the recommended settings is by running the command `Air: Initialize Workspace Folder`.
+This is equivalent to running [`usethis::use_air()`](https://usethis.r-lib.org/dev/reference/use_air.html) from an R console.
 
 Alternatively, to open your `settings.json` file from the Command Palette (`Cmd + P` on Mac/Linux, `Ctrl + P` on Windows):
 
@@ -49,8 +53,10 @@ Once you have the extension installed, turn on Format on Save for R documents by
 }
 ```
 
+Note that running the command `Air: Initialize Workspace Folder` will add this to your `settings.json` for you.
+
 You should now be able to simply open an R document, save it, and have the entire document formatted by Air.
-You can also explicitly call the command `Format Document` if you'd like to control this manually.
+You can also explicitly call the command `Format Document` if you'd like to control the timing of formatting manually.
 
 <!--# Come back and add video -->
 
@@ -67,7 +73,7 @@ Air ships with a special `Air: Format Workspace Folder` command to format all R 
 This is particularly useful when transitioning an existing project over to Air, where you need to perform a project-wide format before utilizing the per-file format on save feature.
 
 Note that if you don't have an `air.toml` in your project, then this command will use Air's default settings rather than the IDE [settings synchronization mechanism](configuration.qmd#configuration-settings-synchronization).
-We recommend using `usethis::use_air()` to set up an `air.toml` (among other things) before running this command.
+We recommend using the command `Air: Initialize Workspace Folder` to set up an `air.toml` (among other things) before running this command.
 
 ## Quarto
 
@@ -89,6 +95,8 @@ To format all R code cells on save, set this in your `settings.json`:
     }
 }
 ```
+
+Note that running the command `Air: Initialize Workspace Folder` will add this to your `settings.json` for you.
 
 <!--# Come back and add video -->
 
