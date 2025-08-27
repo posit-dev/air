@@ -19,22 +19,66 @@ use air_r_syntax::RSubset2Arguments;
 use air_r_syntax::RSubsetArguments;
 use air_r_syntax::RSyntaxNode;
 use air_r_syntax::RSyntaxToken;
+
+use biome_formatter::FormatRuleWithOptions;
 use biome_formatter::separated::TrailingSeparator;
 use biome_formatter::{VecBuffer, format_args, format_element, write};
 use biome_rowan::{AstSeparatedElement, AstSeparatedList, SyntaxResult};
 use itertools::Itertools;
 
 #[derive(Debug, Clone, Default)]
-pub(crate) struct FormatRCallArguments;
+pub struct FormatRCallArgumentsOptions {
+    pub tabular: bool,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct FormatRCallArguments {
+    tabular: bool,
+}
+
+impl FormatRCallArguments {
+    pub(crate) fn fmt_call_like(
+        &self,
+        node: &RCallArguments,
+        f: &mut RFormatter,
+    ) -> FormatResult<()> {
+        RCallLikeArguments::Call(node.clone()).fmt(f)
+    }
+}
+
 impl FormatNodeRule<RCallArguments> for FormatRCallArguments {
     fn fmt_fields(&self, node: &RCallArguments, f: &mut RFormatter) -> FormatResult<()> {
-        RCallLikeArguments::Call(node.clone()).fmt(f)
+        if self.tabular {
+            let snapshot = f.state_snapshot();
+
+            if let Some(()) = self.fmt_tabular(node, f)? {
+                Ok(())
+            } else {
+                f.restore_state_snapshot(snapshot);
+
+                // Tabular formatting failed, fall back to verbatim. Ideally
+                // we'd emit diagnostics about why tabular formatting failed
+                // here.
+                write!(f, [format_verbatim_node(node.syntax())])
+            }
+        } else {
+            self.fmt_call_like(node, f)
+        }
     }
 
     fn fmt_dangling_comments(&self, _: &RCallArguments, _: &mut RFormatter) -> FormatResult<()> {
         // Formatted inside of `fmt_fields`
         // Only applicable for the empty arguments case
         Ok(())
+    }
+}
+
+impl FormatRuleWithOptions<RCallArguments> for FormatRCallArguments {
+    type Options = FormatRCallArgumentsOptions;
+
+    fn with_options(mut self, options: Self::Options) -> Self {
+        self.tabular = options.tabular;
+        self
     }
 }
 
@@ -819,6 +863,7 @@ impl FormatCallArgument {
                 write!(f, [element.node()?.format()])?;
 
                 if let Some(separator) = element.trailing_separator()? {
+                    // Are we correctly stripping trailing whitespace?
                     write!(f, [separator.format()])
                 } else if !is_last {
                     Err(FormatError::SyntaxError)

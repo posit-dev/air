@@ -7,6 +7,7 @@ pub(crate) mod braced_expressions;
 pub(crate) mod break_expression;
 pub(crate) mod call;
 pub(crate) mod call_arguments;
+pub(crate) mod call_arguments_tabular;
 pub(crate) mod complex_value;
 pub(crate) mod dot_dot_i;
 pub(crate) mod dots;

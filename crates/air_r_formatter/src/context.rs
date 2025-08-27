@@ -18,6 +18,7 @@ use crate::comments::FormatRLeadingComment;
 use crate::comments::RCommentStyle;
 use crate::comments::RComments;
 
+#[derive(Clone, Debug)]
 pub struct RFormatContext {
     options: RFormatOptions,
 

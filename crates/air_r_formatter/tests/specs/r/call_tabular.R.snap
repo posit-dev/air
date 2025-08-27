@@ -1,0 +1,652 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/call_tabular.R
+---
+# Input
+
+```R
+# fmt: tabular
+list(
+)
+
+# fmt: tabular
+list(1+1)
+
+# One argument
+# fmt: tabular
+list(
+1+1
+)
+
+# One row
+# fmt: tabular
+list(
+1+1, 1+1
+)
+
+# Incomplete table
+# fmt: tabular
+list(
+1+1, 1+10, 1+100,
+1+1,
+)
+
+# Jagged table
+# fmt: tabular
+list(
+1+10, 1+100,
+1+1,
+1+1, 1+1000, 1+1,
+)
+
+# Table
+# fmt: tabular
+list(
+1+1, 1+10,
+1+100, 1+1000,
+)
+
+# Typical usage
+# fmt: tabular
+tribble(
+~quarter,~region,~product,~price,~units_sold,
+"Q1","NorthWest","Laptop",1499.99,250,
+"Q2","South","Laptop",489.5,196,
+"Q1","South","Tablet",249.99,304,
+"Q1","NorthWest","Tablet",259.95,340,
+)
+
+# skipped
+# fmt: skip
+# fmt: tabular
+tribble(
+1,1,
+2,2
+)
+
+# fmt: tabular
+# fmt: skip
+# skipped
+tribble(
+1,1,
+2,2
+)
+
+
+# ------------------------------------------------------------------------
+# Comments
+
+list(# comment1
+# comment2
+)# comment3
+
+# fmt: tabular
+list(1+1, 1+1 # comment
+)
+
+# fmt: tabular
+list(
+  1+1, 1+1, # comment1
+  1+1, 1+1 # comment2
+)
+
+# fmt: tabular
+list(
+  # comment1
+  1+1, 1+1,
+  # comment3
+  1+1, 1+1
+)
+
+# fmt: tabular
+list(
+  1,2    # comment
+)
+
+
+# ------------------------------------------------------------------------
+# Holes
+
+# fmt: tabular
+list( , )
+
+# fmt: tabular
+list(
+,,
+,,
+)
+
+# fmt: tabular
+list(
+,
+,,
+)
+
+# fmt: tabular
+list(
+,
+,,,,
+,,10,,
+,"foo",
+)
+
+
+# ------------------------------------------------------------------------
+# Commas
+
+# fmt: tabular
+list(
+  1
+)
+
+# fmt: tabular
+list(
+  1 ,
+)
+
+
+# ------------------------------------------------------------------------
+# Assignments
+
+# fmt: tabular
+foo <- list(
+  1+1, 1+1,
+  1+1, 1+1
+)
+
+# fmt: tabular
+foo <<- list(
+  1+1, 1+1,
+  1+1, 1+1
+)
+
+# fmt: tabular
+foo = list(
+  1+1, 1+1,
+  1+1, 1+1
+)
+
+# This is a syntax error, only base assignments are special-cased
+# fmt: tabular
+foo %=%
+  list(
+    1+1, 1+1,
+    1+1, 1+1
+  )
+
+# Fallback syntax for these cases
+foo %=%
+  # fmt: tabular
+  list(
+    1+1, 1+1,
+    1+1, 1+1
+  )
+
+
+# ------------------------------------------------------------------------
+# Alignment
+
+# Strings - should left-align
+# fmt: tabular
+list(
+  "1",
+  "12",
+  "100",
+  "3",
+)
+
+# Non-numeric types - should left-align
+# fmt: tabular
+list(
+  "1",
+  ho,
+  foobar,
+  f(),
+)
+
+# Integers - should right-align
+# fmt: tabular
+list(
+  1L,
+  12,
+  100,
+  3,
+)
+
+# Pure decimals - should align at decimal point
+# fmt: tabular
+list(
+  0.,
+  1.5,
+  12.34,
+  100.0,
+  3.456,
+)
+
+# Mixed integers and decimals
+# fmt: tabular
+list(
+  1000,
+  2.5,
+  50L,
+  123.456,
+  9,
+  0.1,
+  0.
+)
+
+# Mixed integers and decimals
+# fmt: tabular
+list(
+  0.,
+  1,
+  2.
+)
+
+# Complex decimal alignment with varying precision
+# fmt: tabular
+list(
+  1.1,
+  22.22,
+  333.333,
+  4444.4444,
+  55.55,
+  6.6,
+  777,
+  8.8,
+  99.99,
+)
+
+# Mixed types - should align depending on type
+# The last argument doesn't have a comma.
+# The mixed alignment is not great, but is consistent.
+# fmt: tabular
+list(
+  1.10,
+  "12",
+  1,
+  2L,
+  "3",
+  10000,
+  3.5,
+  f()
+)
+
+# ------------------------------------------------------------------------
+# Unary operators
+
+# fmt: tabular
+list(
+  -1.200,
+  +2L,
+  -100.
+)
+
+# With repeated unary operators we fall back to regular parsing. Note how the
+# numeric arguments are not aligned with the number in the first row.
+# fmt: tabular
+list(
+  --1.200,
+  foo(),
+  +-20L,
+  0,
+  -100.
+)
+
+# ------------------------------------------------------------------------
+# Hard lines
+
+# All of these fall back to verbatim because of the presence of hard lines in
+# the source or the formatted output. Note that these tests cause Biome's
+# snapshotter to add an "Unimplemented nodes/token" section below because of the
+# verbatim fallback.
+
+# fmt: tabular
+list(
+"foo
+",  2)
+
+# fmt: tabular
+list(
+{ foo },  2
+)
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Space
+Indent width: 2
+Line ending: LF
+Line width: 80
+Persistent line breaks: Respect
+Skip: None
+-----
+
+```R
+# fmt: tabular
+list()
+
+# fmt: tabular
+list(
+  1 + 1
+)
+
+# One argument
+# fmt: tabular
+list(
+  1 + 1
+)
+
+# One row
+# fmt: tabular
+list(
+  1 + 1, 1 + 1
+)
+
+# Incomplete table
+# fmt: tabular
+list(
+  1 + 1, 1 + 10, 1 + 100,
+  1 + 1,
+)
+
+# Jagged table
+# fmt: tabular
+list(
+  1 + 10, 1 + 100 ,
+  1 + 1 ,
+  1 + 1 , 1 + 1000, 1 + 1,
+)
+
+# Table
+# fmt: tabular
+list(
+  1 + 1  , 1 + 10  ,
+  1 + 100, 1 + 1000,
+)
+
+# Typical usage
+# fmt: tabular
+tribble(
+  ~quarter, ~region    , ~product, ~price , ~units_sold,
+  "Q1"    , "NorthWest", "Laptop", 1499.99,         250,
+  "Q2"    , "South"    , "Laptop",  489.5 ,         196,
+  "Q1"    , "South"    , "Tablet",  249.99,         304,
+  "Q1"    , "NorthWest", "Tablet",  259.95,         340,
+)
+
+# skipped
+# fmt: skip
+# fmt: tabular
+tribble(
+1,1,
+2,2
+)
+
+# fmt: tabular
+# fmt: skip
+# skipped
+tribble(
+1,1,
+2,2
+)
+
+
+# ------------------------------------------------------------------------
+# Comments
+
+list(
+  # comment1
+  # comment2
+) # comment3
+
+# fmt: tabular
+list(
+  1 + 1, 1 + 1 # comment
+)
+
+# fmt: tabular
+list(
+  1 + 1, 1 + 1, # comment1
+  1 + 1, 1 + 1 # comment2
+)
+
+# fmt: tabular
+list(
+  # comment1
+  1 + 1, 1 + 1,
+  # comment3
+  1 + 1, 1 + 1
+)
+
+# fmt: tabular
+list(
+  1, 2 # comment
+)
+
+
+# ------------------------------------------------------------------------
+# Holes
+
+# fmt: tabular
+list(
+  ,
+)
+
+# fmt: tabular
+list(
+  ,,
+  ,,
+)
+
+# fmt: tabular
+list(
+  ,
+  ,,
+)
+
+# fmt: tabular
+list(
+  ,
+  ,      ,   ,,
+  ,      , 10,,
+  , "foo",
+)
+
+
+# ------------------------------------------------------------------------
+# Commas
+
+# fmt: tabular
+list(
+  1
+)
+
+# fmt: tabular
+list(
+  1,
+)
+
+
+# ------------------------------------------------------------------------
+# Assignments
+
+# fmt: tabular
+foo <- list(
+  1 + 1, 1 + 1,
+  1 + 1, 1 + 1
+)
+
+# fmt: tabular
+foo <<- list(
+  1 + 1, 1 + 1,
+  1 + 1, 1 + 1
+)
+
+# fmt: tabular
+foo = list(
+  1 + 1, 1 + 1,
+  1 + 1, 1 + 1
+)
+
+# This is a syntax error, only base assignments are special-cased
+# fmt: tabular
+foo %=%
+  list(
+    1 + 1,
+    1 + 1,
+    1 + 1,
+    1 + 1
+  )
+
+# Fallback syntax for these cases
+foo %=%
+  # fmt: tabular
+  list(
+    1 + 1, 1 + 1,
+    1 + 1, 1 + 1
+  )
+
+
+# ------------------------------------------------------------------------
+# Alignment
+
+# Strings - should left-align
+# fmt: tabular
+list(
+  "1"  ,
+  "12" ,
+  "100",
+  "3"  ,
+)
+
+# Non-numeric types - should left-align
+# fmt: tabular
+list(
+  "1"   ,
+  ho    ,
+  foobar,
+  f()   ,
+)
+
+# Integers - should right-align
+# fmt: tabular
+list(
+   1L,
+   12,
+  100,
+    3,
+)
+
+# Pure decimals - should align at decimal point
+# fmt: tabular
+list(
+    0.   ,
+    1.5  ,
+   12.34 ,
+  100.0  ,
+    3.456,
+)
+
+# Mixed integers and decimals
+# fmt: tabular
+list(
+  1000    ,
+     2.5  ,
+   50L    ,
+   123.456,
+     9    ,
+     0.1  ,
+     0.
+)
+
+# Mixed integers and decimals
+# fmt: tabular
+list(
+  0.,
+  1 ,
+  2.
+)
+
+# Complex decimal alignment with varying precision
+# fmt: tabular
+list(
+     1.1   ,
+    22.22  ,
+   333.333 ,
+  4444.4444,
+    55.55  ,
+     6.6   ,
+   777     ,
+     8.8   ,
+    99.99  ,
+)
+
+# Mixed types - should align depending on type
+# The last argument doesn't have a comma.
+# The mixed alignment is not great, but is consistent.
+# fmt: tabular
+list(
+      1.10,
+  "12"    ,
+      1   ,
+     2L   ,
+  "3"     ,
+  10000   ,
+      3.5 ,
+  f()
+)
+
+# ------------------------------------------------------------------------
+# Unary operators
+
+# fmt: tabular
+list(
+    -1.200,
+   +2L    ,
+  -100.
+)
+
+# With repeated unary operators we fall back to regular parsing. Note how the
+# numeric arguments are not aligned with the number in the first row.
+# fmt: tabular
+list(
+  --1.200,
+  foo()  ,
+  +-20L  ,
+     0   ,
+  -100.
+)
+
+# ------------------------------------------------------------------------
+# Hard lines
+
+# All of these fall back to verbatim because of the presence of hard lines in
+# the source or the formatted output. Note that these tests cause Biome's
+# snapshotter to add an "Unimplemented nodes/token" section below because of the
+# verbatim fallback.
+
+# fmt: tabular
+list(
+"foo
+",  2)
+
+# fmt: tabular
+list(
+{ foo },  2
+)
+```
+
+
+
+## Unimplemented nodes/tokens
+
+"(\n\"foo\n\",  2)" => 4034..4047
+"(\n{ foo },  2\n)" => 4068..4083

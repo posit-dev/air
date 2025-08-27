@@ -2,6 +2,8 @@ use crate::context::RFormatOptions;
 use crate::either::Either;
 use crate::is_suppressed_by_comment;
 use crate::prelude::*;
+use crate::r::auxiliary::call::is_tabular;
+use crate::r::auxiliary::call_arguments::FormatRCallArgumentsOptions;
 use air_r_syntax::AnyRExpression;
 use air_r_syntax::RBinaryExpression;
 use air_r_syntax::RBinaryExpressionFields;
@@ -83,7 +85,7 @@ impl FormatNodeRule<RBinaryExpression> for FormatRBinaryExpression {
             | RSyntaxKind::ASSIGN
             | RSyntaxKind::ASSIGN_RIGHT
             | RSyntaxKind::SUPER_ASSIGN
-            | RSyntaxKind::SUPER_ASSIGN_RIGHT => fmt_binary_assignment(left, operator, right, f),
+            | RSyntaxKind::SUPER_ASSIGN_RIGHT => fmt_binary_assignment(node, left, operator, right, f),
 
             // Chainable (pipes, logical, arithmetic)
             kind if is_chainable_binary_operator(kind)  => fmt_binary_chain(left, operator, right, self.alignment, f),
@@ -184,12 +186,17 @@ fn fmt_binary_sticky(
 /// [hard_line_break()] but not a trailing one. By avoiding a trailing hard line break,
 /// the trailing comment is allowed to be formatted on the same line as `y`.
 fn fmt_binary_assignment(
+    node: &RBinaryExpression,
     left: AnyRExpression,
     operator: SyntaxToken<RLanguage>,
     right: AnyRExpression,
     f: &mut Formatter<RFormatContext>,
 ) -> FormatResult<()> {
-    let right = format_with(|f| {
+    // Check for tabular directive here to simplify lifetimes with
+    // `format_assignment_rhs()`
+    let tabular = is_tabular(node, f);
+
+    let right_formatted = format_with(|f| {
         if binary_assignment_has_persistent_line_break(&operator, &right, f.options()) {
             let right = match &right {
                 AnyRExpression::RBinaryExpression(right) => {
@@ -197,11 +204,11 @@ fn fmt_binary_assignment(
                         alignment: ChainAlignment::LeftAligned,
                     }))
                 }
-                right => Either::Right(right.format()),
+                right => Either::Right(format_assignment_rhs(right, tabular)),
             };
             write!(f, [indent(&format_args![hard_line_break(), right])])
         } else {
-            write!(f, [space(), right.format()])
+            write!(f, [space(), format_assignment_rhs(&right, tabular)])
         }
     });
 
@@ -211,9 +218,21 @@ fn fmt_binary_assignment(
             left.format(),
             space(),
             operator.format(),
-            right
+            right_formatted
         ])]
     )
+}
+
+fn format_assignment_rhs(expr: &AnyRExpression, tabular: bool) -> impl Format<RFormatContext> {
+    format_with(move |f| {
+        if tabular {
+            if let AnyRExpression::RCall(call) = expr {
+                let options = FormatRCallArgumentsOptions { tabular: true };
+                return write!(f, [call.format().with_options(options)]);
+            }
+        }
+        write!(f, [expr.format()])
+    })
 }
 
 fn binary_assignment_has_persistent_line_break(
