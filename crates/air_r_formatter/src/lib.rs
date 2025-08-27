@@ -189,6 +189,9 @@ where
 pub(crate) type RFormatter<'buf> = Formatter<'buf, RFormatContext>;
 
 /// Rule for formatting an R [AstNode].
+///
+/// This is one of the traits that are expected by the Biome-generated code.
+/// Although we own it, it should conform to Biome's expectations.
 pub(crate) trait FormatNodeRule<N>
 where
     N: AstNode<Language = RLanguage>,
@@ -262,6 +265,9 @@ where
 }
 
 /// Rule for formatting an bogus node.
+///
+/// This is one of the traits that are expected by the Biome-generated code.
+/// Although we own it, it should conform to Biome's expectations.
 pub(crate) trait FormatBogusNodeRule<N>
 where
     N: AstNode<Language = RLanguage>,
