@@ -4,6 +4,9 @@
 // see the documentation: https://zed.dev/docs/configuring-zed#settings-files
 {
   "languages": {
+    "Rust": {
+      "format_on_save": "on"
+    },
     "TypeScript": {
       "remove_trailing_whitespace_on_save": true,
       "formatter": "prettier",

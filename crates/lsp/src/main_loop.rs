@@ -189,7 +189,7 @@ impl LspState {
 }
 
 impl LspState {
-    pub(crate) fn workspace_document_settings(&self, url: &Url) -> WorkspaceSettings {
+    pub(crate) fn workspace_document_settings(&self, url: &Url) -> WorkspaceSettings<'_> {
         self.workspace_settings_resolver.settings_for_url(url)
     }
 

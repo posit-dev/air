@@ -81,7 +81,7 @@ impl LanguageKind {
         format!("air_{self}_factory")
     }
 
-    pub fn kinds(&self) -> KindsSrc {
+    pub fn kinds(&self) -> KindsSrc<'_> {
         match self {
             LanguageKind::R => R_KINDS_SRC,
         }

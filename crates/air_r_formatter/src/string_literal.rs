@@ -24,7 +24,7 @@ impl<'token> FormatStringLiteralToken<'token> {
         Self { token }
     }
 
-    fn normalize(&self) -> FormatNormalizedStringLiteralToken {
+    fn normalize(&self) -> FormatNormalizedStringLiteralToken<'_> {
         let token = self.token;
 
         debug_assert!(
@@ -85,7 +85,7 @@ impl Format<RFormatContext> for FormatNormalizedStringLiteralToken<'_> {
 /// line endings and will panic on them. At the printer -> string stage at the very end,
 /// the printer will replace all `\n` with the `LineEnding` requested by the user.
 /// https://github.com/biomejs/biome/blob/a658a294087c143b83350cbeb6b44f7a2e9afdd1/crates/biome_formatter/src/printer/mod.rs#L714-L718
-fn normalize_string(input: &str) -> Cow<str> {
+fn normalize_string(input: &str) -> Cow<'_, str> {
     // The normalized string if `input` is not yet normalized.
     // `output` must remain empty if `input` is already normalized.
     let mut output = String::new();
