@@ -93,17 +93,17 @@ impl std::fmt::Display for LspResponse {
 }
 
 impl LspNotification {
-    fn trace(&self) -> TraceLspNotification {
+    fn trace(&self) -> TraceLspNotification<'_> {
         TraceLspNotification { inner: self }
     }
 }
 impl LspRequest {
-    fn trace(&self) -> TraceLspRequest {
+    fn trace(&self) -> TraceLspRequest<'_> {
         TraceLspRequest { inner: self }
     }
 }
 impl LspResponse {
-    fn trace(&self) -> TraceLspResponse {
+    fn trace(&self) -> TraceLspResponse<'_> {
         TraceLspResponse { inner: self }
     }
 }

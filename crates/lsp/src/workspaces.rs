@@ -125,7 +125,7 @@ impl WorkspaceSettingsResolver {
     }
 
     /// Return the appropriate [`WorkspaceSettings`] for a given document [`Url`].
-    pub(crate) fn settings_for_url(&self, url: &Url) -> WorkspaceSettings {
+    pub(crate) fn settings_for_url(&self, url: &Url) -> WorkspaceSettings<'_> {
         if let Ok(Some(path)) = Self::url_to_path(url) {
             return self.settings_for_path(&path);
         }
@@ -222,7 +222,7 @@ impl WorkspaceSettingsResolver {
     /// resolver to actually resolve the `Settings` for this path. We do it this way
     /// to ensure we can easily add and remove workspaces (including all of their
     /// hierarchical paths).
-    fn settings_for_path(&self, path: &Path) -> WorkspaceSettings {
+    fn settings_for_path(&self, path: &Path) -> WorkspaceSettings<'_> {
         self.path_to_settings_resolver
             .resolve(path)
             .and_then(|resolution| resolution.value().resolve(path))

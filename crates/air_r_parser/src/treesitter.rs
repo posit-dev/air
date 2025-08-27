@@ -183,7 +183,7 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
 
 pub trait NodeTypeExt: Sized {
     fn syntax_kind(&self) -> RSyntaxKind;
-    fn preorder(&self) -> Preorder;
+    fn preorder(&self) -> Preorder<'_>;
 }
 
 impl NodeTypeExt for Node<'_> {
@@ -191,7 +191,7 @@ impl NodeTypeExt for Node<'_> {
         node_syntax_kind(self)
     }
 
-    fn preorder(&self) -> Preorder {
+    fn preorder(&self) -> Preorder<'_> {
         Preorder::new(*self)
     }
 }
