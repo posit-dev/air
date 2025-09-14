@@ -115,6 +115,15 @@ function(){
     2+2
 }
 
+# Only the parameter `a`
+function(a=1
+# fmt: skip
+)
+{
+    1+1
+}
+
+
 # -----------------------------------------------------------------------------
 # Braced expressions
 
@@ -132,8 +141,26 @@ function(){
     2+2
 }
 
+
+# -----------------------------------------------------------------------------
+# Parenthesized expressions
+
+# Only inside
+(
+  # fmt:skip
+  1+1
+)+1
+
+# Only inside
+(
+  1+1 # fmt:skip
+)+1
+
+
 # -----------------------------------------------------------------------------
 # If statements and comments
 
 # fmt: skip
-if (TRUE) 1 # hi
+if (TRUE) 1+1 # hi
+
+if (1+1) 1+1 # fmt: skip
