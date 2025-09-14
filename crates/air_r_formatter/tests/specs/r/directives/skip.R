@@ -7,6 +7,7 @@
 # fmt: skip
 1+1
 
+# This should be formatted
 1+1 # fmt: skip
 
 # This should be formatted
@@ -33,6 +34,7 @@ fn(
   1+1, 2+2
 )
 
+# This should be formatted
 fn(
   1+1, 2+2
 ) # fmt: skip
@@ -44,13 +46,13 @@ fn(
     2+2
 )
 
-# Just this argument
+# This should be formatted
 fn(
     1+1, # fmt: skip
     2+2
 )
 
-# Just this argument, which should be moved to its own line but left unformatted
+# This should be formatted
 fn(
   1+1, 2+2 # fmt: skip
 )
@@ -115,7 +117,7 @@ function(){
     2+2
 }
 
-# Only the parameter `a`
+# This should be formatted
 function(a=1
 # fmt: skip
 )
@@ -151,7 +153,7 @@ function(a=1
   1+1
 )+1
 
-# Only inside
+# This should be formatted
 (
   1+1 # fmt:skip
 )+1
@@ -163,4 +165,5 @@ function(a=1
 # fmt: skip
 if (TRUE) 1+1 # hi
 
+# This should be formatted
 if (1+1) 1+1 # fmt: skip

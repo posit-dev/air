@@ -1,3 +1,6 @@
+use ::comments::Directive;
+use ::comments::FormatDirective;
+use ::comments::parse_comment_directive;
 use air_r_syntax::RLanguage;
 use air_r_syntax::RSyntaxNode;
 use air_r_syntax::RSyntaxToken;
@@ -253,6 +256,23 @@ where
     }
 }
 
+/// All directives in the leading comments of the node.
+///
+/// We intentionally only consider directives in leading comments. This is a
+/// departure from Biome (and Ruff?).
+pub(crate) fn comments_directives<N>(node: &N, f: &RFormatter) -> Vec<Directive>
+where
+    N: AstNode<Language = RLanguage>,
+{
+    let comments = f.context().comments().leading_comments(node.syntax());
+
+    comments
+        .iter()
+        .map(|c| parse_comment_directive(c.piece().text()))
+        .flatten()
+        .collect()
+}
+
 /// Returns `true` if the node has a suppression comment and should use the same formatting as in the source document.
 ///
 /// Calls [biome_formatter::comments::Comments::mark_suppression_checked] on `node`.
@@ -261,7 +281,14 @@ pub(crate) fn is_suppressed_by_comment<N>(node: &N, f: &RFormatter) -> bool
 where
     N: AstNode<Language = RLanguage>,
 {
-    f.context().comments().is_suppressed(node.syntax())
+    f.context()
+        .comments()
+        .mark_suppression_checked(node.syntax());
+
+    // Skip directives have precedence over all others
+    comments_directives(node, f)
+        .into_iter()
+        .any(|d| matches!(d, Directive::Format(FormatDirective::Skip)))
 }
 
 /// Rule for formatting an bogus node.
