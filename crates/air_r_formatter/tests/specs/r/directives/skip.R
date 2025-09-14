@@ -87,7 +87,7 @@ foo |>
   bar() |> baz()
 
 foo |>
-  # Just `bar()`, but `baz()` moves to its own line and is formatted
+  # This should be formatted
   # fmt: skip
   bar(a = 1,
     b = 2
@@ -147,7 +147,7 @@ function(a=1
 # -----------------------------------------------------------------------------
 # Parenthesized expressions
 
-# Only inside
+# This should be formatted
 (
   # fmt:skip
   1+1

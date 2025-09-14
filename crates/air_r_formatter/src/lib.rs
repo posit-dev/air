@@ -2,6 +2,7 @@ use ::comments::Directive;
 use ::comments::FormatDirective;
 use ::comments::parse_comment_directive;
 use air_r_syntax::RLanguage;
+use air_r_syntax::RSyntaxKind;
 use air_r_syntax::RSyntaxNode;
 use air_r_syntax::RSyntaxToken;
 use biome_formatter::CstFormatContext;
@@ -284,6 +285,18 @@ where
     f.context()
         .comments()
         .mark_suppression_checked(node.syntax());
+
+    let Some(parent) = node.syntax().parent() else {
+        return false;
+    };
+
+    // Only expression lists (program and braced blocks) and argument lists can be suppressed
+    if !matches!(
+        parent.kind(),
+        RSyntaxKind::R_EXPRESSION_LIST | RSyntaxKind::R_ARGUMENT_LIST
+    ) {
+        return false;
+    }
 
     // Skip directives have precedence over all others
     comments_directives(node, f)
