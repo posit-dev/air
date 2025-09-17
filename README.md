@@ -1,10 +1,6 @@
-Air <img src="docs/images/air.png" align="right" height=160 />
-============================================================================
+# Air <img src="docs/images/air.png" align="right" height="160"/>
 
 [![Actions status](https://github.com/posit-dev/air/actions/workflows/test.yml/badge.svg)](https://github.com/posit-dev/air/actions)
-
-> [!NOTE]
-> Air is currently in beta. Expect breaking changes both in the API and in formatting results. We also recommend that you use a version control system like git so you can easily see the changes that Air makes.
 
 An R formatter and language server, written in Rust.
 
@@ -14,25 +10,25 @@ Air is usable both as a command line tool and as a language server inside your f
 
 On macOS and Linux:
 
-```shell
+``` shell
 curl -LsSf https://github.com/posit-dev/air/releases/latest/download/air-installer.sh | sh
 ```
 
 Or, if you're familiar with [Homebrew](https://brew.sh/), install the [air formula](https://formulae.brew.sh/formula/air) with:
 
-```bash
+``` bash
 brew install air
 ```
 
 On Windows:
 
-```shell
+``` shell
 powershell -ExecutionPolicy Bypass -c "irm https://github.com/posit-dev/air/releases/latest/download/air-installer.ps1 | iex"
 ```
 
 For a specific version:
 
-```shell
+``` shell
 curl -LsSf https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.sh | sh
 powershell -ExecutionPolicy Bypass -c "irm https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.ps1 | iex"
 ```
