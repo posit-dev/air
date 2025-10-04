@@ -819,11 +819,7 @@ impl FormatCallArgument {
                 write!(f, [element.node()?.format()])?;
 
                 if let Some(separator) = element.trailing_separator()? {
-                    if *is_last {
-                        write!(f, [format_removed(separator)])
-                    } else {
-                        write!(f, [separator.format()])
-                    }
+                    write!(f, [separator.format()])
                 } else if !is_last {
                     Err(FormatError::SyntaxError)
                 } else {
@@ -906,7 +902,7 @@ impl Format<RFormatContext> for FormatGroupedLastArgument<'_> {
                     )?;
 
                     if let Some(separator) = element.trailing_separator()? {
-                        write!(f, [format_removed(separator)])?;
+                        write!(f, [separator.format()])?;
                     }
 
                     Ok(())
