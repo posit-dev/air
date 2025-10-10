@@ -75,6 +75,12 @@ tribble(
 2,2
 )
 
+# Very long
+# fmt: tabular
+list(
+foooooooooo,baaaaaaaaar,foooooooooo,baaaaaaaaar,foooooooooo,baaaaaaaaar,foooooooooo,baaaaaaaaar,foooooooooo(baaaaaaaaar,foooooooooo,baaaaaaaaar),
+1+100, 1+1000,
+)
 
 # ------------------------------------------------------------------------
 # Comments

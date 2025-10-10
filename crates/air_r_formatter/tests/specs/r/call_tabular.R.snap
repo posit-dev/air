@@ -82,6 +82,12 @@ tribble(
 2,2
 )
 
+# Very long
+# fmt: tabular
+list(
+foooooooooo,baaaaaaaaar,foooooooooo,baaaaaaaaar,foooooooooo,baaaaaaaaar,foooooooooo,baaaaaaaaar,foooooooooo(baaaaaaaaar,foooooooooo,baaaaaaaaar),
+1+100, 1+1000,
+)
 
 # ------------------------------------------------------------------------
 # Comments
@@ -418,6 +424,12 @@ tribble(
 2,2
 )
 
+# Very long
+# fmt: tabular
+list(
+  foooooooooo, baaaaaaaaar, foooooooooo, baaaaaaaaar, foooooooooo, baaaaaaaaar, foooooooooo, baaaaaaaaar, foooooooooo(baaaaaaaaar, foooooooooo, baaaaaaaaar),
+  1 + 100    , 1 + 1000   ,
+)
 
 # ------------------------------------------------------------------------
 # Comments
@@ -668,5 +680,9 @@ list(
 
 ## Unimplemented nodes/tokens
 
-"(\n\"foo\n\",  2)" => 4332..4345
-"(\n{ foo },  2\n)" => 4366..4381
+"(\n\"foo\n\",  2)" => 4553..4566
+"(\n{ foo },  2\n)" => 4587..4602
+# Lines exceeding max width of 80 characters
+```
+   82:   foooooooooo, baaaaaaaaar, foooooooooo, baaaaaaaaar, foooooooooo, baaaaaaaaar, foooooooooo, baaaaaaaaar, foooooooooo(baaaaaaaaar, foooooooooo, baaaaaaaaar),
+```
