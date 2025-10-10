@@ -46,6 +46,15 @@ list(
 1+100, 1+1000,
 )
 
+# Indented
+{
+# fmt: tabular
+list(
+1+1, 1+10,
+1+100, 1+1000,
+)
+}
+
 # Typical usage
 # fmt: tabular
 tribble(
@@ -388,6 +397,15 @@ list(
   1 + 100, 1 + 1000,
 )
 
+# Indented
+{
+  # fmt: tabular
+  list(
+    1 + 1  , 1 + 10  ,
+    1 + 100, 1 + 1000,
+  )
+}
+
 # Typical usage
 # fmt: tabular
 tribble(
@@ -680,9 +698,9 @@ list(
 
 ## Unimplemented nodes/tokens
 
-"(\n\"foo\n\",  2)" => 4553..4566
-"(\n{ foo },  2\n)" => 4587..4602
+"(\n\"foo\n\",  2)" => 4644..4657
+"(\n{ foo },  2\n)" => 4678..4693
 # Lines exceeding max width of 80 characters
 ```
-   82:   foooooooooo, baaaaaaaaar, foooooooooo, baaaaaaaaar, foooooooooo, baaaaaaaaar, foooooooooo, baaaaaaaaar, foooooooooo(baaaaaaaaar, foooooooooo, baaaaaaaaar),
+   91:   foooooooooo, baaaaaaaaar, foooooooooo, baaaaaaaaar, foooooooooo, baaaaaaaaar, foooooooooo, baaaaaaaaar, foooooooooo(baaaaaaaaar, foooooooooo, baaaaaaaaar),
 ```

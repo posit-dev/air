@@ -39,6 +39,15 @@ list(
 1+100, 1+1000,
 )
 
+# Indented
+{
+# fmt: tabular
+list(
+1+1, 1+10,
+1+100, 1+1000,
+)
+}
+
 # Typical usage
 # fmt: tabular
 tribble(
