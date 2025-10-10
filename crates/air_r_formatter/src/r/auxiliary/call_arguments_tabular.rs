@@ -231,17 +231,17 @@ fn build_table(
 impl ColumnInfo {
     fn padding(&self, arg: &ArgParts) -> (usize, usize) {
         if self.has_decimal {
-            // We need to pad all arguments in decimal columns to the widest
-            // element (either a numeric value or an "Other" argument) so that
-            // commas align vertically, even if some arguments are wider than
-            // the decimal alignment width.
+            // In decimal columns, numeric arguments form a nested sub-column
+            // where decimal points align. However, `Other` arguments (like
+            // `foo()` or `"foo"`) might be wider than this numeric sub-column.
+            // To ensure all commas align vertically, we pad all arguments to
+            // the width of the widest element, whether that's the numeric
+            // sub-column width or a wider `Other` argument.
 
-            // This is the width needed to align all numeric arguments at the
-            // decimal point
+            // Width of the numeric sub-column (for decimal point alignment)
             let max_decimal_width = self.max_integer_part + DOT_WIDTH + self.max_fractional_part;
 
-            // This is the width needed to ensure that even the widest "Other"
-            // argument doesn't push the comma out of alignment
+            // The width all arguments must reach for commas to align
             let target_width = self.max_width.max(max_decimal_width);
 
             match arg {
@@ -256,8 +256,8 @@ impl ColumnInfo {
                         None => DOT_WIDTH + self.max_fractional_part,
                     };
 
-                    // Add extra padding if `max_width` (from an Other argument)
-                    // exceeds `decimal_width`
+                    // Add extra padding if any "Other" argument is wider than
+                    // decimal alignment
                     let extra_right = target_width.saturating_sub(max_decimal_width);
 
                     (left, base_right + extra_right)
