@@ -56,6 +56,16 @@ tribble(
 "Q1","NorthWest","Tablet",259.95,340,
 )
 
+# fmt: tabular
+standardized <- tribble(
+~from,~to,
+c("UNC","Chapel Hill"),"UNC",
+c("Duke","Duke University"),"Duke",
+c("NC State"),"NC State",
+c("ECU","East Carolina"),"ECU",
+NA,NA
+)
+
 # skipped
 # fmt: skip
 # fmt: tabular
@@ -382,6 +392,16 @@ tribble(
   "Q1"    , "NorthWest", "Tablet",  259.95,         340,
 )
 
+# fmt: tabular
+standardized <- tribble(
+  ~from                       , ~to       ,
+  c("UNC", "Chapel Hill")     , "UNC"     ,
+  c("Duke", "Duke University"), "Duke"    ,
+  c("NC State")               , "NC State",
+  c("ECU", "East Carolina")   , "ECU"     ,
+  NA                          , NA
+)
+
 # skipped
 # fmt: skip
 # fmt: tabular
@@ -648,5 +668,5 @@ list(
 
 ## Unimplemented nodes/tokens
 
-"(\n\"foo\n\",  2)" => 4034..4047
-"(\n{ foo },  2\n)" => 4068..4083
+"(\n\"foo\n\",  2)" => 4332..4345
+"(\n{ foo },  2\n)" => 4366..4381

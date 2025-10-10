@@ -49,6 +49,16 @@ tribble(
 "Q1","NorthWest","Tablet",259.95,340,
 )
 
+# fmt: tabular
+standardized <- tribble(
+~from,~to,
+c("UNC","Chapel Hill"),"UNC",
+c("Duke","Duke University"),"Duke",
+c("NC State"),"NC State",
+c("ECU","East Carolina"),"ECU",
+NA,NA
+)
+
 # skipped
 # fmt: skip
 # fmt: tabular
