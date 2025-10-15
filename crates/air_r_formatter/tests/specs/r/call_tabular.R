@@ -121,6 +121,14 @@ list(
   1,2    # comment
 )
 
+# Unfortunate: comment3 gets pulled up by Biome's Comments builder
+# fmt: tabular
+list(
+  foo  # comment1
+  =1, bar  # comment2
+  =  # comment3
+  2,
+)
 
 # ------------------------------------------------------------------------
 # Holes
@@ -288,6 +296,73 @@ list(
   10000,
   3.5,
   f()
+)
+
+# ------------------------------------------------------------------------
+# Named arguments
+
+# Named numeric arguments
+# fmt: tabular
+list(
+  foo  = 1.5,
+  bar  = 1000,
+  baz  = 123.456,
+  quux = 50,
+  x    = 0.1,
+  y    = 9,
+)
+
+# Named string arguments
+# fmt: tabular
+list(
+  first  = "hello",
+  second = "world",
+  third  = "foo",
+)
+
+# Named function call arguments
+# fmt: tabular
+list(
+  data = read.csv("file.csv"),
+  model = lm(y ~ x),
+  results = summary(model),
+)
+
+# Mixed named and unnamed arguments
+# fmt: tabular
+list(
+  100,
+  foo = 200,
+  300,
+  bar = 400,
+)
+
+# Named arguments with varying name lengths
+# fmt: tabular
+list(
+  a          = 1,
+  bb         = 2,
+  ccc        = 3,
+  dddd       = 4,
+  eeeee      = 5,
+  ffffffffff = 10,
+)
+
+# Named arguments with decimal alignment
+# fmt: tabular
+list(
+  small  = 1.1,
+  medium = 22.22,
+  large  = 333.333,
+  huge   = 4444.4444,
+)
+
+# Named arguments in multiple columns
+# fmt: tabular
+list(
+  x = 1, y = 2,
+  width = 100, height = 200,
+  color = "red", style = "bold",
 )
 
 # ------------------------------------------------------------------------
