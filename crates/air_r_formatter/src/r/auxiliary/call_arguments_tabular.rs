@@ -150,7 +150,7 @@ impl FormatRCallArguments {
 
                     // Format separator
                     if let Some(sep) = &arg_data.separator {
-                        write!(f, [sep.format()])?;
+                        write!(f, [space(), sep.format()])?;
                     } else if !arg_data.is_last_in_list {
                         // Shouldn't happen: no separator between arguments
                         return Err(FormatError::SyntaxError);

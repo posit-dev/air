@@ -468,58 +468,58 @@ list(
 # One row
 # fmt: tabular
 list(
-  1 + 1, 1 + 1
+  1 + 1 , 1 + 1
 )
 
 # Incomplete table
 # fmt: tabular
 list(
-  1 + 1, 1 + 10, 1 + 100,
-  1 + 1,
+  1 + 1 , 1 + 10 , 1 + 100 ,
+  1 + 1 ,
 )
 
 # Jagged table
 # fmt: tabular
 list(
-  1 + 10, 1 + 100 ,
-  1 + 1 ,
-  1 + 1 , 1 + 1000, 1 + 1,
+  1 + 10 , 1 + 100  ,
+  1 + 1  ,
+  1 + 1  , 1 + 1000 , 1 + 1 ,
 )
 
 # Table
 # fmt: tabular
 list(
-  1 + 1  , 1 + 10  ,
-  1 + 100, 1 + 1000,
+  1 + 1   , 1 + 10   ,
+  1 + 100 , 1 + 1000 ,
 )
 
 # Indented
 {
   # fmt: tabular
   list(
-    1 + 1  , 1 + 10  ,
-    1 + 100, 1 + 1000,
+    1 + 1   , 1 + 10   ,
+    1 + 100 , 1 + 1000 ,
   )
 }
 
 # Typical usage
 # fmt: tabular
 tribble(
-  ~quarter, ~region    , ~product, ~price , ~units_sold,
-  "Q1"    , "NorthWest", "Laptop", 1499.99,         250,
-  "Q2"    , "South"    , "Laptop",  489.5 ,         196,
-  "Q1"    , "South"    , "Tablet",  249.99,         304,
-  "Q1"    , "NorthWest", "Tablet",  259.95,         340,
+  ~quarter , ~region     , ~product , ~price  , ~units_sold ,
+  "Q1"     , "NorthWest" , "Laptop" , 1499.99 ,         250 ,
+  "Q2"     , "South"     , "Laptop" ,  489.5  ,         196 ,
+  "Q1"     , "South"     , "Tablet" ,  249.99 ,         304 ,
+  "Q1"     , "NorthWest" , "Tablet" ,  259.95 ,         340 ,
 )
 
 # fmt: tabular
 standardized <- tribble(
-  ~from                       , ~to       ,
-  c("UNC", "Chapel Hill")     , "UNC"     ,
-  c("Duke", "Duke University"), "Duke"    ,
-  c("NC State")               , "NC State",
-  c("ECU", "East Carolina")   , "ECU"     ,
-  NA                          , NA
+  ~from                        , ~to        ,
+  c("UNC", "Chapel Hill")      , "UNC"      ,
+  c("Duke", "Duke University") , "Duke"     ,
+  c("NC State")                , "NC State" ,
+  c("ECU", "East Carolina")    , "ECU"      ,
+  NA                           , NA
 )
 
 # skipped
@@ -541,8 +541,8 @@ tribble(
 # Very long
 # fmt: tabular
 list(
-  foooooooooo, baaaaaaaaar, foooooooooo, baaaaaaaaar, foooooooooo, baaaaaaaaar, foooooooooo, baaaaaaaaar, foooooooooo(baaaaaaaaar, foooooooooo, baaaaaaaaar),
-  1 + 100    , 1 + 1000   ,
+  foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo(baaaaaaaaar, foooooooooo, baaaaaaaaar) ,
+  1 + 100     , 1 + 1000    ,
 )
 
 # ------------------------------------------------------------------------
@@ -555,35 +555,35 @@ list(
 
 # fmt: tabular
 list(
-  1 + 1, 1 + 1 # comment
+  1 + 1 , 1 + 1 # comment
 )
 
 # fmt: tabular
 list(
-  1 + 1, 1 + 1, # comment1
-  1 + 1, 1 + 1 # comment2
+  1 + 1 , 1 + 1 , # comment1
+  1 + 1 , 1 + 1 # comment2
 )
 
 # fmt: tabular
 list(
   # comment1
-  1 + 1, 1 + 1,
+  1 + 1 , 1 + 1 ,
   # comment3
-  1 + 1, 1 + 1
+  1 + 1 , 1 + 1
 )
 
 # fmt: tabular
 list(
-  1, 2 # comment
+  1 , 2 # comment
 )
 
 # Unfortunate: comment3 gets pulled up by Biome's Comments builder
 # fmt: tabular
 list(
   # comment1
-  foo = 1, # comment3
+  foo = 1 , # comment3
   # comment2
-  bar = 2,
+  bar = 2 ,
 )
 
 # ------------------------------------------------------------------------
@@ -596,22 +596,22 @@ list(
 
 # fmt: tabular
 list(
-  ,,
-  ,,
+  , ,
+  , ,
 )
 
 # fmt: tabular
 list(
   ,
-  ,,
+  , ,
 )
 
 # fmt: tabular
 list(
   ,
-  ,      ,   ,,
-  ,      , 10,,
-  , "foo",
+  ,       ,    , ,
+  ,       , 10 , ,
+  , "foo" ,
 )
 
 
@@ -625,7 +625,7 @@ list(
 
 # fmt: tabular
 list(
-  1,
+  1 ,
 )
 
 
@@ -634,20 +634,20 @@ list(
 
 # fmt: tabular
 foo <- list(
-  1 + 1, 1 + 1,
-  1 + 1, 1 + 1
+  1 + 1 , 1 + 1 ,
+  1 + 1 , 1 + 1
 )
 
 # fmt: tabular
 foo <<- list(
-  1 + 1, 1 + 1,
-  1 + 1, 1 + 1
+  1 + 1 , 1 + 1 ,
+  1 + 1 , 1 + 1
 )
 
 # fmt: tabular
 foo = list(
-  1 + 1, 1 + 1,
-  1 + 1, 1 + 1
+  1 + 1 , 1 + 1 ,
+  1 + 1 , 1 + 1
 )
 
 # This is a syntax error, only base assignments are special-cased
@@ -664,8 +664,8 @@ foo %=%
 foo %=%
   # fmt: tabular
   list(
-    1 + 1, 1 + 1,
-    1 + 1, 1 + 1
+    1 + 1 , 1 + 1 ,
+    1 + 1 , 1 + 1
   )
 
 
@@ -675,72 +675,72 @@ foo %=%
 # Strings - should left-align
 # fmt: tabular
 list(
-  "1"  ,
-  "12" ,
-  "100",
-  "3"  ,
+  "1"   ,
+  "12"  ,
+  "100" ,
+  "3"   ,
 )
 
 # Non-numeric types - should left-align
 # fmt: tabular
 list(
-  "1"   ,
-  ho    ,
-  foobar,
-  f()   ,
+  "1"    ,
+  ho     ,
+  foobar ,
+  f()    ,
 )
 
 # Integers - should right-align
 # fmt: tabular
 list(
-   1L,
-   12,
-  100,
-    3,
+   1L ,
+   12 ,
+  100 ,
+    3 ,
 )
 
 # Pure decimals - should align at decimal point
 # fmt: tabular
 list(
-    0.   ,
-    1.5  ,
-   12.34 ,
-  100.0  ,
-    3.456,
+    0.    ,
+    1.5   ,
+   12.34  ,
+  100.0   ,
+    3.456 ,
 )
 
 # Mixed integers and decimals
 # fmt: tabular
 list(
-  1000    ,
-     2.5  ,
-   50L    ,
-   123.456,
-     9    ,
-     0.1  ,
+  1000     ,
+     2.5   ,
+   50L     ,
+   123.456 ,
+     9     ,
+     0.1   ,
      0.
 )
 
 # Mixed integers and decimals
 # fmt: tabular
 list(
-  0.,
-  1 ,
+  0. ,
+  1  ,
   2.
 )
 
 # Complex decimal alignment with varying precision
 # fmt: tabular
 list(
-     1.1   ,
-    22.22  ,
-   333.333 ,
-  4444.4444,
-    55.55  ,
-     6.6   ,
-   777     ,
-     8.8   ,
-    99.99  ,
+     1.1    ,
+    22.22   ,
+   333.333  ,
+  4444.4444 ,
+    55.55   ,
+     6.6    ,
+   777      ,
+     8.8    ,
+    99.99   ,
 )
 
 # Mixed types - should align depending on type
@@ -748,13 +748,13 @@ list(
 # The mixed alignment is not great, but is consistent.
 # fmt: tabular
 list(
-      1.10,
-  "12"    ,
-      1   ,
-     2L   ,
-  "3"     ,
-  10000   ,
-      3.5 ,
+      1.10 ,
+  "12"     ,
+      1    ,
+     2L    ,
+  "3"      ,
+  10000    ,
+      3.5  ,
   f()
 )
 
@@ -764,65 +764,65 @@ list(
 # Named numeric arguments
 # fmt: tabular
 list(
-  foo  =    1.5  ,
-  bar  = 1000    ,
-  baz  =  123.456,
-  quux =   50    ,
-  x    =    0.1  ,
-  y    =    9    ,
+  foo  =    1.5   ,
+  bar  = 1000     ,
+  baz  =  123.456 ,
+  quux =   50     ,
+  x    =    0.1   ,
+  y    =    9     ,
 )
 
 # Named string arguments
 # fmt: tabular
 list(
-  first  = "hello",
-  second = "world",
-  third  = "foo"  ,
+  first  = "hello" ,
+  second = "world" ,
+  third  = "foo"   ,
 )
 
 # Named function call arguments
 # fmt: tabular
 list(
-  data    = read.csv("file.csv"),
-  model   = lm(y ~ x)           ,
-  results = summary(model)      ,
+  data    = read.csv("file.csv") ,
+  model   = lm(y ~ x)            ,
+  results = summary(model)       ,
 )
 
 # Mixed named and unnamed arguments
 # fmt: tabular
 list(
-        100,
-  foo = 200,
-        300,
-  bar = 400,
+        100 ,
+  foo = 200 ,
+        300 ,
+  bar = 400 ,
 )
 
 # Named arguments with varying name lengths
 # fmt: tabular
 list(
-  a          =  1,
-  bb         =  2,
-  ccc        =  3,
-  dddd       =  4,
-  eeeee      =  5,
-  ffffffffff = 10,
+  a          =  1 ,
+  bb         =  2 ,
+  ccc        =  3 ,
+  dddd       =  4 ,
+  eeeee      =  5 ,
+  ffffffffff = 10 ,
 )
 
 # Named arguments with decimal alignment
 # fmt: tabular
 list(
-  small  =    1.1   ,
-  medium =   22.22  ,
-  large  =  333.333 ,
-  huge   = 4444.4444,
+  small  =    1.1    ,
+  medium =   22.22   ,
+  large  =  333.333  ,
+  huge   = 4444.4444 ,
 )
 
 # Named arguments in multiple columns
 # fmt: tabular
 list(
-  x     =     1, y      =      2,
-  width =   100, height =    200,
-  color = "red", style  = "bold",
+  x     =     1 , y      =      2 ,
+  width =   100 , height =    200 ,
+  color = "red" , style  = "bold" ,
 )
 
 # ------------------------------------------------------------------------
@@ -830,8 +830,8 @@ list(
 
 # fmt: tabular
 list(
-    -1.200,
-   +2L    ,
+    -1.200 ,
+   +2L     ,
   -100.
 )
 
@@ -839,10 +839,10 @@ list(
 # numeric arguments are not aligned with the number in the first row.
 # fmt: tabular
 list(
-  --1.200,
-  foo()  ,
-  +-20L  ,
-     0   ,
+  --1.200 ,
+  foo()   ,
+  +-20L   ,
+     0    ,
   -100.
 )
 
@@ -870,16 +870,16 @@ list(
 # Typical case
 # fmt: tabular
 fcase(
-  x < 5L, 1L,
-  x > 5L, 3L,
+  x < 5L , 1L ,
+  x > 5L , 3L ,
   # fmt: tabular off
   default = 5L
 )
 
 # fmt: tabular
 list(
-  1, 2,
-  3, 4,
+  1 , 2 ,
+  3 , 4 ,
 
   # fmt: tabular off
   foo = 1,
@@ -892,9 +892,9 @@ list(
 
 ## Unimplemented nodes/tokens
 
-"(\n\"foo\n\",  2)" => 5929..5942
-"(\n{ foo },  2\n)" => 5963..5978
+"(\n\"foo\n\",  2)" => 6107..6120
+"(\n{ foo },  2\n)" => 6141..6156
 # Lines exceeding max width of 80 characters
 ```
-   91:   foooooooooo, baaaaaaaaar, foooooooooo, baaaaaaaaar, foooooooooo, baaaaaaaaar, foooooooooo, baaaaaaaaar, foooooooooo(baaaaaaaaar, foooooooooo, baaaaaaaaar),
+   91:   foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo(baaaaaaaaar, foooooooooo, baaaaaaaaar) ,
 ```
