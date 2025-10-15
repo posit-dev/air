@@ -2,14 +2,21 @@ use crate::prelude::*;
 use crate::r::auxiliary::call_arguments::FormatRCallArguments;
 use air_r_syntax::{
     AnyRExpression, AnyRValue, RArgument, RArgumentList, RCallArguments, RDoubleValue,
-    RIntegerValue, RSyntaxNode, RSyntaxToken, RUnaryExpression,
+    RIntegerValue, RLanguage, RSyntaxNode, RSyntaxToken, RUnaryExpression,
 };
 
 use biome_formatter::{CstFormatContext, FormatElement, RemoveSoftLinesBuffer, format_args, write};
-use biome_rowan::AstSeparatedList;
+use biome_rowan::{AstSeparatedElement, AstSeparatedList};
 
 const DOT_WIDTH: usize = 1;
 const EQUALS_WIDTH: usize = 3; // " = "
+
+#[derive(Debug, Clone)]
+struct TableInfo {
+    rows: Vec<Vec<ArgData>>,
+    cols: Vec<ColumnInfo>,
+    remaining: Vec<AstSeparatedElement<RLanguage, RArgument>>,
+}
 
 #[derive(Debug, Clone)]
 struct ArgData {
@@ -63,10 +70,12 @@ impl FormatRCallArguments {
         }
 
         // Get table and alignment info
-        let (rows, column_info) = match build_table(&args, f)? {
-            Some(result) => result,
+        let table = match build_table(&args, f)? {
+            Some(table) => table,
             None => return Ok(None),
         };
+        let rows = table.rows;
+        let column_info = table.cols;
 
         // Format with alignment
         let formatted_table = format_with(|f: &mut RFormatter| {
@@ -159,16 +168,42 @@ impl FormatRCallArguments {
             Ok(())
         });
 
+        let remaining = format_with(|f| {
+            if table.remaining.is_empty() {
+                return Ok(());
+            }
+
+            // Start on a new line after table
+            write!(f, [hard_line_break()])?;
+
+            for entry in table.remaining.iter() {
+                let node = entry.node()?;
+                let leading_lines = get_lines_before(node.syntax());
+
+                // Respect 1 full empty line between sequential arguments
+                // if the user requested it (similar to top level expressions)
+                match leading_lines {
+                    0 | 1 => write!(f, [soft_line_break_or_space()])?,
+                    _ => write!(f, [empty_line()])?,
+                }
+
+                write!(f, [node.format(), entry.trailing_separator()?.format()])?;
+            }
+
+            Ok(())
+        });
+
         write!(
             f,
             [group(&format_args![
                 l_token.format(),
-                soft_block_indent(&formatted_table),
+                soft_block_indent(&format_args![&formatted_table, &remaining]),
                 r_token.format()
             ])
             .should_expand(true)]
-        )
-        .map(Some)
+        )?;
+
+        Ok(Some(()))
     }
 }
 
@@ -176,17 +211,36 @@ impl FormatRCallArguments {
 // alignment. This involves finding the integer and fractional widths of numeric
 // arguments, and formatting other arguments in a flat layout to get the width of
 // the final printed text.
-fn build_table(
-    args: &RArgumentList,
-    f: &mut RFormatter,
-) -> FormatResult<Option<(Vec<Vec<ArgData>>, Vec<ColumnInfo>)>> {
+fn build_table(args: &RArgumentList, f: &mut RFormatter) -> FormatResult<Option<TableInfo>> {
+    let mut cols: Vec<ColumnInfo> = Vec::new();
     let mut rows: Vec<Vec<ArgData>> = Vec::new();
     let mut current_row = Vec::new();
-    let mut column_info: Vec<ColumnInfo> = Vec::new();
 
-    for (i, arg) in args.elements().enumerate() {
+    let mut items = args.elements().enumerate();
+    let mut remaining = vec![];
+
+    for (i, arg) in &mut items {
+        // We've encountered an `off` comment before, keep collecting remaining args
+        if remaining.len() > 0 {
+            remaining.push(arg);
+            continue;
+        }
+
         let arg_node = arg.node()?;
         let arg_separator = arg.trailing_separator()?;
+
+        // If we see an `off` comment, start collecting remaining args
+        if crate::comments_directives(arg_node, f).iter().any(|d| {
+            matches!(
+                d,
+                comments::Directive::Format(comments::FormatDirective::Tabular(Some(
+                    comments::TabularParam::Off
+                )))
+            )
+        }) {
+            remaining.push(arg);
+            continue;
+        }
 
         let lines_before = if arg_node.value().is_some() {
             get_lines_before(arg_node.syntax())
@@ -200,8 +254,8 @@ fn build_table(
         }
 
         let column_index = current_row.len();
-        while column_info.len() <= column_index {
-            column_info.push(ColumnInfo::default());
+        while cols.len() <= column_index {
+            cols.push(ColumnInfo::default());
         }
 
         let arg_parts = match ArgParts::parse(arg_node, f)? {
@@ -218,7 +272,7 @@ fn build_table(
             value_width
         };
 
-        let col = &mut column_info[column_index];
+        let col = &mut cols[column_index];
         col.max_width = col.max_width.max(total_width);
         col.max_name_width = col.max_name_width.max(name_width);
         col.max_value_width = col.max_value_width.max(value_width);
@@ -249,7 +303,11 @@ fn build_table(
         rows.push(current_row);
     }
 
-    Ok(Some((rows, column_info)))
+    Ok(Some(TableInfo {
+        rows,
+        cols,
+        remaining,
+    }))
 }
 
 impl ColumnInfo {

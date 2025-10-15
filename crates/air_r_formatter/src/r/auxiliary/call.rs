@@ -83,5 +83,5 @@ where
 {
     comments_directives(node, f)
         .into_iter()
-        .any(|d| matches!(d, Directive::Format(FormatDirective::Tabular)))
+        .any(|d| matches!(d, Directive::Format(FormatDirective::Tabular(None))))
 }

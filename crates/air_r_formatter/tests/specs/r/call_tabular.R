@@ -403,3 +403,24 @@ list(
 list(
 { foo },  2
 )
+
+# ------------------------------------------------------------------------
+# Turning off
+
+# Typical case
+# fmt: tabular
+fcase(
+  x < 5L, 1L,
+  x > 5L, 3L,
+  # fmt: tabular off
+  default = 5L
+)
+
+# fmt: tabular
+list(
+  1,2,
+  3,4,
+
+  # fmt: tabular off
+  foo = 1, 2, 3
+)

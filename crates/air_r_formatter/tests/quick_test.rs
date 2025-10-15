@@ -16,16 +16,16 @@ mod language {
 #[test]
 fn quick_test() {
     let src = r#"
-        {
-            # fmt: tabular
-            tribble(
-                ~quarter, ~region, ~product, ~price, ~units_sold,
-                "Q1", "North", "Laptop", 1499.99, 250,
-                "Q1", "North", "Tablet", 85.5, 340,
-                "Q2", "South", "Laptop", 989.0, 196,
-                "Q2", "South", "Tablet", 76.95, 304,
-            )
-        }
+# fmt: tabular
+tribble(
+    ~quarter, ~region, ~product, ~price, ~units_sold,
+    "Q1", "North", "Laptop", 1499.99, 250,
+    "Q1", "North", "Tablet", 85.5, 340,
+
+    # fmt: tabular off
+    "Q2", "South", "Laptop", 989.0, 196,
+    "Q2", "South", "Tablet", 76.95, 304,
+)
     "#;
 
     let parse = parse(src, RParserOptions::default());
