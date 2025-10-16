@@ -180,11 +180,22 @@ impl FormatRCallArguments {
     }
 }
 
+fn build_table(args: &RArgumentList, f: &mut RFormatter) -> FormatResult<Option<TableInfo>> {
+    // Take a snapshot of the formatter buffer to restore it on exit. We're
+    // eagerly formatting table cells in the buffer and need to undo that work.
+    let snapshot = f.snapshot();
+
+    let table = build_table_impl(args, f);
+
+    f.restore_snapshot(snapshot);
+    table
+}
+
 // First pass: Parse arguments into rows and gather column width information for
 // alignment. This involves finding the integer and fractional widths of numeric
 // arguments, and formatting other arguments in a flat layout to get the width of
 // the final printed text.
-fn build_table(args: &RArgumentList, f: &mut RFormatter) -> FormatResult<Option<TableInfo>> {
+fn build_table_impl(args: &RArgumentList, f: &mut RFormatter) -> FormatResult<Option<TableInfo>> {
     let mut cols: Vec<ColumnInfo> = Vec::new();
     let mut rows: Vec<Vec<ArgData>> = Vec::new();
     let mut current_row = Vec::new();
@@ -435,7 +446,6 @@ impl ArgKind {
     fn parse_other(arg: &RArgument, f: &mut RFormatter) -> FormatResult<Option<ArgKind>> {
         disable_skip_comments(arg.syntax(), f);
 
-        let snapshot = f.snapshot();
         let result = (|| {
             // Format with flat layout by disabling soft line breaks
             let mut buffer = RemoveSoftLinesBuffer::new(f);
@@ -446,12 +456,17 @@ impl ArgKind {
 
             let recorded = recording.stop();
 
+            // `recorded` is a view into the buffer array and we need to own it
+            // to make a document
             let ir: Vec<FormatElement> = recorded.into_iter().cloned().collect();
             let document = Document::from(ir);
 
             // Ideally we'd print without cloning the context for every
             // argument. Can we do that? Perhaps with snapshotting?
             let formatted = biome_formatter::Formatted::new(document, f.context().clone());
+
+            // Looking at the source of `print()` we might be able to do things
+            // a bit more manually without the context cloning
             let text = formatted.print()?.into_code();
 
             // `will_break()` should not fail on us since we're formatting with
@@ -465,7 +480,6 @@ impl ArgKind {
             Ok(Some(ArgKind::Other { text }))
         })();
 
-        f.restore_snapshot(snapshot);
         result
     }
 
