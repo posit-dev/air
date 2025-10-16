@@ -1,5 +1,5 @@
-use crate::prelude::*;
 use crate::r::auxiliary::call_arguments::FormatRCallArguments;
+use crate::{prelude::*, r::auxiliary::argument::fmt_argument_fields};
 use air_r_syntax::{
     AnyRExpression, AnyRValue, RArgument, RArgumentList, RCallArguments, RDoubleValue,
     RIntegerValue, RLanguage, RSyntaxNode, RSyntaxToken, RUnaryExpression,
@@ -9,7 +9,6 @@ use biome_formatter::{CstFormatContext, FormatElement, RemoveSoftLinesBuffer, fo
 use biome_rowan::{AstSeparatedElement, AstSeparatedList};
 
 const DOT_WIDTH: usize = 1;
-const EQUALS_WIDTH: usize = 3; // " = "
 
 #[derive(Debug, Clone)]
 struct TableInfo {
@@ -21,15 +20,9 @@ struct TableInfo {
 #[derive(Debug, Clone)]
 struct ArgData {
     node: RArgument,
-    parts: ArgParts,
+    kind: ArgKind,
     separator: Option<RSyntaxToken>,
     is_last_in_list: bool,
-}
-
-#[derive(Debug, Clone)]
-struct ArgParts {
-    name_width: usize,
-    kind: ArgKind,
 }
 
 #[derive(Debug, Clone)]
@@ -49,7 +42,6 @@ struct ColumnInfo {
     // at the same time, if there is an argument like `1.`
     has_decimal: bool,
     max_width: usize,
-    max_name_width: usize,
     max_value_width: usize,
     max_integer_part: usize,
     max_fractional_part: usize,
@@ -78,7 +70,7 @@ impl FormatRCallArguments {
         let column_info = table.cols;
 
         // Format with alignment
-        let formatted_table = format_with(|f: &mut RFormatter| {
+        let formatted_table = format_with(|f| {
             for (row_i, row) in rows.iter().enumerate() {
                 if row_i > 0 {
                     // Rows are separated with hard line breaks because the
@@ -88,67 +80,51 @@ impl FormatRCallArguments {
                 }
 
                 for (col_j, arg_data) in row.iter().enumerate() {
-                    let name_clause = arg_data.node.name_clause();
-
                     let (left_pad, right_pad) = if column_info[col_j].max_width > 0 {
-                        column_info[col_j].padding(&arg_data.parts)
+                        column_info[col_j].padding(&arg_data.kind)
                     } else {
                         // Empty columns are not padded, so that commas stick to
                         // each other as in regular calls: `list(,,,)`
                         (0, 0)
                     };
 
-                    let max_name_width = column_info[col_j].max_name_width;
-
-                    format_leading_comments(arg_data.node.syntax()).fmt(f)?;
-                    disable_skip_comments(arg_data.node.syntax(), f);
-
-                    // Format name and equals sign if present, or add indent for unnamed
-                    if let Some(clause) = name_clause {
-                        disable_skip_comments(clause.syntax(), f);
-                        format_leading_comments(clause.syntax()).fmt(f)?;
-
-                        write!(f, [clause.name()?.format()])?;
-
-                        // Add padding to align equals signs
-                        let name_width = arg_data.parts.name_width;
-                        let equal_pad = max_name_width.saturating_sub(name_width);
-                        write_spaces(equal_pad, f)?;
-
-                        // Format equals sign
-                        write!(f, [space(), clause.eq_token()?.format(), space()])?;
-                    } else {
-                        // Add padding to align unnamed arguments
-                        if max_name_width > 0 {
-                            let name_pad = max_name_width + EQUALS_WIDTH;
-                            write_spaces(name_pad, f)?;
-                        }
-                    }
-
                     // Add left padding for right-aligned values
                     write_spaces(left_pad, f)?;
 
                     // Format the value
-                    match &arg_data.parts.kind {
-                        ArgKind::Other { text } if !text.is_empty() => {
-                            write!(f, [dynamic_text(text, 0.into())])?;
-                        }
-                        ArgKind::Numeric { .. } => {
-                            if let Some(value) = arg_data.node.value() {
-                                write!(f, [value.format()])?;
-                            }
-                        }
-                        _ => {} // Empty argument: print nothing
-                    }
+                    match &arg_data.kind {
+                        ArgKind::Other { text } => {
+                            let arg_syntax = arg_data.node.syntax();
 
-                    format_trailing_comments(arg_data.node.syntax()).fmt(f)?;
+                            // We've formatted the argument without comments, so
+                            // we're in charge of formatting them
+                            format_leading_comments(arg_syntax).fmt(f)?;
+                            disable_skip_comments(arg_syntax, f);
+
+                            // 0-length arguments are holes. Don't print them
+                            // because a `text("")` after a `Space` will prevent
+                            // the latter from being considered trailing by the
+                            // printer, and won't be removed if trailing.
+                            if !text.is_empty() {
+                                write!(f, [dynamic_text(text, 0.into())])?;
+                            }
+
+                            format_trailing_comments(arg_data.node.syntax()).fmt(f)?;
+                        }
+
+                        ArgKind::Numeric { .. } => {
+                            // For numeric types, format the node directly. This
+                            // handles comments as well.
+                            write!(f, [arg_data.node.format()])?;
+                        }
+                    }
 
                     // Add right padding (but not for the last item)
                     if !arg_data.is_last_in_list {
                         write_spaces(right_pad, f)?;
                     }
 
-                    // Format separator
+                    // Format comma
                     if let Some(sep) = &arg_data.separator {
                         write!(f, [space(), sep.format()])?;
                     } else if !arg_data.is_last_in_list {
@@ -156,14 +132,8 @@ impl FormatRCallArguments {
                         return Err(FormatError::SyntaxError);
                     }
 
-                    // Add space between columns (but only if next column is non-empty)
-                    if let Some(next_col) = column_info.get(col_j + 1) {
-                        if next_col.max_width > 0 {
-                            // This must be a soft space so it can be removed by
-                            // the printer if trailing
-                            write!(f, [space()])?;
-                        }
-                    }
+                    // Add space after comma
+                    write!(f, [space()])?;
                 }
             }
 
@@ -261,33 +231,31 @@ fn build_table(args: &RArgumentList, f: &mut RFormatter) -> FormatResult<Option<
         }
 
         let column_index = current_row.len();
+
+        // Adjust number of columns in case this row grew longer than the
+        // current number of columns recorded. Note the table is allowed to be
+        // ragged so extending the columns might happen at every row. The loop
+        // should be unnecessary as we grow row elements one by one, it is just
+        // to be safe.
         while cols.len() <= column_index {
             cols.push(ColumnInfo::default());
         }
 
-        let arg_parts = match ArgParts::parse(arg_node, f)? {
-            Some(parts) => parts,
+        let kind = match ArgKind::parse(arg_node, f)? {
+            Some(kind) => kind,
             None => return Ok(None),
         };
 
-        let name_width = arg_parts.name_width;
-        let value_width = arg_parts.width();
-
-        let total_width = if name_width > 0 {
-            name_width + EQUALS_WIDTH + value_width
-        } else {
-            value_width
-        };
+        let value_width = kind.width();
 
         let col = &mut cols[column_index];
-        col.max_width = col.max_width.max(total_width);
-        col.max_name_width = col.max_name_width.max(name_width);
+        col.max_width = col.max_width.max(value_width);
         col.max_value_width = col.max_value_width.max(value_width);
 
         if let ArgKind::Numeric {
             integer_width,
             fractional_width,
-        } = arg_parts.kind
+        } = kind
         {
             col.max_integer_part = col.max_integer_part.max(integer_width);
             if let Some(frac_len) = fractional_width {
@@ -300,7 +268,7 @@ fn build_table(args: &RArgumentList, f: &mut RFormatter) -> FormatResult<Option<
 
         current_row.push(ArgData {
             node: arg_node.clone(),
-            parts: arg_parts,
+            kind,
             separator: arg_separator.cloned(),
             is_last_in_list: i == args.len() - 1,
         });
@@ -318,25 +286,25 @@ fn build_table(args: &RArgumentList, f: &mut RFormatter) -> FormatResult<Option<
 }
 
 impl ColumnInfo {
-    fn padding(&self, arg: &ArgParts) -> (usize, usize) {
+    fn padding(&self, kind: &ArgKind) -> (usize, usize) {
         if self.has_decimal {
-            self.decimal_padding(arg)
+            self.decimal_padding(kind)
         } else {
-            self.simple_padding(arg)
+            self.simple_padding(kind)
         }
     }
 
-    fn simple_padding(&self, arg: &ArgParts) -> (usize, usize) {
+    fn simple_padding(&self, kind: &ArgKind) -> (usize, usize) {
         // Non-decimal columns: All arguments are padded to `max_width`
-        let padding = self.max_value_width.saturating_sub(arg.width());
+        let padding = self.max_value_width.saturating_sub(kind.width());
 
-        match &arg.kind {
+        match &kind {
             ArgKind::Numeric { .. } => (padding, 0), // Right-align
             ArgKind::Other { .. } => (0, padding),   // Left-align
         }
     }
 
-    fn decimal_padding(&self, arg: &ArgParts) -> (usize, usize) {
+    fn decimal_padding(&self, kind: &ArgKind) -> (usize, usize) {
         // In decimal columns, numeric arguments form a nested sub-column
         // where decimal points align. However, `Other` arguments (like
         // `foo()` or `"foo"`) might be wider than this numeric sub-column.
@@ -350,7 +318,7 @@ impl ColumnInfo {
         // The width all arguments must reach for commas to align
         let target_width = self.max_value_width.max(max_decimal_width);
 
-        match &arg.kind {
+        match &kind {
             ArgKind::Numeric {
                 integer_width,
                 fractional_width,
@@ -371,7 +339,7 @@ impl ColumnInfo {
 
             ArgKind::Other { .. } => {
                 // Left-align with right padding to reach target width
-                let right = target_width.saturating_sub(arg.width());
+                let right = target_width.saturating_sub(kind.width());
 
                 (0, right)
             }
@@ -379,16 +347,8 @@ impl ColumnInfo {
     }
 }
 
-impl ArgParts {
+impl ArgKind {
     fn parse(arg: &RArgument, f: &mut RFormatter) -> FormatResult<Option<Self>> {
-        let name_width = match arg.name_clause() {
-            Some(clause) => {
-                let text = clause.name()?.syntax().text_trimmed();
-                usize::from(text.len())
-            }
-            None => 0,
-        };
-
         let kind = match arg.value() {
             Some(AnyRExpression::AnyRValue(AnyRValue::RIntegerValue(value))) => {
                 Some(Self::parse_integer(value)?)
@@ -403,7 +363,7 @@ impl ArgParts {
             _ => Self::parse_other(arg, f)?,
         };
 
-        Ok(kind.map(|kind| ArgParts { name_width, kind }))
+        Ok(kind)
     }
 
     // Delegate to numerical parsing, but add 1 to the integer part for the
@@ -481,12 +441,11 @@ impl ArgParts {
             let mut buffer = RemoveSoftLinesBuffer::new(f);
             let mut recording = buffer.start_recording();
 
-            // Format only the value part (not the name)
-            if let Some(value) = arg.value() {
-                write!(recording, [value.format()])?;
-            }
+            // Format without comments because leading comments would force line breaks
+            write!(recording, [format_with(|f| fmt_argument_fields(arg, f))])?;
 
             let recorded = recording.stop();
+
             let ir: Vec<FormatElement> = recorded.into_iter().cloned().collect();
             let document = Document::from(ir);
 
@@ -511,7 +470,7 @@ impl ArgParts {
     }
 
     fn width(&self) -> usize {
-        match &self.kind {
+        match &self {
             ArgKind::Numeric {
                 integer_width,
                 fractional_width,
