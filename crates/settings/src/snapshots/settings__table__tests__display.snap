@@ -1,0 +1,5 @@
+---
+source: crates/settings/src/table.rs
+expression: options.table.unwrap()
+---
+my_function, my_other_function

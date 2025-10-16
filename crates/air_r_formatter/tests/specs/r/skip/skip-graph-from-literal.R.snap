@@ -43,6 +43,7 @@ Line ending: LF
 Line width: 80
 Persistent line breaks: Respect
 Skip: graph_from_literal
+Table: fcase, tribble
 -----
 
 ```R

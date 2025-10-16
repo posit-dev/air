@@ -1,0 +1,100 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/table/table-explicit.R
+---
+# Input
+
+```R
+#' [format]
+#' table = ["foo"]
+
+foo(
+~x,~y,
+1,2,
+3,4
+)
+
+a <- foo(
+~x,~y,
+1,2,
+3,4
+)
+
+bar(
+~x,~y,
+1,2,
+3,4
+)
+
+# Should format as table by default
+tribble(
+~x,~y,
+1,2,
+3,4
+)
+
+# Should format as table by default
+fcase(
+x<5L,1L,
+x>5L,3L,
+default=5L
+)
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Space
+Indent width: 2
+Line ending: LF
+Line width: 80
+Persistent line breaks: Respect
+Skip: None
+Table: fcase, foo, tribble
+-----
+
+```R
+#' [format]
+#' table = ["foo"]
+
+foo(
+  ~x , ~y ,
+   1 ,  2 ,
+   3 ,  4
+)
+
+a <- foo(
+  ~x , ~y ,
+   1 ,  2 ,
+   3 ,  4
+)
+
+bar(
+  ~x,
+  ~y,
+  1,
+  2,
+  3,
+  4
+)
+
+# Should format as table by default
+tribble(
+  ~x , ~y ,
+   1 ,  2 ,
+   3 ,  4
+)
+
+# Should format as table by default
+fcase(
+  x < 5L , 1L ,
+  x > 5L , 3L ,
+  default = 5L
+)
+```

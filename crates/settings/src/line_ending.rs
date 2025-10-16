@@ -1,10 +1,3 @@
-//
-// line_ending.rs
-//
-// Copyright (C) 2025 Posit Software, PBC. All rights reserved.
-//
-//
-
 use std::fmt;
 
 #[derive(Copy, Clone, Default, Debug, Eq, PartialEq)]

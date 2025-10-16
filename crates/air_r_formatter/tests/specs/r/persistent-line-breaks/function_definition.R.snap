@@ -32,6 +32,7 @@ Line ending: LF
 Line width: 80
 Persistent line breaks: Ignore
 Skip: None
+Table: fcase, tribble
 -----
 
 ```R

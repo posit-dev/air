@@ -2,7 +2,7 @@ use crate::context::RFormatOptions;
 use crate::either::Either;
 use crate::is_suppressed_by_comment;
 use crate::prelude::*;
-use crate::r::auxiliary::call::is_table;
+use crate::r::auxiliary::call::is_table_by_comment;
 use crate::r::auxiliary::call_arguments::FormatRCallArgumentsOptions;
 use air_r_syntax::AnyRExpression;
 use air_r_syntax::RBinaryExpression;
@@ -194,7 +194,7 @@ fn fmt_binary_assignment(
 ) -> FormatResult<()> {
     // Check for table directive here to simplify lifetimes with
     // `format_assignment_rhs()`
-    let table = is_table(node, f);
+    let table = is_table_by_comment(node, f);
 
     let right_formatted = format_with(|f| {
         if binary_assignment_has_persistent_line_break(&operator, &right, f.options()) {

@@ -14,6 +14,7 @@
 
 use std::path::Path;
 
+use crate::settings::DEFAULT_TABLE_NAMES;
 use crate::settings::DefaultExcludePatterns;
 use crate::settings::DefaultIncludePatterns;
 use crate::settings::ExcludePatterns;
@@ -25,6 +26,7 @@ use settings::IndentWidth;
 use settings::LineWidth;
 use settings::PersistentLineBreaks;
 use settings::Skip;
+use settings::Table;
 
 /// Configuration for Air
 #[derive(Clone, Debug, PartialEq, Eq, Default, serde::Deserialize)]
@@ -194,11 +196,42 @@ pub struct FormatTomlOptions {
     /// of `tibble::tribble()` calls. In the long term, we may have more sophisticated
     /// features for automatically formatting using a specified alignment.
     pub skip: Option<Skip>,
+
+    /// # Function calls to format as tables
+    ///
+    /// Some variadic functions like `tibble::tribble()` or
+    /// `data.table::fcase()` are meant to be formatted as tables. Air
+    /// helps you do it automatically with the `# fmt: table` directive.
+    /// Use this setting to determine which functions should automatically be
+    /// formatted as tables without requiring a comment directive.
+    ///
+    /// By default, `fcase()` and `tribble()` are formatted as tables. You can
+    /// disable this default by setting the `default-table` option to `false`.
+    pub table: Option<Table>,
+
+    /// # Use Air's defaults for `table`
+    ///
+    /// By default, `fcase()` and `tribble()` are formatted as tables. You can
+    /// disable this default by setting this option to `false`.
+    pub default_table: Option<bool>,
 }
 
 impl TomlOptions {
     pub fn into_settings(self, root: &Path) -> anyhow::Result<Settings> {
         let format = self.format.unwrap_or_default();
+
+        let mut table = format.table;
+
+        if format.default_table.unwrap_or(true) {
+            let mut updated: Vec<String> =
+                DEFAULT_TABLE_NAMES.iter().map(|&s| s.to_string()).collect();
+
+            if let Some(user_table) = table {
+                updated.extend(user_table.as_slice().iter().cloned());
+            }
+
+            table = Some(Table::new(updated));
+        }
 
         let format = FormatSettings {
             indent_style: format.indent_style.unwrap_or_default(),
@@ -231,6 +264,7 @@ impl TomlOptions {
             // cases right now.
             default_include: Some(DefaultIncludePatterns::default()),
             skip: format.skip,
+            table,
         };
 
         Ok(Settings { format })

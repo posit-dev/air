@@ -33,6 +33,14 @@ expression: schema
             "null"
           ]
         },
+        "default-table": {
+          "title": "Use Air's defaults for `table`",
+          "description": "By default, `fcase()` and `tribble()` are formatted as tables. You can\n disable this default by setting this option to `false`.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
         "exclude": {
           "title": "Patterns to exclude from formatting",
           "description": "By default, Air will refuse to format files matched by patterns listed in\n `default-exclude`. Use this option to supply an additional list of exclude\n patterns.\n\n Exclude patterns are modeled after what you can provide in a\n [.gitignore](https://git-scm.com/docs/gitignore), and are resolved relative to the\n parent directory that your `air.toml` is contained within. For example, if your\n `air.toml` was located at `root/air.toml`, then:\n\n - `file.R` excludes a file named `file.R` located anywhere below `root/`. This is\n   equivalent to `**/file.R`.\n\n - `folder/` excludes a directory named `folder` (and all of its children) located\n   anywhere below `root/`. You can also just use `folder`, but this would\n   technically also match a file named `folder`, so the trailing slash is preferred\n   when targeting directories. This is equivalent to `**/folder/`.\n\n - `/file.R` excludes a file named `file.R` located at `root/file.R`.\n\n - `/folder/` excludes a directory named `folder` (and all of its children) located\n   at `root/folder/`.\n\n - `file-*.R` excludes R files named like `file-this.R` and `file-that.R` located\n   anywhere below `root/`.\n\n - `folder/*.R` excludes all R files located at `root/folder/`. Note that R files\n   in directories under `folder/` are not excluded in this case (such as\n   `root/folder/subfolder/file.R`).\n\n - `folder/**/*.R` excludes all R files located anywhere below `root/folder/`.\n\n - `**/folder/*.R` excludes all R files located directly inside a `folder/`\n   directory, where the `folder/` directory itself can /// appear anywhere.\n\n See the full [.gitignore](https://git-scm.com/docs/gitignore) documentation for\n all of the patterns you can provide.",
@@ -111,6 +119,18 @@ expression: schema
               "type": "null"
             }
           ]
+        },
+        "table": {
+          "title": "Function calls to format as tables",
+          "description": "Some variadic functions like `tibble::tribble()` or\n `data.table::fcase()` are meant to be formatted as tables. Air\n helps you do it automatically with the `# fmt: table` directive.\n Use this setting to determine which functions should automatically be\n formatted as tables without requiring a comment directive.\n\n By default, `fcase()` and `tribble()` are formatted as tables. You can\n disable this default by setting the `default-table` option to `false`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Table"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -166,10 +186,16 @@ expression: schema
       "minimum": 1
     },
     "Skip": {
+      "$ref": "#/$defs/SortedNames"
+    },
+    "SortedNames": {
       "type": "array",
       "items": {
         "type": "string"
       }
+    },
+    "Table": {
+      "$ref": "#/$defs/SortedNames"
     }
   }
 }

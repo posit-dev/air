@@ -29,7 +29,7 @@ impl FormatNodeRule<RCall> for FormatRCall {
             arguments,
         } = node.as_fields();
 
-        let table = self.table || is_table(node, f);
+        let table = self.table || is_table_call(node, f);
         let options = FormatRCallArgumentsOptions { table };
 
         write!(
@@ -39,7 +39,7 @@ impl FormatNodeRule<RCall> for FormatRCall {
     }
 
     fn is_suppressed(&self, node: &RCall, f: &RFormatter) -> bool {
-        is_suppressed_by_comment(node, f) || is_suppressed_by_skip(node, f).unwrap_or(false)
+        is_suppressed_by_comment(node, f) || is_skip_by_option(node, f).unwrap_or(false)
     }
 }
 
@@ -53,35 +53,52 @@ impl FormatRuleWithOptions<RCall> for FormatRCall {
 }
 
 #[inline]
-fn is_suppressed_by_skip(node: &RCall, f: &RFormatter) -> SyntaxResult<bool> {
-    let Some(skip) = f.options().skip() else {
-        // Nothing to do if user didn't supply any skip functions
-        return Ok(false);
-    };
+fn is_skip_by_option(node: &RCall, f: &RFormatter) -> SyntaxResult<bool> {
+    fn is_skip(node: RIdentifier, skip: &Skip) -> SyntaxResult<bool> {
+        let node = node.name_token()?;
+        Ok(skip.contains(node.text_trimmed()))
+    }
 
-    Ok(match node.function()? {
-        AnyRExpression::RIdentifier(node) => is_skip(node, skip)?,
-        AnyRExpression::RNamespaceExpression(node) => match node.right()? {
-            AnyRSelector::RIdentifier(node) => is_skip(node, skip)?,
-            AnyRSelector::RDotDotI(_) => false,
-            AnyRSelector::RDots(_) => false,
-            AnyRSelector::RStringValue(_) => false,
-        },
-        _ => false,
-    })
+    is_match_by_option(node, f.options().skip(), is_skip)
 }
 
-#[inline]
-fn is_skip(node: RIdentifier, skip: &Skip) -> SyntaxResult<bool> {
-    let node = node.name_token()?;
-    Ok(skip.contains(node.text_trimmed()))
+pub(crate) fn is_table_call(node: &RCall, f: &RFormatter) -> bool {
+    is_table_by_option(node, f).unwrap_or(false) || is_table_by_comment(node, f)
 }
 
-pub(crate) fn is_table<N>(node: &N, f: &RFormatter) -> bool
+fn is_table_by_option(node: &RCall, f: &RFormatter) -> SyntaxResult<bool> {
+    fn is_table(node: RIdentifier, table: &settings::Table) -> SyntaxResult<bool> {
+        let node = node.name_token()?;
+        Ok(table.contains(node.text_trimmed()))
+    }
+
+    is_match_by_option(node, f.options().table(), is_table)
+}
+
+// Generic and used by RCall and RBinaryExpression
+pub(crate) fn is_table_by_comment<N>(node: &N, f: &RFormatter) -> bool
 where
     N: AstNode<Language = RLanguage>,
 {
     comments_directives(node, f)
         .into_iter()
         .any(|d| matches!(d, Directive::Format(FormatDirective::Table)))
+}
+
+fn is_match_by_option<T, F>(node: &RCall, options: Option<T>, pred: F) -> SyntaxResult<bool>
+where
+    F: Fn(RIdentifier, T) -> SyntaxResult<bool>,
+{
+    let Some(options) = options else {
+        return Ok(false);
+    };
+
+    Ok(match node.function()? {
+        AnyRExpression::RIdentifier(node) => pred(node, options)?,
+        AnyRExpression::RNamespaceExpression(node) => match node.right()? {
+            AnyRSelector::RIdentifier(node) => pred(node, options)?,
+            _ => false,
+        },
+        _ => false,
+    })
 }

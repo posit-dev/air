@@ -1,0 +1,95 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/table/table-default.R
+---
+# Input
+
+```R
+#' [format]
+
+# Should format as table by default
+tribble(
+~x,~y,
+1,2,
+3,4
+)
+
+a <- tribble(
+~x,~y,
+1,2,
+3,4
+)
+
+fcase(
+x<5L,1L,
+x>5L,3L,
+default=5L
+)
+
+a = fcase(
+x<5L,1L,
+x>5L,3L,
+default=5L
+)
+
+# "Sees through" namespaces and looks at the function name
+tibble::tribble(
+~x,~y,
+1,2,
+3,4
+)
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Space
+Indent width: 2
+Line ending: LF
+Line width: 80
+Persistent line breaks: Respect
+Skip: None
+Table: fcase, tribble
+-----
+
+```R
+#' [format]
+
+# Should format as table by default
+tribble(
+  ~x , ~y ,
+   1 ,  2 ,
+   3 ,  4
+)
+
+a <- tribble(
+  ~x , ~y ,
+   1 ,  2 ,
+   3 ,  4
+)
+
+fcase(
+  x < 5L , 1L ,
+  x > 5L , 3L ,
+  default = 5L
+)
+
+a = fcase(
+  x < 5L , 1L ,
+  x > 5L , 3L ,
+  default = 5L
+)
+
+# "Sees through" namespaces and looks at the function name
+tibble::tribble(
+  ~x , ~y ,
+   1 ,  2 ,
+   3 ,  4
+)
+```
