@@ -2,7 +2,7 @@ use crate::context::RFormatOptions;
 use crate::either::Either;
 use crate::is_suppressed_by_comment;
 use crate::prelude::*;
-use crate::r::auxiliary::call::is_tabular;
+use crate::r::auxiliary::call::is_table;
 use crate::r::auxiliary::call_arguments::FormatRCallArgumentsOptions;
 use air_r_syntax::AnyRExpression;
 use air_r_syntax::RBinaryExpression;
@@ -192,9 +192,9 @@ fn fmt_binary_assignment(
     right: AnyRExpression,
     f: &mut Formatter<RFormatContext>,
 ) -> FormatResult<()> {
-    // Check for tabular directive here to simplify lifetimes with
+    // Check for table directive here to simplify lifetimes with
     // `format_assignment_rhs()`
-    let tabular = is_tabular(node, f);
+    let table = is_table(node, f);
 
     let right_formatted = format_with(|f| {
         if binary_assignment_has_persistent_line_break(&operator, &right, f.options()) {
@@ -204,11 +204,11 @@ fn fmt_binary_assignment(
                         alignment: ChainAlignment::LeftAligned,
                     }))
                 }
-                right => Either::Right(format_assignment_rhs(right, tabular)),
+                right => Either::Right(format_assignment_rhs(right, table)),
             };
             write!(f, [indent(&format_args![hard_line_break(), right])])
         } else {
-            write!(f, [space(), format_assignment_rhs(&right, tabular)])
+            write!(f, [space(), format_assignment_rhs(&right, table)])
         }
     });
 
@@ -223,11 +223,11 @@ fn fmt_binary_assignment(
     )
 }
 
-fn format_assignment_rhs(expr: &AnyRExpression, tabular: bool) -> impl Format<RFormatContext> {
+fn format_assignment_rhs(expr: &AnyRExpression, table: bool) -> impl Format<RFormatContext> {
     format_with(move |f| {
-        if tabular {
+        if table {
             if let AnyRExpression::RCall(call) = expr {
-                let options = FormatRCallArgumentsOptions { tabular: true };
+                let options = FormatRCallArgumentsOptions { table: true };
                 return write!(f, [call.format().with_options(options)]);
             }
         }

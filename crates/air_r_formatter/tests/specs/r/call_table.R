@@ -1,31 +1,31 @@
-# fmt: tabular
+# fmt: table
 list(
 )
 
-# fmt: tabular
+# fmt: table
 list(1+1)
 
 # One argument
-# fmt: tabular
+# fmt: table
 list(
 1+1
 )
 
 # One row
-# fmt: tabular
+# fmt: table
 list(
 1+1, 1+1
 )
 
 # Incomplete table
-# fmt: tabular
+# fmt: table
 list(
 1+1, 1+10, 1+100,
 1+1,
 )
 
 # Jagged table
-# fmt: tabular
+# fmt: table
 list(
 1+10, 1+100,
 1+1,
@@ -33,7 +33,7 @@ list(
 )
 
 # Table
-# fmt: tabular
+# fmt: table
 list(
 1+1, 1+10,
 1+100, 1+1000,
@@ -41,7 +41,7 @@ list(
 
 # Indented
 {
-# fmt: tabular
+# fmt: table
 list(
 1+1, 1+10,
 1+100, 1+1000,
@@ -49,7 +49,7 @@ list(
 }
 
 # Typical usage
-# fmt: tabular
+# fmt: table
 tribble(
 ~quarter,~region,~product,~price,~units_sold,
 "Q1","NorthWest","Laptop",1499.99,250,
@@ -58,7 +58,7 @@ tribble(
 "Q1","NorthWest","Tablet",259.95,340,
 )
 
-# fmt: tabular
+# fmt: table
 standardized <- tribble(
 ~from,~to,
 c("UNC","Chapel Hill"),"UNC",
@@ -70,13 +70,13 @@ NA,NA
 
 # skipped
 # fmt: skip
-# fmt: tabular
+# fmt: table
 tribble(
 1,1,
 2,2
 )
 
-# fmt: tabular
+# fmt: table
 # fmt: skip
 # skipped
 tribble(
@@ -85,7 +85,7 @@ tribble(
 )
 
 # Very long
-# fmt: tabular
+# fmt: table
 list(
 foooooooooo,baaaaaaaaar,foooooooooo,baaaaaaaaar,foooooooooo,baaaaaaaaar,foooooooooo,baaaaaaaaar,foooooooooo(baaaaaaaaar,foooooooooo,baaaaaaaaar),
 1+100, 1+1000,
@@ -98,17 +98,17 @@ list(# comment1
 # comment2
 )# comment3
 
-# fmt: tabular
+# fmt: table
 list(1+1, 1+1 # comment
 )
 
-# fmt: tabular
+# fmt: table
 list(
   1+1, 1+1, # comment1
   1+1, 1+1 # comment2
 )
 
-# fmt: tabular
+# fmt: table
 list(
   # comment1
   1+1, 1+1,
@@ -116,13 +116,13 @@ list(
   1+1, 1+1
 )
 
-# fmt: tabular
+# fmt: table
 list(
   1,2    # comment
 )
 
 # Unfortunate: comment3 gets pulled up by Biome's Comments builder
-# fmt: tabular
+# fmt: table
 list(
   foo  # comment1
   =1, bar  # comment2
@@ -133,22 +133,22 @@ list(
 # ------------------------------------------------------------------------
 # Holes
 
-# fmt: tabular
+# fmt: table
 list( , )
 
-# fmt: tabular
+# fmt: table
 list(
 ,,
 ,,
 )
 
-# fmt: tabular
+# fmt: table
 list(
 ,
 ,,
 )
 
-# fmt: tabular
+# fmt: table
 list(
 ,
 ,,,,
@@ -160,12 +160,12 @@ list(
 # ------------------------------------------------------------------------
 # Commas
 
-# fmt: tabular
+# fmt: table
 list(
   1
 )
 
-# fmt: tabular
+# fmt: table
 list(
   1 ,
 )
@@ -174,26 +174,26 @@ list(
 # ------------------------------------------------------------------------
 # Assignments
 
-# fmt: tabular
+# fmt: table
 foo <- list(
   1+1, 1+1,
   1+1, 1+1
 )
 
-# fmt: tabular
+# fmt: table
 foo <<- list(
   1+1, 1+1,
   1+1, 1+1
 )
 
-# fmt: tabular
+# fmt: table
 foo = list(
   1+1, 1+1,
   1+1, 1+1
 )
 
 # This is a syntax error, only base assignments are special-cased
-# fmt: tabular
+# fmt: table
 foo %=%
   list(
     1+1, 1+1,
@@ -202,7 +202,7 @@ foo %=%
 
 # Fallback syntax for these cases
 foo %=%
-  # fmt: tabular
+  # fmt: table
   list(
     1+1, 1+1,
     1+1, 1+1
@@ -213,7 +213,7 @@ foo %=%
 # Alignment
 
 # Strings - should left-align
-# fmt: tabular
+# fmt: table
 list(
   "1",
   "12",
@@ -222,7 +222,7 @@ list(
 )
 
 # Non-numeric types - should left-align
-# fmt: tabular
+# fmt: table
 list(
   "1",
   ho,
@@ -231,7 +231,7 @@ list(
 )
 
 # Integers - should right-align
-# fmt: tabular
+# fmt: table
 list(
   1L,
   12,
@@ -240,7 +240,7 @@ list(
 )
 
 # Pure decimals - should align at decimal point
-# fmt: tabular
+# fmt: table
 list(
   0.,
   1.5,
@@ -250,7 +250,7 @@ list(
 )
 
 # Mixed integers and decimals
-# fmt: tabular
+# fmt: table
 list(
   1000,
   2.5,
@@ -262,7 +262,7 @@ list(
 )
 
 # Mixed integers and decimals
-# fmt: tabular
+# fmt: table
 list(
   0.,
   1,
@@ -270,7 +270,7 @@ list(
 )
 
 # Complex decimal alignment with varying precision
-# fmt: tabular
+# fmt: table
 list(
   1.1,
   22.22,
@@ -286,7 +286,7 @@ list(
 # Mixed types - should align depending on type
 # The last argument doesn't have a comma.
 # The mixed alignment is not great, but is consistent.
-# fmt: tabular
+# fmt: table
 list(
   1.10,
   "12",
@@ -301,7 +301,7 @@ list(
 # ------------------------------------------------------------------------
 # Unary operators
 
-# fmt: tabular
+# fmt: table
 list(
   -1.200,
   +2L,
@@ -310,7 +310,7 @@ list(
 
 # With repeated unary operators we fall back to regular parsing. Note how the
 # numeric arguments are not aligned with the number in the first row.
-# fmt: tabular
+# fmt: table
 list(
   --1.200,
   foo(),
@@ -327,12 +327,12 @@ list(
 # snapshotter to add an "Unimplemented nodes/token" section below because of the
 # verbatim fallback.
 
-# fmt: tabular
+# fmt: table
 list(
 "foo
 ",  2)
 
-# fmt: tabular
+# fmt: table
 list(
 { foo },  2
 )
@@ -341,19 +341,19 @@ list(
 # Turning off
 
 # Typical case
-# fmt: tabular
+# fmt: table
 fcase(
   x < 5L, 1L,
   x > 5L, 3L,
-  # fmt: tabular off
+  # fmt: table off
   default = 5L
 )
 
-# fmt: tabular
+# fmt: table
 list(
   1,2,
   3,4,
 
-  # fmt: tabular off
+  # fmt: table off
   foo = 1, 2, 3
 )

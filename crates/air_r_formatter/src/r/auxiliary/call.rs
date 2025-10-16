@@ -19,7 +19,7 @@ use settings::Skip;
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct FormatRCall {
-    tabular: bool,
+    table: bool,
 }
 
 impl FormatNodeRule<RCall> for FormatRCall {
@@ -29,8 +29,8 @@ impl FormatNodeRule<RCall> for FormatRCall {
             arguments,
         } = node.as_fields();
 
-        let tabular = self.tabular || is_tabular(node, f);
-        let options = FormatRCallArgumentsOptions { tabular };
+        let table = self.table || is_table(node, f);
+        let options = FormatRCallArgumentsOptions { table };
 
         write!(
             f,
@@ -47,7 +47,7 @@ impl FormatRuleWithOptions<RCall> for FormatRCall {
     type Options = FormatRCallArgumentsOptions;
 
     fn with_options(mut self, options: Self::Options) -> Self {
-        self.tabular = options.tabular;
+        self.table = options.table;
         self
     }
 }
@@ -77,11 +77,11 @@ fn is_skip(node: RIdentifier, skip: &Skip) -> SyntaxResult<bool> {
     Ok(skip.contains(node.text_trimmed()))
 }
 
-pub(crate) fn is_tabular<N>(node: &N, f: &RFormatter) -> bool
+pub(crate) fn is_table<N>(node: &N, f: &RFormatter) -> bool
 where
     N: AstNode<Language = RLanguage>,
 {
     comments_directives(node, f)
         .into_iter()
-        .any(|d| matches!(d, Directive::Format(FormatDirective::Tabular(None))))
+        .any(|d| matches!(d, Directive::Format(FormatDirective::Table(None))))
 }

@@ -48,7 +48,7 @@ struct ColumnInfo {
 }
 
 impl FormatRCallArguments {
-    pub(crate) fn fmt_tabular(
+    pub(crate) fn fmt_table(
         &self,
         node: &RCallArguments,
         f: &mut RFormatter,
@@ -74,7 +74,7 @@ impl FormatRCallArguments {
             for (row_i, row) in rows.iter().enumerate() {
                 if row_i > 0 {
                     // Rows are separated with hard line breaks because the
-                    // lines of arguments in tabular calls should never be
+                    // lines of arguments in table calls should never be
                     // rearranged by the formatter.
                     write!(f, [hard_line_break()])?;
                 }
@@ -217,7 +217,7 @@ fn build_table_impl(args: &RArgumentList, f: &mut RFormatter) -> FormatResult<Op
         if crate::comments_directives(arg_node, f).iter().any(|d| {
             matches!(
                 d,
-                comments::Directive::Format(comments::FormatDirective::Tabular(Some(
+                comments::Directive::Format(comments::FormatDirective::Table(Some(
                     comments::TabularParam::Off
                 )))
             )

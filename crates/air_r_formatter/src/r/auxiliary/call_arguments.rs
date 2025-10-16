@@ -28,12 +28,12 @@ use itertools::Itertools;
 
 #[derive(Debug, Clone, Default)]
 pub struct FormatRCallArgumentsOptions {
-    pub tabular: bool,
+    pub table: bool,
 }
 
 #[derive(Debug, Clone, Default)]
 pub struct FormatRCallArguments {
-    tabular: bool,
+    table: bool,
 }
 
 impl FormatRCallArguments {
@@ -48,15 +48,15 @@ impl FormatRCallArguments {
 
 impl FormatNodeRule<RCallArguments> for FormatRCallArguments {
     fn fmt_fields(&self, node: &RCallArguments, f: &mut RFormatter) -> FormatResult<()> {
-        if self.tabular {
+        if self.table {
             let snapshot = f.state_snapshot();
 
-            if let Some(()) = self.fmt_tabular(node, f)? {
+            if let Some(()) = self.fmt_table(node, f)? {
                 Ok(())
             } else {
                 f.restore_state_snapshot(snapshot);
 
-                // Tabular formatting failed, fall back to verbatim. Ideally
+                // Table formatting failed, fall back to verbatim. Ideally
                 // we'd emit diagnostics about why tabular formatting failed
                 // here.
                 write!(f, [format_verbatim_node(node.syntax())])
@@ -77,7 +77,7 @@ impl FormatRuleWithOptions<RCallArguments> for FormatRCallArguments {
     type Options = FormatRCallArgumentsOptions;
 
     fn with_options(mut self, options: Self::Options) -> Self {
-        self.tabular = options.tabular;
+        self.table = options.table;
         self
     }
 }
