@@ -101,11 +101,11 @@ impl FormatRCallArguments {
                     let max_name_width = column_info[col_j].max_name_width;
 
                     format_leading_comments(arg_data.node.syntax()).fmt(f)?;
-                    ignore_skip_comments(arg_data.node.syntax(), f);
+                    disable_skip_comments(arg_data.node.syntax(), f);
 
                     // Format name and equals sign if present, or add indent for unnamed
                     if let Some(clause) = name_clause {
-                        ignore_skip_comments(clause.syntax(), f);
+                        disable_skip_comments(clause.syntax(), f);
                         format_leading_comments(clause.syntax()).fmt(f)?;
 
                         write!(f, [clause.name()?.format()])?;
@@ -473,7 +473,7 @@ impl ArgParts {
     }
 
     fn parse_other(arg: &RArgument, f: &mut RFormatter) -> FormatResult<Option<ArgKind>> {
-        ignore_skip_comments(arg.syntax(), f);
+        disable_skip_comments(arg.syntax(), f);
 
         let snapshot = f.snapshot();
         let result = (|| {
@@ -532,7 +532,7 @@ fn write_spaces(count: usize, f: &mut RFormatter) -> FormatResult<()> {
     Ok(())
 }
 
-/// We ignore skip comments nested in the table
-fn ignore_skip_comments(syntax: &RSyntaxNode, f: &RFormatter) {
+/// Skip comments nested in the table are invalid, but mark them as checked so the formatter
+fn disable_skip_comments(syntax: &RSyntaxNode, f: &RFormatter) {
     f.context().comments().mark_suppression_checked(syntax);
 }
