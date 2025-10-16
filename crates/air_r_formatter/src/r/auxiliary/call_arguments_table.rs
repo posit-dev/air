@@ -213,15 +213,12 @@ fn build_table_impl(args: &RArgumentList, f: &mut RFormatter) -> FormatResult<Op
         let arg_node = arg.node()?;
         let arg_separator = arg.trailing_separator()?;
 
-        // If we see an `off` comment, start collecting remaining args
-        if crate::comments_directives(arg_node, f).iter().any(|d| {
-            matches!(
-                d,
-                comments::Directive::Format(comments::FormatDirective::Table(Some(
-                    comments::TabularParam::Off
-                )))
-            )
-        }) {
+        // If we see a named argument, start collecting remaining args. These
+        // will be formatted in fully expanded layout. The main idea is that
+        // table formatting is for unnamed arguments, and we allow trailing
+        // named arguments to parameterise the table function. See for instance
+        // `data.table::fcase(default = )` argument.
+        if arg_node.name_clause().is_some() {
             remaining.push(arg);
             continue;
         }

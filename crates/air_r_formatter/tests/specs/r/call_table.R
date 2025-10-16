@@ -338,14 +338,13 @@ list(
 )
 
 # ------------------------------------------------------------------------
-# Turning off
+# Named argument
 
 # Typical case
 # fmt: table
 fcase(
   x < 5L, 1L,
   x > 5L, 3L,
-  # fmt: table off
   default = 5L
 )
 
@@ -354,6 +353,14 @@ list(
   1,2,
   3,4,
 
-  # fmt: table off
+  foo = 1, 2, 3
+)
+
+# fmt: table
+list(
+  1,2,
+  3,4,
+
+  # comment
   foo = 1, 2, 3
 )

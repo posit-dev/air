@@ -7,12 +7,7 @@ pub enum Directive {
 pub enum FormatDirective {
     Skip,
     SkipFile,
-    Table(Option<TabularParam>),
-}
-
-#[derive(Debug, PartialEq)]
-pub enum TabularParam {
-    Off,
+    Table,
 }
 
 /// Parse a comment directive
@@ -65,10 +60,7 @@ fn parse_format_directive(text: &str) -> Option<Directive> {
     match text {
         "skip" => Some(Directive::Format(FormatDirective::Skip)),
         "skip file" => Some(Directive::Format(FormatDirective::SkipFile)),
-        "table" => Some(Directive::Format(FormatDirective::Table(None))),
-        "table off" => Some(Directive::Format(FormatDirective::Table(Some(
-            TabularParam::Off,
-        )))),
+        "table" => Some(Directive::Format(FormatDirective::Table)),
         _ => None,
     }
 }
@@ -96,7 +88,7 @@ mod test {
     fn test_format_directive() {
         let format_skip = Some(Directive::Format(crate::FormatDirective::Skip));
         let format_skip_file = Some(Directive::Format(crate::FormatDirective::SkipFile));
-        let format_table = Some(Directive::Format(crate::FormatDirective::Table(None)));
+        let format_table = Some(Directive::Format(crate::FormatDirective::Table));
 
         // Must have leading `#`
         assert!(parse_comment_directive("fmt: skip").is_none());
