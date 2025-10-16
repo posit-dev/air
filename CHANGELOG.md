@@ -2,6 +2,11 @@
 
 # Development version
 
+- Added support for table formatting of `tribble()` and `fcase()` calls (#113).
+  You can also opt into table formatting for any other call with the `# fmt: table` comment directive, or the `table` TOML option. See also the `default-table` option to turn off Air's defaults for `tribble()` and `fcase()`.
+
+  Note: This feature is experimental. We'd be grateful for any feedback!
+
 
 # 0.7.1
 

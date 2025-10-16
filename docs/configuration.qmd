@@ -23,6 +23,8 @@ persistent-line-breaks = true
 exclude = []
 default-exclude = true
 skip = []
+table = []
+default-table = true
 ```
 
 ## Configuration recommendations
@@ -249,7 +251,7 @@ The complete list of default exclude patterns is:
 
 The set of function names to skip formatting for, even without a `# fmt: skip` comment.
 
-A list of strings, i.e. `skip = ["tribble", "graph_from_literal"]`.
+A list of strings, i.e. `skip = ["my_dsl_function", "graph_from_literal"]`.
 
 Air typically formats every function call it comes across.
 To skip formatting of a single function call, you can use a `# fmt: skip` comment.
@@ -263,3 +265,12 @@ igraph::graph_from_literal(A +-+ B +---+ C ++ D + E)
 
 In the short term, we also anticipate that this will be useful to avoid formatting of `tibble::tribble()` calls.
 In the long term, Air may have more sophisticated features for automatically formatting using a specified alignment.
+
+### table and default-table {#configuration-table}
+
+The set of function names to format as tables, even without a `# fmt: table` comment.
+
+A list of strings, i.e. `table = ["my_table_function"]`.
+
+By default, Air always formats calls to `tribble()` (from tibble) and `fcase()` (from data.table) as tables.
+To disable these defaults, set `default-table` to `false`.
