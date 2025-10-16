@@ -152,13 +152,15 @@ impl FormatRCallArguments {
                     if let Some(sep) = &arg_data.separator {
                         write!(f, [space(), sep.format()])?;
                     } else if !arg_data.is_last_in_list {
-                        // Shouldn't happen: no separator between arguments
+                        // Syntactic invariant: All arguments except the last one have a separator
                         return Err(FormatError::SyntaxError);
                     }
 
                     // Add space between columns (but only if next column is non-empty)
                     if let Some(next_col) = column_info.get(col_j + 1) {
                         if next_col.max_width > 0 {
+                            // This must be a soft space so it can be removed by
+                            // the printer if trailing
                             write!(f, [space()])?;
                         }
                     }
@@ -168,6 +170,7 @@ impl FormatRCallArguments {
             Ok(())
         });
 
+        // Copied from `Format` method for `FormatAllArgsBrokenOut`
         let remaining = format_with(|f| {
             if table.remaining.is_empty() {
                 return Ok(());
@@ -242,12 +245,16 @@ fn build_table(args: &RArgumentList, f: &mut RFormatter) -> FormatResult<Option<
             continue;
         }
 
+        // Detect leading line breaks because they indicate a new row
         let lines_before = if arg_node.value().is_some() {
             get_lines_before(arg_node.syntax())
         } else {
             arg_separator.map_or(0, get_lines_before_token)
         };
 
+        // Push new row if any. Empty lines are not rows. Note empty lines still
+        // get formatted as part of trivia in the formatting pass. We just don't
+        // want to consider empty lines as rows in our table info.
         if lines_before > 0 && !current_row.is_empty() {
             rows.push(current_row);
             current_row = Vec::new();
@@ -320,6 +327,7 @@ impl ColumnInfo {
     }
 
     fn simple_padding(&self, arg: &ArgParts) -> (usize, usize) {
+        // Non-decimal columns: All arguments are padded to `max_width`
         let padding = self.max_value_width.saturating_sub(arg.width());
 
         match &arg.kind {
@@ -329,23 +337,44 @@ impl ColumnInfo {
     }
 
     fn decimal_padding(&self, arg: &ArgParts) -> (usize, usize) {
-        let decimal_width = self.max_integer_part + DOT_WIDTH + self.max_fractional_part;
-        let target_width = self.max_value_width.max(decimal_width);
+        // In decimal columns, numeric arguments form a nested sub-column
+        // where decimal points align. However, `Other` arguments (like
+        // `foo()` or `"foo"`) might be wider than this numeric sub-column.
+        // To ensure all commas align vertically, we pad all arguments to
+        // the width of the widest element, whether that's the numeric
+        // sub-column width or a wider `Other` argument.
+
+        // Width of the numeric sub-column (for decimal point alignment)
+        let max_decimal_width = self.max_integer_part + DOT_WIDTH + self.max_fractional_part;
+
+        // The width all arguments must reach for commas to align
+        let target_width = self.max_value_width.max(max_decimal_width);
 
         match &arg.kind {
             ArgKind::Numeric {
                 integer_width,
                 fractional_width,
             } => {
+                // Align at decimal point
                 let left = self.max_integer_part.saturating_sub(*integer_width);
                 let right = match fractional_width {
                     Some(frac) => self.max_fractional_part.saturating_sub(*frac),
                     None => DOT_WIDTH + self.max_fractional_part,
                 };
-                let extra = target_width.saturating_sub(decimal_width);
+
+                // Add extra padding if any "Other" argument is wider than
+                // decimal alignment
+                let extra = target_width.saturating_sub(max_decimal_width);
+
                 (left, right + extra)
             }
-            ArgKind::Other { .. } => (0, target_width.saturating_sub(arg.width())),
+
+            ArgKind::Other { .. } => {
+                // Left-align with right padding to reach target width
+                let right = target_width.saturating_sub(arg.width());
+
+                (0, right)
+            }
         }
     }
 }
@@ -410,6 +439,7 @@ impl ArgParts {
             unreachable!();
         };
 
+        // `+ 1` to account for unary operator
         return Ok(Some(ArgKind::Numeric {
             integer_width: integer_width + 1,
             fractional_width,
@@ -447,6 +477,7 @@ impl ArgParts {
 
         let snapshot = f.snapshot();
         let result = (|| {
+            // Format with flat layout by disabling soft line breaks
             let mut buffer = RemoveSoftLinesBuffer::new(f);
             let mut recording = buffer.start_recording();
 
@@ -458,9 +489,16 @@ impl ArgParts {
             let recorded = recording.stop();
             let ir: Vec<FormatElement> = recorded.into_iter().cloned().collect();
             let document = Document::from(ir);
+
+            // Ideally we'd print without cloning the context for every
+            // argument. Can we do that? Perhaps with snapshotting?
             let formatted = biome_formatter::Formatted::new(document, f.context().clone());
             let text = formatted.print()?.into_code();
 
+            // `will_break()` should not fail on us since we're formatting with
+            // soft breaks diabled, but detecting newlines in the printed output
+            // is the most reliable approach. Since we already need the text to
+            // compute the argument width, we might as well do that.
             if text.contains('\n') {
                 return Ok(None);
             }
