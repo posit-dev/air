@@ -79,8 +79,9 @@ impl FormatNodeRule<RBinaryExpression> for FormatRBinaryExpression {
             | RSyntaxKind::EXPONENTIATE2
             | RSyntaxKind::COLON => fmt_binary_sticky(left, operator, right, f),
 
-            // Assignment
-            RSyntaxKind::EQUAL
+            // Assignment (including tilde, posit-dev/air#402, posit-dev/air#336)
+            RSyntaxKind::TILDE
+            | RSyntaxKind::EQUAL
             | RSyntaxKind::WALRUS
             | RSyntaxKind::ASSIGN
             | RSyntaxKind::ASSIGN_RIGHT
@@ -88,18 +89,17 @@ impl FormatNodeRule<RBinaryExpression> for FormatRBinaryExpression {
             | RSyntaxKind::SUPER_ASSIGN_RIGHT => fmt_binary_assignment(node, left, operator, right, f),
 
             // Chainable (pipes, logical, arithmetic)
-            kind if is_chainable_binary_operator(kind)  => fmt_binary_chain(left, operator, right, self.alignment, f),
+            kind if is_chainable_binary_operator(kind) => {
+                fmt_binary_chain(left, operator, right, self.alignment, f)
+            }
 
-            // Not chainable
-            // Formulas (debatable)
-            | RSyntaxKind::TILDE
-            // Comparison operators
-            | RSyntaxKind::GREATER_THAN
+            // Not chainable (comparison)
+            RSyntaxKind::GREATER_THAN
             | RSyntaxKind::GREATER_THAN_OR_EQUAL_TO
             | RSyntaxKind::LESS_THAN
             | RSyntaxKind::LESS_THAN_OR_EQUAL_TO
             | RSyntaxKind::EQUAL2
-            | RSyntaxKind::NOT_EQUAL=> fmt_binary(left, operator, right, f),
+            | RSyntaxKind::NOT_EQUAL => fmt_binary(left, operator, right, f),
 
             kind => unreachable!("Unexpected binary operator kind {kind:?}"),
         }
@@ -244,10 +244,10 @@ fn binary_assignment_has_persistent_line_break(
         return false;
     }
 
-    // Only for these kinds of left assignment
+    // Only for these kinds of left-ish assignment
     if !matches!(
         operator.kind(),
-        RSyntaxKind::EQUAL | RSyntaxKind::ASSIGN | RSyntaxKind::SUPER_ASSIGN
+        RSyntaxKind::EQUAL | RSyntaxKind::ASSIGN | RSyntaxKind::SUPER_ASSIGN | RSyntaxKind::TILDE
     ) {
         return false;
     }

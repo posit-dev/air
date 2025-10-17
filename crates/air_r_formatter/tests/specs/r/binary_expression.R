@@ -59,7 +59,6 @@ alias????"^try"
 # Non-chaining
 
 # Soft line breaks kick in for long expressions
-a_really_really_really_really_really_really_long_thing_here ~ a_really_really_really_really_really_really_long_thing_here2
 a_really_really_really_really_really_really_long_thing_here > a_really_really_really_really_really_really_long_thing_here2
 a_really_really_really_really_really_really_long_thing_here >= a_really_really_really_really_really_really_long_thing_here2
 a_really_really_really_really_really_really_long_thing_here < a_really_really_really_really_really_really_long_thing_here2
@@ -68,24 +67,22 @@ a_really_really_really_really_really_really_long_thing_here == a_really_really_r
 a_really_really_really_really_really_really_long_thing_here != a_really_really_really_really_really_really_long_thing_here2
 
 # Chaining does not occur
-a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2 ~ a_really_really_long_thing_here3
+a_really_really_long_thing_here1 > a_really_really_long_thing_here2 > a_really_really_long_thing_here3
 
 # Chaining occurs by chance due to how precedence naturally groups these
 # along with having extremely long names
-a_really_really_long_thing_here1 ~ a_really_really_really_really_really_really_long_thing_here2 ~ a_really_really_long_thing_here3
+a_really_really_long_thing_here1 > a_really_really_really_really_really_really_long_thing_here2 > a_really_really_long_thing_here3
 
 # Forced groups
-(a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2) ~ a_really_really_long_thing_here3
-a_really_really_long_thing_here1 ~ (a_really_really_long_thing_here2 ~ a_really_really_long_thing_here3)
+(a_really_really_long_thing_here1 > a_really_really_long_thing_here2) > a_really_really_long_thing_here3
+a_really_really_long_thing_here1 > (a_really_really_long_thing_here2 > a_really_really_long_thing_here3)
 
 # Mixing with a chaining operator
-a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2 + a_really_really_long_thing_here3 + a_really_really_long_thing_here4
-a_really_really_long_thing_here1 + a_really_really_long_thing_here2 + a_really_really_long_thing_here3 ~ a_really_really_long_thing_here4
+a_really_really_long_thing_here1 > a_really_really_long_thing_here2 + a_really_really_long_thing_here3 + a_really_really_long_thing_here4
+a_really_really_long_thing_here1 + a_really_really_long_thing_here2 + a_really_really_long_thing_here3 > a_really_really_long_thing_here4
 
 # Chaining operator with high precedence forces non-chaining operator to expand
 # (to convey a reading order that actually matches execution order)
-df |>
-  fn() ~ x
 df |>
   fn() > x
 df |>
@@ -98,9 +95,6 @@ df |>
   fn() == x
 df |>
   fn() != x
-# Note that `~` is lower precedence than `&`, so it belongs in this section!
-df &
-  fn() ~ x
 
 # Chaining operator with low precedence does not force non-chaining operator to
 # expand (because non-chaining operator does happen first!)
@@ -119,9 +113,6 @@ df &
 
 # User requested line break not respected for non-chainable items
 # (This is debatable, but I see no need to enable it right now)
-a ~
-  b
-
 a >
   b
 
@@ -462,10 +453,22 @@ fn <- function(x) # comment1
 identity(1) -> x
 identity(1) ->> x
 
+# Assignment never automatically breaks around the operator itself
+# (Persistent line breaks after the operator are respected though)
+a_really_really_really_really_really_really_long_thing_here ~ a_really_really_really_really_really_really_long_thing_here2
+a_really_really_really_really_really_really_long_thing_here = a_really_really_really_really_really_really_long_thing_here2
+a_really_really_really_really_really_really_long_thing_here := a_really_really_really_really_really_really_long_thing_here2
+a_really_really_really_really_really_really_long_thing_here <- a_really_really_really_really_really_really_long_thing_here2
+a_really_really_really_really_really_really_long_thing_here -> a_really_really_really_really_really_really_long_thing_here2
+a_really_really_really_really_really_really_long_thing_here <<- a_really_really_really_really_really_really_long_thing_here2
+a_really_really_really_really_really_really_long_thing_here ->> a_really_really_really_really_really_really_long_thing_here2
+
 # -----------------------------------------------------------------------------
 # Assignment with persistent line breaks
 
-# Persistent line break after the left assignment
+# Persistent line break after left-ish assignment
+fn ~
+  value
 fn =
   value
 fn <-
@@ -531,3 +534,142 @@ foo <-
 # Persistent assign-newline and unbroken pipeline
 data <-
   ggplot() + geom_point()
+
+# -----------------------------------------------------------------------------
+# Assignment-like tilde
+
+# After getting some feedback and practical experience with it, we've realized
+# that `~` should be treated like an assignment operator. It also makes sense
+# because `~` is next to assignment operators in the precedence table (see
+# `?Syntax`).
+
+a~b
+
+# Persistent line break
+a~
+b
+
+a~
+# comment
+b
+
+# Model formula examples
+y ~ this + that + this_other_thing
+
+y ~ this +
+that + this_other_thing
+
+y ~ this + that +
+this_other_thing
+
+# `this` is never automatically forced onto a new line, just like how `<-` works
+y ~ this + that + this_other_thing + this_other_thing + this_other_thing + this_other_thing
+
+# Model formulas use left-aligned chaining if you introduce a persistent line
+# break before the first RHS element
+y ~
+  this +
+  that +
+  this_thing
+
+# Nothing changes, assignment won't automatically break around the operator
+a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2 ~ a_really_really_long_thing_here3
+a_really_really_long_thing_here1 ~ a_really_really_really_really_really_really_long_thing_here2 ~ a_really_really_long_thing_here3
+(a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2) ~ a_really_really_long_thing_here3
+a_really_really_long_thing_here1 ~ (a_really_really_long_thing_here2 ~ a_really_really_long_thing_here3)
+
+# RHS breaks first
+some_long_expression + some_long_expression ~ some_long_expression + some_long_expression
+
+# If RHS breaking doesn't fit in the line length, LHS also breaks
+# (Like with other assignment, a line break after the `~` is never introduced
+# by the formatter itself. A user must request this.)
+some_really_long_expression + some_really_long_expression ~ some_really_long_expression + some_really_long_expression
+
+# Persistent line breaks allow you to break these in a different way
+some_long_expression + some_long_expression ~
+  some_long_expression + some_long_expression
+some_really_long_expression + some_really_long_expression ~
+  some_really_long_expression + some_really_long_expression
+
+# This can be useful with `case_when()` if you want to use persistent line
+# breaks to align long two sided formulas with short two sided formulas
+case_when(
+  some_long_expression == some_long_expression ~
+    some_long_expression + some_long_expression,
+  some_short_expression ~
+    some_consistently_indented_value
+)
+
+# Should stay as is (posit-dev/air#402)
+case({
+  (x == 1) ~ {
+    print("x is 1")
+  }
+  (x == 2) ~ {
+    print("x is 2")
+  }
+})
+
+# Should use `ChainAlignment::LeftAligned` to ensure `partnered` and `sex2`
+# are at the same level of alignment (posit-dev/air#336)
+tobacco ~
+  partnered +
+  sex2 +
+  s(year_interview, by = sex2) +
+  s(age, by = sex2) +
+  s(educationyears, by = sex2) +
+  s(householdsize, by = sex2) +
+  s(parity0, by = sex2)
+
+# Should
+# - Expand all arguments
+# - Keep `AGE` on the line with the `~`
+# - Left-align `SEX` and the remainder of the chain
+# https://github.com/posit-dev/positron/discussions/6095#discussioncomment-13112983
+foo <- cph(Surv(dm_py, diabetes) ~ AGE + SEX + SEX + SEX + SEX + SEX + SEX + SEX  + SEX  + SEX  + SEX  + SEX  + SEX  + SEX ,
+  data = dt,
+  x = TRUE,
+  y = TRUE
+)
+
+# Taking (a shorter version of) the previous example, this is what old versions
+# of Air would give. It should now adjust this to left-align `AGE` and `SEX`
+# together.
+foo <- cph(
+  Surv(dm_py, diabetes) ~
+    AGE +
+      SEX +
+      SEX,
+  data = dt,
+  x = TRUE,
+  y = TRUE
+)
+
+# Should stay as is
+# https://github.com/posit-dev/air/issues/336#issuecomment-3371589684
+starwars |>
+  mutate(replace_when(
+    pick(species, name),
+    homeworld == "Tatooine" ~ tibble(
+      species = "Tatooinese",
+      name = paste(name, "(Tatooine)")
+    )
+  ))
+
+# -----------------------------------------------------------------------------
+# Assignment-like tilde and comments
+
+# comment1
+y ~ x # comment2
+
+y ~ # comment1
+ # comment2
+ x
+
+y ~ x1 + x2 +
+  x3 # comment
+
+# The comment actually forces expansion
+y ~ x1 + x2 + # comment1
+  x3 # comment2

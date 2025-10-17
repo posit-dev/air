@@ -2,6 +2,50 @@
 
 # Development version
 
+- Formulas are now treated like assignment operators rather than like comparison operators, which means they now left-align expression chains on the right-hand side of the formula, respect persistent line breaks, and never automatically break around the `~` operator itself (#336, #402).
+
+  With model formulas:
+
+  ```r
+  # Before:
+  y ~
+    year +
+      age +
+      size
+
+  # After:
+  y ~
+    year +
+    age +
+    size
+  ```
+
+  With complex `case_when()` calls:
+
+  ```r
+  # Before:
+  case_when(
+    x %in% c(1, 2) ~
+      {
+        this + complex + thing
+      },
+    x %in% c(3, 4) ~
+      {
+        that + thing
+      }
+  )
+
+  # After:
+  case_when(
+    x %in% c(1, 2) ~ {
+      this + complex + thing
+    },
+    x %in% c(3, 4) ~ {
+      that + thing
+    }
+  )
+  ```
+
 - Added support for table formatting of `tribble()` and `fcase()` calls (#113).
   You can also opt into table formatting for any other call with the `# fmt: table` comment directive, or the `table` TOML option. See also the `default-table` option to turn off Air's defaults for `tribble()` and `fcase()`.
 
