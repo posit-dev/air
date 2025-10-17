@@ -246,8 +246,8 @@ fn fmt_curly_curly(node: &RCurlyCurly, f: &mut RFormatter) -> FormatResult<()> {
     let node_inner = node_inner.syntax();
 
     // It's only possible to suppress the formatting of the outer curlies of curly-curly,
-    // so we don't need to branch based on `comments.is_suppressed()`, but we do need to
-    // mark the node as suppression checked
+    // so we don't need to branch based on `comments.has_skip_directive()`, but we do need
+    // to mark the node as suppression checked
     comments.mark_suppression_checked(node_inner);
 
     // It's impossible to have dangling comments on `node_inner`. That's only possible

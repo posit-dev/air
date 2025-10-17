@@ -1,3 +1,4 @@
+use crate::directives::CommentDirectives;
 use crate::prelude::*;
 use air_r_syntax::AnyRExpression;
 use air_r_syntax::RSyntaxKind;
@@ -18,7 +19,7 @@ impl FormatNodeRule<RUnaryExpression> for FormatRUnaryExpression {
 
         let argument = format_with(|f| {
             if f.comments().has_comments(argument.syntax())
-                && !f.comments().is_suppressed(argument.syntax())
+                && !f.comments().has_skip_directive(argument.syntax())
             {
                 // If an existing comment separates the operator and its argument, we are
                 // forced to line break

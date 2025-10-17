@@ -1,7 +1,6 @@
 use crate::context::RFormatOptions;
-use crate::directives::has_table_comment;
+use crate::directives::CommentDirectives;
 use crate::either::Either;
-use crate::has_skip_comment;
 use crate::prelude::*;
 use crate::r::auxiliary::call_arguments::FormatRCallArgumentsOptions;
 use air_r_syntax::AnyRExpression;
@@ -194,7 +193,7 @@ fn fmt_binary_assignment(
 ) -> FormatResult<()> {
     // Check for table directive here to simplify lifetimes with
     // `format_assignment_rhs()`
-    let table = has_table_comment(node.syntax(), f);
+    let table = f.comments().has_table_directive(node.syntax());
 
     let right_format = format_with(|f| {
         if binary_assignment_has_persistent_line_break(&operator, &right, f.options()) {
@@ -503,14 +502,19 @@ fn fmt_binary_chain(
         enclosing: None,
     }];
 
+    let comments = f.comments();
+
     // As long as the LHS is another chainable binary expression, continue collecting
     // `operator` and `right` to make one big tail that gets formatted all at once
     // within a single `indent()`, respecting a singular group expansion request.
     while let Some(node) = as_chainable_binary_expression(&left)? {
-        // It's only possible to suppress the formatting of the whole binary expression formatting OR
-        // the formatting of the right hand side value but not of a nested binary expression.
-        if has_skip_comment(node.syntax(), f) {
-            tracing::warn!("Can't use a suppression comment partway through a binary chain.");
+        // It's only possible to suppress the formatting of the whole binary expression
+        // formatting OR the formatting of the right hand side value but not of a nested
+        // binary expression, so we aren't going to respect any skip directives here, but
+        // we must mark that we've checked them.
+        comments.mark_suppression_checked(node.syntax());
+        if comments.has_skip_directive(node.syntax()) {
+            tracing::warn!("Can't use a skip comment partway through a binary chain.");
         }
 
         tail.push(TailPiece {
