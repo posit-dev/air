@@ -20,27 +20,11 @@ use biome_formatter::comments::DecoratedComment;
 use biome_formatter::comments::SourceComment;
 use biome_formatter::write;
 use biome_rowan::AstNode;
-use biome_rowan::SyntaxNode;
 use biome_rowan::SyntaxTriviaPieceComments;
-use comments::Directive;
-use comments::FormatDirective;
 
-use crate::directives::CommentDirectives;
 use crate::prelude::*;
 
 pub type RComments = Comments<RLanguage>;
-
-impl CommentDirectives for RComments {
-    type Language = RLanguage;
-
-    fn directives(&self, node: &SyntaxNode<Self::Language>) -> impl Iterator<Item = Directive> {
-        // We intentionally only consider directives in leading comments. This is a
-        // departure from Biome (and Ruff?).
-        self.leading_comments(node)
-            .iter()
-            .filter_map(|c| comments::parse_comment_directive(c.piece().text()))
-    }
-}
 
 #[derive(Default)]
 pub struct FormatRLeadingComment;
@@ -65,9 +49,21 @@ pub struct RCommentStyle;
 impl CommentStyle for RCommentStyle {
     type Language = RLanguage;
 
-    fn is_suppression(text: &str) -> bool {
-        comments::parse_comment_directive(text)
-            .is_some_and(|directive| matches!(directive, Directive::Format(FormatDirective::Skip)))
+    /// Must never be called!
+    ///
+    /// Would be called by [biome_formatter::Comments::is_suppressed()], i.e. by a call
+    /// to `f.comments().is_suppressed()`. We can't use that, as it uses
+    /// [biome_formatter::Comments::leading_dangling_trailing_comments()] and will check
+    /// all three styles of comments for suppression. In Air, we only allow suppression
+    /// on leading comments.
+    ///
+    /// If you are writing your own `is_suppressed()` method for a [FormatNodeRule], you
+    /// instead want [crate::CommentDirectives::has_skip_directive()] to check if a node
+    /// should be suppressed, combined with an explicit call to
+    /// [biome_formatter::Comments::mark_suppression_checked()] to acknowledge that you've
+    /// checked that node.
+    fn is_suppression(_text: &str) -> bool {
+        unreachable!("You want `CommentDirectives::has_skip_directive()` instead");
     }
 
     fn get_comment_kind(_comment: &SyntaxTriviaPieceComments<RLanguage>) -> CommentKind {
