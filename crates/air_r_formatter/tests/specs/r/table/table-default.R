@@ -1,5 +1,3 @@
-#' [format]
-
 # Should format as table by default
 tribble(
 ~x,~y,
