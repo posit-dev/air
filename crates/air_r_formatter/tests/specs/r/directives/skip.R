@@ -87,7 +87,7 @@ foo |>
   bar() |> baz()
 
 foo |>
-  # This should be formatted
+  # `bar()` should not be formatted
   # fmt: skip
   bar(a = 1,
     b = 2

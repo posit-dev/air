@@ -1,8 +1,8 @@
 use crate::context::RFormatOptions;
+use crate::directives::has_table_comment;
 use crate::either::Either;
-use crate::is_suppressed_by_comment;
+use crate::has_skip_comment;
 use crate::prelude::*;
-use crate::r::auxiliary::call::is_table_by_comment;
 use crate::r::auxiliary::call_arguments::FormatRCallArgumentsOptions;
 use air_r_syntax::AnyRExpression;
 use air_r_syntax::RBinaryExpression;
@@ -194,7 +194,7 @@ fn fmt_binary_assignment(
 ) -> FormatResult<()> {
     // Check for table directive here to simplify lifetimes with
     // `format_assignment_rhs()`
-    let table = is_table_by_comment(node, f);
+    let table = has_table_comment(node, f);
 
     let right_format = format_with(|f| {
         if binary_assignment_has_persistent_line_break(&operator, &right, f.options()) {
@@ -509,7 +509,7 @@ fn fmt_binary_chain(
     while let Some(node) = as_chainable_binary_expression(&left)? {
         // It's only possible to suppress the formatting of the whole binary expression formatting OR
         // the formatting of the right hand side value but not of a nested binary expression.
-        if is_suppressed_by_comment(node, f) {
+        if has_skip_comment(node, f) {
             tracing::warn!("Can't use a suppression comment partway through a binary chain.");
         }
 
