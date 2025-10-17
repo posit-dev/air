@@ -58,7 +58,7 @@ impl Default for FormatSettings {
             default_exclude: Some(Default::default()),
             default_include: Some(Default::default()),
             skip: Default::default(),
-            table: Default::default(),
+            table: Some(DEFAULT_TABLE.clone()),
         }
     }
 }

@@ -20,6 +20,12 @@ impl Table {
     pub fn contains(&self, name: &str) -> bool {
         self.0.contains(name)
     }
+
+    pub fn merge(&self, table: &Table) -> Table {
+        let mut names = self.as_slice().to_owned();
+        names.extend_from_slice(table.as_slice());
+        Table::new(names)
+    }
 }
 
 impl fmt::Display for Table {

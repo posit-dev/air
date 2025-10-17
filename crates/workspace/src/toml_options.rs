@@ -14,7 +14,7 @@
 
 use std::path::Path;
 
-use crate::settings::DEFAULT_TABLE_NAMES;
+use crate::settings::DEFAULT_TABLE;
 use crate::settings::DefaultExcludePatterns;
 use crate::settings::DefaultIncludePatterns;
 use crate::settings::ExcludePatterns;
@@ -225,16 +225,12 @@ impl TomlOptions {
         let format = self.format.unwrap_or_default();
 
         let table = if format.default_table.unwrap_or(true) {
-            let mut updated: Vec<String> =
-                DEFAULT_TABLE_NAMES.iter().map(|&s| s.to_string()).collect();
-
-            if let Some(user_table) = format.table {
-                updated.extend(user_table.as_slice().iter().cloned());
-            }
-
-            Some(Table::new(updated))
+            Some(match format.table {
+                Some(table) => table.merge(&DEFAULT_TABLE),
+                None => DEFAULT_TABLE.clone(),
+            })
         } else {
-           format.table
+            format.table
         };
 
         let format = FormatSettings {
