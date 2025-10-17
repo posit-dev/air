@@ -19,7 +19,7 @@ use settings::Skip;
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct FormatRCall {
-    table: bool,
+    table: Option<bool>,
 }
 
 impl FormatNodeRule<RCall> for FormatRCall {
@@ -29,7 +29,7 @@ impl FormatNodeRule<RCall> for FormatRCall {
             arguments,
         } = node.as_fields();
 
-        let table = self.table || is_table_call(node, f);
+        let table = self.table.unwrap_or_else(|| is_table_call(node, f));
         let options = FormatRCallArgumentsOptions { table };
 
         write!(
@@ -47,7 +47,7 @@ impl FormatRuleWithOptions<RCall> for FormatRCall {
     type Options = FormatRCallArgumentsOptions;
 
     fn with_options(mut self, options: Self::Options) -> Self {
-        self.table = options.table;
+        self.table = Some(options.table);
         self
     }
 }
