@@ -650,10 +650,10 @@ list(
 # Integers - should right-align
 # fmt: table
 list(
-   1L ,
-   12 ,
-  100 ,
-    3 ,
+    1L ,
+   12  ,
+  100  ,
+    3  ,
 )
 
 # Pure decimals - should align at decimal point
@@ -671,7 +671,7 @@ list(
 list(
   1000     ,
      2.5   ,
-   50L     ,
+    50L    ,
    123.456 ,
      9     ,
      0.1   ,
@@ -708,7 +708,7 @@ list(
       1.10 ,
   "12"     ,
       1    ,
-     2L    ,
+      2L   ,
   "3"      ,
   10000    ,
       3.5  ,
@@ -721,7 +721,7 @@ list(
 # fmt: table
 list(
     -1.200 ,
-   +2L     ,
+    +2L    ,
   -100.
 )
 
@@ -802,8 +802,8 @@ list(
 
 ## Unimplemented nodes/tokens
 
-"(\n\"foo\n\",  2)" => 4872..4885
-"(\n{ foo },  2\n)" => 4904..4919
+"(\n\"foo\n\",  2)" => 4876..4889
+"(\n{ foo },  2\n)" => 4908..4923
 # Lines exceeding max width of 80 characters
 ```
    91:   foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo(baaaaaaaaar, foooooooooo, baaaaaaaaar) ,

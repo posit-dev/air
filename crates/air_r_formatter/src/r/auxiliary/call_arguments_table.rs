@@ -418,8 +418,8 @@ impl ArgKind {
         let text = token.text_trimmed();
 
         Ok(ArgKind::Numeric {
-            integer_width: text.len(),
-            fractional_width: None,
+            integer_width: text.len() - 1,
+            fractional_width: Some(0),
         })
     }
 
