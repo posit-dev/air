@@ -72,14 +72,23 @@ impl FormatRCallArguments {
         // Format with alignment
         let formatted_table = format_with(|f| {
             for (row_i, row) in rows.iter().enumerate() {
-                if row_i > 0 {
-                    // Rows are separated with hard line breaks because the
-                    // lines of arguments in table calls should never be
-                    // rearranged by the formatter.
-                    write!(f, [hard_line_break()])?;
-                }
-
                 for (col_j, arg_data) in row.iter().enumerate() {
+                    if col_j == 0 && row_i > 0 {
+                        match get_lines_before(arg_data.node.syntax()) {
+                            0 | 1 => {
+                                // Rows are separated with hard line breaks because the
+                                // lines of arguments in table calls should never be
+                                // rearranged by the formatter.
+                                write!(f, [hard_line_break()])?
+                            }
+                            _ => {
+                                // Respect 1 full empty line between sequential arguments
+                                // if the user requested it (similar to top level expressions)
+                                write!(f, [empty_line()])?
+                            }
+                        }
+                    }
+
                     let (left_pad, right_pad) = if column_info[col_j].max_width > 0 {
                         column_info[col_j].padding(&arg_data.kind)
                     } else {

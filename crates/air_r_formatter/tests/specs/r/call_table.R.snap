@@ -139,6 +139,34 @@ list(
 )
 
 # ------------------------------------------------------------------------
+# Line breaks
+
+# fmt: table
+list(
+
+  1+1, 1+1, # Extra line break on first row is discarded
+
+  1+1, 1+1, # Extra line break on ulterior row is preserved
+
+
+  1+1, 1+1, # More than one extra line break is compressed
+)
+
+# fmt: table
+list(
+
+  # comment1
+  1+1, 1+1,
+
+  # comment2
+  1+1, 1+1,
+
+
+  # comment3
+  1+1, 1+1
+)
+
+# ------------------------------------------------------------------------
 # Holes
 
 # fmt: table
@@ -544,6 +572,30 @@ list(
 )
 
 # ------------------------------------------------------------------------
+# Line breaks
+
+# fmt: table
+list(
+  1 + 1 , 1 + 1 , # Extra line break on first row is discarded
+
+  1 + 1 , 1 + 1 , # Extra line break on ulterior row is preserved
+
+  1 + 1 , 1 + 1 , # More than one extra line break is compressed
+)
+
+# fmt: table
+list(
+  # comment1
+  1 + 1 , 1 + 1 ,
+
+  # comment2
+  1 + 1 , 1 + 1 ,
+
+  # comment3
+  1 + 1 , 1 + 1
+)
+
+# ------------------------------------------------------------------------
 # Holes
 
 # fmt: table
@@ -802,8 +854,8 @@ list(
 
 ## Unimplemented nodes/tokens
 
-"(\n\"foo\n\",  2)" => 4876..4889
-"(\n{ foo },  2\n)" => 4908..4923
+"(\n\"foo\n\",  2)" => 5299..5312
+"(\n{ foo },  2\n)" => 5331..5346
 # Lines exceeding max width of 80 characters
 ```
    91:   foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo(baaaaaaaaar, foooooooooo, baaaaaaaaar) ,

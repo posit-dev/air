@@ -132,6 +132,34 @@ list(
 )
 
 # ------------------------------------------------------------------------
+# Line breaks
+
+# fmt: table
+list(
+
+  1+1, 1+1, # Extra line break on first row is discarded
+
+  1+1, 1+1, # Extra line break on ulterior row is preserved
+
+
+  1+1, 1+1, # More than one extra line break is compressed
+)
+
+# fmt: table
+list(
+
+  # comment1
+  1+1, 1+1,
+
+  # comment2
+  1+1, 1+1,
+
+
+  # comment3
+  1+1, 1+1
+)
+
+# ------------------------------------------------------------------------
 # Holes
 
 # fmt: table
