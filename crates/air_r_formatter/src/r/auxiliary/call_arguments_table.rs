@@ -206,7 +206,7 @@ fn build_table_impl(args: &RArgumentList, f: &mut RFormatter) -> FormatResult<Op
 
     for (i, arg) in &mut items {
         // We've encountered a named argument before, keep collecting remaining args
-        if remaining.len() > 0 {
+        if !remaining.is_empty() {
             remaining.push(arg);
             continue;
         }
@@ -407,10 +407,10 @@ impl ArgKind {
         };
 
         // `+ 1` to account for unary operator
-        return Ok(Some(ArgKind::Numeric {
+        Ok(Some(ArgKind::Numeric {
             integer_width: integer_width + 1,
             fractional_width,
-        }));
+        }))
     }
 
     fn parse_integer(value: RIntegerValue) -> FormatResult<ArgKind> {
@@ -418,7 +418,7 @@ impl ArgKind {
         let text = token.text_trimmed();
 
         Ok(ArgKind::Numeric {
-            integer_width: usize::from(text.len()),
+            integer_width: text.len(),
             fractional_width: None,
         })
     }
@@ -426,7 +426,7 @@ impl ArgKind {
     fn parse_decimal(value: RDoubleValue) -> FormatResult<ArgKind> {
         let token = value.value_token()?;
         let text = token.text_trimmed();
-        let len = usize::from(text.len());
+        let len = text.len();
 
         let (integer_width, fractional_width) = match text.find('.') {
             Some(pos) => (pos, Some(len - pos - DOT_WIDTH)),
@@ -440,41 +440,37 @@ impl ArgKind {
     }
 
     fn parse_other(arg: &RArgument, f: &mut RFormatter) -> FormatResult<Option<ArgKind>> {
-        let result = (|| {
-            // Format with flat layout by disabling soft line breaks
-            let mut buffer = RemoveSoftLinesBuffer::new(f);
-            let mut recording = buffer.start_recording();
+        // Format with flat layout by disabling soft line breaks
+        let mut buffer = RemoveSoftLinesBuffer::new(f);
+        let mut recording = buffer.start_recording();
 
-            // Format without comments because leading comments would force line breaks
-            write!(recording, [format_with(|f| fmt_argument_fields(arg, f))])?;
+        // Format without comments because leading comments would force line breaks
+        write!(recording, [format_with(|f| fmt_argument_fields(arg, f))])?;
 
-            let recorded = recording.stop();
+        let recorded = recording.stop();
 
-            // `recorded` is a view into the buffer array and we need to own it
-            // to make a document
-            let ir: Vec<FormatElement> = recorded.into_iter().cloned().collect();
-            let document = Document::from(ir);
+        // `recorded` is a view into the buffer array and we need to own it
+        // to make a document
+        let ir: Vec<FormatElement> = recorded.iter().cloned().collect();
+        let document = Document::from(ir);
 
-            // Ideally we'd print without cloning the context for every
-            // argument. Can we do that? Perhaps with snapshotting?
-            let formatted = biome_formatter::Formatted::new(document, f.context().clone());
+        // Ideally we'd print without cloning the context for every
+        // argument. Can we do that? Perhaps with snapshotting?
+        let formatted = biome_formatter::Formatted::new(document, f.context().clone());
 
-            // Looking at the source of `print()` we might be able to do things
-            // a bit more manually without the context cloning
-            let text = formatted.print()?.into_code();
+        // Looking at the source of `print()` we might be able to do things
+        // a bit more manually without the context cloning
+        let text = formatted.print()?.into_code();
 
-            // `will_break()` should not fail on us since we're formatting with
-            // soft breaks diabled, but detecting newlines in the printed output
-            // is the most reliable approach. Since we already need the text to
-            // compute the argument width, we might as well do that.
-            if text.contains('\n') {
-                return Ok(None);
-            }
+        // `will_break()` should not fail on us since we're formatting with
+        // soft breaks diabled, but detecting newlines in the printed output
+        // is the most reliable approach. Since we already need the text to
+        // compute the argument width, we might as well do that.
+        if text.contains('\n') {
+            return Ok(None);
+        }
 
-            Ok(Some(ArgKind::Other { text }))
-        })();
-
-        result
+        Ok(Some(ArgKind::Other { text }))
     }
 
     fn width(&self) -> usize {
