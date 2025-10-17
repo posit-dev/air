@@ -260,6 +260,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#skip-comments" id="toc-skip-comments" class="nav-link" data-scroll-target="#skip-comments">Skip comments</a></li>
   <li><a href="#skip-configuration" id="toc-skip-configuration" class="nav-link" data-scroll-target="#skip-configuration">Skip configuration</a></li>
   </ul></li>
+  <li><a href="#comment-directives" id="toc-comment-directives" class="nav-link" data-scroll-target="#comment-directives">Comment directives</a>
+  <ul class="collapse">
+  <li><a href="#table-formatting" id="toc-table-formatting" class="nav-link" data-scroll-target="#table-formatting">Table formatting</a></li>
+  </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/formatter.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -680,7 +684,57 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>igraph<span class="sc">::</span><span class="fu">graph_from_literal</span>(A <span class="sc">+</span> <span class="sc">-+</span>B <span class="sc">+</span> <span class="sc">---+</span>C <span class="sc">+</span> <span class="sc">+</span>D <span class="sc">+</span> E)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>If you use <code>graph_from_literal()</code> often, it would be annoying to add <code># fmt: skip</code> comments at every call site. Instead, <code>air.toml</code> supports a <a href="./configuration.html#configuration-skip"><code>skip</code> field</a> that allows you to specify function names that you never want formatting for. Specifying this would retain the original formatting of the <code>graph_from_literal()</code> call, even without a <code># fmt: skip</code> comment:</p>
 <div class="sourceCode" id="cb41"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="dt">skip</span> <span class="op">=</span> <span class="op">[</span><span class="st">"graph_from_literal"</span><span class="op">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>One particularly common use of this is <code>skip = ["tribble"]</code>, which you can use to avoid formatting of all <code>tibble::tribble()</code> calls. In the long term, Air may provide more sophisticated tooling for formatting using a specified alignment.</p>
+</section>
+</section>
+<section id="comment-directives" class="level1">
+<h1>Comment directives</h1>
+<p>With <code># fmt: skip</code> we’ve already seen one kind of comment directive, but that’s not all. Air supports another directive, <code># fmt: table</code>, and we plan to add more in the future.</p>
+<p>In general, comment directives are a way to opt out of Air’s default automatic formatting and opt into specialized format layouts. They generally apply to the expression below the comment, with some possible nuances.</p>
+<ul>
+<li><code>skip</code>: Applies to any following expression.</li>
+<li><code>table</code>: Applies to the next expression if a function call (e.g.&nbsp;<code>foo()</code> or an assigned function call (e.g.&nbsp;<code>foo &lt;- bar()</code>)).</li>
+</ul>
+<section id="table-formatting" class="level2">
+<h2 class="anchored" data-anchor-id="table-formatting">Table formatting</h2>
+<div class="callout callout-style-default callout-caution callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note: This feature is experimental. We’d be grateful for any feedback!
+</div>
+</div>
+<div class="callout-body-container callout-body">
+
+</div>
+</div>
+<p>This directive is particularly useful with calls like tibble’s <code>tribble()</code> or data.table’s <code>fcase()</code>. It formats calls taking unnamed arguments via <code>...</code> in a tabular way.</p>
+<ul>
+<li>Commas are aligned, creating column guides</li>
+<li>Numeric values are right-aligned, making them easier to read and compare</li>
+<li>Decimals are aligned, making it easier to distinguish integer and fractional parts</li>
+<li>Everything else is left-aligned, making it easier to read from left to right</li>
+<li>Complex calls are formatted in a flat layout, avoiding line breaks where possible.</li>
+</ul>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tribble</span>(</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="sc">~</span>customer   , <span class="sc">~</span>product   , <span class="sc">~</span>price  , <span class="sc">~</span>units_sold ,</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ACME"</span>      , <span class="st">"Computer"</span> , <span class="fl">1499.99</span> ,          <span class="dv">25</span> ,</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Globex"</span>    , <span class="st">"Monitor"</span>  ,  <span class="fl">889.5</span>  ,        <span class="dv">1005</span> ,</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Stark"</span>     , <span class="st">"Tablet"</span>   ,   <span class="fl">99.99</span> ,         <span class="dv">304</span> ,</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"WayneEnt."</span> , <span class="st">"Tablet"</span>   ,  <span class="dv">259</span>    ,          <span class="dv">40</span> ,</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>In addition:</p>
+<ul>
+<li>The layout of the table is never changed by the formatter. It never introduces line breaks that don’t already exist to avoid messing up the tabular data, which could be hard to recover from.</li>
+<li>Tables are allowed to be jagged with different numbers of columns per rows. This allows formatting partial tables as you write them.</li>
+</ul>
+<p>Note that if a complex expression contains a line break that Air can’t flatten out, tabular formatting is disabled. You’ll have to find the offending argument and make it flat to turn table formatting back on.</p>
+<p>By default, all calls to <code>tribble()</code> and <code>fcase()</code> are formatted as tables, even without a <code># fmt: table</code> directive. Two <a href="./configuration.html#configuration-table">configuration options</a> help you tweak this default behavior:</p>
+<ul>
+<li><p><code>table</code>: Extend the default table calls (e.g.&nbsp;<code>tribble()</code>) with custom function names that should be formatted as tables across your whole project without requiring a <code># fmt: table</code> directive.</p></li>
+<li><p><code>default-table</code>: Whether to turn off Air’s default for <code>tribble()</code> and <code>fcase()</code>.</p></li>
+</ul>
 
 
 </section>

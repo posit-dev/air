@@ -254,6 +254,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#exclude" id="toc-exclude" class="nav-link" data-scroll-target="#exclude">exclude</a></li>
   <li><a href="#default-exclude" id="toc-default-exclude" class="nav-link" data-scroll-target="#default-exclude">default-exclude</a></li>
   <li><a href="#configuration-skip" id="toc-configuration-skip" class="nav-link" data-scroll-target="#configuration-skip">skip</a></li>
+  <li><a href="#configuration-table" id="toc-configuration-table" class="nav-link" data-scroll-target="#configuration-table">table</a></li>
+  <li><a href="#default-table" id="toc-default-table" class="nav-link" data-scroll-target="#default-table">default-table</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/configuration.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -292,7 +294,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">persistent-line-breaks</span> <span class="op">=</span> <span class="cn">true</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="dt">exclude</span> <span class="op">=</span> <span class="op">[]</span></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="dt">default-exclude</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="dt">skip</span> <span class="op">=</span> <span class="op">[]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="dt">skip</span> <span class="op">=</span> <span class="op">[]</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="dt">table</span> <span class="op">=</span> <span class="op">[]</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="dt">default-table</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="configuration-recommendations" class="level2">
 <h2 class="anchored" data-anchor-id="configuration-recommendations">Configuration recommendations</h2>
@@ -443,17 +447,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="configuration-skip" class="level3">
 <h3 class="anchored" data-anchor-id="configuration-skip">skip</h3>
 <p>The set of function names to skip formatting for, even without a <code># fmt: skip</code> comment.</p>
-<p>A list of strings, i.e.&nbsp;<code>skip = ["tribble", "graph_from_literal"]</code>.</p>
+<p>A list of strings, i.e.&nbsp;<code>skip = ["my_dsl_function", "graph_from_literal"]</code>.</p>
 <p>Air typically formats every function call it comes across. To skip formatting of a single function call, you can use a <code># fmt: skip</code> comment. However, if you know of particular functions that you use a lot that are part of a custom domain specific language that doesn’t follow conventional formatting rules, you can entirely opt out of formatting for those functions by providing them here.</p>
 <p>For example, using <code>skip = ["graph_from_literal"]</code> would automatically skip formatting of:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>igraph<span class="sc">::</span><span class="fu">graph_from_literal</span>(A <span class="sc">+-+</span> B <span class="sc">+---+</span> C <span class="sc">++</span> D <span class="sc">+</span> E)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>In the short term, we also anticipate that this will be useful to avoid formatting of <code>tibble::tribble()</code> calls. In the long term, Air may have more sophisticated features for automatically formatting using a specified alignment.</p>
-
-
 </section>
-</section>
+<section id="configuration-table" class="level3">
+<h3 class="anchored" data-anchor-id="configuration-table">table</h3>
+<p>Some function calls are meant to be formatted as tables, rather than being formatted in a flat or expanded layout. For a single one-off function call, you can use a <code># fmt: table</code> comment to request a table layout. For function calls that you use a lot, use this setting to add them to a list of function calls that are automatically formatted as tables without requiring a <code># fmt: table</code> comment.</p>
+<p>For example, using <code>table = ["my_table"]</code> would automatically format calls to <code>my_table()</code> in a table layout.</p>
+See <code>default-table</code> for the list of function calls that are automatically formatted as tables by default. table: Option
+<p>,</p><section id="default-table" class="level3">
+<h3 class="anchored" data-anchor-id="default-table">default-table</h3>
+<p>Air automatically formats a default set of calls as tables. You can disable these defaults by setting this option to <code>false</code>. The default set currently includes:</p>
+<ul>
+<li><code>tribble()</code> from tribble</li>
+<li><code>fcase()</code> from data.table</li>
+</ul>
 
-</main> <!-- /main -->
+
+</section><table>
+
+
+
+
+
+ <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -874,9 +893,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
 });
 </script>
-</div> <!-- /content -->
+ <!-- /content -->
 
 
 
 
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/configuration.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
+</table></section></section></main></div><footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/configuration.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
