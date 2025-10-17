@@ -1,50 +1,30 @@
-//
-// skip.rs
-//
-// Copyright (C) 2025 Posit Software, PBC. All rights reserved.
-//
-//
-
-use std::fmt::Display;
-use std::sync::Arc;
+use crate::SortedStrings;
+use std::fmt;
 
 /// Function names that are automatically skipped without the need
 /// for a `fmt: skip` comment.
-///
-/// # Notes
-///
-/// Internally wrapped in an [Arc] for cheap cloning, since we know the function names
-/// are immutable and can be shared. Must be an [Arc] because settings are shared across
-/// threads when doing parallel file discovery.
-///
-/// Clippy recommends [Arc] wrapping the immutable `[String]` over the mutable
-/// `Vec<String>` because with [Arc] you are basically promising not to mutate the inner
-/// object, and [Arc] provides a special `From<Vec<T>> for Arc<[T]>` for exactly this use
-/// case, which we invoke in [Skip::new()].
-///
-/// # Safety
-///
-/// This vector is sorted at creation, for use with binary search during lookups.
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schemars", schemars(description = ""))]
-pub struct Skip(Arc<[String]>);
+pub struct Skip(SortedStrings);
 
 impl Skip {
     /// Constructs [Skip] from a vector of function names
     ///
     /// Not exposed, as deserialization should be the only way to create this type.
-    #[cfg(feature = "serde")]
-    fn new(mut names: Vec<String>) -> Self {
-        names.sort_unstable();
-        Self(names.into())
+    #[cfg(test)]
+    fn new(names: Vec<String>) -> Self {
+        Self(SortedStrings::new(names))
     }
 
-    /// Checks if `name` is contained in the list of function names to skip
     pub fn contains(&self, name: &str) -> bool {
-        self.0
-            .binary_search_by(|probe| probe.as_str().cmp(name))
-            .is_ok()
+        self.0.contains(name)
+    }
+}
+
+impl fmt::Display for Skip {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
     }
 }
 
@@ -54,27 +34,8 @@ impl<'de> serde::Deserialize<'de> for Skip {
     where
         D: serde::Deserializer<'de>,
     {
-        let value: Vec<String> = serde::Deserialize::deserialize(deserializer)?;
-        let value = Skip::new(value);
-        Ok(value)
-    }
-}
-
-impl Display for Skip {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut names = self.0.iter();
-        let last = names.next_back();
-
-        for name in names {
-            f.write_str(name)?;
-            f.write_str(", ")?;
-        }
-
-        if let Some(last) = last {
-            f.write_str(last)?;
-        }
-
-        Ok(())
+        let value: SortedStrings = serde::Deserialize::deserialize(deserializer)?;
+        Ok(Skip(value))
     }
 }
 

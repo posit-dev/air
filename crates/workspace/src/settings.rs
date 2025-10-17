@@ -1,17 +1,12 @@
-//
-// settings.rs
-//
-// Copyright (C) 2025 Posit Software, PBC. All rights reserved.
-//
-//
-
 mod default_exclude_patterns;
 mod default_include_patterns;
+mod default_table;
 mod exclude_patterns;
 mod line_ending;
 
 pub use default_exclude_patterns::DefaultExcludePatterns;
 pub use default_include_patterns::DefaultIncludePatterns;
+pub use default_table::*;
 pub use exclude_patterns::ExcludePatterns;
 pub(crate) use line_ending::LineEnding;
 
@@ -21,6 +16,7 @@ use settings::IndentWidth;
 use settings::LineWidth;
 use settings::PersistentLineBreaks;
 use settings::Skip;
+use settings::Table;
 
 /// Resolved configuration settings used within air
 ///
@@ -43,6 +39,7 @@ pub struct FormatSettings {
     pub default_exclude: Option<DefaultExcludePatterns>,
     pub default_include: Option<DefaultIncludePatterns>,
     pub skip: Option<Skip>,
+    pub table: Option<Table>,
 }
 
 impl Default for FormatSettings {
@@ -61,6 +58,7 @@ impl Default for FormatSettings {
             default_exclude: Some(Default::default()),
             default_include: Some(Default::default()),
             skip: Default::default(),
+            table: Some(DEFAULT_TABLE.clone()),
         }
     }
 }
@@ -74,7 +72,8 @@ impl FormatSettings {
             .with_line_ending(self.line_ending.finalize(source))
             .with_line_width(self.line_width)
             .with_persistent_line_breaks(self.persistent_line_breaks)
-            // Note that `clone()` here is on an `Arc`
+            // Note that `clone()` on these options is ultimately on an `Arc`
             .with_skip(self.skip.clone())
+            .with_table(self.table.clone())
     }
 }

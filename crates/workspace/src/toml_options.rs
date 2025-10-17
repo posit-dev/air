@@ -14,6 +14,7 @@
 
 use std::path::Path;
 
+use crate::settings::DEFAULT_TABLE;
 use crate::settings::DefaultExcludePatterns;
 use crate::settings::DefaultIncludePatterns;
 use crate::settings::ExcludePatterns;
@@ -25,6 +26,7 @@ use settings::IndentWidth;
 use settings::LineWidth;
 use settings::PersistentLineBreaks;
 use settings::Skip;
+use settings::Table;
 
 /// Configuration for Air
 #[derive(Clone, Debug, PartialEq, Eq, Default, serde::Deserialize)]
@@ -189,16 +191,47 @@ pub struct FormatTomlOptions {
     /// ```r
     /// igraph::graph_from_literal(Alice +--+ Bob)
     /// ```
-    ///
-    /// In the short term, we also anticipate that this will be useful to avoid formatting
-    /// of `tibble::tribble()` calls. In the long term, we may have more sophisticated
-    /// features for automatically formatting using a specified alignment.
     pub skip: Option<Skip>,
+
+    /// # Function calls to format as tables
+    ///
+    /// Some function calls are meant to be formatted as tables, rather than being
+    /// formatted in a flat or expanded layout. For a single one-off function call,
+    /// you can use a `# fmt: table` comment to request a table layout. For function
+    /// calls that you use a lot, use this setting to add them to a list of function
+    /// calls that are automatically formatted as tables without requiring a
+    /// `# fmt: table` comment.
+    ///
+    /// For example, using `table = ["my_table"]` would automatically format calls
+    /// to `my_table()` in a table layout.
+    ///
+    /// See `default-table` for the list of function calls that are automatically
+    /// formatted as tables by default.
+    pub table: Option<Table>,
+
+    /// # Whether or not to use defaults for `table`
+    ///
+    /// Air automatically formats a default set of calls as tables. You can
+    /// disable these defaults by setting this option to `false`. The default
+    /// set currently includes:
+    ///
+    /// - `tribble()` from tribble
+    /// - `fcase()` from data.table
+    pub default_table: Option<bool>,
 }
 
 impl TomlOptions {
     pub fn into_settings(self, root: &Path) -> anyhow::Result<Settings> {
         let format = self.format.unwrap_or_default();
+
+        let table = if format.default_table.unwrap_or(true) {
+            Some(match format.table {
+                Some(table) => table.merge(&DEFAULT_TABLE),
+                None => DEFAULT_TABLE.clone(),
+            })
+        } else {
+            format.table
+        };
 
         let format = FormatSettings {
             indent_style: format.indent_style.unwrap_or_default(),
@@ -231,6 +264,7 @@ impl TomlOptions {
             // cases right now.
             default_include: Some(DefaultIncludePatterns::default()),
             skip: format.skip,
+            table,
         };
 
         Ok(Settings { format })

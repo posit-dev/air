@@ -1,8 +1,6 @@
 use ::comments::Directive;
-use ::comments::FormatDirective;
 use ::comments::parse_comment_directive;
 use air_r_syntax::RLanguage;
-use air_r_syntax::RSyntaxKind;
 use air_r_syntax::RSyntaxNode;
 use air_r_syntax::RSyntaxToken;
 use biome_formatter::CstFormatContext;
@@ -21,10 +19,12 @@ use crate::comments::RCommentStyle;
 use crate::context::RFormatContext;
 use crate::context::RFormatOptions;
 use crate::cst::FormatRSyntaxNode;
+use crate::directives::has_skip_comment;
 
 pub mod comments;
 pub mod context;
 mod cst;
+pub mod directives;
 pub mod either;
 pub mod formatter_ext;
 pub mod joiner_ext;
@@ -216,7 +216,7 @@ where
 
     /// Returns `true` if the node is suppressed and should use the same formatting as in the source document.
     fn is_suppressed(&self, node: &N, f: &RFormatter) -> bool {
-        is_suppressed_by_comment(node, f)
+        has_skip_comment(node, f)
     }
 
     /// Formats a suppressed node
@@ -270,34 +270,6 @@ where
     comments
         .iter()
         .filter_map(|c| parse_comment_directive(c.piece().text()))
-}
-
-/// Returns `true` if the node has a suppression comment and should use the same formatting as in the source document.
-///
-/// Calls [biome_formatter::comments::Comments::mark_suppression_checked] on `node`.
-#[inline]
-pub(crate) fn is_suppressed_by_comment<N>(node: &N, f: &RFormatter) -> bool
-where
-    N: AstNode<Language = RLanguage>,
-{
-    f.context()
-        .comments()
-        .mark_suppression_checked(node.syntax());
-
-    let Some(parent) = node.syntax().parent() else {
-        return false;
-    };
-
-    // Only expression lists (program and braced blocks) and argument lists can be suppressed
-    if !matches!(
-        parent.kind(),
-        RSyntaxKind::R_EXPRESSION_LIST | RSyntaxKind::R_ARGUMENT_LIST
-    ) {
-        return false;
-    }
-
-    // Skip directives have precedence over all others
-    comments_directives(node, f).any(|d| matches!(d, Directive::Format(FormatDirective::Skip)))
 }
 
 /// Rule for formatting an bogus node.

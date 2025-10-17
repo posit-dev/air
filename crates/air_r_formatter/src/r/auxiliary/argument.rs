@@ -7,32 +7,36 @@ use biome_formatter::write;
 pub(crate) struct FormatRArgument;
 impl FormatNodeRule<RArgument> for FormatRArgument {
     fn fmt_fields(&self, node: &RArgument, f: &mut RFormatter) -> FormatResult<()> {
-        let RArgumentFields { name_clause, value } = node.as_fields();
+        fmt_argument_fields(node, f)
+    }
+}
 
-        match (name_clause, value) {
-            // Hole
-            // `foo(,)`
-            // `foo(value, )`
-            // `foo(, value)`
-            (None, None) => Ok(()),
+pub(crate) fn fmt_argument_fields(node: &RArgument, f: &mut RFormatter) -> FormatResult<()> {
+    let RArgumentFields { name_clause, value } = node.as_fields();
 
-            // Unnamed argument
-            // `foo(value)`
-            // `foo(value, value)`
-            (None, Some(value)) => write!(f, [value.format()]),
+    match (name_clause, value) {
+        // Hole
+        // `foo(,)`
+        // `foo(value, )`
+        // `foo(, value)`
+        (None, None) => Ok(()),
 
-            // Named argument without a value
-            // We write a mandatory space as a signal that this is a fairly
-            // weird a nonstandard thing to see.
-            // `foo(name = )`
-            // `foo(name = , value)`
-            (Some(name_clause), None) => write!(f, [name_clause.format(), space()]),
+        // Unnamed argument
+        // `foo(value)`
+        // `foo(value, value)`
+        (None, Some(value)) => write!(f, [value.format()]),
 
-            // Named argument with a value
-            // `foo(name = value)`
-            (Some(name_clause), Some(value)) => {
-                write!(f, [name_clause.format(), space(), value.format()])
-            }
+        // Named argument without a value
+        // We write a mandatory space as a signal that this is a fairly
+        // weird a nonstandard thing to see.
+        // `foo(name = )`
+        // `foo(name = , value)`
+        (Some(name_clause), None) => write!(f, [name_clause.format(), space()]),
+
+        // Named argument with a value
+        // `foo(name = value)`
+        (Some(name_clause), Some(value)) => {
+            write!(f, [name_clause.format(), space(), value.format()])
         }
     }
 }

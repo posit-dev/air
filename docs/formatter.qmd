@@ -616,5 +616,53 @@ Specifying this would retain the original formatting of the `graph_from_literal(
 skip = ["graph_from_literal"]
 ```
 
-One particularly common use of this is `skip = ["tribble"]`, which you can use to avoid formatting of all `tibble::tribble()` calls.
-In the long term, Air may provide more sophisticated tooling for formatting using a specified alignment.
+# Comment directives
+
+With `# fmt: skip` we've already seen one kind of comment directive, but that's not all.
+Air supports another directive, `# fmt: table`, and we plan to add more in the future.
+
+In general, comment directives are a way to opt out of Air's default automatic formatting and opt into specialized format layouts.
+They generally apply to the expression below the comment, with some possible nuances.
+
+-   `skip`: Applies to any following expression.
+-   `table`: Applies to the next expression if a function call (e.g. `foo()` or an assigned function call (e.g. `foo <- bar()`)).
+
+## Table formatting
+
+::: callout-caution
+## Note: This feature is experimental. We'd be grateful for any feedback!
+:::
+
+This directive is particularly useful with calls like tibble's `tribble()` or data.table's `fcase()`.
+It formats calls taking unnamed arguments via `...` in a tabular way.
+
+-   Commas are aligned, creating column guides
+-   Numeric values are right-aligned, making them easier to read and compare
+-   Decimals are aligned, making it easier to distinguish integer and fractional parts
+-   Everything else is left-aligned, making it easier to read from left to right
+-   Complex calls are formatted in a flat layout, avoiding line breaks where possible.
+
+``` r
+tribble(
+  ~customer   , ~product   , ~price  , ~units_sold ,
+  "ACME"      , "Computer" , 1499.99 ,          25 ,
+  "Globex"    , "Monitor"  ,  889.5  ,        1005 ,
+  "Stark"     , "Tablet"   ,   99.99 ,         304 ,
+  "WayneEnt." , "Tablet"   ,  259    ,          40 ,
+)
+```
+
+In addition:
+
+-   The layout of the table is never changed by the formatter. It never introduces line breaks that don't already exist to avoid messing up the tabular data, which could be hard to recover from.
+-   Tables are allowed to be jagged with different numbers of columns per rows. This allows formatting partial tables as you write them.
+
+Note that if a complex expression contains a line break that Air can't flatten out, tabular formatting is disabled.
+You'll have to find the offending argument and make it flat to turn table formatting back on.
+
+By default, all calls to `tribble()` and `fcase()` are formatted as tables, even without a `# fmt: table` directive.
+Two [configuration options](configuration.qmd#configuration-table) help you tweak this default behavior:
+
+-   `table`: Extend the default table calls (e.g. `tribble()`) with custom function names that should be formatted as tables across your whole project without requiring a `# fmt: table` directive.
+
+-   `default-table`: Whether to turn off Air's default for `tribble()` and `fcase()`.

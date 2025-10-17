@@ -29,6 +29,14 @@
             "null"
           ]
         },
+        "default-table": {
+          "title": "Whether or not to use defaults for `table`",
+          "description": "Air automatically formats a default set of calls as tables. You can\n disable these defaults by setting this option to `false`. The default\n set currently includes:\n\n - `tribble()` from tribble\n - `fcase()` from data.table",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
         "exclude": {
           "title": "Patterns to exclude from formatting",
           "description": "By default, Air will refuse to format files matched by patterns listed in\n `default-exclude`. Use this option to supply an additional list of exclude\n patterns.\n\n Exclude patterns are modeled after what you can provide in a\n [.gitignore](https://git-scm.com/docs/gitignore), and are resolved relative to the\n parent directory that your `air.toml` is contained within. For example, if your\n `air.toml` was located at `root/air.toml`, then:\n\n - `file.R` excludes a file named `file.R` located anywhere below `root/`. This is\n   equivalent to `**/file.R`.\n\n - `folder/` excludes a directory named `folder` (and all of its children) located\n   anywhere below `root/`. You can also just use `folder`, but this would\n   technically also match a file named `folder`, so the trailing slash is preferred\n   when targeting directories. This is equivalent to `**/folder/`.\n\n - `/file.R` excludes a file named `file.R` located at `root/file.R`.\n\n - `/folder/` excludes a directory named `folder` (and all of its children) located\n   at `root/folder/`.\n\n - `file-*.R` excludes R files named like `file-this.R` and `file-that.R` located\n   anywhere below `root/`.\n\n - `folder/*.R` excludes all R files located at `root/folder/`. Note that R files\n   in directories under `folder/` are not excluded in this case (such as\n   `root/folder/subfolder/file.R`).\n\n - `folder/**/*.R` excludes all R files located anywhere below `root/folder/`.\n\n - `**/folder/*.R` excludes all R files located directly inside a `folder/`\n   directory, where the `folder/` directory itself can /// appear anywhere.\n\n See the full [.gitignore](https://git-scm.com/docs/gitignore) documentation for\n all of the patterns you can provide.",
@@ -98,10 +106,22 @@
         },
         "skip": {
           "title": "Function calls to skip formatting for",
-          "description": "Air typically formats every function call it comes across. To skip formatting of\n a single one-off function call, you can use a `# fmt: skip` comment. However, if\n you know of particular functions that you use a lot that are part of a custom\n domain specific language that doesn't follow conventional formatting rules, you\n can entirely opt out of formatting for those functions by providing them here.\n\n For example, using `skip = [\"graph_from_literal\"]` would automatically skip\n formatting of:\n\n ```r\n igraph::graph_from_literal(Alice +--+ Bob)\n ```\n\n In the short term, we also anticipate that this will be useful to avoid formatting\n of `tibble::tribble()` calls. In the long term, we may have more sophisticated\n features for automatically formatting using a specified alignment.",
+          "description": "Air typically formats every function call it comes across. To skip formatting of\n a single one-off function call, you can use a `# fmt: skip` comment. However, if\n you know of particular functions that you use a lot that are part of a custom\n domain specific language that doesn't follow conventional formatting rules, you\n can entirely opt out of formatting for those functions by providing them here.\n\n For example, using `skip = [\"graph_from_literal\"]` would automatically skip\n formatting of:\n\n ```r\n igraph::graph_from_literal(Alice +--+ Bob)\n ```",
           "anyOf": [
             {
               "$ref": "#/$defs/Skip"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "table": {
+          "title": "Function calls to format as tables",
+          "description": "Some function calls are meant to be formatted as tables, rather than being\n formatted in a flat or expanded layout. For a single one-off function call,\n you can use a `# fmt: table` comment to request a table layout. For function\n calls that you use a lot, use this setting to add them to a list of function\n calls that are automatically formatted as tables without requiring a\n `# fmt: table` comment.\n\n For example, using `table = [\"my_table\"]` would automatically format calls\n to `my_table()` in a table layout.\n\n See `default-table` for the list of function calls that are automatically\n formatted as tables by default.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Table"
             },
             {
               "type": "null"
@@ -162,10 +182,16 @@
       "minimum": 1
     },
     "Skip": {
+      "$ref": "#/$defs/SortedStrings"
+    },
+    "SortedStrings": {
       "type": "array",
       "items": {
         "type": "string"
       }
+    },
+    "Table": {
+      "$ref": "#/$defs/SortedStrings"
     }
   }
 }

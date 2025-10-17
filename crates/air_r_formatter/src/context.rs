@@ -13,11 +13,13 @@ use settings::LineEnding;
 use settings::LineWidth;
 use settings::PersistentLineBreaks;
 use settings::Skip;
+use settings::Table;
 
 use crate::comments::FormatRLeadingComment;
 use crate::comments::RCommentStyle;
 use crate::comments::RComments;
 
+#[derive(Clone, Debug)]
 pub struct RFormatContext {
     options: RFormatOptions,
 
@@ -83,6 +85,9 @@ pub struct RFormatOptions {
 
     /// The set of functions that are skipped without requiring a `# fmt: skip` comment.
     skip: Option<Skip>,
+
+    /// The set of functions that are formatted as tables without requiring a `# fmt: table` comment.
+    table: Option<Table>,
 }
 
 impl RFormatOptions {
@@ -125,6 +130,11 @@ impl RFormatOptions {
         self
     }
 
+    pub fn with_table(mut self, table: Option<Table>) -> Self {
+        self.table = table;
+        self
+    }
+
     pub fn set_indent_style(&mut self, indent_style: IndentStyle) {
         self.indent_style = indent_style;
     }
@@ -149,12 +159,20 @@ impl RFormatOptions {
         self.skip = skip;
     }
 
+    pub fn set_table(&mut self, table: Option<Table>) {
+        self.table = table;
+    }
+
     pub fn persistent_line_breaks(&self) -> PersistentLineBreaks {
         self.persistent_line_breaks
     }
 
     pub fn skip(&self) -> Option<&Skip> {
         self.skip.as_ref()
+    }
+
+    pub fn table(&self) -> Option<&Table> {
+        self.table.as_ref()
     }
 }
 
@@ -187,13 +205,12 @@ impl fmt::Display for RFormatOptions {
         writeln!(f, "Line ending: {}", self.line_ending)?;
         writeln!(f, "Line width: {}", self.line_width.value())?;
         writeln!(f, "Persistent line breaks: {}", self.persistent_line_breaks)?;
-        writeln!(
-            f,
-            "Skip: {}",
-            match &self.skip {
-                Some(skip) => format!("{skip}"),
-                None => String::from("None"),
-            }
-        )
+        if let Some(skip) = &self.skip {
+            writeln!(f, "Skip: {skip}")?;
+        };
+        if let Some(table) = &self.table {
+            writeln!(f, "Table: {table}")?;
+        };
+        Ok(())
     }
 }

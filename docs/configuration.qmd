@@ -23,6 +23,8 @@ persistent-line-breaks = true
 exclude = []
 default-exclude = true
 skip = []
+table = []
+default-table = true
 ```
 
 ## Configuration recommendations
@@ -249,7 +251,7 @@ The complete list of default exclude patterns is:
 
 The set of function names to skip formatting for, even without a `# fmt: skip` comment.
 
-A list of strings, i.e. `skip = ["tribble", "graph_from_literal"]`.
+A list of strings, i.e. `skip = ["my_dsl_function", "graph_from_literal"]`.
 
 Air typically formats every function call it comes across.
 To skip formatting of a single function call, you can use a `# fmt: skip` comment.
@@ -261,5 +263,27 @@ For example, using `skip = ["graph_from_literal"]` would automatically skip form
 igraph::graph_from_literal(A +-+ B +---+ C ++ D + E)
 ```
 
-In the short term, we also anticipate that this will be useful to avoid formatting of `tibble::tribble()` calls.
-In the long term, Air may have more sophisticated features for automatically formatting using a specified alignment.
+### table {#configuration-table}
+
+Some function calls are meant to be formatted as tables, rather than being
+formatted in a flat or expanded layout. For a single one-off function call,
+you can use a `# fmt: table` comment to request a table layout. For function
+calls that you use a lot, use this setting to add them to a list of function
+calls that are automatically formatted as tables without requiring a
+`# fmt: table` comment.
+
+For example, using `table = ["my_table"]` would automatically format calls
+to `my_table()` in a table layout.
+
+See `default-table` for the list of function calls that are automatically
+formatted as tables by default.
+table: Option<Table>,
+
+### default-table
+
+Air automatically formats a default set of calls as tables. You can
+disable these defaults by setting this option to `false`. The default
+set currently includes:
+
+- `tribble()` from tribble
+- `fcase()` from data.table

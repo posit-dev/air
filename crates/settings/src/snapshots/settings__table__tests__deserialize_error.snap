@@ -1,0 +1,9 @@
+---
+source: crates/settings/src/table.rs
+expression: error
+---
+TOML parse error at line 2, column 9
+  |
+2 | table = 400
+  |         ^^^
+invalid type: integer `400`, expected a sequence
