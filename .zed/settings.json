@@ -6,19 +6,6 @@
   "languages": {
     "Rust": {
       "format_on_save": "on"
-    },
-    "TypeScript": {
-      "remove_trailing_whitespace_on_save": true,
-      "formatter": "prettier",
-      "code_actions_on_format": {
-        "source.fixAll.eslint": true
-      },
-      "format_on_save": {
-        "external": {
-          "command": "prettier",
-          "arguments": ["--stdin-filepath", "{buffer_path}"]
-        }
-      }
     }
   },
   "lsp": {
