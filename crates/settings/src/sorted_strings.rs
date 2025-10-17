@@ -1,7 +1,7 @@
 use std::fmt;
 use std::sync::Arc;
 
-/// An immutable, sorted list of names (strings), backed by Arc for cheap cloning.
+/// An immutable, sorted list of strings, backed by Arc for cheap cloning.
 ///
 /// Internally wrapped in an [Arc] for cheap cloning, since we know the function names
 /// are immutable and can be shared. Must be an [Arc] because settings are shared across
@@ -18,13 +18,13 @@ use std::sync::Arc;
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schemars", schemars(description = ""))]
-pub struct SortedNames(Arc<[String]>);
+pub struct SortedStrings(Arc<[String]>);
 
-impl SortedNames {
+impl SortedStrings {
     /// Constructs a new SortedNames, sorting the input for binary search.
-    pub fn new(mut names: Vec<String>) -> Self {
-        names.sort_unstable();
-        Self(names.into())
+    pub fn new(mut strings: Vec<String>) -> Self {
+        strings.sort_unstable();
+        Self(strings.into())
     }
 
     /// Returns the sorted slice.
@@ -40,7 +40,7 @@ impl SortedNames {
     }
 }
 
-impl fmt::Display for SortedNames {
+impl fmt::Display for SortedStrings {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut names = self.0.iter();
         let last = names.next_back();
@@ -56,12 +56,12 @@ impl fmt::Display for SortedNames {
 }
 
 #[cfg(feature = "serde")]
-impl<'de> serde::Deserialize<'de> for SortedNames {
+impl<'de> serde::Deserialize<'de> for SortedStrings {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
         let value: Vec<String> = serde::Deserialize::deserialize(deserializer)?;
-        Ok(SortedNames::new(value))
+        Ok(SortedStrings::new(value))
     }
 }

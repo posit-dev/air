@@ -1,4 +1,4 @@
-use crate::SortedNames;
+use crate::SortedStrings;
 use std::fmt;
 
 /// Function names that are automatically formatted as tables without the need
@@ -6,11 +6,11 @@ use std::fmt;
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schemars", schemars(description = ""))]
-pub struct Table(SortedNames);
+pub struct Table(SortedStrings);
 
 impl Table {
     pub fn new(names: Vec<String>) -> Self {
-        Self(SortedNames::new(names))
+        Self(SortedStrings::new(names))
     }
 
     pub fn as_slice(&self) -> &[String] {
@@ -34,7 +34,7 @@ impl<'de> serde::Deserialize<'de> for Table {
     where
         D: serde::Deserializer<'de>,
     {
-        let value: SortedNames = serde::Deserialize::deserialize(deserializer)?;
+        let value: SortedStrings = serde::Deserialize::deserialize(deserializer)?;
         Ok(Table(value))
     }
 }

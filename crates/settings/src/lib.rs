@@ -4,7 +4,7 @@ mod line_ending;
 mod line_width;
 mod persistent_line_breaks;
 mod skip;
-mod sorted_names;
+mod sorted_strings;
 mod table;
 
 pub use indent_style::*;
@@ -13,5 +13,5 @@ pub use line_ending::*;
 pub use line_width::*;
 pub use persistent_line_breaks::*;
 pub use skip::*;
-pub use sorted_names::*;
+pub use sorted_strings::*;
 pub use table::*;

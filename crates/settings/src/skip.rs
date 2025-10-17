@@ -1,4 +1,4 @@
-use crate::SortedNames;
+use crate::SortedStrings;
 use std::fmt;
 
 /// Function names that are automatically skipped without the need
@@ -6,7 +6,7 @@ use std::fmt;
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schemars", schemars(description = ""))]
-pub struct Skip(SortedNames);
+pub struct Skip(SortedStrings);
 
 impl Skip {
     /// Constructs [Skip] from a vector of function names
@@ -14,7 +14,7 @@ impl Skip {
     /// Not exposed, as deserialization should be the only way to create this type.
     #[cfg(test)]
     fn new(names: Vec<String>) -> Self {
-        Self(SortedNames::new(names))
+        Self(SortedStrings::new(names))
     }
 
     pub fn contains(&self, name: &str) -> bool {
@@ -34,7 +34,7 @@ impl<'de> serde::Deserialize<'de> for Skip {
     where
         D: serde::Deserializer<'de>,
     {
-        let value: SortedNames = serde::Deserialize::deserialize(deserializer)?;
+        let value: SortedStrings = serde::Deserialize::deserialize(deserializer)?;
         Ok(Skip(value))
     }
 }
