@@ -1,55 +1,64 @@
-use crate::{RFormatter, comments_directives};
-use air_r_syntax::{AnyRExpression, AnyRSelector, RCall, RIdentifier, RLanguage, RSyntaxKind};
+use air_r_syntax::RSyntaxNode;
+use air_r_syntax::{AnyRExpression, AnyRSelector, RCall, RIdentifier, RSyntaxKind};
 use biome_formatter::CstFormatContext;
-use biome_rowan::{AstNode, SyntaxResult};
+use biome_rowan::Language;
+use biome_rowan::SyntaxNode;
+use biome_rowan::SyntaxResult;
 use comments::{Directive, FormatDirective};
 use settings::Skip;
+use settings::Table;
 
-/// Returns `true` if the node has a suppression comment and should use the same formatting as in the source document.
+use crate::RFormatter;
+
+/// Generic trait for extracting [comments::Directive]s from a node's comments
+pub trait CommentDirectives {
+    type Language: Language;
+
+    /// Returns an iterator over [comments::Directive]s present in a node's comments
+    fn directives(&self, node: &SyntaxNode<Self::Language>) -> impl Iterator<Item = Directive>;
+}
+
+/// Returns `true` if the node has a suppression comment and should use the same
+/// formatting as in the source document.
 ///
 /// Calls [biome_formatter::comments::Comments::mark_suppression_checked] on `node`.
 #[inline]
-pub(crate) fn has_skip_comment<N>(node: &N, f: &RFormatter) -> bool
-where
-    N: AstNode<Language = RLanguage>,
-{
+pub(crate) fn has_skip_comment(node: &RSyntaxNode, f: &RFormatter) -> bool {
     // TODO: Weird to have a side effect in a predicate. Is this in the right
     // spot or should it be one level higher?
-    f.context()
-        .comments()
-        .mark_suppression_checked(node.syntax());
+    f.context().comments().mark_suppression_checked(node);
 
     if !can_have_directive(node) {
         return false;
     }
 
     // Skip directives have precedence over all others
-    comments_directives(node, f).any(|d| matches!(d, Directive::Format(FormatDirective::Skip)))
+    f.comments()
+        .directives(node)
+        .any(|d| matches!(d, Directive::Format(FormatDirective::Skip)))
 }
 
-// Generic and used by RCall and RBinaryExpression
 #[inline]
-pub(crate) fn has_table_comment<N>(node: &N, f: &RFormatter) -> bool
-where
-    N: AstNode<Language = RLanguage>,
-{
+pub(crate) fn has_table_comment(node: &RSyntaxNode, f: &RFormatter) -> bool {
     if !can_have_directive(node) {
         return false;
     }
 
-    comments_directives(node, f).any(|d| matches!(d, Directive::Format(FormatDirective::Table)))
+    f.comments()
+        .directives(node)
+        .any(|d| matches!(d, Directive::Format(FormatDirective::Table)))
 }
 
 #[inline]
-fn can_have_directive<N>(node: &N) -> bool
-where
-    N: AstNode<Language = RLanguage>,
-{
-    let Some(parent) = node.syntax().parent() else {
+fn can_have_directive(node: &RSyntaxNode) -> bool {
+    let Some(parent) = node.parent() else {
         return false;
     };
 
-    // Only expression lists (program and braced blocks) and argument lists can be suppressed
+    // Only expressions found within the following can take directives:
+    // - Expression lists (program and braced blocks)
+    // - Argument lists (like skipping an individual argument)
+    // - Binary expression sides (like the RHS of a pipe chain)
     matches!(
         parent.kind(),
         RSyntaxKind::R_EXPRESSION_LIST
@@ -70,7 +79,7 @@ pub(crate) fn in_skip_setting(node: &RCall, f: &RFormatter) -> SyntaxResult<bool
 
 #[inline]
 pub(crate) fn in_table_setting(node: &RCall, f: &RFormatter) -> SyntaxResult<bool> {
-    fn pred(node: RIdentifier, table: &settings::Table) -> SyntaxResult<bool> {
+    fn pred(node: RIdentifier, table: &Table) -> SyntaxResult<bool> {
         let node = node.name_token()?;
         Ok(table.contains(node.text_trimmed()))
     }

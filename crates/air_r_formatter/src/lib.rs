@@ -1,9 +1,6 @@
-use ::comments::Directive;
-use ::comments::parse_comment_directive;
 use air_r_syntax::RLanguage;
 use air_r_syntax::RSyntaxNode;
 use air_r_syntax::RSyntaxToken;
-use biome_formatter::CstFormatContext;
 use biome_formatter::FormatLanguage;
 use biome_formatter::FormatOwnedWithRule;
 use biome_formatter::FormatRefWithRule;
@@ -216,7 +213,7 @@ where
 
     /// Returns `true` if the node is suppressed and should use the same formatting as in the source document.
     fn is_suppressed(&self, node: &N, f: &RFormatter) -> bool {
-        has_skip_comment(node, f)
+        has_skip_comment(node.syntax(), f)
     }
 
     /// Formats a suppressed node
@@ -255,21 +252,6 @@ where
     fn fmt_trailing_comments(&self, node: &N, f: &mut RFormatter) -> FormatResult<()> {
         format_trailing_comments(node.syntax()).fmt(f)
     }
-}
-
-/// All directives in the leading comments of the node.
-///
-/// We intentionally only consider directives in leading comments. This is a
-/// departure from Biome (and Ruff?).
-pub(crate) fn comments_directives<N>(node: &N, f: &RFormatter) -> impl Iterator<Item = Directive>
-where
-    N: AstNode<Language = RLanguage>,
-{
-    let comments = f.context().comments().leading_comments(node.syntax());
-
-    comments
-        .iter()
-        .filter_map(|c| parse_comment_directive(c.piece().text()))
 }
 
 /// Rule for formatting an bogus node.

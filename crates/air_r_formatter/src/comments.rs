@@ -1,4 +1,3 @@
-use crate::prelude::*;
 use air_r_syntax::AnyRExpression;
 use air_r_syntax::RArgument;
 use air_r_syntax::RArgumentNameClause;
@@ -21,11 +20,27 @@ use biome_formatter::comments::DecoratedComment;
 use biome_formatter::comments::SourceComment;
 use biome_formatter::write;
 use biome_rowan::AstNode;
+use biome_rowan::SyntaxNode;
 use biome_rowan::SyntaxTriviaPieceComments;
 use comments::Directive;
 use comments::FormatDirective;
 
+use crate::directives::CommentDirectives;
+use crate::prelude::*;
+
 pub type RComments = Comments<RLanguage>;
+
+impl CommentDirectives for RComments {
+    type Language = RLanguage;
+
+    fn directives(&self, node: &SyntaxNode<Self::Language>) -> impl Iterator<Item = Directive> {
+        // We intentionally only consider directives in leading comments. This is a
+        // departure from Biome (and Ruff?).
+        self.leading_comments(node)
+            .iter()
+            .filter_map(|c| comments::parse_comment_directive(c.piece().text()))
+    }
+}
 
 #[derive(Default)]
 pub struct FormatRLeadingComment;
