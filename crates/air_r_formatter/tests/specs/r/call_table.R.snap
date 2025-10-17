@@ -1,6 +1,6 @@
 ---
 source: crates/air_formatter_test/src/snapshot_builder.rs
-info: r/call_tabular.R
+info: r/call_table.R
 ---
 # Input
 
@@ -101,6 +101,7 @@ foooooooooo,baaaaaaaaar,foooooooooo,baaaaaaaaar,foooooooooo,baaaaaaaaar,fooooooo
 # ------------------------------------------------------------------------
 # Comments
 
+# fmt: table
 list(# comment1
 # comment2
 )# comment3
@@ -344,8 +345,22 @@ list(
 { foo },  2
 )
 
+# These line breaks are removed by the flat layout formatter
+# fmt: table
+list(
+  c(
+    1, 2
+  ), 3,
+  c(4, 5), 6,
+  c(
+    7, 8), 9
+)
+
 # ------------------------------------------------------------------------
 # Named argument
+
+# The first named argument stops the table. That argument and all
+# that follow it are laid out in expanded form.
 
 # Typical case
 # fmt: table
@@ -488,6 +503,7 @@ list(
 # ------------------------------------------------------------------------
 # Comments
 
+# fmt: table
 list(
   # comment1
   # comment2
@@ -738,8 +754,19 @@ list(
 { foo },  2
 )
 
+# These line breaks are removed by the flat layout formatter
+# fmt: table
+list(
+  c(1, 2) , 3 ,
+  c(4, 5) , 6 ,
+  c(7, 8) , 9
+)
+
 # ------------------------------------------------------------------------
 # Named argument
+
+# The first named argument stops the table. That argument and all
+# that follow it are laid out in expanded form.
 
 # Typical case
 # fmt: table
@@ -775,8 +802,8 @@ list(
 
 ## Unimplemented nodes/tokens
 
-"(\n\"foo\n\",  2)" => 4859..4872
-"(\n{ foo },  2\n)" => 4891..4906
+"(\n\"foo\n\",  2)" => 4872..4885
+"(\n{ foo },  2\n)" => 4904..4919
 # Lines exceeding max width of 80 characters
 ```
    91:   foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo(baaaaaaaaar, foooooooooo, baaaaaaaaar) ,

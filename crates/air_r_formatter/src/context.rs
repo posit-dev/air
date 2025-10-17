@@ -86,7 +86,7 @@ pub struct RFormatOptions {
     /// The set of functions that are skipped without requiring a `# fmt: skip` comment.
     skip: Option<Skip>,
 
-    /// The set of functions that are formatted as table without requiring a `# fmt: table` comment.
+    /// The set of functions that are formatted as tables without requiring a `# fmt: table` comment.
     table: Option<Table>,
 }
 

@@ -196,7 +196,7 @@ fn fmt_binary_assignment(
     // `format_assignment_rhs()`
     let table = is_table_by_comment(node, f);
 
-    let right_formatted = format_with(|f| {
+    let right_format = format_with(|f| {
         if binary_assignment_has_persistent_line_break(&operator, &right, f.options()) {
             let right = match &right {
                 AnyRExpression::RBinaryExpression(right) => {
@@ -218,20 +218,20 @@ fn fmt_binary_assignment(
             left.format(),
             space(),
             operator.format(),
-            right_formatted
+            right_format
         ])]
     )
 }
 
-fn format_assignment_rhs(expr: &AnyRExpression, table: bool) -> impl Format<RFormatContext> {
+fn format_assignment_rhs(right: &AnyRExpression, table: bool) -> impl Format<RFormatContext> {
     format_with(move |f| {
         if table {
-            if let AnyRExpression::RCall(call) = expr {
+            if let AnyRExpression::RCall(call) = right {
                 let options = FormatRCallArgumentsOptions { table: true };
                 return write!(f, [call.format().with_options(options)]);
             }
         }
-        write!(f, [expr.format()])
+        write!(f, [right.format()])
     })
 }
 

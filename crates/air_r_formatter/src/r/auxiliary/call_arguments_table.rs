@@ -2,10 +2,10 @@ use crate::r::auxiliary::call_arguments::FormatRCallArguments;
 use crate::{prelude::*, r::auxiliary::argument::fmt_argument_fields};
 use air_r_syntax::{
     AnyRExpression, AnyRValue, RArgument, RArgumentList, RCallArguments, RDoubleValue,
-    RIntegerValue, RLanguage, RSyntaxNode, RSyntaxToken, RUnaryExpression,
+    RIntegerValue, RLanguage, RSyntaxToken, RUnaryExpression,
 };
 
-use biome_formatter::{CstFormatContext, FormatElement, RemoveSoftLinesBuffer, format_args, write};
+use biome_formatter::{FormatElement, RemoveSoftLinesBuffer, format_args, write};
 use biome_rowan::{AstSeparatedElement, AstSeparatedList};
 
 const DOT_WIDTH: usize = 1;
@@ -83,8 +83,7 @@ impl FormatRCallArguments {
                     let (left_pad, right_pad) = if column_info[col_j].max_width > 0 {
                         column_info[col_j].padding(&arg_data.kind)
                     } else {
-                        // Empty columns are not padded, so that commas stick to
-                        // each other as in regular calls: `list(,,,)`
+                        // For empty columns don't add any incompressible whitespace
                         (0, 0)
                     };
 
@@ -96,10 +95,12 @@ impl FormatRCallArguments {
                         ArgKind::Other { text } => {
                             let arg_syntax = arg_data.node.syntax();
 
+                            // Suppression comments do nothing inside a table
+                            f.comments().mark_suppression_checked(arg_syntax);
+
                             // We've formatted the argument without comments, so
                             // we're in charge of formatting them
                             format_leading_comments(arg_syntax).fmt(f)?;
-                            disable_skip_comments(arg_syntax, f);
 
                             // 0-length arguments are holes. Don't print them
                             // because a `text("")` after a `Space` will prevent
@@ -109,7 +110,7 @@ impl FormatRCallArguments {
                                 write!(f, [dynamic_text(text, 0.into())])?;
                             }
 
-                            format_trailing_comments(arg_data.node.syntax()).fmt(f)?;
+                            format_trailing_comments(arg_syntax).fmt(f)?;
                         }
 
                         ArgKind::Numeric { .. } => {
@@ -204,7 +205,7 @@ fn build_table_impl(args: &RArgumentList, f: &mut RFormatter) -> FormatResult<Op
     let mut remaining = vec![];
 
     for (i, arg) in &mut items {
-        // We've encountered an `off` comment before, keep collecting remaining args
+        // We've encountered a named argument before, keep collecting remaining args
         if remaining.len() > 0 {
             remaining.push(arg);
             continue;
@@ -249,9 +250,9 @@ fn build_table_impl(args: &RArgumentList, f: &mut RFormatter) -> FormatResult<Op
             cols.push(ColumnInfo::default());
         }
 
-        let kind = match ArgKind::parse(arg_node, f)? {
-            Some(kind) => kind,
-            None => return Ok(None),
+        let Some(kind) = ArgKind::parse(arg_node, f)? else {
+            // Argument has a forced newline, bail on table formatting
+            return Ok(None);
         };
 
         let value_width = kind.width();
@@ -357,21 +358,19 @@ impl ColumnInfo {
 
 impl ArgKind {
     fn parse(arg: &RArgument, f: &mut RFormatter) -> FormatResult<Option<Self>> {
-        let kind = match arg.value() {
+        match arg.value() {
             Some(AnyRExpression::AnyRValue(AnyRValue::RIntegerValue(value))) => {
-                Some(Self::parse_integer(value)?)
+                Ok(Some(Self::parse_integer(value)?))
             }
             Some(AnyRExpression::AnyRValue(AnyRValue::RDoubleValue(value))) => {
-                Some(Self::parse_decimal(value)?)
+                Ok(Some(Self::parse_decimal(value)?))
             }
-            Some(AnyRExpression::RUnaryExpression(value)) => Self::parse_unary(arg, value, f)?,
+            Some(AnyRExpression::RUnaryExpression(value)) => Self::parse_unary(arg, value, f),
             Some(AnyRExpression::AnyRValue(AnyRValue::RBogusValue(_))) => {
-                return Err(FormatError::SyntaxError);
+                Err(FormatError::SyntaxError)
             }
-            _ => Self::parse_other(arg, f)?,
-        };
-
-        Ok(kind)
+            _ => Self::parse_other(arg, f),
+        }
     }
 
     // Delegate to numerical parsing, but add 1 to the integer part for the
@@ -441,8 +440,6 @@ impl ArgKind {
     }
 
     fn parse_other(arg: &RArgument, f: &mut RFormatter) -> FormatResult<Option<ArgKind>> {
-        disable_skip_comments(arg.syntax(), f);
-
         let result = (|| {
             // Format with flat layout by disabling soft line breaks
             let mut buffer = RemoveSoftLinesBuffer::new(f);
@@ -500,9 +497,4 @@ fn write_spaces(count: usize, f: &mut RFormatter) -> FormatResult<()> {
         write!(f, [dynamic_text(&" ".repeat(count), 0.into())])?;
     }
     Ok(())
-}
-
-/// Skip comments nested in the table are invalid, but mark them as checked so the formatter
-fn disable_skip_comments(syntax: &RSyntaxNode, f: &RFormatter) {
-    f.context().comments().mark_suppression_checked(syntax);
 }

@@ -49,21 +49,21 @@ impl FormatRCallArguments {
 impl FormatNodeRule<RCallArguments> for FormatRCallArguments {
     fn fmt_fields(&self, node: &RCallArguments, f: &mut RFormatter) -> FormatResult<()> {
         if self.table {
+            // Special table formatting
             let snapshot = f.state_snapshot();
-
             if let Some(()) = self.fmt_table(node, f)? {
-                Ok(())
+                return Ok(());
             } else {
                 f.restore_state_snapshot(snapshot);
-
                 // Table formatting failed, fall back to verbatim. Ideally
                 // we'd emit diagnostics about why tabular formatting failed
                 // here.
-                write!(f, [format_verbatim_node(node.syntax())])
+                write!(f, [format_verbatim_node(node.syntax())])?;
+                return Ok(());
             }
-        } else {
-            self.fmt_call_like(node, f)
         }
+
+        self.fmt_call_like(node, f)
     }
 
     fn fmt_dangling_comments(&self, _: &RCallArguments, _: &mut RFormatter) -> FormatResult<()> {

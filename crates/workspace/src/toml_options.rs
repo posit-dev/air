@@ -191,28 +191,32 @@ pub struct FormatTomlOptions {
     /// ```r
     /// igraph::graph_from_literal(Alice +--+ Bob)
     /// ```
-    ///
-    /// In the short term, we also anticipate that this will be useful to avoid formatting
-    /// of `tibble::tribble()` calls. In the long term, we may have more sophisticated
-    /// features for automatically formatting using a specified alignment.
     pub skip: Option<Skip>,
 
     /// # Function calls to format as tables
     ///
-    /// Some variadic functions like `tibble::tribble()` or
-    /// `data.table::fcase()` are meant to be formatted as tables. Air
-    /// helps you do it automatically with the `# fmt: table` directive.
-    /// Use this setting to determine which functions should automatically be
-    /// formatted as tables without requiring a comment directive.
+    /// Some function calls are meant to be formatted as tables, rather than being
+    /// formatted in a flat or expanded layout. For a single one-off function call,
+    /// you can use a `# fmt: table` comment to request a table layout. For function
+    /// calls that you use a lot, use this setting to add them to a list of function
+    /// calls that are automatically formatted as tables without requiring a
+    /// `# fmt: table` comment.
     ///
-    /// By default, `fcase()` and `tribble()` are formatted as tables. You can
-    /// disable this default by setting the `default-table` option to `false`.
+    /// For example, using `table = ["my_table"]` would automatically format calls
+    /// to `my_table()` in a table layout.
+    ///
+    /// See `default-table` for the list of function calls that are automatically
+    /// formatted as tables by default.
     pub table: Option<Table>,
 
-    /// # Use Air's defaults for `table`
+    /// # Whether or not to use defaults for `table`
     ///
-    /// By default, `fcase()` and `tribble()` are formatted as tables. You can
-    /// disable this default by setting this option to `false`.
+    /// Air automatically formats a default set of calls as tables. You can
+    /// disable these defaults by setting this option to `false`. The default
+    /// set currently includes:
+    ///
+    /// - `tribble()` from tribble
+    /// - `fcase()` from data.table
     pub default_table: Option<bool>,
 }
 
@@ -220,18 +224,18 @@ impl TomlOptions {
     pub fn into_settings(self, root: &Path) -> anyhow::Result<Settings> {
         let format = self.format.unwrap_or_default();
 
-        let mut table = format.table;
-
-        if format.default_table.unwrap_or(true) {
+        let table = if format.default_table.unwrap_or(true) {
             let mut updated: Vec<String> =
                 DEFAULT_TABLE_NAMES.iter().map(|&s| s.to_string()).collect();
 
-            if let Some(user_table) = table {
+            if let Some(user_table) = format.table {
                 updated.extend(user_table.as_slice().iter().cloned());
             }
 
-            table = Some(Table::new(updated));
-        }
+            Some(Table::new(updated))
+        } else {
+           format.table
+        };
 
         let format = FormatSettings {
             indent_style: format.indent_style.unwrap_or_default(),

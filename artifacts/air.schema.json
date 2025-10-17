@@ -30,8 +30,8 @@
           ]
         },
         "default-table": {
-          "title": "Use Air's defaults for `table`",
-          "description": "By default, `fcase()` and `tribble()` are formatted as tables. You can\n disable this default by setting this option to `false`.",
+          "title": "Whether or not to use defaults for `table`",
+          "description": "Air automatically formats a default set of calls as tables. You can\n disable these defaults by setting this option to `false`. The default\n set currently includes:\n\n - `tribble()` from tribble\n - `fcase()` from data.table",
           "type": [
             "boolean",
             "null"
@@ -106,7 +106,7 @@
         },
         "skip": {
           "title": "Function calls to skip formatting for",
-          "description": "Air typically formats every function call it comes across. To skip formatting of\n a single one-off function call, you can use a `# fmt: skip` comment. However, if\n you know of particular functions that you use a lot that are part of a custom\n domain specific language that doesn't follow conventional formatting rules, you\n can entirely opt out of formatting for those functions by providing them here.\n\n For example, using `skip = [\"graph_from_literal\"]` would automatically skip\n formatting of:\n\n ```r\n igraph::graph_from_literal(Alice +--+ Bob)\n ```\n\n In the short term, we also anticipate that this will be useful to avoid formatting\n of `tibble::tribble()` calls. In the long term, we may have more sophisticated\n features for automatically formatting using a specified alignment.",
+          "description": "Air typically formats every function call it comes across. To skip formatting of\n a single one-off function call, you can use a `# fmt: skip` comment. However, if\n you know of particular functions that you use a lot that are part of a custom\n domain specific language that doesn't follow conventional formatting rules, you\n can entirely opt out of formatting for those functions by providing them here.\n\n For example, using `skip = [\"graph_from_literal\"]` would automatically skip\n formatting of:\n\n ```r\n igraph::graph_from_literal(Alice +--+ Bob)\n ```",
           "anyOf": [
             {
               "$ref": "#/$defs/Skip"
@@ -118,7 +118,7 @@
         },
         "table": {
           "title": "Function calls to format as tables",
-          "description": "Some variadic functions like `tibble::tribble()` or\n `data.table::fcase()` are meant to be formatted as tables. Air\n helps you do it automatically with the `# fmt: table` directive.\n Use this setting to determine which functions should automatically be\n formatted as tables without requiring a comment directive.\n\n By default, `fcase()` and `tribble()` are formatted as tables. You can\n disable this default by setting the `default-table` option to `false`.",
+          "description": "Some function calls are meant to be formatted as tables, rather than being\n formatted in a flat or expanded layout. For a single one-off function call,\n you can use a `# fmt: table` comment to request a table layout. For function\n calls that you use a lot, use this setting to add them to a list of function\n calls that are automatically formatted as tables without requiring a\n `# fmt: table` comment.\n\n For example, using `table = [\"my_table\"]` would automatically format calls\n to `my_table()` in a table layout.\n\n See `default-table` for the list of function calls that are automatically\n formatted as tables by default.",
           "anyOf": [
             {
               "$ref": "#/$defs/Table"
@@ -182,16 +182,16 @@
       "minimum": 1
     },
     "Skip": {
-      "$ref": "#/$defs/SortedNames"
+      "$ref": "#/$defs/SortedStrings"
     },
-    "SortedNames": {
+    "SortedStrings": {
       "type": "array",
       "items": {
         "type": "string"
       }
     },
     "Table": {
-      "$ref": "#/$defs/SortedNames"
+      "$ref": "#/$defs/SortedStrings"
     }
   }
 }

@@ -1,10 +1,3 @@
-//
-// settings.rs
-//
-// Copyright (C) 2025 Posit Software, PBC. All rights reserved.
-//
-//
-
 mod default_exclude_patterns;
 mod default_include_patterns;
 mod default_table;
@@ -79,7 +72,7 @@ impl FormatSettings {
             .with_line_ending(self.line_ending.finalize(source))
             .with_line_width(self.line_width)
             .with_persistent_line_breaks(self.persistent_line_breaks)
-            // Note that `clone()` on these options is on an `Arc`
+            // Note that `clone()` on these options is ultimately on an `Arc`
             .with_skip(self.skip.clone())
             .with_table(self.table.clone())
     }

@@ -94,6 +94,7 @@ foooooooooo,baaaaaaaaar,foooooooooo,baaaaaaaaar,foooooooooo,baaaaaaaaar,fooooooo
 # ------------------------------------------------------------------------
 # Comments
 
+# fmt: table
 list(# comment1
 # comment2
 )# comment3
@@ -337,8 +338,22 @@ list(
 { foo },  2
 )
 
+# These line breaks are removed by the flat layout formatter
+# fmt: table
+list(
+  c(
+    1, 2
+  ), 3,
+  c(4, 5), 6,
+  c(
+    7, 8), 9
+)
+
 # ------------------------------------------------------------------------
 # Named argument
+
+# The first named argument stops the table. That argument and all
+# that follow it are laid out in expanded form.
 
 # Typical case
 # fmt: table
