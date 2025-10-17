@@ -1,4 +1,8 @@
+use ::comments::Directive;
+use ::comments::FormatDirective;
+use ::comments::parse_comment_directive;
 use air_r_syntax::RLanguage;
+use air_r_syntax::RSyntaxKind;
 use air_r_syntax::RSyntaxNode;
 use air_r_syntax::RSyntaxToken;
 use biome_formatter::CstFormatContext;
@@ -189,6 +193,9 @@ where
 pub(crate) type RFormatter<'buf> = Formatter<'buf, RFormatContext>;
 
 /// Rule for formatting an R [AstNode].
+///
+/// This is one of the traits that are expected by the Biome-generated code.
+/// Although we own it, it should conform to Biome's expectations.
 pub(crate) trait FormatNodeRule<N>
 where
     N: AstNode<Language = RLanguage>,
@@ -250,6 +257,21 @@ where
     }
 }
 
+/// All directives in the leading comments of the node.
+///
+/// We intentionally only consider directives in leading comments. This is a
+/// departure from Biome (and Ruff?).
+pub(crate) fn comments_directives<N>(node: &N, f: &RFormatter) -> impl Iterator<Item = Directive>
+where
+    N: AstNode<Language = RLanguage>,
+{
+    let comments = f.context().comments().leading_comments(node.syntax());
+
+    comments
+        .iter()
+        .filter_map(|c| parse_comment_directive(c.piece().text()))
+}
+
 /// Returns `true` if the node has a suppression comment and should use the same formatting as in the source document.
 ///
 /// Calls [biome_formatter::comments::Comments::mark_suppression_checked] on `node`.
@@ -258,10 +280,30 @@ pub(crate) fn is_suppressed_by_comment<N>(node: &N, f: &RFormatter) -> bool
 where
     N: AstNode<Language = RLanguage>,
 {
-    f.context().comments().is_suppressed(node.syntax())
+    f.context()
+        .comments()
+        .mark_suppression_checked(node.syntax());
+
+    let Some(parent) = node.syntax().parent() else {
+        return false;
+    };
+
+    // Only expression lists (program and braced blocks) and argument lists can be suppressed
+    if !matches!(
+        parent.kind(),
+        RSyntaxKind::R_EXPRESSION_LIST | RSyntaxKind::R_ARGUMENT_LIST
+    ) {
+        return false;
+    }
+
+    // Skip directives have precedence over all others
+    comments_directives(node, f).any(|d| matches!(d, Directive::Format(FormatDirective::Skip)))
 }
 
 /// Rule for formatting an bogus node.
+///
+/// This is one of the traits that are expected by the Biome-generated code.
+/// Although we own it, it should conform to Biome's expectations.
 pub(crate) trait FormatBogusNodeRule<N>
 where
     N: AstNode<Language = RLanguage>,
