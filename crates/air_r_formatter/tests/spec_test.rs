@@ -12,7 +12,7 @@ pub fn run(spec_input_file: &str, _expected_file: &str, _test_directory: &str, _
     let spec_input_file = Path::new(spec_input_file);
     let test_file = SpecTestFile::try_from_file(spec_input_file, root_path);
 
-    let options = format_options_from_code(test_file.input_code());
+    let options = format_options_for_test(test_file.input_code());
     let language = language::RTestFormatLanguage::default();
 
     let snapshot = SpecSnapshot::new(test_file, language, RFormatLanguage::new(options));
@@ -20,7 +20,7 @@ pub fn run(spec_input_file: &str, _expected_file: &str, _test_directory: &str, _
     snapshot.test()
 }
 
-/// Parse inlined format options provided in a snapshot test
+/// Generates an [RFormatOptions] for this test
 ///
 /// At the very top of an R file, provide format options of the form (don't include
 /// the backticks):
@@ -30,7 +30,13 @@ pub fn run(spec_input_file: &str, _expected_file: &str, _test_directory: &str, _
 /// #' indent-width = 4
 /// #' persistent-line-breaks = false
 /// ```
-fn format_options_from_code(code: &str) -> RFormatOptions {
+///
+/// Regardless of whether or not format options are provided in the test, we need to
+/// generate our [RFormatOptions] via [workspace::toml_options::TomlOptions],
+/// [workspace::settings::Settings], and in particular
+/// [workspace::settings::FormatSettings] to ensure that all defaults are set correctly
+/// (in particular, for `table`).
+fn format_options_for_test(code: &str) -> RFormatOptions {
     let lines = code.lines();
 
     // Skip blank lines, then collect all leading lines that start with `#'`
@@ -38,11 +44,6 @@ fn format_options_from_code(code: &str) -> RFormatOptions {
         .skip_while(|line| line.is_empty())
         .take_while(|line| line.starts_with("#'"))
         .collect();
-
-    if lines.is_empty() {
-        // No file specific configuration
-        return RFormatOptions::default();
-    }
 
     // Strip off the `#'` and any leading whitespace, that leaves a TOML file left
     let lines: Vec<&str> = lines
