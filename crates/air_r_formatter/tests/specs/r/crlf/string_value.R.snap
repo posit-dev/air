@@ -20,7 +20,7 @@ string"
 -----
 Indent style: Space
 Indent width: 2
-Line ending: LF
+Line ending: CRLF
 Line width: 80
 Persistent line breaks: Respect
 -----
