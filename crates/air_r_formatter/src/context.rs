@@ -205,19 +205,12 @@ impl fmt::Display for RFormatOptions {
         writeln!(f, "Line ending: {}", self.line_ending)?;
         writeln!(f, "Line width: {}", self.line_width.value())?;
         writeln!(f, "Persistent line breaks: {}", self.persistent_line_breaks)?;
-        writeln!(
-            f,
-            "Skip: {}",
-            match &self.skip {
-                Some(skip) => format!("{skip}"),
-                None => String::from("None"),
-            }
-        )?;
-        match &self.table {
-            Some(table) => {
-                writeln!(f, "Table: {table}",)
-            }
-            None => Ok(()),
-        }
+        if let Some(skip) = &self.skip {
+            writeln!(f, "Skip: {skip}")?;
+        };
+        if let Some(table) = &self.table {
+            writeln!(f, "Table: {table}")?;
+        };
+        Ok(())
     }
 }
