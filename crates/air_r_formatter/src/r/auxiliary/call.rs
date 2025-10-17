@@ -32,12 +32,12 @@ impl FormatNodeRule<RCall> for FormatRCall {
     }
 
     fn is_suppressed(&self, node: &RCall, f: &RFormatter) -> bool {
-        has_skip_comment(node, f) || in_skip_setting(node, f).unwrap_or(false)
+        has_skip_comment(node.syntax(), f) || in_skip_setting(node, f).unwrap_or(false)
     }
 }
 
 fn is_table(node: &RCall, f: &RFormatter) -> bool {
-    has_table_comment(node, f) || in_table_setting(node, f).unwrap_or(false)
+    has_table_comment(node.syntax(), f) || in_table_setting(node, f).unwrap_or(false)
 }
 
 impl FormatRuleWithOptions<RCall> for FormatRCall {
