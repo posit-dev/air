@@ -261,7 +261,7 @@ where
 ///
 /// We intentionally only consider directives in leading comments. This is a
 /// departure from Biome (and Ruff?).
-pub(crate) fn comments_directives<N>(node: &N, f: &RFormatter) -> Vec<Directive>
+pub(crate) fn comments_directives<N>(node: &N, f: &RFormatter) -> impl Iterator<Item = Directive>
 where
     N: AstNode<Language = RLanguage>,
 {
@@ -269,9 +269,7 @@ where
 
     comments
         .iter()
-        .map(|c| parse_comment_directive(c.piece().text()))
-        .flatten()
-        .collect()
+        .filter_map(|c| parse_comment_directive(c.piece().text()))
 }
 
 /// Returns `true` if the node has a suppression comment and should use the same formatting as in the source document.
@@ -299,9 +297,7 @@ where
     }
 
     // Skip directives have precedence over all others
-    comments_directives(node, f)
-        .into_iter()
-        .any(|d| matches!(d, Directive::Format(FormatDirective::Skip)))
+    comments_directives(node, f).any(|d| matches!(d, Directive::Format(FormatDirective::Skip)))
 }
 
 /// Rule for formatting an bogus node.
