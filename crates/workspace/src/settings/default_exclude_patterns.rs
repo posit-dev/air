@@ -1,5 +1,4 @@
 use std::ops::Deref;
-use std::ops::DerefMut;
 use std::sync::LazyLock;
 
 use crate::file_patterns::DefaultFilePatterns;
@@ -34,15 +33,17 @@ static DEFAULT_EXCLUDE_PATTERN_NAMES: &[&str] = &[
     "**/import-standalone-*.R",
 ];
 
-static DEFAULT_EXCLUDE_PATTERNS: LazyLock<DefaultExcludePatterns> = LazyLock::new(|| {
-    DefaultExcludePatterns(
-        DefaultFilePatterns::try_from_iter(DEFAULT_EXCLUDE_PATTERN_NAMES.iter().copied())
-            .expect("Can create default exclude patterns"),
-    )
+static DEFAULT_EXCLUDE_PATTERNS: LazyLock<DefaultFilePatterns> = LazyLock::new(|| {
+    DefaultFilePatterns::try_from_iter(DEFAULT_EXCLUDE_PATTERN_NAMES.iter().copied())
+        .expect("Can create default exclude patterns")
 });
 
-#[derive(Debug, Clone)]
-pub struct DefaultExcludePatterns(DefaultFilePatterns);
+/// Typed wrapper around [DEFAULT_EXCLUDE_PATTERNS]
+///
+/// Allows for free creation of [DefaultExcludePatterns] structs without needing to clone
+/// the global [DEFAULT_EXCLUDE_PATTERNS] object.
+#[derive(Debug)]
+pub struct DefaultExcludePatterns(&'static DefaultFilePatterns);
 
 impl Default for DefaultExcludePatterns {
     /// Default exclude patterns
@@ -50,7 +51,7 @@ impl Default for DefaultExcludePatterns {
     /// Used in the [Default] method of [crate::settings::FormatSettings] to ensure that
     /// virtual `air.toml`s use the default exclude patterns.
     fn default() -> Self {
-        DEFAULT_EXCLUDE_PATTERNS.clone()
+        Self(&DEFAULT_EXCLUDE_PATTERNS)
     }
 }
 
@@ -58,13 +59,7 @@ impl Deref for DefaultExcludePatterns {
     type Target = DefaultFilePatterns;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for DefaultExcludePatterns {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
+        self.0
     }
 }
 

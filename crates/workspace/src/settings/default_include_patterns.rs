@@ -1,5 +1,4 @@
 use std::ops::Deref;
-use std::ops::DerefMut;
 use std::sync::LazyLock;
 
 use crate::file_patterns::DefaultFilePatterns;
@@ -13,15 +12,17 @@ static DEFAULT_INCLUDE_PATTERN_NAMES: &[&str] = &[
     "**/*.[R,r]",
 ];
 
-static DEFAULT_INCLUDE_PATTERNS: LazyLock<DefaultIncludePatterns> = LazyLock::new(|| {
-    DefaultIncludePatterns(
-        DefaultFilePatterns::try_from_iter(DEFAULT_INCLUDE_PATTERN_NAMES.iter().copied())
-            .expect("Can create default include patterns"),
-    )
+static DEFAULT_INCLUDE_PATTERNS: LazyLock<DefaultFilePatterns> = LazyLock::new(|| {
+    DefaultFilePatterns::try_from_iter(DEFAULT_INCLUDE_PATTERN_NAMES.iter().copied())
+        .expect("Can create default include patterns")
 });
 
-#[derive(Debug, Clone)]
-pub struct DefaultIncludePatterns(DefaultFilePatterns);
+/// Typed wrapper around [DEFAULT_INCLUDE_PATTERNS]
+///
+/// Allows for free creation of [DefaultIncludePatterns] structs without needing to clone
+/// the global [DEFAULT_INCLUDE_PATTERNS] object.
+#[derive(Debug)]
+pub struct DefaultIncludePatterns(&'static DefaultFilePatterns);
 
 impl Default for DefaultIncludePatterns {
     /// Default include patterns
@@ -29,7 +30,7 @@ impl Default for DefaultIncludePatterns {
     /// Used in the [Default] method of [crate::settings::FormatSettings] to ensure that
     /// virtual `air.toml`s use the default include patterns.
     fn default() -> Self {
-        DEFAULT_INCLUDE_PATTERNS.clone()
+        Self(&DEFAULT_INCLUDE_PATTERNS)
     }
 }
 
@@ -37,13 +38,7 @@ impl Deref for DefaultIncludePatterns {
     type Target = DefaultFilePatterns;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for DefaultIncludePatterns {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
+        self.0
     }
 }
 
