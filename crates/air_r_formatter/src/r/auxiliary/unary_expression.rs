@@ -1,4 +1,4 @@
-use crate::directives::CommentDirectives;
+use crate::comments_ext::CommentsExt;
 use crate::prelude::*;
 use air_r_syntax::AnyRExpression;
 use air_r_syntax::RSyntaxKind;

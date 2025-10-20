@@ -12,16 +12,21 @@ use settings::Table;
 use crate::RFormatter;
 use crate::comments::RComments;
 
-/// Extension trait for comment [comments::Directive]s
-pub trait CommentDirectives {
+/// Extension trait for [biome_formatter::Comments]
+///
+/// Currently this is for extending [biome_formatter::Comments] with knowledge about our
+/// comment directives
+pub trait CommentsExt {
     type Language: Language;
 
+    /// Does this node contain a `# fmt: skip` directive?
     fn has_skip_directive(&self, node: &SyntaxNode<Self::Language>) -> bool;
 
+    /// Does this node contain a `# fmt: table` directive?
     fn has_table_directive(&self, node: &SyntaxNode<Self::Language>) -> bool;
 }
 
-impl CommentDirectives for RComments {
+impl CommentsExt for RComments {
     type Language = RLanguage;
 
     fn has_skip_directive(&self, node: &SyntaxNode<Self::Language>) -> bool {
@@ -67,6 +72,7 @@ fn can_have_directive(node: &RSyntaxNode) -> bool {
     )
 }
 
+/// Is the name of this function call contained within the `skip` `air.toml` setting?
 pub(crate) fn in_skip_setting(node: &RCall, f: &RFormatter) -> SyntaxResult<bool> {
     fn pred(node: RIdentifier, skip: &Skip) -> SyntaxResult<bool> {
         let node = node.name_token()?;
@@ -76,6 +82,7 @@ pub(crate) fn in_skip_setting(node: &RCall, f: &RFormatter) -> SyntaxResult<bool
     in_setting(node, f.options().skip(), pred)
 }
 
+/// Is the name of this function call contained within the `table` `air.toml` setting?
 pub(crate) fn in_table_setting(node: &RCall, f: &RFormatter) -> SyntaxResult<bool> {
     fn pred(node: RIdentifier, table: &Table) -> SyntaxResult<bool> {
         let node = node.name_token()?;

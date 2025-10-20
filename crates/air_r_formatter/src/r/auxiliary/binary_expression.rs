@@ -1,5 +1,5 @@
+use crate::comments_ext::CommentsExt;
 use crate::context::RFormatOptions;
-use crate::directives::CommentDirectives;
 use crate::either::Either;
 use crate::prelude::*;
 use crate::r::auxiliary::call_arguments::FormatRCallArgumentsOptions;
@@ -85,7 +85,9 @@ impl FormatNodeRule<RBinaryExpression> for FormatRBinaryExpression {
             | RSyntaxKind::ASSIGN
             | RSyntaxKind::ASSIGN_RIGHT
             | RSyntaxKind::SUPER_ASSIGN
-            | RSyntaxKind::SUPER_ASSIGN_RIGHT => fmt_binary_assignment(node, left, operator, right, f),
+            | RSyntaxKind::SUPER_ASSIGN_RIGHT => {
+                fmt_binary_assignment(node, left, operator, right, f)
+            }
 
             // Chainable (pipes, logical, arithmetic)
             kind if is_chainable_binary_operator(kind) => {
