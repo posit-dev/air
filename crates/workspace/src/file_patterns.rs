@@ -36,7 +36,7 @@ pub struct FilePatterns {
 ///   have a `root` to strip, and our globs don't depend on `root`, so we don't need this
 ///   restriction.
 #[derive(Clone, Debug)]
-pub struct DefaultFilePatterns {
+pub(crate) struct DefaultFilePatterns {
     matcher: Gitignore,
 }
 
@@ -135,7 +135,11 @@ impl DefaultFilePatterns {
     /// Implementation is based on [ignore::gitignore::Gitignore::matched_path_or_any_parents],
     /// excluding the `assert!(!path.has_root())` check since default patterns don't
     /// depend on the `root`.
-    pub fn matched_path_or_any_parents<P>(&self, path: P, is_directory: bool) -> Option<&Glob>
+    pub(crate) fn matched_path_or_any_parents<P>(
+        &self,
+        path: P,
+        is_directory: bool,
+    ) -> Option<&Glob>
     where
         P: AsRef<Path>,
     {

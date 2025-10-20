@@ -256,13 +256,13 @@ impl TomlOptions {
                 None => None,
             },
             default_exclude: match format.default_exclude.unwrap_or(true) {
-                true => Some(DefaultExcludePatterns::default()),
+                true => Some(DefaultExcludePatterns),
                 false => None,
             },
             // `include` and `default_include` are not currently exposed as toml options.
             // Theoretically could be for consistency, but there aren't any motivating use
             // cases right now.
-            default_include: Some(DefaultIncludePatterns::default()),
+            default_include: Some(DefaultIncludePatterns),
             skip: format.skip,
             table,
         };

@@ -46,7 +46,7 @@ impl Default for FormatSettings {
     /// [Default] handler for [FormatSettings]
     ///
     /// Notably:
-    /// - `default_exclude` and `default_include` are `Some(<default>)` rather than `None`
+    /// - `default_exclude` and `default_include` are `Some(*)` rather than `None`
     fn default() -> Self {
         Self {
             indent_style: Default::default(),
@@ -55,8 +55,8 @@ impl Default for FormatSettings {
             line_width: Default::default(),
             persistent_line_breaks: Default::default(),
             exclude: Default::default(),
-            default_exclude: Some(Default::default()),
-            default_include: Some(Default::default()),
+            default_exclude: Some(DefaultExcludePatterns),
+            default_include: Some(DefaultIncludePatterns),
             skip: Default::default(),
             table: Some(DEFAULT_TABLE.clone()),
         }

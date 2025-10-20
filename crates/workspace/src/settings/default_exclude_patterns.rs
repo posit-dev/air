@@ -1,6 +1,7 @@
-use std::ops::Deref;
-use std::ops::DerefMut;
+use std::path::Path;
 use std::sync::LazyLock;
+
+use ignore::gitignore::Glob;
 
 use crate::file_patterns::DefaultFilePatterns;
 
@@ -34,37 +35,31 @@ static DEFAULT_EXCLUDE_PATTERN_NAMES: &[&str] = &[
     "**/import-standalone-*.R",
 ];
 
-static DEFAULT_EXCLUDE_PATTERNS: LazyLock<DefaultExcludePatterns> = LazyLock::new(|| {
-    DefaultExcludePatterns(
-        DefaultFilePatterns::try_from_iter(DEFAULT_EXCLUDE_PATTERN_NAMES.iter().copied())
-            .expect("Can create default exclude patterns"),
-    )
+static DEFAULT_EXCLUDE_PATTERNS: LazyLock<DefaultFilePatterns> = LazyLock::new(|| {
+    DefaultFilePatterns::try_from_iter(DEFAULT_EXCLUDE_PATTERN_NAMES.iter().copied())
+        .expect("Can create default exclude patterns")
 });
 
-#[derive(Debug, Clone)]
-pub struct DefaultExcludePatterns(DefaultFilePatterns);
+/// Typed wrapper around [DEFAULT_EXCLUDE_PATTERNS]
+///
+/// Allows for free creation of [DefaultExcludePatterns] structs without needing to clone
+/// the global [DEFAULT_EXCLUDE_PATTERNS] object.
+#[derive(Debug)]
+pub struct DefaultExcludePatterns;
 
-impl Default for DefaultExcludePatterns {
-    /// Default exclude patterns
-    ///
-    /// Used in the [Default] method of [crate::settings::FormatSettings] to ensure that
-    /// virtual `air.toml`s use the default exclude patterns.
-    fn default() -> Self {
-        DEFAULT_EXCLUDE_PATTERNS.clone()
+impl DefaultExcludePatterns {
+    pub fn matched<P>(&self, path: P, is_directory: bool) -> Option<&Glob>
+    where
+        P: AsRef<Path>,
+    {
+        DEFAULT_EXCLUDE_PATTERNS.matched(path, is_directory)
     }
-}
 
-impl Deref for DefaultExcludePatterns {
-    type Target = DefaultFilePatterns;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for DefaultExcludePatterns {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
+    pub fn matched_path_or_any_parents<P>(&self, path: P, is_directory: bool) -> Option<&Glob>
+    where
+        P: AsRef<Path>,
+    {
+        DEFAULT_EXCLUDE_PATTERNS.matched_path_or_any_parents(path, is_directory)
     }
 }
 
@@ -82,7 +77,7 @@ mod test {
 
     #[test]
     fn test_default_exclude() -> anyhow::Result<()> {
-        let default_patterns = DefaultExcludePatterns::default();
+        let default_patterns = DefaultExcludePatterns;
 
         assert!(default_patterns.matched("renv", true).is_some());
         assert!(default_patterns.matched("renv", false).is_none());

@@ -1,6 +1,7 @@
-use std::ops::Deref;
-use std::ops::DerefMut;
+use std::path::Path;
 use std::sync::LazyLock;
+
+use ignore::gitignore::Glob;
 
 use crate::file_patterns::DefaultFilePatterns;
 
@@ -13,37 +14,31 @@ static DEFAULT_INCLUDE_PATTERN_NAMES: &[&str] = &[
     "**/*.[R,r]",
 ];
 
-static DEFAULT_INCLUDE_PATTERNS: LazyLock<DefaultIncludePatterns> = LazyLock::new(|| {
-    DefaultIncludePatterns(
-        DefaultFilePatterns::try_from_iter(DEFAULT_INCLUDE_PATTERN_NAMES.iter().copied())
-            .expect("Can create default include patterns"),
-    )
+static DEFAULT_INCLUDE_PATTERNS: LazyLock<DefaultFilePatterns> = LazyLock::new(|| {
+    DefaultFilePatterns::try_from_iter(DEFAULT_INCLUDE_PATTERN_NAMES.iter().copied())
+        .expect("Can create default include patterns")
 });
 
-#[derive(Debug, Clone)]
-pub struct DefaultIncludePatterns(DefaultFilePatterns);
+/// Typed wrapper around [DEFAULT_INCLUDE_PATTERNS]
+///
+/// Allows for free creation of [DefaultIncludePatterns] structs without needing to clone
+/// the global [DEFAULT_INCLUDE_PATTERNS] object.
+#[derive(Debug)]
+pub struct DefaultIncludePatterns;
 
-impl Default for DefaultIncludePatterns {
-    /// Default include patterns
-    ///
-    /// Used in the [Default] method of [crate::settings::FormatSettings] to ensure that
-    /// virtual `air.toml`s use the default include patterns.
-    fn default() -> Self {
-        DEFAULT_INCLUDE_PATTERNS.clone()
+impl DefaultIncludePatterns {
+    pub fn matched<P>(&self, path: P, is_directory: bool) -> Option<&Glob>
+    where
+        P: AsRef<Path>,
+    {
+        DEFAULT_INCLUDE_PATTERNS.matched(path, is_directory)
     }
-}
 
-impl Deref for DefaultIncludePatterns {
-    type Target = DefaultFilePatterns;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for DefaultIncludePatterns {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
+    pub fn matched_path_or_any_parents<P>(&self, path: P, is_directory: bool) -> Option<&Glob>
+    where
+        P: AsRef<Path>,
+    {
+        DEFAULT_INCLUDE_PATTERNS.matched_path_or_any_parents(path, is_directory)
     }
 }
 
@@ -61,7 +56,7 @@ mod test {
 
     #[test]
     fn test_default_include() -> anyhow::Result<()> {
-        let default_patterns = DefaultIncludePatterns::default();
+        let default_patterns = DefaultIncludePatterns;
 
         assert!(default_patterns.matched("cpp11.R", false).is_some());
         assert!(default_patterns.matched("foo/cpp11.R", false).is_some());
