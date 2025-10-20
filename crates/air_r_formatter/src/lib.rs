@@ -13,15 +13,15 @@ use biome_formatter::write;
 use biome_rowan::AstNode;
 
 use crate::comments::RCommentStyle;
+use crate::comments_ext::CommentsExt;
 use crate::context::RFormatContext;
 use crate::context::RFormatOptions;
 use crate::cst::FormatRSyntaxNode;
-use crate::directives::CommentDirectives;
 
 pub mod comments;
+pub mod comments_ext;
 pub mod context;
 mod cst;
-pub mod directives;
 pub mod either;
 pub mod formatter_ext;
 pub mod joiner_ext;

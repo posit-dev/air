@@ -1,6 +1,6 @@
-use crate::directives::CommentDirectives;
-use crate::directives::in_skip_setting;
-use crate::directives::in_table_setting;
+use crate::comments_ext::CommentsExt;
+use crate::comments_ext::in_skip_setting;
+use crate::comments_ext::in_table_setting;
 use crate::prelude::*;
 use crate::r::auxiliary::call_arguments::FormatRCallArgumentsOptions;
 
