@@ -1,5 +1,4 @@
-use crate::directives::has_skip_comment;
-use crate::directives::has_table_comment;
+use crate::directives::CommentDirectives;
 use crate::directives::in_skip_setting;
 use crate::directives::in_table_setting;
 use crate::prelude::*;
@@ -32,12 +31,15 @@ impl FormatNodeRule<RCall> for FormatRCall {
     }
 
     fn is_suppressed(&self, node: &RCall, f: &RFormatter) -> bool {
-        has_skip_comment(node.syntax(), f) || in_skip_setting(node, f).unwrap_or(false)
+        let comments = f.comments();
+        comments.mark_suppression_checked(node.syntax());
+        comments.has_skip_directive(node.syntax()) || in_skip_setting(node, f).unwrap_or(false)
     }
 }
 
 fn is_table(node: &RCall, f: &RFormatter) -> bool {
-    has_table_comment(node.syntax(), f) || in_table_setting(node, f).unwrap_or(false)
+    let comments = f.comments();
+    comments.has_table_directive(node.syntax()) || in_table_setting(node, f).unwrap_or(false)
 }
 
 impl FormatRuleWithOptions<RCall> for FormatRCall {

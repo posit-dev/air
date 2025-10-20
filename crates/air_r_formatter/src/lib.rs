@@ -16,7 +16,7 @@ use crate::comments::RCommentStyle;
 use crate::context::RFormatContext;
 use crate::context::RFormatOptions;
 use crate::cst::FormatRSyntaxNode;
-use crate::directives::has_skip_comment;
+use crate::directives::CommentDirectives;
 
 pub mod comments;
 pub mod context;
@@ -213,7 +213,10 @@ where
 
     /// Returns `true` if the node is suppressed and should use the same formatting as in the source document.
     fn is_suppressed(&self, node: &N, f: &RFormatter) -> bool {
-        has_skip_comment(node.syntax(), f)
+        let node = node.syntax();
+        let comments = f.comments();
+        comments.mark_suppression_checked(node);
+        comments.has_skip_directive(node)
     }
 
     /// Formats a suppressed node
