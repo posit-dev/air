@@ -18,7 +18,7 @@ When you want to cut a release of the Air binary and Air VS Code / OpenVSX exten
 
     -   In `crates/air/Cargo.toml`, bump the version.
 
-    -   Run `cargo check` to sync `Cargo.lock`.
+    -   Run `cargo check` to sync `Cargo.lock`, in case your LSP didn't do it already.
 
     -   In `editors/code/package.json`, bump the minor version to the next even number for standard releases, or to the next odd number for preview releases.
 
