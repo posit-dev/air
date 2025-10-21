@@ -178,6 +178,7 @@ export class Lsp {
 			documentSelector: [
 				{ language: "r", scheme: "untitled" },
 				{ language: "r", scheme: "file" },
+				{ language: "r", scheme: "vscode-notebook-cell" },
 				{ language: "r", pattern: "**/*.{r,R}" },
 				{ language: "r", pattern: "**/*.{rprofile,Rprofile}" },
 			],
