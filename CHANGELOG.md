@@ -2,6 +2,13 @@
 
 # Development version
 
+# 0.8.0
+
+- Added support for table formatting of `tribble()` and `fcase()` calls (#113).
+  You can also opt into table formatting for any other call with the `# fmt: table` comment directive, or the `table` TOML option. See also the `default-table` option to turn off Air's defaults for `tribble()` and `fcase()`.
+
+  Note: This feature is experimental. We'd be grateful for any feedback!
+
 - Formulas are now treated like assignment operators rather than like comparison operators, which means they now left-align expression chains on the right-hand side of the formula, respect persistent line breaks, and never automatically break around the `~` operator itself (#336, #402).
 
   With model formulas:
@@ -45,11 +52,6 @@
     }
   )
   ```
-
-- Added support for table formatting of `tribble()` and `fcase()` calls (#113).
-  You can also opt into table formatting for any other call with the `# fmt: table` comment directive, or the `table` TOML option. See also the `default-table` option to turn off Air's defaults for `tribble()` and `fcase()`.
-
-  Note: This feature is experimental. We'd be grateful for any feedback!
 
 
 # 0.7.1
