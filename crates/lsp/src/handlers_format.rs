@@ -1,10 +1,3 @@
-//
-// handlers_format.rs
-//
-// Copyright (C) 2024 Posit Software, PBC. All rights reserved.
-//
-//
-
 use air_r_syntax::{RExpressionList, RSyntaxKind, RSyntaxNode, WalkEvent};
 use biome_rowan::{AstNode, Language, SyntaxElement};
 use biome_text_size::{TextRange, TextSize};
@@ -669,7 +662,6 @@ mod tests {
         let expect = "1 + 1";
         let doc = Document::doodle(input);
         let output = client.format_document(&doc, filename).await;
-
         assert_eq!(output, expect);
 
         // Test with multiple lines
@@ -678,7 +670,22 @@ mod tests {
         let expect = "1 + 1\nx <- 2";
         let doc = Document::doodle(input);
         let output = client.format_document(&doc, filename).await;
+        assert_eq!(output, expect);
 
+        // Test with a trailing line
+        let filename = FileName::Url(String::from("vscode-notebook-cell:/path/to/notebook#cell3"));
+        let input = "1+1\n";
+        let expect = "1 + 1";
+        let doc = Document::doodle(input);
+        let output = client.format_document(&doc, filename).await;
+        assert_eq!(output, expect);
+
+        // Test with two trailing lines
+        let filename = FileName::Url(String::from("vscode-notebook-cell:/path/to/notebook#cell3"));
+        let input = "1+1\n\n";
+        let expect = "1 + 1";
+        let doc = Document::doodle(input);
+        let output = client.format_document(&doc, filename).await;
         assert_eq!(output, expect);
     }
 
