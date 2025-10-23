@@ -1,10 +1,3 @@
-//
-// handlers_format.rs
-//
-// Copyright (C) 2024 Posit Software, PBC. All rights reserved.
-//
-//
-
 use air_r_syntax::{RExpressionList, RSyntaxKind, RSyntaxNode, WalkEvent};
 use biome_rowan::{AstNode, Language, SyntaxElement};
 use biome_text_size::{TextRange, TextSize};
@@ -54,13 +47,23 @@ pub(crate) fn document_formatting(
     let format_options = workspace_settings.to_format_options(&doc.contents, &doc.settings);
 
     match format_source_with_parse(&doc.contents, &doc.parse, format_options)? {
-        FormattedSource::Changed(formatted) => Ok(Some(to_proto::replace_all_edit(
-            &doc.contents,
-            &formatted,
-            &doc.line_index,
-            doc.position_encoding,
-            doc.endings,
-        )?)),
+        FormattedSource::Changed(mut formatted) => {
+            // For notebook cells, remove the trailing newline that the formatter adds.
+            // The formatter always adds a trailing newline for R files (which is correct
+            // for standalone files), but notebook cells should not have this trailing newline
+            // to avoid an empty line at the end of the chunk.
+            if uri.scheme() == "vscode-notebook-cell" && formatted.ends_with('\n') {
+                formatted.pop();
+            }
+
+            Ok(Some(to_proto::replace_all_edit(
+                &doc.contents,
+                &formatted,
+                &doc.line_index,
+                doc.position_encoding,
+                doc.endings,
+            )?))
+        }
         FormattedSource::Unchanged => Ok(None),
     }
 }
@@ -643,6 +646,46 @@ mod tests {
         let doc = Document::doodle(input);
         let output = client.format_document(&doc, filename).await;
 
+        assert_eq!(output, expect);
+    }
+
+    #[tokio::test]
+    async fn test_format_notebook_cells() {
+        let mut client = new_test_client().await;
+
+        // Notebook cells use the `vscode-notebook-cell` scheme
+        // They should NOT have a trailing newline, unlike regular files
+        let filename = FileName::Url(String::from("vscode-notebook-cell:/path/to/notebook#cell1"));
+
+        let input = "1+1";
+        // Note: No trailing newline in the expected output for notebook cells
+        let expect = "1 + 1";
+        let doc = Document::doodle(input);
+        let output = client.format_document(&doc, filename).await;
+        assert_eq!(output, expect);
+
+        // Test with multiple lines
+        let filename = FileName::Url(String::from("vscode-notebook-cell:/path/to/notebook#cell2"));
+        let input = "1+1\nx<-2";
+        let expect = "1 + 1\nx <- 2";
+        let doc = Document::doodle(input);
+        let output = client.format_document(&doc, filename).await;
+        assert_eq!(output, expect);
+
+        // Test with a trailing line
+        let filename = FileName::Url(String::from("vscode-notebook-cell:/path/to/notebook#cell3"));
+        let input = "1+1\n";
+        let expect = "1 + 1";
+        let doc = Document::doodle(input);
+        let output = client.format_document(&doc, filename).await;
+        assert_eq!(output, expect);
+
+        // Test with two trailing lines
+        let filename = FileName::Url(String::from("vscode-notebook-cell:/path/to/notebook#cell3"));
+        let input = "1+1\n\n";
+        let expect = "1 + 1";
+        let doc = Document::doodle(input);
+        let output = client.format_document(&doc, filename).await;
         assert_eq!(output, expect);
     }
 
