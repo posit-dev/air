@@ -2,6 +2,9 @@
 
 # Development version
 
+- Added support for formatting notebook cells (progress towards #405, @kv9898).
+
+
 # 0.8.0
 
 - Added support for table formatting of `tribble()` and `fcase()` calls (#113).
