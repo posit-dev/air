@@ -92,6 +92,29 @@ foooooooooo,baaaaaaaaar,foooooooooo,baaaaaaaaar,foooooooooo,baaaaaaaaar,fooooooo
 )
 
 # ------------------------------------------------------------------------
+# Comment directives
+
+# In argument
+x <- matrix(
+  # fmt: table
+  c(
+    1, 2,
+    10, 200
+  ),
+  ncol = 2
+)
+
+# In argument with name
+matrix(
+  # fmt: table
+  data = c(
+    1, 2,
+    10, 200
+  ),
+  ncol = 2
+)
+
+# ------------------------------------------------------------------------
 # Comments
 
 # fmt: table
