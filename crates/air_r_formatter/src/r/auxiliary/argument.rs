@@ -36,7 +36,27 @@ pub(crate) fn fmt_argument_fields(node: &RArgument, f: &mut RFormatter) -> Forma
         // Named argument with a value
         // `foo(name = value)`
         (Some(name_clause), Some(value)) => {
-            write!(f, [name_clause.format(), space(), value.format()])
+            // If `value` has leading comments (which might happen due to our
+            // comment placement rules in arguments), we consistently break
+            // after the name clause and indent the value
+            if f.comments().has_leading_comments(value.syntax()) {
+                write!(
+                    f,
+                    [
+                        name_clause.format(),
+                        space(),
+                        // Note that this _will_ break, since the comment causes a hard line break
+                        soft_line_indent_or_space(&value.format())
+                    ]
+                )
+            } else {
+                // Never break before the value, even if `name = value` doesn't
+                // fit on one line. This allows more consistent formatting, but
+                // the main reason is for behaviour within a group. A soft line
+                // break would always break within expanded calls, even if the
+                // name-value pair comfortably fits on a line.
+                write!(f, [name_clause.format(), space(), value.format()])
+            }
         }
     }
 }

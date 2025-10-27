@@ -2,6 +2,35 @@
 
 # Development version
 
+- We now preserve the placement of comments after `=`. E.g. this:
+
+  ```r
+  foo(
+    name = # comment
+      value
+    )
+  ```
+
+  now gets formatted to:
+
+  ```r
+  foo(
+    name =
+      # comment
+      value
+  )
+  ```
+
+  instead of:
+
+  ```r
+  foo(
+    # comment
+    name =
+      value
+  )
+  ```
+
 - Added support for formatting notebook cells (progress towards #405, @kv9898).
 
 
