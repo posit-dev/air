@@ -7,7 +7,7 @@
 
 ## Development version
 
-- Added support for formatting VS Code Notebooks cells (progress towards #405, @kv9898).
+- Added support for formatting VS Code Notebook cells (progress towards #405, @kv9898).
 
 
 ## 0.18.0
