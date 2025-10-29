@@ -6,56 +6,82 @@ editor:
     canonical: true
 ---
 
-# Using Eglot
+Air provides first class support for Emacs, which supports the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/) via the eglot and `lsp-mode` modes.
 
-Add the following to your `init.el`:
+
+# Installation
+
+## eglot
+
+`eglot` is distributed with Emacs
+
+Adapt your `init.el` with the following configuration:
 
 ``` elisp
-(use-package eglot
-   :ensure t
-   :config
-   (require 'ess-site)
-   (add-hook 'ess-r-mode-hook 'eglot-ensure) ; start lsp in ess-r-mode
-   (add-to-list 'eglot-server-programs '(ess-r-mode . ("air" "language-server")))
+(add-to-list
+  'eglot-server-programs
+  '(ess-r-mode . ("air" "language-server")))
 
-   ;; format on save--optional
-   (defun my-eglot-format-on-save ()
-     "Formats buffer with Eglot on save, but only for specific modes."
-     (when (member major-mode '(ess-r-mode))
-       (eglot-format-buffer)))
-    (add-hook 'after-save-hook 'my-eglot-format-on-save)  
-    )
+;; Start LSP when ess-r-mode is activated
+(add-hook 'ess-r-mode-hook 'eglot-ensure)
 ```
 
-You can also run `M-x eglot-format` to format the current buffer or selection.
 
-# Using LSP Mode
+## lsp-mode
 
-Add the following to your `init.el`:
+`lsp-mode` can be installed from MELPA, see https://emacs-lsp.github.io/lsp-mode/page/installation
+
+Adapt your `init.el` with the following configuration:
 
 ```elisp
-(use-package lsp-mode
-  :ensure t
-  :config
-  (add-to-list 'lsp-disabled-clients 'lsp-r) ; disable languagesever entirely
-  (lsp-register-client
-   (make-lsp-client
+;; Disable languageserver entirely
+(add-to-list 'lsp-disabled-clients 'lsp-r)
+
+(lsp-register-client
+  (make-lsp-client
     :new-connection (lsp-stdio-connection '("air" "language-server"))
     :major-modes '(ess-r-mode)
-    :server-id 'lsp-r-air)
-    )
+    :server-id 'lsp-r-air))
 
-   ;;format on save--optional
-   (add-hook 'ess-r-mode-hook #'lsp-deferred)
-   (defun ess-lsp-format-on-save ()
-     "Formats buffer on save, but only for specific modes."
-     (when (member major-mode '(ess-r-mode))
-       (lsp-format-buffer)))
-   (add-hook 'after-save-hook 'ess-lsp-format-on-save)  
-   )
+;; Start LSP when ess-r-mode is activated
+(add-hook 'ess-r-mode-hook #'lsp-deferred)
 ```
 
-You can also run `M-x lsp-format-buffer` to format the current buffer or `lsp-format-region` to format the current selection.
+# Features
+
+## Format on save
+
+Emacs doesn't have official support for formatting on save, but hooking into the save action is easy.
+
+With `eglot`:
+
+```elisp
+(defun my-eglot-format-on-save ()
+  "Formats buffer with Eglot on save for specified modes."
+  (when (member major-mode '(ess-r-mode))
+    (eglot-format-buffer)))
+
+(add-hook 'after-save-hook 'my-eglot-format-on-save))
+```
+
+With `lsp-mode`:
+
+```elisp
+(defun ess-lsp-format-on-save ()
+  "Formats buffer on save, but only for specific modes."
+  (when (member major-mode '(ess-r-mode))
+    (lsp-format-buffer)))
+
+(add-hook 'after-save-hook 'ess-lsp-format-on-save)
+```
+
+
+## Format document or region
+
+- With `eglot`: Run `M-x eglot-format` to format the current buffer or selection.
+
+- With `lsp-mode`: Run `M-x lsp-format-buffer` to format the current buffer or `lsp-format-region` to format the current selection.
+
 
 # Known Issues
 
