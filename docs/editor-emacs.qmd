@@ -28,7 +28,7 @@ Add the following to your `init.el`:
 ```
 You can also run `M-x eglot-format` to format the current buffer or selection.
 
-# Using LSP-mode
+# Using LSP Mode
 
 Add the following to your `init.el`:
 
