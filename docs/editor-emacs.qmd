@@ -1,0 +1,33 @@
+---
+title: "Emacs"
+editor:
+  markdown:
+    wrap: sentence
+    canonical: true
+---
+
+
+# Installation
+
+Once you have installed Air, add the following to your `init.el`:
+
+``` elisp
+(use-package eglot
+   :ensure t
+   :config
+   (require 'ess-site)
+   (add-hook 'ess-r-mode-hook 'eglot-ensure) ; start lsp in ess-r-mode
+   (add-to-list 'eglot-server-programs '(ess-r-mode . ("air" "language-server")))
+
+   ;; format on save--optional
+   (defun my-eglot-format-on-save ()
+     "Formats buffer with Eglot on save, but only for specific modes."
+     (when (member major-mode '(ess-r-mode))
+       (eglot-format-buffer)))
+    (add-hook 'after-save-hook 'my-eglot-format-on-save)  
+    )
+```
+
+While not required, the `after-save-hook` command ensures that Air automatically formats your R code when you save a file.
+
+You can also run M-x eglot-format to format the current buffer or selection. Running eglot-format when multiple lines are selected seems not to be working, but selecting part or all a line in a multi-line expression will format that entire expression.

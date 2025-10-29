@@ -22,3 +22,5 @@ Follow one of our editor specific guides to get set up with Air in your preferre
 -   [Neovim](editor-neovim.qmd)
 
 -   [Helix](editor-helix.qmd)
+
+-   [Emacs](editor-emacs.qmd)
