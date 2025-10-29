@@ -6,10 +6,9 @@ editor:
     canonical: true
 ---
 
+# Using Eglot
 
-# Installation
-
-Once you have installed Air, add the following to your `init.el`:
+Add the following to your `init.el`:
 
 ``` elisp
 (use-package eglot
@@ -27,7 +26,35 @@ Once you have installed Air, add the following to your `init.el`:
     (add-hook 'after-save-hook 'my-eglot-format-on-save)  
     )
 ```
+You can also run `M-x eglot-format` to format the current buffer or selection.
 
-While not required, the `after-save-hook` command ensures that Air automatically formats your R code when you save a file.
+# Using LSP-mode
 
-You can also run M-x eglot-format to format the current buffer or selection. Running eglot-format when multiple lines are selected seems not to be working, but selecting part or all a line in a multi-line expression will format that entire expression.
+Add the following to your `init.el`:
+
+```elisp
+(use-package lsp-mode
+  :ensure t
+  :config
+  (add-to-list 'lsp-disabled-clients 'lsp-r) ; disable languagesever entirely
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection '("air" "language-server"))
+    :major-modes '(ess-r-mode)
+    :server-id 'lsp-r-air)
+    )
+
+   ;;format on save--optional
+   (add-hook 'ess-r-mode-hook #'lsp-deferred)
+   (defun ess-lsp-format-on-save ()
+     "Formats buffer on save, but only for specific modes."
+     (when (member major-mode '(ess-r-mode))
+       (lsp-format-buffer)))
+   (add-hook 'after-save-hook 'ess-lsp-format-on-save)  
+   )
+```
+You can also run `M-x lsp-format-buffer` to format the current buffer or `lsp-format-region` to format the current selection.
+
+# Known Issues
+
+- Attempting to format selection when multiple lines are selected seems not to be working, but selecting part or all a line in a multi-line expression will format that entire expression. This isssue occurs regardless of whether Air is used with Eglot or LSP-mode.
