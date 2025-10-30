@@ -31,7 +31,7 @@ Adapt your `init.el` with the following configuration:
 
 `lsp-mode` can be installed from MELPA, see https://emacs-lsp.github.io/lsp-mode/page/installation
 
-Adapt your `init.el` with the following configuration:
+If the `languageserver` R package is installed, `lsp-mode` will use it in `ess-r-mode` by default. To use the Air language server without the language server provided by the `languageserver` R package, adapt your `init.el` with the following configuration:
 
 ```elisp
 ;; Disable languageserver entirely
@@ -46,6 +46,32 @@ Adapt your `init.el` with the following configuration:
 ;; Start LSP when ess-r-mode is activated
 (add-hook 'ess-r-mode-hook #'lsp-deferred)
 ```
+
+To use Air in combination with `languageserver`, adapt your `init.el` with the following configuration.
+
+```elisp
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection '("air" "language-server"))
+    :major-modes  '(ess-r-mode)
+    :server-id 'lsp-r-air
+    :add-on? t
+    :priority 1))
+```
+
+You will also need to add the following to your global and/or project-specific `.Rprofile` file to disable formatting by the `languageserver` package to avoid conflicts when using `lsp-format-region`:
+
+```r
+options(
+  languageserver.server_capabilities = list(
+    documentFormattingProvider = FALSE,
+    documentRangeFormattingProvider = FALSE
+  )
+)
+```
+
+If you encounter timeout errors when using `lsp-mode` in large projects, refer to the lsp-mode documentation on [how to disable file watchers](https://emacs-lsp.github.io/lsp-mode/page/file-watchers/).
+
 
 # Features
 
