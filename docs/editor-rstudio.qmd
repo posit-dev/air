@@ -27,6 +27,7 @@ Next, you'll need to tell RStudio to use Air as an external formatter:
         RStudio will append the name of the file to this partial command, but you *must* specify `format` in addition to the path to Air for it to work.
 
     -   The easiest way to figure out `{path/to/air}` for yourself is to run `which air` from a Terminal on Unix, and `where air` from the Command Prompt on Windows.
+        Note that if your `{path/to/air}` contains any spaces, then you will need to wrap it in double quotes, like `"/Users/Your Name/air" format`.
 
 -   Apply the changes and exit the settings.
 
