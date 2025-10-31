@@ -30,6 +30,7 @@ website:
           - editor-zed.qmd
           - editor-neovim.qmd
           - editor-helix.qmd
+          - editor-emacs.qmd
 
       - section: "Integrations"
         contents:
