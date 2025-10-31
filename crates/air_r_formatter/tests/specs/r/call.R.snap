@@ -534,6 +534,18 @@ with(
   # own-line
 )
 
+list(
+  # comment0
+  foo  # comment1
+  =1, bar  # comment2
+  =  # comment3
+  # comment4
+  2 #comment5
+  #comment6
+  , #comment7
+  #comment8
+)
+
 # ------------------------------------------------------------------------
 # Comments: Trailing inline function
 
@@ -1454,18 +1466,20 @@ with(
 
 with(
   xs,
-  # end-of-line
-  expr = {
-    x + 1
-  }
+  expr =
+    # end-of-line
+    {
+      x + 1
+    }
 )
 
 with(
   xs,
-  # own-line
-  expr = {
-    x + 1
-  }
+  expr =
+    # own-line
+    {
+      x + 1
+    }
 )
 
 with(
@@ -1481,6 +1495,19 @@ with(
     x + 1
   }
   # own-line
+)
+
+list(
+  # comment0
+  # comment1
+  foo = 1,
+  # comment2
+  bar =
+    # comment3
+    # comment4
+    2, #comment5 #comment7
+  #comment8
+  #comment6
 )
 
 # ------------------------------------------------------------------------
@@ -1527,18 +1554,20 @@ fn(
 
 fn(
   xs,
-  # end-of-line
-  f = function(x) {
-    x + 1
-  }
+  f =
+    # end-of-line
+    function(x) {
+      x + 1
+    }
 )
 
 fn(
   xs,
-  # own-line
-  f = function(x) {
-    x + 1
-  }
+  f =
+    # own-line
+    function(x) {
+      x + 1
+    }
 )
 
 fn(
@@ -1751,8 +1780,9 @@ c(list(
 ))
 
 c(list(
-  #foo
-  x = 1
+  x =
+    #foo
+    1
 ))
 
 c(list(
@@ -1849,8 +1879,8 @@ foo(bar[
 # Lines exceeding max width of 80 characters
 ```
   316:   my_long_list_my_long_list_my_long_list_my_long_list_long_long_long_long_long_list,
-  789:   foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz
-  793: c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz()))
-  796: c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz(
-  809:   name = foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz(
+  806:   foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz
+  810: c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz()))
+  813: c(list(foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz(
+  826:   name = foobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbafoobarbazzzzzzzzzfoobarbaz(
 ```

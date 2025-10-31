@@ -129,7 +129,6 @@ list(
   1,2    # comment
 )
 
-# Unfortunate: comment3 gets pulled up by Biome's Comments builder
 # fmt: table
 list(
   foo  # comment1
@@ -561,14 +560,14 @@ list(
   1 , 2 # comment
 )
 
-# Unfortunate: comment3 gets pulled up by Biome's Comments builder
 # fmt: table
 list(
   # comment1
   foo = 1,
-  # comment3
   # comment2
-  bar = 2,
+  bar =
+    # comment3
+    2,
 )
 
 # ------------------------------------------------------------------------
@@ -854,8 +853,8 @@ list(
 
 ## Unimplemented nodes/tokens
 
-"(\n\"foo\n\",  2)" => 5299..5312
-"(\n{ foo },  2\n)" => 5331..5346
+"(\n\"foo\n\",  2)" => 5238..5251
+"(\n{ foo },  2\n)" => 5270..5285
 # Lines exceeding max width of 80 characters
 ```
    91:   foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo(baaaaaaaaar, foooooooooo, baaaaaaaaar) ,
