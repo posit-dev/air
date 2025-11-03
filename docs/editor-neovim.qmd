@@ -18,16 +18,20 @@ While the Air language server currently only supports formatting, it will gain m
 Add the following to your `init.lua`:
 
 ``` lua
-require("lspconfig").air.setup({
+local lsp = vim.lsp
+lsp.config['air'] = {
     on_attach = function(_, bufnr)
+        -- Create an autocommand to format on buffer write
         vim.api.nvim_create_autocmd("BufWritePre", {
             buffer = bufnr,
             callback = function()
-                vim.lsp.buf.format()
+                lsp.buf.format()  
             end,
         })
     end,
-})
+}
+
+lsp.enable('air')
 ```
 
 While not required, the `BufWritePre` command ensures that Air automatically formats your R code when you save a file.
@@ -37,12 +41,12 @@ While not required, the `BufWritePre` command ensures that Air automatically for
 If both Air and `languageserver` are installed, you can use the following configuration to disable `languageserver` formatting, ensuring that only Air handles formatting:
 
 ``` lua
-require("lspconfig").r_language_server.setup({
+vim.lsp.config['r_language_server']= {
     on_attach = function(client, _)
         client.server_capabilities.documentFormattingProvider = false
         client.server_capabilities.documentRangeFormattingProvider = false
     end,
-})
+}
 ```
 
 # Features
