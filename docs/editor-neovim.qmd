@@ -21,7 +21,6 @@ Add the following to your `init.lua`:
 local lsp = vim.lsp
 lsp.config['air'] = {
     on_attach = function(_, bufnr)
-        -- Create an autocommand to format on buffer write
         vim.api.nvim_create_autocmd("BufWritePre", {
             buffer = bufnr,
             callback = function()
