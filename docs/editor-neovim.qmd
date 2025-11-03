@@ -36,7 +36,6 @@ It is recommended to use vim.lsp api instead of require("lspconfig") for Neovim 
 local lsp = vim.lsp
 lsp.config['air'] = {
     on_attach = function(_, bufnr)
-        -- Create an autocommand to format on buffer write
         vim.api.nvim_create_autocmd("BufWritePre", {
             buffer = bufnr,
             callback = function()
