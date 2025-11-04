@@ -37,7 +37,7 @@ While not required, the BufWritePre command ensures that Air automatically forma
 
 ### Neovim <0.11 
 
-If you are using a version of Neovim that does not support vim.lsp:
+If you are using a version of Neovim that does not support vim.lsp.config:
 
 ``` lua
 require("lspconfig").air.setup({
