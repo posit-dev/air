@@ -18,21 +18,6 @@ While the Air language server currently only supports formatting, it will gain m
 Add the following to your `init.lua`:
 
 ``` lua
-require("lspconfig").air.setup({
-    on_attach = function(_, bufnr)
-        vim.api.nvim_create_autocmd("BufWritePre", {
-            buffer = bufnr,
-            callback = function()
-                vim.lsp.buf.format()
-            end,
-        })
-    end,
-})
-```
-
-It is recommended to use vim.lsp api instead of require("lspconfig") for Neovim 0.11+ users: 
-
-``` lua
 local lsp = vim.lsp
 lsp.config['air'] = {
     on_attach = function(_, bufnr)
@@ -48,22 +33,28 @@ lsp.config['air'] = {
 lsp.enable('air')
 ```
 
-While not required, the `BufWritePre` command ensures that Air automatically formats your R code when you save a file.
+While not required, the BufWritePre command ensures that Air automatically formats your R code when you save a file.
 
-## `languageserver`
+### Neovim <0.11 
 
-If both Air and `languageserver` are installed, you can use the following configuration to disable `languageserver` formatting, ensuring that only Air handles formatting:
+If you are using a version of Neovim that does not support vim.lsp:
 
 ``` lua
-require("lspconfig").r_language_server.setup({
-    on_attach = function(client, _)
-        client.server_capabilities.documentFormattingProvider = false
-        client.server_capabilities.documentRangeFormattingProvider = false
+require("lspconfig").air.setup({
+    on_attach = function(_, bufnr)
+        vim.api.nvim_create_autocmd("BufWritePre", {
+            buffer = bufnr,
+            callback = function()
+                vim.lsp.buf.format()
+            end,
+        })
     end,
 })
 ```
 
-Neovim 0.11+: 
+## `languageserver`
+
+If both Air and `languageserver` are installed, you can use the following configuration to disable `languageserver` formatting, ensuring that only Air handles formatting:
 
 ``` lua
 vim.lsp.config['r_language_server']= {
@@ -72,6 +63,17 @@ vim.lsp.config['r_language_server']= {
         client.server_capabilities.documentRangeFormattingProvider = false
     end,
 }
+```
+
+### Neovim < 0.11
+
+``` lua
+require("lspconfig").r_language_server.setup({
+    on_attach = function(client, _)
+        client.server_capabilities.documentFormattingProvider = false
+        client.server_capabilities.documentRangeFormattingProvider = false
+    end,
+})
 ```
 
 # Features
