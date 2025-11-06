@@ -90,15 +90,13 @@ With `eglot`:
 (add-hook 'after-save-hook 'my-eglot-format-on-save))
 ```
 
-With `lsp-mode`:
+With `lsp-mode`, from <https://emacs-lsp.github.io/lsp-mode/page/main-features>:
+
+> You can also trigger format on save by setting the variable lsp-format-buffer-on-save to a non-nil value. To select what major modes to format use lsp-format-buffer-on-save-list.
 
 ```elisp
-(defun ess-lsp-format-on-save ()
-  "Formats buffer on save, but only for specific modes."
-  (when (member major-mode '(ess-r-mode))
-    (lsp-format-buffer)))
-
-(add-hook 'after-save-hook 'ess-lsp-format-on-save)
+(setq lsp-format-buffer-on-save t)
+(setq lsp-format-buffer-on-save-list '("ess-r-mode"))
 ```
 
 
