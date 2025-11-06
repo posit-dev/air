@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Configuration – Air</title>
+<title>Emacs – Air</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -125,7 +125,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./configuration.html">Configuration</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./editors.html">Editors</a></li><li class="breadcrumb-item"><a href="./editor-emacs.html">Emacs</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -204,7 +204,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./editor-emacs.html" class="sidebar-item-text sidebar-link">
+  <a href="./editor-emacs.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Emacs</span></a>
   </div>
 </li>
@@ -229,7 +229,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./configuration.html" class="sidebar-item-text sidebar-link active">
+  <a href="./configuration.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Configuration</span></a>
   </div>
 </li>
@@ -245,33 +245,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#example-configuration" id="toc-example-configuration" class="nav-link active" data-scroll-target="#example-configuration">Example configuration</a></li>
-  <li><a href="#configuration-recommendations" id="toc-configuration-recommendations" class="nav-link" data-scroll-target="#configuration-recommendations">Configuration recommendations</a></li>
-  <li><a href="#configuration-discovery" id="toc-configuration-discovery" class="nav-link" data-scroll-target="#configuration-discovery">Configuration discovery</a></li>
-  <li><a href="#configuration-settings-synchronization" id="toc-configuration-settings-synchronization" class="nav-link" data-scroll-target="#configuration-settings-synchronization">Settings synchronization</a></li>
-  <li><a href="#dotfiles" id="toc-dotfiles" class="nav-link" data-scroll-target="#dotfiles">Dotfiles</a></li>
-  <li><a href="#format-options" id="toc-format-options" class="nav-link" data-scroll-target="#format-options">Format options</a>
+  <li><a href="#installation" id="toc-installation" class="nav-link active" data-scroll-target="#installation">Installation</a>
   <ul class="collapse">
-  <li><a href="#line-width" id="toc-line-width" class="nav-link" data-scroll-target="#line-width">line-width</a></li>
-  <li><a href="#indent-width" id="toc-indent-width" class="nav-link" data-scroll-target="#indent-width">indent-width</a></li>
-  <li><a href="#indent-style" id="toc-indent-style" class="nav-link" data-scroll-target="#indent-style">indent-style</a></li>
-  <li><a href="#line-ending" id="toc-line-ending" class="nav-link" data-scroll-target="#line-ending">line-ending</a></li>
-  <li><a href="#persistent-line-breaks" id="toc-persistent-line-breaks" class="nav-link" data-scroll-target="#persistent-line-breaks">persistent-line-breaks</a></li>
-  <li><a href="#exclude" id="toc-exclude" class="nav-link" data-scroll-target="#exclude">exclude</a></li>
-  <li><a href="#default-exclude" id="toc-default-exclude" class="nav-link" data-scroll-target="#default-exclude">default-exclude</a></li>
-  <li><a href="#configuration-skip" id="toc-configuration-skip" class="nav-link" data-scroll-target="#configuration-skip">skip</a></li>
-  <li><a href="#configuration-table" id="toc-configuration-table" class="nav-link" data-scroll-target="#configuration-table">table</a></li>
-  <li><a href="#default-table" id="toc-default-table" class="nav-link" data-scroll-target="#default-table">default-table</a></li>
+  <li><a href="#eglot" id="toc-eglot" class="nav-link" data-scroll-target="#eglot">eglot</a></li>
+  <li><a href="#lsp-mode" id="toc-lsp-mode" class="nav-link" data-scroll-target="#lsp-mode">lsp-mode</a></li>
   </ul></li>
+  <li><a href="#features" id="toc-features" class="nav-link" data-scroll-target="#features">Features</a>
+  <ul class="collapse">
+  <li><a href="#format-on-save" id="toc-format-on-save" class="nav-link" data-scroll-target="#format-on-save">Format on save</a></li>
+  <li><a href="#format-document-or-region" id="toc-format-document-or-region" class="nav-link" data-scroll-target="#format-document-or-region">Format document or region</a></li>
+  </ul></li>
+  <li><a href="#known-issues" id="toc-known-issues" class="nav-link" data-scroll-target="#known-issues">Known Issues</a></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/configuration.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/editor-emacs.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./editors.html">Editors</a></li><li class="breadcrumb-item"><a href="./editor-emacs.html">Emacs</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Configuration</h1>
+<h1 class="title">Emacs</h1>
 </div>
 
 
@@ -288,197 +281,90 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Air can be configured using a TOML file named <code>air.toml</code>. Air is purposefully minimally configurable, with the main configuration points being related to line width and indent style.</p>
-<section id="example-configuration" class="level2">
-<h2 class="anchored" data-anchor-id="example-configuration">Example configuration</h2>
-<p>Below is a complete <code>air.toml</code> file showing all available options set to their default values:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[format]</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">line-width</span> <span class="op">=</span> <span class="dv">80</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">indent-width</span> <span class="op">=</span> <span class="dv">2</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dt">indent-style</span> <span class="op">=</span> <span class="st">"space"</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">line-ending</span> <span class="op">=</span> <span class="st">"auto"</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">persistent-line-breaks</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="dt">exclude</span> <span class="op">=</span> <span class="op">[]</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="dt">default-exclude</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="dt">skip</span> <span class="op">=</span> <span class="op">[]</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="dt">table</span> <span class="op">=</span> <span class="op">[]</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="dt">default-table</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Air provides first class support for Emacs, which supports the <a href="https://microsoft.github.io/language-server-protocol/">Language Server Protocol</a> via the eglot and <code>lsp-mode</code> modes.</p>
+<section id="installation" class="level1">
+<h1>Installation</h1>
+<section id="eglot" class="level2">
+<h2 class="anchored" data-anchor-id="eglot">eglot</h2>
+<p><code>eglot</code> is distributed with Emacs</p>
+<p>Adapt your <code>init.el</code> with the following configuration:</p>
+<pre class="elisp"><code>(add-to-list
+  'eglot-server-programs
+  '(ess-r-mode . ("air" "language-server")))
+
+;; Start LSP when ess-r-mode is activated
+(add-hook 'ess-r-mode-hook 'eglot-ensure)</code></pre>
 </section>
-<section id="configuration-recommendations" class="level2">
-<h2 class="anchored" data-anchor-id="configuration-recommendations">Configuration recommendations</h2>
-<p>For collaborative projects, we recommend creating an <code>air.toml</code> and placing it at your project root even if you plan to use the default Air settings. The easiest way to do this is by running the VS Code or Positron command <code>Air: Initialize Workspace Folder</code>, or by running <a href="https://usethis.r-lib.org/dev/reference/use_air.html"><code>usethis::use_air()</code></a> if you are using another IDE.</p>
-<p>The existence of an <code>air.toml</code> has a number of benefits:</p>
+<section id="lsp-mode" class="level2">
+<h2 class="anchored" data-anchor-id="lsp-mode">lsp-mode</h2>
+<p><code>lsp-mode</code> can be installed from MELPA, see https://emacs-lsp.github.io/lsp-mode/page/installation</p>
+<p>If the <code>languageserver</code> R package is installed, <code>lsp-mode</code> will use it in <code>ess-r-mode</code> by default. To use the Air language server without the language server provided by the <code>languageserver</code> R package, adapt your <code>init.el</code> with the following configuration:</p>
+<pre class="elisp"><code>;; Disable languageserver entirely
+(add-to-list 'lsp-disabled-clients 'lsp-r)
+
+(lsp-register-client
+  (make-lsp-client
+    :new-connection (lsp-stdio-connection '("air" "language-server"))
+    :major-modes '(ess-r-mode)
+    :server-id 'lsp-r-air))
+
+;; Start LSP when ess-r-mode is activated
+(add-hook 'ess-r-mode-hook #'lsp-deferred)</code></pre>
+<p>To use Air in combination with <code>languageserver</code>, adapt your <code>init.el</code> with the following configuration.</p>
+<pre class="elisp"><code>  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection '("air" "language-server"))
+    :major-modes  '(ess-r-mode)
+    :server-id 'lsp-r-air
+    :add-on? t
+    :priority 1))</code></pre>
+<p>You will also need to add the following to your global and/or project-specific <code>.Rprofile</code> file to disable formatting by the <code>languageserver</code> package to avoid conflicts when using <code>lsp-format-region</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">languageserver.server_capabilities =</span> <span class="fu">list</span>(</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">documentFormattingProvider =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">documentRangeFormattingProvider =</span> <span class="cn">FALSE</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>If you encounter timeout errors when using <code>lsp-mode</code> in large projects, refer to the lsp-mode documentation on <a href="https://emacs-lsp.github.io/lsp-mode/page/file-watchers/">how to disable file watchers</a>.</p>
+</section>
+</section>
+<section id="features" class="level1">
+<h1>Features</h1>
+<section id="format-on-save" class="level2">
+<h2 class="anchored" data-anchor-id="format-on-save">Format on save</h2>
+<p>Emacs doesn’t have official support for formatting on save, but hooking into the save action is easy.</p>
+<p>With <code>eglot</code>:</p>
+<pre class="elisp"><code>(defun my-eglot-format-on-save ()
+  "Formats buffer with Eglot on save for specified modes."
+  (when (member major-mode '(ess-r-mode))
+    (eglot-format-buffer)))
+
+(add-hook 'after-save-hook 'my-eglot-format-on-save))</code></pre>
+<p>With <code>lsp-mode</code>, from <a href="https://emacs-lsp.github.io/lsp-mode/page/main-features" class="uri">https://emacs-lsp.github.io/lsp-mode/page/main-features</a>:</p>
+<blockquote class="blockquote">
+<p>You can also trigger format on save by setting the variable lsp-format-buffer-on-save to a non-nil value. To select what major modes to format use lsp-format-buffer-on-save-list.</p>
+</blockquote>
+<pre class="elisp"><code>(setq lsp-format-buffer-on-save t)
+(setq lsp-format-buffer-on-save-list '("ess-r-mode"))</code></pre>
+</section>
+<section id="format-document-or-region" class="level2">
+<h2 class="anchored" data-anchor-id="format-document-or-region">Format document or region</h2>
 <ul>
-<li><p>It stops Air from using user level editor settings. When an <code>air.toml</code> is not present, Air respects some user level editor settings, such as <code>editor.tabWidth</code> in VS Code or Positron. The presence of an <code>air.toml</code> (even an empty one) disables this, instead pulling all settings from the configuration file. This ensures that settings are the same across team members, code editors, and in CI.</p></li>
-<li><p>It stops <a href="#configuration-discovery">configuration discovery</a> from extending outside your project. Without an <code>air.toml</code> at the project root, Air might discover your local <code>~/packages/air.toml</code> as the configuration file to use for the <code>~/packages/dplyr</code> project. By adding <code>~/packages/dplyr/air.toml</code>, you prevent configuration discovery from looking “above” <code>~/packages/dplyr</code>, again ensuring consistent settings across team members.</p></li>
-<li><p>It serves as a signal to others that your project is using Air.</p></li>
-</ul>
-<p>If you do plan to just use the defaults, the <code>air.toml</code> can be completely empty. The important thing is that it exists.</p>
-<p>If you’re happy with Air’s defaults (or your IDE settings, see <a href="#configuration-settings-synchronization">synchronization</a>) and don’t plan for your project to ever leave your computer, you likely don’t need an <code>air.toml</code>.</p>
-</section>
-<section id="configuration-discovery" class="level2">
-<h2 class="anchored" data-anchor-id="configuration-discovery">Configuration discovery</h2>
-<p>The ideal place to put an <code>air.toml</code> file is at your project root. For example, note the placement of <code>air.toml</code> in this minimal dplyr project:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">~/packages/dplyr</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> air.toml</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> DESCRIPTION</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> NAMESPACE</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> R</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> src</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> tests</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ex">└──</span> vignettes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>If you run <code>air format</code> with a working directory of <code>~/packages/dplyr</code> or open your IDE in the dplyr project, then Air will find and use that TOML file.</p>
-<p>Air also supports walking up the directory tree from the project root. For example, if you ran <code>air format</code> from within <code>~/packages/dplyr/R</code>, then Air would look “up” one directory and would find and use <code>~/packages/dplyr/air.toml</code>.</p>
-</section>
-<section id="configuration-settings-synchronization" class="level2">
-<h2 class="anchored" data-anchor-id="configuration-settings-synchronization">Settings synchronization</h2>
-<p>In IDEs that support synchronization (VS Code and Positron currently), Air does its best to ensure that the formatter and the IDE are in agreement. This is supported by two mechanisms:</p>
-<ul>
-<li><p>In projects that don’t have an <code>air.toml</code> file, IDE settings are sent to Air. This ensures that Air will use the same indentation style and width that is configured in the IDE.</p></li>
-<li><p>In projects that do have an <code>air.toml</code> file, the Air settings are sent to the IDE. This ensures that the IDE will use the same indentation style and width that Air uses.</p></li>
-</ul>
-<p>The goal of this synchronization mechanism is for the IDE to work in lockstep with the Air formatter.</p>
-</section>
-<section id="dotfiles" class="level2">
-<h2 class="anchored" data-anchor-id="dotfiles">Dotfiles</h2>
-<p>Air supports both <code>air.toml</code> and <code>.air.toml</code>. If both are present in the same directory, then <code>air.toml</code> is preferred (but we don’t recommend this).</p>
-</section>
-<section id="format-options" class="level2">
-<h2 class="anchored" data-anchor-id="format-options">Format options</h2>
-<p>All formatting options are specified under the <code>[format]</code> table.</p>
-<section id="line-width" class="level3">
-<h3 class="anchored" data-anchor-id="line-width">line-width</h3>
-<p>The preferred maximum line length.</p>
-<p>An integer value between 1 and 320, with a default of 80.</p>
-<p>While the formatter will attempt to format lines such that they remain within the <code>line-width</code>, it isn’t a hard upper bound, and formatted lines may exceed the <code>line-width</code>.</p>
-</section>
-<section id="indent-width" class="level3">
-<h3 class="anchored" data-anchor-id="indent-width">indent-width</h3>
-<p>The number of spaces per indentation level.</p>
-<p>An integer value between 1 and 24, with a default of 2.</p>
-<p>This option changes the number of spaces the formatter inserts when using <code>indent-style = "space"</code>. It also represents the width of a tab when <code>indent-style = "tab"</code> for the purposes of computing the <code>line-width</code>.</p>
-</section>
-<section id="indent-style" class="level3">
-<h3 class="anchored" data-anchor-id="indent-style">indent-style</h3>
-<p>Whether to use spaces or tabs for indentation.</p>
-<p>One of the following values, with a default of <code>"space"</code>:</p>
-<ul>
-<li><p><code>"space"</code>: Use spaces for indentation.</p></li>
-<li><p><code>"tab"</code>: Use tabs for indentation.</p></li>
-</ul>
-<p>Air defaults to spaces due to the overwhelming amount of existing R code written in this style, but consider using tabs for new projects to improve accessibility. See <code>indent-width</code> to configure the number of spaces per indentation and the tab width.</p>
-</section>
-<section id="line-ending" class="level3">
-<h3 class="anchored" data-anchor-id="line-ending">line-ending</h3>
-<p>The character air uses at the end of a line.</p>
-<p>One of the following values, with a default of <code>"auto"</code>:</p>
-<ul>
-<li><p><code>"auto"</code>: The newline style is detected automatically on a file per file basis. Files with mixed line endings will be converted to the first detected line ending. Defaults to <code>\n</code> for files that contain no line endings.</p></li>
-<li><p><code>"lf"</code>: Line endings will be converted to <code>\n</code>. The typical line ending on Unix.</p></li>
-<li><p><code>"crlf"</code>: Line endings will be converted to <code>\r\n</code>. The typical line ending on Windows.</p></li>
-<li><p><code>"native"</code>: Line endings will be converted to <code>\n</code> on Unix and <code>\r\n</code> on Windows.</p></li>
+<li><p>With <code>eglot</code>: Run <code>M-x eglot-format</code> to format the current buffer or selection.</p></li>
+<li><p>With <code>lsp-mode</code>: Run <code>M-x lsp-format-buffer</code> to format the current buffer or <code>lsp-format-region</code> to format the current selection.</p></li>
 </ul>
 </section>
-<section id="persistent-line-breaks" class="level3">
-<h3 class="anchored" data-anchor-id="persistent-line-breaks">persistent-line-breaks</h3>
-<p>Whether or not persistent line breaks are allowed.</p>
-<p>Either <code>true</code> to respect persistent line breaks, or <code>false</code> to ignore them, with a default of <code>true</code>.</p>
-<p>Air respects a small set of persistent line breaks as an indication that certain function calls or function signatures should be left expanded. For example, the following list could be flattened to one line and would still fit within a <code>line-width</code> of 80, however, it remains expanded due to the persistent line break between the opening <code>(</code> and the first argument, <code>apple</code>.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>dictionary <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">apple =</span> <span class="fl">0.75</span>,</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">banana =</span> <span class="fl">0.25</span>,</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">cherry =</span> <span class="fl">0.50</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Similarly, this function signature could also be flattened, but is not, due to the persistent line break between the opening <code>(</code> and the first parameter, <code>...</code>.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>case_when <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  ...,</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">.default =</span> <span class="cn">NULL</span>,</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">.ptype =</span> <span class="cn">NULL</span>,</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">.size =</span> <span class="cn">NULL</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>) {</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  body</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>To request flattening in these cases, just remove the persistent line break. For example:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># If you started here,</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>dictionary <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">apple =</span> <span class="fl">0.75</span>,</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">banana =</span> <span class="fl">0.25</span>,</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">cherry =</span> <span class="fl">0.50</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># then do this, and run air,</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>dictionary <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">apple =</span> <span class="fl">0.75</span>,</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">banana =</span> <span class="fl">0.25</span>,</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">cherry =</span> <span class="fl">0.50</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co"># to get this.</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>dictionary <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">apple =</span> <span class="fl">0.75</span>, <span class="at">banana =</span> <span class="fl">0.25</span>, <span class="at">cherry =</span> <span class="fl">0.50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Alternatively, use a tool such as <a href="https://github.com/lionel-/codegrip">codegrip</a> bound to a keyboard shortcut to flatten the code, and Air will keep it flattened as long as it fits within the <code>line-width</code>.</p>
-<p>It may be preferable to ignore persistent line breaks if you prefer that <code>line-width</code> should be the only value that influences line breaks.</p>
 </section>
-<section id="exclude" class="level3">
-<h3 class="anchored" data-anchor-id="exclude">exclude</h3>
-<p>The set of additional files and folders to exclude.</p>
-<p>A list of strings, i.e.&nbsp;<code>exclude = ["file.R", "folder/", "files-like-*-this.R"]</code>.</p>
-<p>By default, Air will refuse to format files matched by patterns listed in <code>default-exclude</code>. Use this option to supply an additional list of exclude patterns.</p>
-<p>Exclude patterns are modeled after what you can provide in a <a href="https://git-scm.com/docs/gitignore">.gitignore</a>, and are resolved relative to the parent directory that your <code>air.toml</code> is contained within. For example, if your <code>air.toml</code> was located at <code>root/air.toml</code>, then:</p>
+<section id="known-issues" class="level1">
+<h1>Known Issues</h1>
 <ul>
-<li><p><code>file.R</code> excludes a file named <code>file.R</code> located anywhere below <code>root/</code>. This is equivalent to <code>**/file.R</code>.</p></li>
-<li><p><code>folder/</code> excludes a directory named <code>folder</code> (and all of its children) located anywhere below <code>root/</code>. You can also just use <code>folder</code>, but this would technically also match a file named <code>folder</code>, so the trailing slash is preferred when targeting directories. This is equivalent to <code>**/folder/</code>.</p></li>
-<li><p><code>/file.R</code> excludes a file named <code>file.R</code> located at <code>root/file.R</code>.</p></li>
-<li><p><code>/folder/</code> excludes a directory named <code>folder</code> (and all of its children) located at <code>root/folder/</code>.</p></li>
-<li><p><code>file-*.R</code> excludes R files named like <code>file-this.R</code> and <code>file-that.R</code> located anywhere below <code>root/</code>.</p></li>
-<li><p><code>folder/*.R</code> excludes all R files located at <code>root/folder/</code>. Note that R files in directories under <code>folder/</code> are not excluded in this case (such as <code>root/folder/subfolder/file.R</code>).</p></li>
-<li><p><code>folder/**/*.R</code> excludes all R files located anywhere below <code>root/folder/</code>.</p></li>
-<li><p><code>**/folder/*.R</code> excludes all R files located directly inside a <code>folder/</code> directory, where the <code>folder/</code> directory itself can appear anywhere.</p></li>
-</ul>
-<p>See the full <a href="https://git-scm.com/docs/gitignore">.gitignore</a> documentation for all of the patterns you can provide.</p>
-</section>
-<section id="default-exclude" class="level3">
-<h3 class="anchored" data-anchor-id="default-exclude">default-exclude</h3>
-<p>Whether or not the default file exclude patterns are used.</p>
-<p>Either <code>true</code> to use the default exclude patterns, or <code>false</code> to not use them, with a default of <code>true</code>.</p>
-<p>By default, Air excludes a set of files and folders that you are unlikely to want formatting in. The complete list of default exclude patterns is:</p>
-<ul>
-<li><code>.git/</code></li>
-<li><code>renv/</code></li>
-<li><code>revdep/</code></li>
-<li><code>cpp11.R</code></li>
-<li><code>RcppExports.R</code></li>
-<li><code>extendr-wrappers.R</code></li>
-<li><code>import-standalone-*.R</code></li>
-</ul>
-</section>
-<section id="configuration-skip" class="level3">
-<h3 class="anchored" data-anchor-id="configuration-skip">skip</h3>
-<p>The set of function names to skip formatting for, even without a <code># fmt: skip</code> comment.</p>
-<p>A list of strings, i.e.&nbsp;<code>skip = ["my_dsl_function", "graph_from_literal"]</code>.</p>
-<p>Air typically formats every function call it comes across. To skip formatting of a single function call, you can use a <code># fmt: skip</code> comment. However, if you know of particular functions that you use a lot that are part of a custom domain specific language that doesn’t follow conventional formatting rules, you can entirely opt out of formatting for those functions by providing them here.</p>
-<p>For example, using <code>skip = ["graph_from_literal"]</code> would automatically skip formatting of:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>igraph<span class="sc">::</span><span class="fu">graph_from_literal</span>(A <span class="sc">+-+</span> B <span class="sc">+---+</span> C <span class="sc">++</span> D <span class="sc">+</span> E)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-<section id="configuration-table" class="level3">
-<h3 class="anchored" data-anchor-id="configuration-table">table</h3>
-<p>Some function calls are meant to be formatted as tables, rather than being formatted in a flat or expanded layout. For a single one-off function call, you can use a <code># fmt: table</code> comment to request a table layout. For function calls that you use a lot, use this setting to add them to a list of function calls that are automatically formatted as tables without requiring a <code># fmt: table</code> comment.</p>
-<p>For example, using <code>table = ["my_table"]</code> would automatically format calls to <code>my_table()</code> in a table layout.</p>
-See <code>default-table</code> for the list of function calls that are automatically formatted as tables by default. table: Option
-<p>,</p><section id="default-table" class="level3">
-<h3 class="anchored" data-anchor-id="default-table">default-table</h3>
-<p>Air automatically formats a default set of calls as tables. You can disable these defaults by setting this option to <code>false</code>. The default set currently includes:</p>
-<ul>
-<li><code>tribble()</code> from tribble</li>
-<li><code>fcase()</code> from data.table</li>
+<li>Attempting to format selection when multiple lines are selected seems not to be working, but selecting part or all a line in a multi-line expression will format that entire expression. This isssue occurs regardless of whether Air is used with Eglot or LSP-mode.</li>
 </ul>
 
 
-</section><table>
+</section>
 
-
-
-
-
- <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -899,9 +785,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
 });
 </script>
- <!-- /content -->
+</div> <!-- /content -->
 
 
 
 
-</table></section></section></main></div><footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/configuration.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/editor-emacs.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

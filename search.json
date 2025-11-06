@@ -94,7 +94,7 @@
     "href": "editors.html",
     "title": "Editor support",
     "section": "",
-    "text": "Air provides excellent support for code editors that support the Language Server Protocol. Many do, including Positron, VS Code, and Zed. Air also provides some support for code editors that allow for external formatters, such as RStudio. Follow one of our editor specific guides to get set up with Air in your preferred editor:\n\nVS Code\nPositron\nRStudio\nZed\nNeovim\nHelix",
+    "text": "Air provides excellent support for code editors that support the Language Server Protocol. Many do, including Positron, VS Code, and Zed. Air also provides some support for code editors that allow for external formatters, such as RStudio. Follow one of our editor specific guides to get set up with Air in your preferred editor:\n\nVS Code\nPositron\nRStudio\nZed\nNeovim\nHelix\nEmacs",
     "crumbs": [
       "Editors"
     ]
@@ -247,46 +247,58 @@
     ]
   },
   {
-    "objectID": "editor-helix.html",
-    "href": "editor-helix.html",
-    "title": "Helix",
+    "objectID": "editor-emacs.html",
+    "href": "editor-emacs.html",
+    "title": "Emacs",
     "section": "",
-    "text": "Helix is a modal editor with builtin support for the Language Server Protocol.",
+    "text": "Air provides first class support for Emacs, which supports the Language Server Protocol via the eglot and lsp-mode modes.",
     "crumbs": [
       "Editors",
-      "Helix"
+      "Emacs"
     ]
   },
   {
-    "objectID": "editor-helix.html#languageserver",
-    "href": "editor-helix.html#languageserver",
-    "title": "Helix",
-    "section": "languageserver",
-    "text": "languageserver\nCurrently, Air only supports formatting. It’s possible to use Air and languageserver simultaneously for a better editing experience. Use the following configuration to enable both language servers (make sure that the languageserver R package is installed, Helix is able to use it without any additional configuration).\n[[language]]\nname = \"r\"\nlanguage-servers = [\"air\", \"r\"]",
+    "objectID": "editor-emacs.html#eglot",
+    "href": "editor-emacs.html#eglot",
+    "title": "Emacs",
+    "section": "eglot",
+    "text": "eglot\neglot is distributed with Emacs\nAdapt your init.el with the following configuration:\n(add-to-list\n  'eglot-server-programs\n  '(ess-r-mode . (\"air\" \"language-server\")))\n\n;; Start LSP when ess-r-mode is activated\n(add-hook 'ess-r-mode-hook 'eglot-ensure)",
     "crumbs": [
       "Editors",
-      "Helix"
+      "Emacs"
     ]
   },
   {
-    "objectID": "editor-helix.html#format-on-save",
-    "href": "editor-helix.html#format-on-save",
-    "title": "Helix",
+    "objectID": "editor-emacs.html#lsp-mode",
+    "href": "editor-emacs.html#lsp-mode",
+    "title": "Emacs",
+    "section": "lsp-mode",
+    "text": "lsp-mode\nlsp-mode can be installed from MELPA, see https://emacs-lsp.github.io/lsp-mode/page/installation\nIf the languageserver R package is installed, lsp-mode will use it in ess-r-mode by default. To use the Air language server without the language server provided by the languageserver R package, adapt your init.el with the following configuration:\n;; Disable languageserver entirely\n(add-to-list 'lsp-disabled-clients 'lsp-r)\n\n(lsp-register-client\n  (make-lsp-client\n    :new-connection (lsp-stdio-connection '(\"air\" \"language-server\"))\n    :major-modes '(ess-r-mode)\n    :server-id 'lsp-r-air))\n\n;; Start LSP when ess-r-mode is activated\n(add-hook 'ess-r-mode-hook #'lsp-deferred)\nTo use Air in combination with languageserver, adapt your init.el with the following configuration.\n  (lsp-register-client\n   (make-lsp-client\n    :new-connection (lsp-stdio-connection '(\"air\" \"language-server\"))\n    :major-modes  '(ess-r-mode)\n    :server-id 'lsp-r-air\n    :add-on? t\n    :priority 1))\nYou will also need to add the following to your global and/or project-specific .Rprofile file to disable formatting by the languageserver package to avoid conflicts when using lsp-format-region:\noptions(\n  languageserver.server_capabilities = list(\n    documentFormattingProvider = FALSE,\n    documentRangeFormattingProvider = FALSE\n  )\n)\nIf you encounter timeout errors when using lsp-mode in large projects, refer to the lsp-mode documentation on how to disable file watchers.",
+    "crumbs": [
+      "Editors",
+      "Emacs"
+    ]
+  },
+  {
+    "objectID": "editor-emacs.html#format-on-save",
+    "href": "editor-emacs.html#format-on-save",
+    "title": "Emacs",
     "section": "Format on save",
-    "text": "Format on save\nAdd auto-format = true to your R language configuration block to enable formatting on save.\n[[language]]\nname = \"r\"\nlanguage-servers = [\"air\"]\nauto-format = true",
+    "text": "Format on save\nEmacs doesn’t have official support for formatting on save, but hooking into the save action is easy.\nWith eglot:\n(defun my-eglot-format-on-save ()\n  \"Formats buffer with Eglot on save for specified modes.\"\n  (when (member major-mode '(ess-r-mode))\n    (eglot-format-buffer)))\n\n(add-hook 'after-save-hook 'my-eglot-format-on-save))\nWith lsp-mode, from https://emacs-lsp.github.io/lsp-mode/page/main-features:\n\nYou can also trigger format on save by setting the variable lsp-format-buffer-on-save to a non-nil value. To select what major modes to format use lsp-format-buffer-on-save-list.\n\n(setq lsp-format-buffer-on-save t)\n(setq lsp-format-buffer-on-save-list '(\"ess-r-mode\"))",
     "crumbs": [
       "Editors",
-      "Helix"
+      "Emacs"
     ]
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Air",
-    "section": "",
-    "text": "Air is an R formatter and language server, written in Rust.\n\nIntegrates with your favorite editor with support for\n\nFormat on save\nFormat selection\n\nUsable from the command line with support for\n\nFormatting individual files\nRecursively formatting entire directories\n--check mode, suitable for a git pre-commit hook or a GitHub Actions workflow\n\n\nIf you’d like to use Air from the command line, read our installation guide. If you’d like to use Air inside a code editor, read our editors guide.",
+    "objectID": "editor-emacs.html#format-document-or-region",
+    "href": "editor-emacs.html#format-document-or-region",
+    "title": "Emacs",
+    "section": "Format document or region",
+    "text": "Format document or region\n\nWith eglot: Run M-x eglot-format to format the current buffer or selection.\nWith lsp-mode: Run M-x lsp-format-buffer to format the current buffer or lsp-format-region to format the current selection.",
     "crumbs": [
-      "Air"
+      "Editors",
+      "Emacs"
     ]
   },
   {
@@ -320,6 +332,49 @@
     "crumbs": [
       "Editors",
       "Zed"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Air",
+    "section": "",
+    "text": "Air is an R formatter and language server, written in Rust.\n\nIntegrates with your favorite editor with support for\n\nFormat on save\nFormat selection\n\nUsable from the command line with support for\n\nFormatting individual files\nRecursively formatting entire directories\n--check mode, suitable for a git pre-commit hook or a GitHub Actions workflow\n\n\nIf you’d like to use Air from the command line, read our installation guide. If you’d like to use Air inside a code editor, read our editors guide.",
+    "crumbs": [
+      "Air"
+    ]
+  },
+  {
+    "objectID": "editor-helix.html",
+    "href": "editor-helix.html",
+    "title": "Helix",
+    "section": "",
+    "text": "Helix is a modal editor with builtin support for the Language Server Protocol.",
+    "crumbs": [
+      "Editors",
+      "Helix"
+    ]
+  },
+  {
+    "objectID": "editor-helix.html#languageserver",
+    "href": "editor-helix.html#languageserver",
+    "title": "Helix",
+    "section": "languageserver",
+    "text": "languageserver\nCurrently, Air only supports formatting. It’s possible to use Air and languageserver simultaneously for a better editing experience. Use the following configuration to enable both language servers (make sure that the languageserver R package is installed, Helix is able to use it without any additional configuration).\n[[language]]\nname = \"r\"\nlanguage-servers = [\"air\", \"r\"]",
+    "crumbs": [
+      "Editors",
+      "Helix"
+    ]
+  },
+  {
+    "objectID": "editor-helix.html#format-on-save",
+    "href": "editor-helix.html#format-on-save",
+    "title": "Helix",
+    "section": "Format on save",
+    "text": "Format on save\nAdd auto-format = true to your R language configuration block to enable formatting on save.\n[[language]]\nname = \"r\"\nlanguage-servers = [\"air\"]\nauto-format = true",
+    "crumbs": [
+      "Editors",
+      "Helix"
     ]
   },
   {
