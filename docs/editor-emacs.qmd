@@ -1,0 +1,112 @@
+---
+title: "Emacs"
+editor:
+  markdown:
+    wrap: sentence
+    canonical: true
+---
+
+Air provides first class support for Emacs, which supports the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/) via the eglot and `lsp-mode` modes.
+
+
+# Installation
+
+## eglot
+
+`eglot` is distributed with Emacs
+
+Adapt your `init.el` with the following configuration:
+
+``` elisp
+(add-to-list
+  'eglot-server-programs
+  '(ess-r-mode . ("air" "language-server")))
+
+;; Start LSP when ess-r-mode is activated
+(add-hook 'ess-r-mode-hook 'eglot-ensure)
+```
+
+
+## lsp-mode
+
+`lsp-mode` can be installed from MELPA, see https://emacs-lsp.github.io/lsp-mode/page/installation
+
+If the `languageserver` R package is installed, `lsp-mode` will use it in `ess-r-mode` by default. To use the Air language server without the language server provided by the `languageserver` R package, adapt your `init.el` with the following configuration:
+
+```elisp
+;; Disable languageserver entirely
+(add-to-list 'lsp-disabled-clients 'lsp-r)
+
+(lsp-register-client
+  (make-lsp-client
+    :new-connection (lsp-stdio-connection '("air" "language-server"))
+    :major-modes '(ess-r-mode)
+    :server-id 'lsp-r-air))
+
+;; Start LSP when ess-r-mode is activated
+(add-hook 'ess-r-mode-hook #'lsp-deferred)
+```
+
+To use Air in combination with `languageserver`, adapt your `init.el` with the following configuration.
+
+```elisp
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection '("air" "language-server"))
+    :major-modes  '(ess-r-mode)
+    :server-id 'lsp-r-air
+    :add-on? t
+    :priority 1))
+```
+
+You will also need to add the following to your global and/or project-specific `.Rprofile` file to disable formatting by the `languageserver` package to avoid conflicts when using `lsp-format-region`:
+
+```r
+options(
+  languageserver.server_capabilities = list(
+    documentFormattingProvider = FALSE,
+    documentRangeFormattingProvider = FALSE
+  )
+)
+```
+
+If you encounter timeout errors when using `lsp-mode` in large projects, refer to the lsp-mode documentation on [how to disable file watchers](https://emacs-lsp.github.io/lsp-mode/page/file-watchers/).
+
+
+# Features
+
+## Format on save
+
+Emacs doesn't have official support for formatting on save, but hooking into the save action is easy.
+
+With `eglot`:
+
+```elisp
+(defun my-eglot-format-on-save ()
+  "Formats buffer with Eglot on save for specified modes."
+  (when (member major-mode '(ess-r-mode))
+    (eglot-format-buffer)))
+
+(add-hook 'after-save-hook 'my-eglot-format-on-save))
+```
+
+With `lsp-mode`, from <https://emacs-lsp.github.io/lsp-mode/page/main-features>:
+
+> You can also trigger format on save by setting the variable lsp-format-buffer-on-save to a non-nil value. To select what major modes to format use lsp-format-buffer-on-save-list.
+
+```elisp
+(setq lsp-format-buffer-on-save t)
+(setq lsp-format-buffer-on-save-list '("ess-r-mode"))
+```
+
+
+## Format document or region
+
+- With `eglot`: Run `M-x eglot-format` to format the current buffer or selection.
+
+- With `lsp-mode`: Run `M-x lsp-format-buffer` to format the current buffer or `lsp-format-region` to format the current selection.
+
+
+# Known Issues
+
+- Attempting to format selection when multiple lines are selected seems not to be working, but selecting part or all a line in a multi-line expression will format that entire expression. This isssue occurs regardless of whether Air is used with Eglot or LSP-mode.
