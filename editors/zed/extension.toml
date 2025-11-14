@@ -1,6 +1,6 @@
 id = "air"
 name = "Air"
-description = "Air extension for Zed"
+description = "Air extension for Zed - R language support"
 version = "0.1.0"
 schema_version = 1
 authors = ["Posit Software, PBC"]
