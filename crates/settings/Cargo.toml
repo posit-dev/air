@@ -21,8 +21,6 @@ anyhow = { workspace = true }
 biome_formatter = { workspace = true }
 insta = { workspace = true }
 serde = { workspace = true }
-# Self dependency to activate optional features for tests
-settings = { features = ["biome", "serde"], path = "./" }
 toml = { workspace = true }
 
 [features]

@@ -29,7 +29,6 @@ tree-sitter-r = { workspace = true }
 
 [dev-dependencies]
 insta = { workspace = true }
-line_ending = { workspace = true }
 tests_macros = { workspace = true }
 
 [lints]
