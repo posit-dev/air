@@ -527,6 +527,18 @@ with(
   # own-line
 )
 
+list(
+  # comment0
+  foo  # comment1
+  =1, bar  # comment2
+  =  # comment3
+  # comment4
+  2 #comment5
+  #comment6
+  , #comment7
+  #comment8
+)
+
 # ------------------------------------------------------------------------
 # Comments: Trailing inline function
 

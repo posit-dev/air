@@ -779,7 +779,11 @@ fn handle_argument_comment(comment: DecoratedComment<RLanguage>) -> CommentPlace
         // )
         // ```
         if name_clause.syntax() == preceding {
-            return CommentPlacement::leading(preceding.clone(), comment);
+            if let Some(following) = comment.following_node() {
+                return CommentPlacement::leading(following.clone(), comment);
+            } else {
+                return CommentPlacement::leading(preceding.clone(), comment);
+            }
         }
     }
 

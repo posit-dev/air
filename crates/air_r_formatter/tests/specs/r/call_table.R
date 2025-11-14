@@ -122,7 +122,6 @@ list(
   1,2    # comment
 )
 
-# Unfortunate: comment3 gets pulled up by Biome's Comments builder
 # fmt: table
 list(
   foo  # comment1
