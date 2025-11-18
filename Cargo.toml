@@ -35,7 +35,6 @@ clap = { version = "4.5.20", features = ["derive"] }
 colored = "3.0.0"
 comments = { path = "./crates/comments" }
 crates = { path = "./crates/crates" }
-crossbeam = "0.8.4"
 dissimilar = "1.0.9"
 fs = { path = "./crates/fs" }
 futures = "0.3.31"
@@ -46,7 +45,6 @@ ignore = "0.4.23"
 insta = "1.40.0"
 itertools = "0.13.0"
 line_ending = { path = "./crates/line_ending" }
-line-index = "0.1.2"
 lsp = { path = "./crates/lsp" }
 lsp_test = { path = "./crates/lsp_test" }
 memchr = "2.7.4"
@@ -66,7 +64,6 @@ syn = "2.0.59"
 tempfile = "3.9.0"
 tests_macros = { path = "./crates/tests_macros" }
 thiserror = "2.0.5"
-time = "0.3.37"
 tokio = "1.41.1"
 tokio-util = "0.7.12"
 toml = "0.8.19"

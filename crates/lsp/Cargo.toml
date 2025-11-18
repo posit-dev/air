@@ -31,7 +31,6 @@ serde_json.workspace = true
 settings.workspace = true
 struct-field-names-as-array.workspace = true
 strum = { workspace = true, features = ["derive"] }
-time = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 tower-lsp.workspace = true
 tracing.workspace = true
@@ -44,15 +43,9 @@ workspace = { workspace = true }
 
 [dev-dependencies]
 assert_matches.workspace = true
-bytes.workspace = true
-futures-util.workspace = true
-httparse.workspace = true
 insta.workspace = true
 lsp_test.workspace = true
-memchr.workspace = true
 tempfile.workspace = true
-tests_macros.workspace = true
-tokio-util.workspace = true
 
 [lints]
 workspace = true
