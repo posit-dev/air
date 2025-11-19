@@ -407,3 +407,16 @@ list(
   # comment
   foo = 1, 2, 3
 )
+
+# ------------------------------------------------------------------------
+# Unicode
+
+# Width of strings count the number of `chars()` (#449)
+# fmt: table
+tribble(
+  ~col1, ~col2,
+  "A (Mio. €)", 10,
+  "B (T €)", 20,
+  "C §", 10,
+  "ascii", 10,
+)
