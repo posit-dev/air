@@ -2,6 +2,8 @@
 
 # Development version
 
+- Fixed an issue with Unicode elements and table alignment (#449).
+
 - Added support for formatting notebook cells (progress towards #405, @kv9898).
 
 
