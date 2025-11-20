@@ -393,7 +393,7 @@
     "href": "editor-neovim.html#languageserver",
     "title": "Neovim",
     "section": "languageserver",
-    "text": "languageserver\nIf both Air and languageserver are installed, you can use the following configuration to disable languageserver formatting, ensuring that only Air handles formatting:\nrequire(\"lspconfig\").r_language_server.setup({\n    on_attach = function(client, _)\n        client.server_capabilities.documentFormattingProvider = false\n        client.server_capabilities.documentRangeFormattingProvider = false\n    end,\n})",
+    "text": "languageserver\nIf both Air and languageserver are installed, you can use the following configuration to disable languageserver formatting, ensuring that only Air handles formatting:\nvim.lsp.config['r_language_server']= {\n    on_attach = function(client, _)\n        client.server_capabilities.documentFormattingProvider = false\n        client.server_capabilities.documentRangeFormattingProvider = false\n    end,\n}\n\nNeovim &lt; 0.11\nrequire(\"lspconfig\").r_language_server.setup({\n    on_attach = function(client, _)\n        client.server_capabilities.documentFormattingProvider = false\n        client.server_capabilities.documentRangeFormattingProvider = false\n    end,\n})",
     "crumbs": [
       "Editors",
       "Neovim"

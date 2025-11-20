@@ -247,7 +247,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#installation" id="toc-installation" class="nav-link active" data-scroll-target="#installation">Installation</a>
   <ul class="collapse">
-  <li><a href="#languageserver" id="toc-languageserver" class="nav-link" data-scroll-target="#languageserver"><code>languageserver</code></a></li>
+  <li><a href="#neovim-0.11" id="toc-neovim-0.11" class="nav-link" data-scroll-target="#neovim-0.11">Neovim &lt;0.11</a></li>
+  <li><a href="#languageserver" id="toc-languageserver" class="nav-link" data-scroll-target="#languageserver"><code>languageserver</code></a>
+  <ul class="collapse">
+  <li><a href="#neovim-0.11-1" id="toc-neovim-0.11-1" class="nav-link" data-scroll-target="#neovim-0.11-1">Neovim &lt; 0.11</a></li>
+  </ul></li>
   </ul></li>
   <li><a href="#features" id="toc-features" class="nav-link" data-scroll-target="#features">Features</a>
   <ul class="collapse">
@@ -284,26 +288,52 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1>Installation</h1>
 <p>First you should ensure you have an appropriate Air binary which Neovim can locate. You can achieve this using a package manager such as <a href="https://github.com/williamboman/mason.nvim">mason.nvim</a>, e.g.&nbsp;with <code>:MasonInstall air</code>, or by <a href="./cli.html">manually installing</a> Air as a standalone command line tool.</p>
 <p>We recommend configuring Air as an LSP server via <a href="https://github.com/neovim/nvim-lspconfig">nvim-lspconfig</a>. While the Air language server currently only supports formatting, it will gain more features in future. Add the following to your <code>init.lua</code>:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode lua code-with-copy"><code class="sourceCode lua"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span><span class="op">(</span><span class="st">"lspconfig"</span><span class="op">).</span><span class="va">air</span><span class="op">.</span>setup<span class="op">({</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">on_attach</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="cn">_</span><span class="op">,</span> <span class="va">bufnr</span><span class="op">)</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">vim</span><span class="op">.</span><span class="va">api</span><span class="op">.</span>nvim_create_autocmd<span class="op">(</span><span class="st">"BufWritePre"</span><span class="op">,</span> <span class="op">{</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>            <span class="va">buffer</span> <span class="op">=</span> <span class="va">bufnr</span><span class="op">,</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>            <span class="va">callback</span> <span class="op">=</span> <span class="kw">function</span><span class="op">()</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>                <span class="va">vim</span><span class="op">.</span><span class="va">lsp</span><span class="op">.</span><span class="va">buf</span><span class="op">.</span>format<span class="op">()</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>            <span class="kw">end</span><span class="op">,</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        <span class="op">})</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span><span class="op">,</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="op">})</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>While not required, the <code>BufWritePre</code> command ensures that Air automatically formats your R code when you save a file.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode lua code-with-copy"><code class="sourceCode lua"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> <span class="va">lsp</span> <span class="op">=</span> <span class="va">vim</span><span class="op">.</span><span class="va">lsp</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="va">lsp</span><span class="op">.</span><span class="va">config</span><span class="op">[</span><span class="st">'air'</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">on_attach</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="cn">_</span><span class="op">,</span> <span class="va">bufnr</span><span class="op">)</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">vim</span><span class="op">.</span><span class="va">api</span><span class="op">.</span>nvim_create_autocmd<span class="op">(</span><span class="st">"BufWritePre"</span><span class="op">,</span> <span class="op">{</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>            <span class="va">buffer</span> <span class="op">=</span> <span class="va">bufnr</span><span class="op">,</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>            <span class="va">callback</span> <span class="op">=</span> <span class="kw">function</span><span class="op">()</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>                <span class="va">lsp</span><span class="op">.</span><span class="va">buf</span><span class="op">.</span>format<span class="op">()</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>            <span class="kw">end</span><span class="op">,</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        <span class="op">})</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span><span class="op">,</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="va">lsp</span><span class="op">.</span>enable<span class="op">(</span><span class="st">'air'</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>While not required, the BufWritePre command ensures that Air automatically formats your R code when you save a file.</p>
+<section id="neovim-0.11" class="level3">
+<h3 class="anchored" data-anchor-id="neovim-0.11">Neovim &lt;0.11</h3>
+<p>If you are using a version of Neovim that does not support vim.lsp.config:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode lua code-with-copy"><code class="sourceCode lua"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span><span class="op">(</span><span class="st">"lspconfig"</span><span class="op">).</span><span class="va">air</span><span class="op">.</span>setup<span class="op">({</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">on_attach</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="cn">_</span><span class="op">,</span> <span class="va">bufnr</span><span class="op">)</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">vim</span><span class="op">.</span><span class="va">api</span><span class="op">.</span>nvim_create_autocmd<span class="op">(</span><span class="st">"BufWritePre"</span><span class="op">,</span> <span class="op">{</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>            <span class="va">buffer</span> <span class="op">=</span> <span class="va">bufnr</span><span class="op">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>            <span class="va">callback</span> <span class="op">=</span> <span class="kw">function</span><span class="op">()</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                <span class="va">vim</span><span class="op">.</span><span class="va">lsp</span><span class="op">.</span><span class="va">buf</span><span class="op">.</span>format<span class="op">()</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>            <span class="kw">end</span><span class="op">,</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>        <span class="op">})</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span><span class="op">,</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="op">})</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
 <section id="languageserver" class="level2">
 <h2 class="anchored" data-anchor-id="languageserver"><code>languageserver</code></h2>
 <p>If both Air and <code>languageserver</code> are installed, you can use the following configuration to disable <code>languageserver</code> formatting, ensuring that only Air handles formatting:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode lua code-with-copy"><code class="sourceCode lua"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span><span class="op">(</span><span class="st">"lspconfig"</span><span class="op">).</span><span class="va">r_language_server</span><span class="op">.</span>setup<span class="op">({</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">on_attach</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">client</span><span class="op">,</span> <span class="cn">_</span><span class="op">)</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">client</span><span class="op">.</span><span class="va">server_capabilities</span><span class="op">.</span><span class="va">documentFormattingProvider</span> <span class="op">=</span> <span class="kw">false</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">client</span><span class="op">.</span><span class="va">server_capabilities</span><span class="op">.</span><span class="va">documentRangeFormattingProvider</span> <span class="op">=</span> <span class="kw">false</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span><span class="op">,</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="op">})</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode lua code-with-copy"><code class="sourceCode lua"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="va">vim</span><span class="op">.</span><span class="va">lsp</span><span class="op">.</span><span class="va">config</span><span class="op">[</span><span class="st">'r_language_server'</span><span class="op">]=</span> <span class="op">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">on_attach</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">client</span><span class="op">,</span> <span class="cn">_</span><span class="op">)</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">client</span><span class="op">.</span><span class="va">server_capabilities</span><span class="op">.</span><span class="va">documentFormattingProvider</span> <span class="op">=</span> <span class="kw">false</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">client</span><span class="op">.</span><span class="va">server_capabilities</span><span class="op">.</span><span class="va">documentRangeFormattingProvider</span> <span class="op">=</span> <span class="kw">false</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span><span class="op">,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="neovim-0.11-1" class="level3">
+<h3 class="anchored" data-anchor-id="neovim-0.11-1">Neovim &lt; 0.11</h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode lua code-with-copy"><code class="sourceCode lua"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span><span class="op">(</span><span class="st">"lspconfig"</span><span class="op">).</span><span class="va">r_language_server</span><span class="op">.</span>setup<span class="op">({</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">on_attach</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">client</span><span class="op">,</span> <span class="cn">_</span><span class="op">)</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">client</span><span class="op">.</span><span class="va">server_capabilities</span><span class="op">.</span><span class="va">documentFormattingProvider</span> <span class="op">=</span> <span class="kw">false</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">client</span><span class="op">.</span><span class="va">server_capabilities</span><span class="op">.</span><span class="va">documentRangeFormattingProvider</span> <span class="op">=</span> <span class="kw">false</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span><span class="op">,</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="op">})</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
 </section>
 </section>
 <section id="features" class="level1">
@@ -316,13 +346,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="quarto" class="level2">
 <h2 class="anchored" data-anchor-id="quarto">Quarto</h2>
 <p>As an LSP, Air itself does not provide direct support for Quarto or RMarkdown documents. However, Air can additionally be configured as a formatter plugin for <a href="https://github.com/stevearc/conform.nvim">conform.nvim</a>, which supports <a href="https://github.com/stevearc/conform.nvim/blob/master/doc/advanced_topics.md#injected-language-formatting-code-blocks">“injected language formatting”</a> for code blocks in Markdown, Quarto, and RMarkdown. Conform can be configured by adding the following to your <code>nvim/lua/plugins/conform.lua</code>:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode lua code-with-copy"><code class="sourceCode lua"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span><span class="op">(</span><span class="st">"conform"</span><span class="op">).</span>setup<span class="op">({</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">formatters_by_ft</span> <span class="op">=</span> <span class="op">{</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">quarto</span> <span class="op">=</span> <span class="op">{</span> <span class="st">"injected"</span> <span class="op">},</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">rmd</span> <span class="op">=</span> <span class="op">{</span> <span class="st">"injected"</span> <span class="op">},</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">r</span> <span class="op">=</span> <span class="op">{</span> <span class="st">"air"</span> <span class="op">},</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="op">})</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode lua code-with-copy"><code class="sourceCode lua"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span><span class="op">(</span><span class="st">"conform"</span><span class="op">).</span>setup<span class="op">({</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">formatters_by_ft</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">quarto</span> <span class="op">=</span> <span class="op">{</span> <span class="st">"injected"</span> <span class="op">},</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">rmd</span> <span class="op">=</span> <span class="op">{</span> <span class="st">"injected"</span> <span class="op">},</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">r</span> <span class="op">=</span> <span class="op">{</span> <span class="st">"air"</span> <span class="op">},</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="op">})</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>See the <a href="https://github.com/stevearc/conform.nvim?tab=readme-ov-file#installation">conform.nvim documentation</a> for more information on how to configure conform.nvim with your favorite plugin manager.</p>
 
 
