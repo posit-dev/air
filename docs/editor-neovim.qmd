@@ -24,7 +24,7 @@ lsp.config['air'] = {
         vim.api.nvim_create_autocmd("BufWritePre", {
             buffer = bufnr,
             callback = function()
-                lsp.buf.format()  
+                lsp.buf.format()
             end,
         })
     end,
@@ -35,7 +35,7 @@ lsp.enable('air')
 
 While not required, the BufWritePre command ensures that Air automatically formats your R code when you save a file.
 
-### Neovim <0.11 
+### Neovim \<0.11
 
 If you are using a version of Neovim that does not support vim.lsp.config:
 
@@ -65,7 +65,7 @@ vim.lsp.config['r_language_server']= {
 }
 ```
 
-### Neovim < 0.11
+### Neovim \< 0.11
 
 ``` lua
 require("lspconfig").r_language_server.setup({
