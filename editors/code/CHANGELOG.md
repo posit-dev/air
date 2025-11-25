@@ -7,6 +7,9 @@
 
 ## Development version
 
+- Added support for formatting VS Code Notebook cells (progress towards #405, @kv9898).
+
+
 ## 0.18.0
 
 - [Air 0.8.0](https://github.com/posit-dev/air/blob/main/CHANGELOG.md) is now bundled with the extension.
