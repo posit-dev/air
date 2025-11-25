@@ -491,7 +491,13 @@ impl ArgKind {
                 Some(frac_len) => *integer_width + DOT_WIDTH + *frac_len,
                 None => *integer_width,
             },
-            ArgKind::Other { text } => text.len(),
+            ArgKind::Other { text } => {
+                // Unlike with integers and decimals, can't use `text.len()` here in case
+                // Unicode characters are involved. `len()` counts bytes, but we want to
+                // align based on the number of characters that visibly show up in a
+                // user's editor (#449).
+                text.chars().count()
+            }
         }
     }
 }

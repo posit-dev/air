@@ -2,6 +2,9 @@
 
 # Development version
 
+- Fixed an issue with Unicode elements and table alignment (#449).
+
+
 # 0.8.0
 
 - Added support for table formatting of `tribble()` and `fcase()` calls (#113).
