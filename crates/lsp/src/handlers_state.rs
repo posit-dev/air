@@ -1,10 +1,3 @@
-//
-// handlers_state.rs
-//
-// Copyright (C) 2024 Posit Software, PBC. All rights reserved.
-//
-//
-
 use std::array::IntoIter;
 
 use anyhow::Context;

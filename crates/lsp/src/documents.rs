@@ -1,12 +1,3 @@
-//
-// documents.rs
-//
-// Copyright (C) 2022-2024 Posit Software, PBC. All rights reserved.
-//
-//
-
-use std::ops::Range;
-
 use settings::LineEnding;
 use tower_lsp::lsp_types;
 
@@ -106,7 +97,7 @@ impl Document {
     // ---
     pub fn on_did_change(
         &mut self,
-        mut changes: Vec<lsp_types::TextDocumentContentChangeEvent>,
+        changes: Vec<lsp_types::TextDocumentContentChangeEvent>,
         new_version: i32,
     ) {
         // Check for out-of-order change notifications
@@ -122,64 +113,12 @@ impl Document {
             }
         }
 
-        // If at least one of the changes is a full document change, use the last of them
-        // as the starting point and ignore all previous changes. We then know that all
-        // changes after this (if any!) are incremental changes.
-        //
-        // If we do have a full document change, that implies the `last_start_line`
-        // corresponding to that change is line 0, which will correctly force a rebuild
-        // of the line index before applying any incremental changes. We don't go ahead
-        // and rebuild the line index here, because it is guaranteed to be rebuilt for
-        // us on the way out.
-        let (changes, mut last_start_line) =
-            match changes.iter().rposition(|change| change.range.is_none()) {
-                Some(idx) => {
-                    let incremental = changes.split_off(idx + 1);
-                    // Unwrap: `rposition()` confirmed this index contains a full document change
-                    let change = changes.pop().unwrap();
-                    self.contents = line_ending::normalize(change.text);
-                    (incremental, 0)
-                }
-                None => (changes, u32::MAX),
-            };
-
-        // Handle all incremental changes after the last full document change. We don't
-        // typically get >1 incremental change as the user types, but we do get them in a
-        // batch after a find-and-replace, or after a format-on-save request.
-        //
-        // Some editors like VS Code send the edits in reverse order (from the bottom of
-        // file -> top of file). We can take advantage of this, because applying an edit
-        // on, say, line 10, doesn't invalidate the `line_index` if we then need to apply
-        // an additional edit on line 5. That said, we may still have edits that cross
-        // lines, so rebuilding the `line_index` is not always unavoidable.
-        //
-        // We also normalize line endings. Changing the line length of inserted or
-        // replaced text can't invalidate the text change events since the location of the
-        // change itself is specified with [line, col] coordinates, separate from the
-        // actual contents of the change.
-        for change in changes {
-            let range = change
-                .range
-                .expect("`None` case already handled by finding the last full document change.");
-
-            // If the end of this change is at or past the start of the last change, then
-            // the `line_index` needed to apply this change is now invalid, so we have to
-            // rebuild it.
-            if range.end.line >= last_start_line {
-                self.line_index = biome_line_index::LineIndex::new(&self.contents);
-            }
-            last_start_line = range.start.line;
-
-            // This is a panic if we can't convert. It means we can't keep the document up
-            // to date and something is very wrong.
-            let range: Range<usize> =
-                from_proto::text_range(range, &self.line_index, self.position_encoding)
-                    .expect("Can convert `range` from `Position` to `TextRange`.")
-                    .into();
-
-            self.contents
-                .replace_range(range, &line_ending::normalize(change.text));
-        }
+        from_proto::apply_text_changes(
+            &mut self.contents,
+            changes,
+            &mut self.line_index,
+            self.position_encoding,
+        );
 
         // Rebuild the `line_index` after applying the final edit, and sync other fields
         self.line_index = biome_line_index::LineIndex::new(&self.contents);
