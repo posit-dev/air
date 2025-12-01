@@ -1,10 +1,3 @@
-//
-// to_proto.rs
-//
-// Copyright (C) 2024 Posit Software, PBC. All rights reserved.
-//
-//
-
 // Utilites for converting internal types to LSP types
 
 use anyhow::Context;
