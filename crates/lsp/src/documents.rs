@@ -1,8 +1,8 @@
 use settings::LineEnding;
 use tower_lsp::lsp_types;
 
-use crate::proto::PositionEncoding;
-use crate::proto::from_proto;
+use aether_lsp_utils::proto::PositionEncoding;
+use aether_lsp_utils::proto::from_proto;
 use crate::settings::DocumentSettings;
 
 #[derive(Clone)]
@@ -137,8 +137,8 @@ mod tests {
     use air_r_syntax::RSyntaxNode;
     use biome_text_size::{TextRange, TextSize};
 
-    use crate::proto::to_proto;
-    use crate::text_edit::TextEdit;
+    use aether_lsp_utils::proto::to_proto;
+    use aether_lsp_utils::text_edit::TextEdit;
 
     use super::*;
 
