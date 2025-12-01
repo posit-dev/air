@@ -12,6 +12,7 @@ categories.workspace = true
 publish = false
 
 [dependencies]
+aether_lsp_utils.workspace = true
 air_r_factory.workspace = true
 air_r_formatter.workspace = true
 air_r_parser.workspace = true

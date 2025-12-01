@@ -10,7 +10,7 @@ use crate::proto::PositionEncoding;
 
 /// The function is used to convert a LSP position to TextSize.
 /// From `biome_lsp_converters::from_proto::offset()`.
-pub(crate) fn offset(
+pub fn offset(
     position: lsp_types::Position,
     line_index: &LineIndex,
     position_encoding: PositionEncoding,
@@ -36,7 +36,7 @@ pub(crate) fn offset(
 
 /// The function is used to convert a LSP range to TextRange.
 /// From `biome_lsp_converters::from_proto::text_range()`.
-pub(crate) fn text_range(
+pub fn text_range(
     range: lsp_types::Range,
     line_index: &LineIndex,
     position_encoding: PositionEncoding,
@@ -66,7 +66,7 @@ pub(crate) fn text_range(
 /// replaced text can't invalidate the text change events since the location of the
 /// change itself is specified with [line, col] coordinates, separate from the
 /// actual contents of the change.
-pub(crate) fn apply_text_changes(
+pub fn apply_text_changes(
     contents: &mut String,
     mut changes: Vec<lsp_types::TextDocumentContentChangeEvent>,
     line_index: &mut LineIndex,

@@ -8,7 +8,7 @@ use biome_text_size::{TextRange, TextSize};
 
 use super::text_edit::TextEdit;
 
-pub(crate) fn diff(left: &str, right: &str) -> TextEdit {
+pub fn diff(left: &str, right: &str) -> TextEdit {
     use dissimilar::Chunk;
 
     let chunks = dissimilar::diff(left, right);

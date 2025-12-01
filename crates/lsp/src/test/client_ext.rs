@@ -3,7 +3,7 @@ use lsp_test::lsp_client::TestClient;
 use tower_lsp::lsp_types;
 
 use crate::documents::Document;
-use crate::proto::{from_proto, to_proto};
+use aether_lsp_utils::proto::{from_proto, to_proto};
 
 pub(crate) trait TestClientExt {
     async fn open_document(
