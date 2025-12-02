@@ -95,13 +95,7 @@ impl From<Parse> for AnyParse {
 
 pub fn parse(text: &str, options: RParserOptions) -> Parse {
     let mut cache = NodeCache::default();
-    let (events, tokens, errors) = parse_from_text(text, options);
-    build_tree(text, events, tokens, errors, &mut cache)
-}
-
-pub fn parse_tree_sitter(text: &str, ast: &tree_sitter::Tree) -> Parse {
-    let mut cache = NodeCache::default();
-    let (events, tokens, errors) = parse_from_treesitter(ast, text);
+    let (events, tokens, errors) = parse_text(text, options);
     build_tree(text, events, tokens, errors, &mut cache)
 }
 
@@ -127,7 +121,7 @@ fn build_tree(
     })
 }
 
-fn parse_from_text(
+fn parse_text(
     text: &str,
     _options: RParserOptions,
 ) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Option<ParseError>) {
@@ -1242,7 +1236,7 @@ mod tests {
     }
 
     fn trivia(text: &str) -> Vec<Trivia> {
-        let (_events, trivia, _errors) = parse_from_text(text, RParserOptions::default());
+        let (_events, trivia, _errors) = parse_text(text, RParserOptions::default());
         trivia
     }
 
@@ -1440,7 +1434,7 @@ mod tests {
 
     #[test]
     fn test_parse_smoke_test() {
-        let (events, trivia, _errors) = parse_from_text("1+1", RParserOptions::default());
+        let (events, trivia, _errors) = parse_text("1+1", RParserOptions::default());
 
         let expect = vec![
             Event::Start {
@@ -1488,7 +1482,7 @@ mod tests {
 
     #[test]
     fn test_parse_function_definition() {
-        let (events, trivia, _errors) = parse_from_text("function() 1", RParserOptions::default());
+        let (events, trivia, _errors) = parse_text("function() 1", RParserOptions::default());
 
         let expect = vec![
             Event::Start {
@@ -1546,7 +1540,7 @@ mod tests {
 
     #[test]
     fn test_parse_call() {
-        let (events, trivia, _errors) = parse_from_text("fn()", RParserOptions::default());
+        let (events, trivia, _errors) = parse_text("fn()", RParserOptions::default());
 
         let expect = vec![
             Event::Start {
