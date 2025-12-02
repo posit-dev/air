@@ -3,6 +3,7 @@ source: crates/crates/src/lib.rs
 expression: AIR_CRATE_NAMES
 ---
 [
+    "aether_lsp_utils",
     "air",
     "air_formatter_test",
     "air_r_factory",
