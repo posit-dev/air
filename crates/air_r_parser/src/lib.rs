@@ -10,7 +10,6 @@ pub use error::ParseError;
 pub use options::RParserOptions;
 pub use parse::Parse;
 pub use parse::parse;
-pub use parse::parse_tree_sitter;
 
 use air_r_syntax::RLanguage;
 use biome_parser::tree_sink::LosslessTreeSink;
