@@ -48,6 +48,9 @@ pub fn text_range(
 
 /// Apply text changes to document contents.
 ///
+/// The protocol mandates that all `TextDocumentContentChangeEvent` be applied
+/// exactly in order. Each change depends on the preceding change.
+///
 /// If at least one of the changes is a full document change, uses the last of them
 /// as the starting point and ignores all previous changes. We then know that all
 /// changes after this (if any!) are incremental changes.
@@ -110,4 +113,44 @@ pub fn apply_text_changes(
 
         contents.replace_range(range, &line_ending::normalize(change.text));
     }
+}
+
+/// Simple wrapper around `apply_text_changes()` that converts `TextEdit` to
+/// `TextDocumentContentChangeEvent`. Prefer `apply_text_changes()` but be aware
+/// of different sorting requirements mandated by the LSP protocol.
+///
+/// The protocol does not mandate a precise order for `TextEdit[]`. The only
+/// requirements are that edits must not overlap, and for multiple inserts at
+/// the same position, the array order determines the insertion order.
+pub fn apply_text_edits(
+    contents: &mut String,
+    mut edits: Vec<lsp_types::TextEdit>,
+    line_index: &mut LineIndex,
+    position_encoding: PositionEncoding,
+) {
+    // Sort edits in reverse order by start position to ensure that edits
+    // applied later in the document don’t shift the ranges of edits earlier in
+    // the document. This way, edits in the bottom don't invalidate the
+    // positions of edits at the top. Use stable sort to preserve the original
+    // order for edits at the same position (which defines insertion order per
+    // LSP spec).
+    edits.sort_by(|a, b| {
+        let a_start = a.range.start;
+        let b_start = b.range.start;
+        b_start
+            .line
+            .cmp(&a_start.line)
+            .then_with(|| b_start.character.cmp(&a_start.character))
+    });
+
+    let changes: Vec<lsp_types::TextDocumentContentChangeEvent> = edits
+        .into_iter()
+        .map(|edit| lsp_types::TextDocumentContentChangeEvent {
+            range: Some(edit.range),
+            range_length: None,
+            text: edit.new_text,
+        })
+        .collect();
+
+    apply_text_changes(contents, changes, line_index, position_encoding);
 }

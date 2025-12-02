@@ -1,9 +1,9 @@
 use settings::LineEnding;
 use tower_lsp::lsp_types;
 
+use crate::settings::DocumentSettings;
 use aether_lsp_utils::proto::PositionEncoding;
 use aether_lsp_utils::proto::from_proto;
-use crate::settings::DocumentSettings;
 
 #[derive(Clone)]
 pub struct Document {
