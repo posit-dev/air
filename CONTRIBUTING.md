@@ -97,7 +97,14 @@ If you have any questions about the process, refer to [Zed's update guide](https
 
     This does not install the CLI, but instead builds it to `target/debug/air` (or `target/debug/air.exe` on Windows).
 
--   Install the development version of the VS Code or Positron extension:
+-   Install/activate the coordinated version of Node:
+
+    ```sh
+    (cd editors/code && nvm use)
+    ```
+
+-   Install the development version of the VS Code or Positron extension.
+    From the root:
 
     ``` bash
     # Install for Positron
