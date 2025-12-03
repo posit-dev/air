@@ -26,7 +26,7 @@ use crate::handlers_state::ConsoleInputs;
 use crate::logging;
 use crate::logging::LogMessageSender;
 use crate::logging::LogThreadState;
-use crate::proto::PositionEncoding;
+use aether_lsp_utils::proto::PositionEncoding;
 use crate::settings::GlobalSettings;
 use crate::state::WorldState;
 use crate::tower_lsp::LspMessage;

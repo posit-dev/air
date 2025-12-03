@@ -95,13 +95,18 @@ impl From<Parse> for AnyParse {
 
 pub fn parse(text: &str, options: RParserOptions) -> Parse {
     let mut cache = NodeCache::default();
-    parse_r_with_cache(text, options, &mut cache)
+    let (events, tokens, errors) = parse_text(text, options);
+    build_tree(text, events, tokens, errors, &mut cache)
 }
 
-pub fn parse_r_with_cache(text: &str, options: RParserOptions, cache: &mut NodeCache) -> Parse {
+fn build_tree(
+    text: &str,
+    events: Vec<Event<RSyntaxKind>>,
+    tokens: Vec<Trivia>,
+    errors: Option<ParseError>,
+    cache: &mut NodeCache,
+) -> Parse {
     tracing::debug_span!("parse").in_scope(move || {
-        let (events, tokens, errors) = parse_text(text, options);
-
         // We've determined that passing diagnostics through does nothing.
         // They go into the tree-sink but come right back out. We think they
         // are a holdover from rust-analyzer that can be removed now. The real
@@ -116,7 +121,7 @@ pub fn parse_r_with_cache(text: &str, options: RParserOptions, cache: &mut NodeC
     })
 }
 
-pub fn parse_text(
+fn parse_text(
     text: &str,
     _options: RParserOptions,
 ) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Option<ParseError>) {
@@ -126,7 +131,13 @@ pub fn parse_text(
         .unwrap();
 
     let ast = parser.parse(text, None).unwrap();
+    parse_from_treesitter(&ast, text)
+}
 
+fn parse_from_treesitter(
+    ast: &Tree,
+    text: &str,
+) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Option<ParseError>) {
     if ast.root_node().has_error() {
         // TODO: In the long term we want an error resiliant parser.
         // This would probably only be able to happen if we swap out tree sitter
@@ -134,7 +145,15 @@ pub fn parse_text(
         return parse_failure(text);
     }
 
-    parse_tree(ast, text)
+    let mut walker = RWalk::new(text);
+
+    let root = ast.root_node();
+    let mut iter = root.preorder();
+    walker.walk(&mut iter);
+
+    let (events, trivia) = walker.parse.drain();
+
+    (events, trivia, None)
 }
 
 fn parse_failure(text: &str) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Option<ParseError>) {
@@ -175,18 +194,6 @@ fn parse_failure(text: &str) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Option<Pa
     let error = ParseError::new(String::from("Failed to parse due to syntax errors."));
 
     (events, trivia, Some(error))
-}
-
-fn parse_tree(ast: Tree, text: &str) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Option<ParseError>) {
-    let mut walker = RWalk::new(text);
-
-    let root = ast.root_node();
-    let mut iter = root.preorder();
-    walker.walk(&mut iter);
-
-    let (events, trivia) = walker.parse.drain();
-
-    (events, trivia, None)
 }
 
 /// Given an ast with absolutely no ERROR or MISSING nodes, let's walk that tree

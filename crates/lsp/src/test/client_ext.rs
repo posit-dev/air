@@ -1,9 +1,9 @@
+use aether_lsp_utils::proto::{from_proto, to_proto};
 use biome_text_size::TextRange;
 use lsp_test::lsp_client::TestClient;
 use tower_lsp::lsp_types;
 
 use crate::documents::Document;
-use crate::proto::{from_proto, to_proto};
 
 pub(crate) trait TestClientExt {
     async fn open_document(
@@ -67,7 +67,17 @@ impl TestClientExt for TestClient {
 
     async fn format_document(&mut self, doc: &Document, filename: FileName) -> String {
         match self.format_document_edits(doc, filename).await {
-            Some(edits) => apply_text_edits(doc, edits).unwrap(),
+            Some(edits) => {
+                let mut contents = doc.contents.clone();
+                let mut line_index = doc.line_index.clone();
+                from_proto::apply_text_edits(
+                    &mut contents,
+                    edits,
+                    &mut line_index,
+                    doc.position_encoding,
+                );
+                contents
+            }
             None => doc.contents.clone(),
         }
     }
@@ -78,10 +88,20 @@ impl TestClientExt for TestClient {
         filename: FileName,
         range: TextRange,
     ) -> String {
-        let Some(edits) = self.format_document_range_edits(doc, filename, range).await else {
-            return doc.contents.clone();
-        };
-        apply_text_edits(doc, edits).unwrap()
+        match self.format_document_range_edits(doc, filename, range).await {
+            Some(edits) => {
+                let mut contents = doc.contents.clone();
+                let mut line_index = doc.line_index.clone();
+                from_proto::apply_text_edits(
+                    &mut contents,
+                    edits,
+                    &mut line_index,
+                    doc.position_encoding,
+                );
+                contents
+            }
+            None => doc.contents.clone(),
+        }
     }
 
     async fn format_document_edits(
@@ -158,22 +178,4 @@ fn formatting_options(doc: &Document) -> lsp_types::FormattingOptions {
         insert_spaces: matches!(indent_style, settings::IndentStyle::Space),
         ..Default::default()
     }
-}
-
-fn apply_text_edits(doc: &Document, mut edits: Vec<lsp_types::TextEdit>) -> anyhow::Result<String> {
-    let mut text = doc.contents.clone();
-
-    // Apply edits from bottom to top to avoid inserted newlines to invalidate
-    // positions in earlier parts of the doc (they are sent in reading order
-    // accorder to the LSP protocol)
-    edits.reverse();
-
-    for edit in edits {
-        let range = from_proto::text_range(edit.range, &doc.line_index, doc.position_encoding)?;
-        let start: usize = range.start().into();
-        let end: usize = range.end().into();
-        text.replace_range(start..end, &edit.new_text);
-    }
-
-    Ok(text)
 }
