@@ -1,8 +1,17 @@
 use clap::Parser;
 use clap::Subcommand;
+use clap::builder::Styles;
+use clap::builder::styling::{AnsiColor, Effects};
 use std::path::PathBuf;
 
 use crate::logging;
+
+// Configures Clap v3-style help menu colors
+const STYLES: Styles = Styles::styled()
+    .header(AnsiColor::Green.on_default().effects(Effects::BOLD))
+    .usage(AnsiColor::Green.on_default().effects(Effects::BOLD))
+    .literal(AnsiColor::Cyan.on_default().effects(Effects::BOLD))
+    .placeholder(AnsiColor::Cyan.on_default());
 
 #[derive(Parser)]
 #[command(
@@ -12,6 +21,7 @@ use crate::logging;
     after_help = "For help with a specific command, see: `air help <command>`."
 )]
 #[command(version)]
+#[command(styles = STYLES)]
 pub struct Args {
     #[command(subcommand)]
     pub(crate) command: Command,
