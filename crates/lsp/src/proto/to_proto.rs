@@ -8,6 +8,7 @@
 // Utilites for converting internal types to LSP types
 
 use anyhow::Context;
+use biome_line_index::LineCol;
 use biome_line_index::LineIndex;
 use biome_text_size::TextRange;
 use biome_text_size::TextSize;
@@ -18,9 +19,26 @@ use crate::proto::PositionEncoding;
 use crate::text_edit::Indel;
 use crate::text_edit::TextEdit;
 
+/// The function is used to convert LineCol to a LSP position.
+pub(crate) fn position_from_line_col(
+    line_col: LineCol,
+    line_index: &LineIndex,
+    position_encoding: PositionEncoding,
+) -> anyhow::Result<lsp_types::Position> {
+    match position_encoding {
+        PositionEncoding::Utf8 => Ok(lsp_types::Position::new(line_col.line, line_col.col)),
+        PositionEncoding::Wide(enc) => {
+            let line_col = line_index
+                .to_wide(enc, line_col)
+                .with_context(|| format!("Could not convert {line_col:?} into wide line column"))?;
+            Ok(lsp_types::Position::new(line_col.line, line_col.col))
+        }
+    }
+}
+
 /// The function is used to convert TextSize to a LSP position.
 /// From `biome_lsp_converters::to_proto::position()`.
-pub(crate) fn position(
+pub(crate) fn position_from_offset(
     offset: TextSize,
     line_index: &LineIndex,
     position_encoding: PositionEncoding,
@@ -29,17 +47,7 @@ pub(crate) fn position(
         .line_col(offset)
         .with_context(|| format!("Could not convert offset {offset:?} into a line-column index"))?;
 
-    let position = match position_encoding {
-        PositionEncoding::Utf8 => lsp_types::Position::new(line_col.line, line_col.col),
-        PositionEncoding::Wide(enc) => {
-            let line_col = line_index
-                .to_wide(enc, line_col)
-                .with_context(|| format!("Could not convert {line_col:?} into wide line column"))?;
-            lsp_types::Position::new(line_col.line, line_col.col)
-        }
-    };
-
-    Ok(position)
+    position_from_line_col(line_col, line_index, position_encoding)
 }
 
 /// The function is used to convert TextRange to a LSP range.
@@ -49,8 +57,8 @@ pub(crate) fn range(
     line_index: &LineIndex,
     position_encoding: PositionEncoding,
 ) -> anyhow::Result<lsp_types::Range> {
-    let start = position(range.start(), line_index, position_encoding)?;
-    let end = position(range.end(), line_index, position_encoding)?;
+    let start = position_from_offset(range.start(), line_index, position_encoding)?;
+    let end = position_from_offset(range.end(), line_index, position_encoding)?;
     Ok(lsp_types::Range::new(start, end))
 }
 

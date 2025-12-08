@@ -6,14 +6,13 @@ use tower_lsp::lsp_types;
 
 use crate::proto::PositionEncoding;
 
-/// The function is used to convert a LSP position to TextSize.
-/// From `biome_lsp_converters::from_proto::offset()`.
-pub(crate) fn offset(
+/// The function is used to convert a LSP position to LineCol.
+pub(crate) fn line_col_from_position(
     position: lsp_types::Position,
     line_index: &LineIndex,
     position_encoding: PositionEncoding,
-) -> anyhow::Result<biome_text_size::TextSize> {
-    let line_col = match position_encoding {
+) -> LineCol {
+    match position_encoding {
         PositionEncoding::Utf8 => LineCol {
             line: position.line,
             col: position.character,
@@ -25,7 +24,17 @@ pub(crate) fn offset(
             };
             line_index.to_utf8(enc, line_col)
         }
-    };
+    }
+}
+
+/// The function is used to convert a LSP position to TextSize.
+/// From `biome_lsp_converters::from_proto::offset()`.
+pub(crate) fn offset_from_position(
+    position: lsp_types::Position,
+    line_index: &LineIndex,
+    position_encoding: PositionEncoding,
+) -> anyhow::Result<biome_text_size::TextSize> {
+    let line_col = line_col_from_position(position, line_index, position_encoding);
 
     line_index
         .offset(line_col)
@@ -39,7 +48,7 @@ pub(crate) fn text_range(
     line_index: &LineIndex,
     position_encoding: PositionEncoding,
 ) -> anyhow::Result<biome_text_size::TextRange> {
-    let start = offset(range.start, line_index, position_encoding)?;
-    let end = offset(range.end, line_index, position_encoding)?;
+    let start = offset_from_position(range.start, line_index, position_encoding)?;
+    let end = offset_from_position(range.end, line_index, position_encoding)?;
     Ok(biome_text_size::TextRange::new(start, end))
 }
