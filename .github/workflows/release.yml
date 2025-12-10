@@ -166,11 +166,145 @@ jobs:
             ${{ steps.cargo-dist.outputs.paths }}
             ${{ env.BUILD_MANIFEST_NAME }}
 
+  # Extract Windows executables for signing
+  extract-windows-executables:
+    name: Extract Windows Executables
+    needs:
+      - plan
+      - build-local-artifacts
+    if: ${{ needs.plan.outputs.publishing == 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [x86_64-pc-windows-msvc, aarch64-pc-windows-msvc]
+    steps:
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: artifacts-build-local-${{ matrix.target }}
+          path: artifacts
+          merge-multiple: true
+
+      - name: Extract executable from archive
+        shell: bash
+        run: |
+          # Find the Windows zip archive for this target
+          ARCHIVE=$(find artifacts -name "air-*-${{ matrix.target }}.zip" -type f | head -1)
+          if [ -z "$ARCHIVE" ]; then
+            echo "Error: Could not find Windows archive for ${{ matrix.target }}"
+            exit 1
+          fi
+
+          echo "Found archive: $ARCHIVE"
+
+          # Extract the executable
+          unzip -j "$ARCHIVE" "*/air.exe" -d unsigned/
+
+          # Verify extraction
+          if [ ! -f "unsigned/air.exe" ]; then
+            echo "Error: Failed to extract air.exe"
+            exit 1
+          fi
+
+          ls -lh unsigned/
+
+      - name: Upload unsigned executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: air-unsigned-${{ matrix.target }}
+          path: unsigned/air.exe
+
+  # Sign Windows executables
+  sign-windows:
+    name: Sign Windows Executables
+    uses: posit-dev/posit-gh-actions/.github/workflows/sign-windows.yml@main
+    needs: [extract-windows-executables]
+    secrets: inherit
+    strategy:
+      matrix:
+        target: [x86_64-pc-windows-msvc, aarch64-pc-windows-msvc]
+    with:
+      unsigned_artifact_name: air-unsigned-${{ matrix.target }}
+      signed_artifact_name: air-signed-${{ matrix.target }}
+
+  # Repackage Windows archives with signed executables
+  repackage-windows-archives:
+    name: Repackage Windows Archives
+    needs:
+      - plan
+      - build-local-artifacts
+      - sign-windows
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [x86_64-pc-windows-msvc, aarch64-pc-windows-msvc]
+    steps:
+      - name: Download original Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: artifacts-build-local-${{ matrix.target }}
+          path: original-artifacts
+          merge-multiple: true
+
+      - name: Download signed executable
+        uses: actions/download-artifact@v4
+        with:
+          name: air-signed-${{ matrix.target }}
+          path: signed
+
+      - name: Repackage archive with signed executable
+        shell: bash
+        run: |
+          # Find the original Windows zip archive
+          ARCHIVE=$(find original-artifacts -name "air-*-${{ matrix.target }}.zip" -type f | head -1)
+          if [ -z "$ARCHIVE" ]; then
+            echo "Error: Could not find Windows archive for ${{ matrix.target }}"
+            exit 1
+          fi
+
+          ARCHIVE_NAME=$(basename "$ARCHIVE")
+          echo "Repackaging: $ARCHIVE_NAME"
+
+          # Extract the original archive
+          mkdir -p extracted
+          cd extracted
+          unzip "../$ARCHIVE"
+
+          # Replace the unsigned executable with the signed one
+          find . -name "air.exe" -exec cp ../signed/air.exe {} \;
+
+          # Verify the signed executable was copied
+          SIGNED_EXE=$(find . -name "air.exe" -type f | head -1)
+          if [ ! -f "$SIGNED_EXE" ]; then
+            echo "Error: Failed to find air.exe in extracted archive"
+            exit 1
+          fi
+
+          echo "Signed executable location: $SIGNED_EXE"
+          ls -lh "$SIGNED_EXE"
+
+          # Recreate the archive with the signed executable
+          cd ..
+          mkdir -p repackaged
+          cd extracted
+          zip -r "../repackaged/$ARCHIVE_NAME" .
+          cd ..
+
+          echo "Repackaged archive created"
+          ls -lh "repackaged/$ARCHIVE_NAME"
+
+      - name: Upload repackaged archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-build-local-${{ matrix.target }}-signed
+          path: repackaged/*
+
   # Build and package all the platform-agnostic(ish) things
   build-global-artifacts:
     needs:
       - plan
       - build-local-artifacts
+      - repackage-windows-archives
     runs-on: "ubuntu-latest"
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -186,10 +320,31 @@ jobs:
           path: ~/.cargo/bin/
       - run: chmod +x ~/.cargo/bin/dist
       # Get all the local artifacts for the global tasks to use (for e.g. checksums)
-      - name: Fetch local artifacts
+      # Download non-Windows build artifacts
+      - name: Fetch non-Windows artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: artifacts-*
+          pattern: artifacts-build-local-*-apple-darwin
+          path: target/distrib/
+          merge-multiple: true
+      - name: Fetch Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: artifacts-build-local-*-linux-gnu
+          path: target/distrib/
+          merge-multiple: true
+      # Download signed Windows artifacts (not the unsigned ones)
+      - name: Fetch signed Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: artifacts-build-local-*-pc-windows-msvc-signed
+          path: target/distrib/
+          merge-multiple: true
+      # Download plan manifest
+      - name: Fetch plan artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: artifacts-plan-*
           path: target/distrib/
           merge-multiple: true
       - id: cargo-dist
@@ -217,8 +372,9 @@ jobs:
       - plan
       - build-local-artifacts
       - build-global-artifacts
+      - repackage-windows-archives
     # Only run if we're "publishing", and only if local and global didn't fail (skipped is fine)
-    if: ${{ always() && needs.plan.outputs.publishing == 'true' && (needs.build-global-artifacts.result == 'skipped' || needs.build-global-artifacts.result == 'success') && (needs.build-local-artifacts.result == 'skipped' || needs.build-local-artifacts.result == 'success') }}
+    if: ${{ always() && needs.plan.outputs.publishing == 'true' && (needs.build-global-artifacts.result == 'skipped' || needs.build-global-artifacts.result == 'success') && (needs.build-local-artifacts.result == 'skipped' || needs.build-local-artifacts.result == 'success') && (needs.repackage-windows-archives.result == 'skipped' || needs.repackage-windows-archives.result == 'success') }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     runs-on: "ubuntu-latest"
@@ -235,10 +391,37 @@ jobs:
           path: ~/.cargo/bin/
       - run: chmod +x ~/.cargo/bin/dist
       # Fetch artifacts from scratch-storage
-      - name: Fetch artifacts
+      # Download non-Windows build artifacts
+      - name: Fetch non-Windows artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: artifacts-*
+          pattern: artifacts-build-local-*-apple-darwin
+          path: target/distrib/
+          merge-multiple: true
+      - name: Fetch Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: artifacts-build-local-*-linux-gnu
+          path: target/distrib/
+          merge-multiple: true
+      # Download signed Windows artifacts (not the unsigned ones)
+      - name: Fetch signed Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: artifacts-build-local-*-pc-windows-msvc-signed
+          path: target/distrib/
+          merge-multiple: true
+      # Download global artifacts (checksums, etc.)
+      - name: Fetch global artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: artifacts-build-global
+          path: target/distrib/
+          merge-multiple: true
+      - name: Fetch plan artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: artifacts-plan-*
           path: target/distrib/
           merge-multiple: true
       - id: host
