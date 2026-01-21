@@ -52,11 +52,11 @@ global = "ubuntu-latest"
 [dist.github-custom-runners.x86_64-apple-darwin]
 # Use Intel Mac runner to build Intel binary.
 # This is the dist default but we want to explicitly pin it.
-runner = "macos-13"
+runner = "macos-15-intel"
 
 [dist.github-custom-runners.aarch64-apple-darwin]
 # Use ARM Mac runner to build ARM binary (not strictly required, but nice).
-# dist uses `macos-13` (Intel) by default and cross-compiles to ARM.
+# dist uses `macos-15-intel` (Intel) by default and cross-compiles to ARM.
 runner = "macos-14"
 
 [dist.github-custom-runners.x86_64-unknown-linux-gnu]
