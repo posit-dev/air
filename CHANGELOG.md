@@ -2,6 +2,9 @@
 
 # Development version
 
+
+# 0.8.1
+
 - Added color to Air's terminal help. Disable by setting the environment variable `NO_COLOR=1` (#447, @etiennebacher).
 
 - Fixed an issue with Unicode elements and table alignment (#449).
