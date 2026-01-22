@@ -1,10 +1,3 @@
-//
-// to_proto.rs
-//
-// Copyright (C) 2024 Posit Software, PBC. All rights reserved.
-//
-//
-
 // Utilites for converting internal types to LSP types
 
 use anyhow::Context;
@@ -20,7 +13,7 @@ use crate::text_edit::TextEdit;
 
 /// The function is used to convert TextSize to a LSP position.
 /// From `biome_lsp_converters::to_proto::position()`.
-pub(crate) fn position(
+pub fn position(
     offset: TextSize,
     line_index: &LineIndex,
     position_encoding: PositionEncoding,
@@ -44,7 +37,7 @@ pub(crate) fn position(
 
 /// The function is used to convert TextRange to a LSP range.
 /// From `biome_lsp_converters::to_proto::range()`.
-pub(crate) fn range(
+pub fn range(
     range: TextRange,
     line_index: &LineIndex,
     position_encoding: PositionEncoding,
@@ -54,7 +47,7 @@ pub(crate) fn range(
     Ok(lsp_types::Range::new(start, end))
 }
 
-pub(crate) fn text_edit(
+pub fn text_edit(
     indel: Indel,
     line_index: &LineIndex,
     position_encoding: PositionEncoding,
@@ -68,7 +61,7 @@ pub(crate) fn text_edit(
     Ok(lsp_types::TextEdit { range, new_text })
 }
 
-pub(crate) fn text_edit_vec(
+pub fn text_edit_vec(
     text_edit: TextEdit,
     line_index: &LineIndex,
     position_encoding: PositionEncoding,
@@ -80,8 +73,7 @@ pub(crate) fn text_edit_vec(
         .collect()
 }
 
-#[cfg(test)]
-pub(crate) fn doc_edit_vec(
+pub fn doc_edit_vec(
     text_edit: TextEdit,
     line_index: &LineIndex,
     position_encoding: PositionEncoding,
@@ -99,7 +91,7 @@ pub(crate) fn doc_edit_vec(
         .collect())
 }
 
-pub(crate) fn replace_range_edit(
+pub fn replace_range_edit(
     range: TextRange,
     replace_with: String,
     line_index: &LineIndex,
@@ -110,7 +102,7 @@ pub(crate) fn replace_range_edit(
     text_edit_vec(edit, line_index, position_encoding, endings)
 }
 
-pub(crate) fn replace_all_edit(
+pub fn replace_all_edit(
     text: &str,
     replace_with: &str,
     line_index: &LineIndex,
