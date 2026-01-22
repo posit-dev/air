@@ -13,7 +13,7 @@ use crate::text_edit::Indel;
 use crate::text_edit::TextEdit;
 
 /// The function is used to convert LineCol to a LSP position.
-pub(crate) fn position_from_line_col(
+pub fn position_from_line_col(
     line_col: LineCol,
     line_index: &LineIndex,
     position_encoding: PositionEncoding,
@@ -31,7 +31,7 @@ pub(crate) fn position_from_line_col(
 
 /// The function is used to convert TextSize to a LSP position.
 /// From `biome_lsp_converters::to_proto::position()`.
-pub(crate) fn position_from_offset(
+pub fn position_from_offset(
     offset: TextSize,
     line_index: &LineIndex,
     position_encoding: PositionEncoding,

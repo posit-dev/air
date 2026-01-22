@@ -9,7 +9,7 @@ use tower_lsp::lsp_types;
 use crate::proto::PositionEncoding;
 
 /// The function is used to convert a LSP position to LineCol.
-pub(crate) fn line_col_from_position(
+pub fn line_col_from_position(
     position: lsp_types::Position,
     line_index: &LineIndex,
     position_encoding: PositionEncoding,
@@ -31,7 +31,7 @@ pub(crate) fn line_col_from_position(
 
 /// The function is used to convert a LSP position to TextSize.
 /// From `biome_lsp_converters::from_proto::offset()`.
-pub(crate) fn offset_from_position(
+pub fn offset_from_position(
     position: lsp_types::Position,
     line_index: &LineIndex,
     position_encoding: PositionEncoding,
