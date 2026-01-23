@@ -27,6 +27,10 @@ targets = [
     "x86_64-unknown-linux-gnu",
     "aarch64-unknown-linux-gnu",
 ]
+# Whether CI should include auto-generated code to build local artifacts
+build-local-artifacts = false
+# Local artifacts jobs to run in CI
+local-artifacts-jobs = ["./build-binaries"]
 # Tell dist to only build `crates/air` rather than every crate in the workspace,
 # which it does by default to be conservative but would include some heavier test-only
 # crates that aren't required (including xtask).
