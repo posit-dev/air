@@ -169,6 +169,10 @@ jobs:
   custom-codesign-windows-binaries:
     needs:
       - plan
+      # ---
+      # TODO: Can cargo-dist let us require this?
+      - build-local-artifacts
+      # ---
     if: ${{ needs.plan.outputs.publishing == 'true' || fromJson(needs.plan.outputs.val).ci.github.pr_run_mode == 'upload' || inputs.tag == 'dry-run' }}
     uses: ./.github/workflows/codesign-windows-binaries.yml
     with:
