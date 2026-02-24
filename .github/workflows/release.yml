@@ -166,15 +166,11 @@ jobs:
             ${{ steps.cargo-dist.outputs.paths }}
             ${{ env.BUILD_MANIFEST_NAME }}
 
-  custom-codesign-windows-binaries:
+  custom-build:
     needs:
       - plan
-      # ---
-      # TODO: Can cargo-dist let us require this?
-      - build-local-artifacts
-      # ---
     if: ${{ needs.plan.outputs.publishing == 'true' || fromJson(needs.plan.outputs.val).ci.github.pr_run_mode == 'upload' || inputs.tag == 'dry-run' }}
-    uses: ./.github/workflows/codesign-windows-binaries.yml
+    uses: ./.github/workflows/build.yml
     with:
       plan: ${{ needs.plan.outputs.val }}
     secrets: inherit
@@ -184,7 +180,7 @@ jobs:
     needs:
       - plan
       - build-local-artifacts
-      - custom-codesign-windows-binaries
+      - custom-build
     runs-on: "ubuntu-latest"
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -230,10 +226,10 @@ jobs:
     needs:
       - plan
       - build-local-artifacts
-      - custom-codesign-windows-binaries
+      - custom-build
       - build-global-artifacts
     # Only run if we're "publishing", and only if local and global didn't fail (skipped is fine)
-    if: ${{ always() && needs.plan.outputs.publishing == 'true' && (needs.build-global-artifacts.result == 'skipped' || needs.build-global-artifacts.result == 'success') && (needs.build-local-artifacts.result == 'skipped' || needs.build-local-artifacts.result == 'success') && (needs.custom-codesign-windows-binaries.result == 'skipped' || needs.custom-codesign-windows-binaries.result == 'success') }}
+    if: ${{ always() && needs.plan.outputs.publishing == 'true' && (needs.build-global-artifacts.result == 'skipped' || needs.build-global-artifacts.result == 'success') && (needs.build-local-artifacts.result == 'skipped' || needs.build-local-artifacts.result == 'success') && (needs.custom-build.result == 'skipped' || needs.custom-build.result == 'success') }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     runs-on: "ubuntu-latest"
