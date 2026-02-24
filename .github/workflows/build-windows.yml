@@ -1,0 +1,44 @@
+name: "Build Windows"
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    name: "Build Windows (${{ matrix.this.target }})"
+    runs-on: ${{ matrix.this.runner }}
+    timeout-minutes: 30
+
+    strategy:
+      matrix:
+        this:
+          - target: x86_64-pc-windows-msvc
+            runner: windows-2022
+          - target: aarch64-pc-windows-msvc
+            runner: windows-11-arm
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Build binary"
+        run: cargo build --release --locked --target ${{ matrix.this.target }} -p air
+
+      - name: "Archive binary"
+        shell: bash
+        run: |
+          TARGET=${{ matrix.this.target }}
+          ARCHIVE_NAME=air-$TARGET
+          ARCHIVE_FILE=$ARCHIVE_NAME.zip
+
+          mkdir -p $ARCHIVE_NAME
+          cp target/$TARGET/release/air.exe $ARCHIVE_NAME/air.exe
+          7z a $ARCHIVE_FILE $ARCHIVE_NAME
+          sha256sum $ARCHIVE_FILE > $ARCHIVE_FILE.sha256
+
+      - name: "Upload binary"
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-${{ matrix.this.target }}
+          path: |
+            *.zip
+            *.sha256
