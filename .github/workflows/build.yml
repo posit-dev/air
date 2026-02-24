@@ -2,6 +2,7 @@ name: "Build"
 
 on:
   workflow_call:
+    # Passed via dist, but not used
     inputs:
       plan:
         required: true
