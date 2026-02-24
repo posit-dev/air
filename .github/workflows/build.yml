@@ -18,7 +18,7 @@ jobs:
     uses: ./.github/workflows/build-windows.yml
     secrets: inherit
 
-#   build_linux:
-#     name: Build linux
-#     uses: ./.github/workflows/build-linux.yml
-#     secrets: inherit
+  build_linux:
+    name: Build linux
+    uses: ./.github/workflows/build-linux.yml
+    secrets: inherit
