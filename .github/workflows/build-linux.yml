@@ -27,9 +27,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: "Update build environment"
-        run: apt-get update
-
       - name: "Report rust toolchain"
         run: rustup show
 
