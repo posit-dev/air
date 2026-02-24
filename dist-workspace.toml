@@ -27,6 +27,8 @@ targets = [
     "x86_64-unknown-linux-gnu",
     "aarch64-unknown-linux-gnu",
 ]
+# Tell dist not to build the binaries
+build-local-artifacts = false
 # Local artifacts jobs to run in CI
 local-artifacts-jobs = ["./build"]
 # Whether to auto-include files like READMEs, LICENSEs, and CHANGELOGs (default true)
