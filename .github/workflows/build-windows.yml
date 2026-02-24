@@ -20,6 +20,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: "Report rust toolchain"
+        run: rustup show
+
       - name: "Build binary"
         run: cargo build --release --locked --target ${{ matrix.this.target }} -p air
 
