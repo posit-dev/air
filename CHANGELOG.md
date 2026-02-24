@@ -2,6 +2,8 @@
 
 # Development version
 
+- Air is now code-signed on Windows (#461).
+
 
 # 0.8.1
 
