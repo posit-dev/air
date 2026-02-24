@@ -27,8 +27,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: "Install rust"
-        run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+      # Install Rust
+      - uses: dtolnay/rust-toolchain@stable
 
       - name: "Report rust toolchain"
         run: rustup show
