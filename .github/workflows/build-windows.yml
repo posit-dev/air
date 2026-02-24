@@ -3,6 +3,9 @@ name: "Build Windows"
 on:
   workflow_call:
 
+env:
+  RUST_TOOLCHAIN: "1.87"
+
 jobs:
   build:
     name: "Build Windows (${{ matrix.this.target }})"
@@ -19,6 +22,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: "Install rust"
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          targets: ${{ matrix.this.target }}
 
       - name: "Report rust toolchain"
         run: rustup show
