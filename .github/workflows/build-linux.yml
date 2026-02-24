@@ -6,38 +6,28 @@ on:
 jobs:
   build:
     name: "Build Linux (${{ matrix.this.target }})"
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.this.runner }}
     timeout-minutes: 30
-
-    # Lock Linux to minimum supported version (Ubuntu 18.04 / RHEL 8, glibc
-    # 2.28). PyPa is the Python Packaging Authority, they manage old Linux
-    # variants for building Python wheels.
-    container: quay.io/pypa/manylinux_2_28_x86_64
 
     strategy:
       matrix:
         this:
+          # Lock Linux to minimum supported version (Ubuntu 18.04 / RHEL 8,
+          # glibc 2.28) via a Docker container. PyPa is the Python Packaging
+          # Authority, they manage old Linux variants for building Python
+          # wheels.
           - target: x86_64-unknown-linux-gnu
-            cross: false
+            runner: ubuntu-24.04
+            container: quay.io/pypa/manylinux_2_28_x86_64
           - target: aarch64-unknown-linux-gnu
-            cross: true
+            runner: ubuntu-24.04-arm
+            container: quay.io/pypa/manylinux_2_28_aarch64
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: "Install cross-compilation tools"
-        if: matrix.this.cross
-        run: |
-          rustup target add ${{ matrix.this.target }}
-          python3 -m pip install ziglang cargo-zigbuild
-
       - name: "Build binary"
-        run: |
-          if [ "${{ matrix.this.cross }}" = "true" ]; then
-            cargo zigbuild --release --locked --target ${{ matrix.this.target }} -p air
-          else
-            cargo build --release --locked --target ${{ matrix.this.target }} -p air
-          fi
+        run: cargo build --release --locked --target ${{ matrix.this.target }} -p air
 
       - name: "Archive binary"
         run: |
