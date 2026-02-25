@@ -1,0 +1,45 @@
+[project]
+name = "air-formatter"
+version = "0.8.1"
+description = "An R formatter, written in Rust."
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+authors = [
+  { name = "Davis Vaughan", email = "davis@posit.co" },
+  { name = "Lionel Henry", email = "lionel@posit.co" },
+  { name = "Posit Software, PBC" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Software Development :: Quality Assurance",
+]
+
+[project.urls]
+Changelog = "https://github.com/posit-dev/air/blob/main/CHANGELOG.md"
+Documentation = "https://posit-dev.github.io/air/"
+Repository = "https://github.com/posit-dev/air"
+
+[build-system]
+requires = ["uv_build>=0.10.6,<0.11"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+# Different than the package name of `air-formatter`
+module-name = "air"
+
+[tool.uv.build-backend.data]
+# Tells uv to copy `scripts/` into `.data/scripts/` in the wheel.
+# This is the directory where executables can live in a wheel.
+scripts = "scripts"

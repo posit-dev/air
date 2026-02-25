@@ -33,3 +33,18 @@ install-vscode:
 
 install-positron:
   cd editors/code && rm -rf *.vsix && vsce package && positron --install-extension *.vsix
+
+# For local wheel testing. Will generate:
+#
+# ```
+# wheel/air_formatter-{version}-py3-none-any.whl
+# ```
+#
+# which works on the system it was built on.
+# Automatically installs it with `uv tool install`.
+install-wheel:
+  cargo build --release
+  mkdir -p python/scripts
+  cp target/release/air python/scripts/air
+  uv build --wheel --out-dir wheel/ python/
+  uv tool install wheel/*.whl

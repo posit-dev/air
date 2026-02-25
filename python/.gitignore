@@ -1,0 +1,3 @@
+# We don't want to commit an air binary placed here during development,
+# these are placed here during CI in the wheels that are sent to PyPI
+scripts
