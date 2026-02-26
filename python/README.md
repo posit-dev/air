@@ -4,32 +4,44 @@ An R formatter. Written in Rust.
 
 This package provides the `air` command-line tool as a Python package, making it easy to install via `pip` or `uv`.
 
-## Installation and usage
+## Installation
 
-```bash
-pip install air-formatter
-```
-
-Or with [uv](https://docs.astral.sh/uv/):
+Install a global installation of `air` with [uv](https://docs.astral.sh/uv/):
 
 ```bash
 uv tool install air-formatter
 ```
 
-After installation, the `air` CLI is available:
+or with pip
 
 ```bash
-# Format R files
+pip install air-formatter
+```
+
+This puts `air` on the PATH, so you can run:
+
+```bash
+# Format R file
 air format path/to/file.R
 
 # Format all R files in a directory
 air format path/to/directory/
 ```
 
-You may also invoke it as a tool via [uv](https://docs.astral.sh/uv/) without installing it:
+Alternatively, invoke air via `uvx` for one-off formatting without a global install:
 
 ```bash
 uvx --from air-formatter air format path/to/file.R
+```
+
+To use a specific version of air:
+
+```bash
+# Global install
+uv tool install air-formatter@0.8.2
+
+# One off runs
+uvx --from air-formatter@0.8.2 air format path/to/file.R
 ```
 
 ## About
