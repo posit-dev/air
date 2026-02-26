@@ -1,0 +1,25 @@
+name: "Build"
+
+on:
+  workflow_call:
+    # Passed via dist, but not used
+    inputs:
+      plan:
+        required: true
+        type: string
+
+jobs:
+  build_macos:
+    name: Build mac
+    uses: ./.github/workflows/build-mac.yml
+    secrets: inherit
+
+  build_windows:
+    name: Build windows
+    uses: ./.github/workflows/build-windows.yml
+    secrets: inherit
+
+  build_linux:
+    name: Build linux
+    uses: ./.github/workflows/build-linux.yml
+    secrets: inherit

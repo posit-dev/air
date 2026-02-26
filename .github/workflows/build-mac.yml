@@ -1,0 +1,55 @@
+name: "Build macOS"
+
+on:
+  workflow_call:
+
+env:
+  RUST_TOOLCHAIN: "1.87"
+
+jobs:
+  build:
+    name: "Build macOS (${{ matrix.this.target }})"
+    runs-on: ${{ matrix.this.runner }}
+    timeout-minutes: 30
+
+    strategy:
+      matrix:
+        this:
+          - target: x86_64-apple-darwin
+            runner: macos-15-intel
+          - target: aarch64-apple-darwin
+            runner: macos-14
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Install rust"
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          targets: ${{ matrix.this.target }}
+
+      - name: "Report rust toolchain"
+        run: rustup show
+
+      - name: "Build"
+        run: cargo build --release --locked --target ${{ matrix.this.target }} -p air
+
+      - name: "Archive"
+        run: |
+          TARGET=${{ matrix.this.target }}
+          ARCHIVE_NAME=air-$TARGET
+          ARCHIVE_FILE=$ARCHIVE_NAME.tar.gz
+
+          mkdir -p $ARCHIVE_NAME
+          cp target/$TARGET/release/air $ARCHIVE_NAME/air
+          tar czvf $ARCHIVE_FILE $ARCHIVE_NAME
+          shasum -a 256 $ARCHIVE_FILE > $ARCHIVE_FILE.sha256
+
+      - name: "Upload"
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-${{ matrix.this.target }}
+          path: |
+            *.tar.gz
+            *.sha256

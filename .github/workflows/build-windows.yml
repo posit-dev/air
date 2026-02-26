@@ -1,0 +1,97 @@
+name: "Build Windows"
+
+on:
+  workflow_call:
+
+env:
+  RUST_TOOLCHAIN: "1.87"
+
+jobs:
+  build:
+    name: "Build Windows (${{ matrix.this.target }})"
+    runs-on: ${{ matrix.this.runner }}
+    timeout-minutes: 30
+
+    strategy:
+      matrix:
+        this:
+          - target: x86_64-pc-windows-msvc
+            runner: windows-2022
+          - target: aarch64-pc-windows-msvc
+            runner: windows-11-arm
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Install rust"
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          targets: ${{ matrix.this.target }}
+
+      - name: "Report rust toolchain"
+        run: rustup show
+
+      - name: "Build"
+        run: cargo build --release --locked --target ${{ matrix.this.target }} -p air
+
+      - name: "Upload unsigned"
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-${{ matrix.this.target }}
+          path: target/${{ matrix.this.target }}/release/air.exe
+
+  sign:
+    name: "Sign Windows (${{ matrix.this.target }})"
+    needs: build
+    secrets: inherit
+
+    uses: posit-dev/posit-gh-actions/.github/workflows/sign-windows.yml@main
+    with:
+      unsigned_artifact_name: unsigned-${{ matrix.this.target }}
+      signed_artifact_name: signed-${{ matrix.this.target }}
+
+    strategy:
+      matrix:
+        this:
+          - target: x86_64-pc-windows-msvc
+          - target: aarch64-pc-windows-msvc
+
+  upload:
+    name: "Upload Windows (${{ matrix.this.target }})"
+    runs-on: ubuntu-latest
+    needs: sign
+
+    strategy:
+      matrix:
+        this:
+          - target: x86_64-pc-windows-msvc
+          - target: aarch64-pc-windows-msvc
+
+    steps:
+      - name: "Download signed"
+        uses: actions/download-artifact@v4
+        with:
+          pattern: signed-${{ matrix.this.target }}
+          path: signed
+          merge-multiple: true
+
+      - name: "Archive"
+        shell: bash
+        run: |
+          TARGET=${{ matrix.this.target }}
+          ARCHIVE_NAME=air-$TARGET
+          ARCHIVE_FILE=$ARCHIVE_NAME.zip
+
+          mkdir -p $ARCHIVE_NAME
+          cp signed/air.exe $ARCHIVE_NAME/air.exe
+          7z a $ARCHIVE_FILE $ARCHIVE_NAME
+          sha256sum $ARCHIVE_FILE > $ARCHIVE_FILE.sha256
+
+      - name: "Upload"
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-${{ matrix.this.target }}
+          path: |
+            *.zip
+            *.sha256
