@@ -1,3 +1,7 @@
+# Build Python wheels for PyPI
+#
+# Assumed to run as a subworkflow of `.github/workflows/release.yml`.
+# Specifically, as a `local-artifacts-jobs` step within `cargo-dist`.
 name: "Build Wheels"
 
 on:
