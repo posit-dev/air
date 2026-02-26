@@ -79,8 +79,7 @@ jobs:
         run: uvx wheel tags --platform-tag ${{ matrix.this.platform_tag }} --remove wheel/*.whl
 
       - name: "Test wheel"
-        run: |
-          uv tool run --from wheel/*.whl air --help
+        run: uv tool run --from wheel/*.whl air --help
 
       - name: "Upload wheel"
         uses: actions/upload-artifact@v4
