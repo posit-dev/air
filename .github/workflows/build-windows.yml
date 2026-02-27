@@ -83,9 +83,10 @@ jobs:
           ARCHIVE_NAME=air-$TARGET
           ARCHIVE_FILE=$ARCHIVE_NAME.zip
 
-          mkdir -p $ARCHIVE_NAME
-          cp signed/air.exe $ARCHIVE_NAME/air.exe
-          7z a $ARCHIVE_FILE $ARCHIVE_NAME
+          # On Windows, the zip directly unzips into `air.exe` with no intermediate folder.
+          # This matches what cargo-dist does when it builds air for you.
+          # The leading `./` is required to avoid also archiving `signed/`, because Windows.
+          7z a $ARCHIVE_FILE ./signed/air.exe
           sha256sum $ARCHIVE_FILE > $ARCHIVE_FILE.sha256
 
       - name: "Upload"

@@ -2,6 +2,9 @@
 
 # Development version
 
+
+# 0.8.2
+
 - Air is now distributed on PyPI as `air-formatter` (#467).
 
   This allows air to be invoked via uv:
