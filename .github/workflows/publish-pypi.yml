@@ -33,12 +33,12 @@ jobs:
     steps:
       - uses: astral-sh/setup-uv@v7
 
-      - name: "Download wheels"
-        uses: actions/download-artifact@v4
-        with:
-          pattern: wheels-*
-          path: wheels
-          merge-multiple: true
-
-      - name: "Publish to PyPI"
-        run: uv publish wheels/*
+#       - name: "Download wheels"
+#         uses: actions/download-artifact@v4
+#         with:
+#           pattern: wheels-*
+#           path: wheels
+#           merge-multiple: true
+#
+#       - name: "Publish to PyPI"
+#         run: uv publish wheels/*
