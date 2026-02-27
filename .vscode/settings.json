@@ -8,6 +8,10 @@
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "charliermarsh.ruff"
+    },
     "rust-analyzer.check.command": "clippy",
     "rust-analyzer.imports.prefix": "crate",
     "rust-analyzer.imports.granularity.group": "item",

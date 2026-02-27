@@ -1,0 +1,88 @@
+# Build Python wheels for PyPI
+#
+# Assumed to run as a subworkflow of `.github/workflows/release.yml`.
+# Specifically, as a `local-artifacts-jobs` step within `cargo-dist`.
+name: "Build Wheels"
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    name: "Build Wheels (${{ matrix.this.target }})"
+    runs-on: ${{ matrix.this.runner }}
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        shell: bash
+
+    strategy:
+      matrix:
+        this:
+            # Platform tags are based on https://pypi.org/project/ruff/#files
+            # - macosx_10_12 matches Rust's default support
+            # - macosx_11_0 is the minimum for ARM Mac
+            # - manylinux_2_28 is what we build the binaries in for Linux
+          - target: x86_64-apple-darwin
+            platform_tag: macosx_10_12_x86_64
+            runner: macos-15-intel
+          - target: aarch64-apple-darwin
+            platform_tag: macosx_11_0_arm64
+            runner: macos-14
+          - target: x86_64-unknown-linux-gnu
+            platform_tag: manylinux_2_28_x86_64
+            runner: ubuntu-24.04
+          - target: aarch64-unknown-linux-gnu
+            platform_tag: manylinux_2_28_aarch64
+            runner: ubuntu-24.04-arm
+          - target: x86_64-pc-windows-msvc
+            platform_tag: win_amd64
+            runner: windows-2022
+          - target: aarch64-pc-windows-msvc
+            platform_tag: win_arm64
+            runner: windows-11-arm
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v7
+
+      - name: "Download artifact"
+        uses: actions/download-artifact@v4
+        with:
+          name: artifacts-${{ matrix.this.target }}
+          path: artifacts
+
+      - name: "Extract binary"
+        run: |
+          TARGET=${{ matrix.this.target }}
+
+          # uv knows to copy `scripts/` to `.data/scripts/` in the wheel
+          mkdir -p python/scripts
+
+          if [[ "$TARGET" == *windows* ]]; then
+            unzip artifacts/air-$TARGET.zip
+            cp air-$TARGET/air.exe python/scripts/air.exe
+          else
+            tar xzf artifacts/air-$TARGET.tar.gz
+            cp air-$TARGET/air python/scripts/air
+            chmod +x python/scripts/air
+          fi
+
+      - name: "Build wheel"
+        # Builds the wheel as generic `air_formatter-{air-version}-py3-none-any.whl`
+        run: uv build --wheel --out-dir wheel/ python/
+
+      - name: "Retag wheel"
+        # Retag the wheel with known platform-tag, becoming `air_formatter-{air-version}-py3-none-{platform-tag}.whl`
+        run: uvx wheel tags --platform-tag ${{ matrix.this.platform_tag }} --remove wheel/*.whl
+
+      - name: "Test wheel"
+        run: uv tool run --from wheel/*.whl air --help
+
+      - name: "Upload wheel"
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.this.target }}
+          path: wheel/*.whl
