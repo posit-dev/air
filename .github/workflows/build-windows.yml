@@ -85,7 +85,8 @@ jobs:
 
           # On Windows, the zip directly unzips into `air.exe` with no intermediate folder.
           # This matches what cargo-dist does when it builds air for you.
-          7z a $ARCHIVE_FILE signed/air.exe
+          # The leading `./` is required to avoid also archiving `signed/`, because Windows.
+          7z a $ARCHIVE_FILE ./signed/air.exe
           sha256sum $ARCHIVE_FILE > $ARCHIVE_FILE.sha256
 
       - name: "Upload"
