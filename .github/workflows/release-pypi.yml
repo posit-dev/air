@@ -1,11 +1,21 @@
-# Build Python wheels for PyPI
+# Build wheels and publish to PyPI
 #
-# Assumed to run as a subworkflow of `.github/workflows/release.yml`.
-# Specifically, as a `local-artifacts-jobs` step within `cargo-dist`.
-name: "Build Wheels"
+# See these docs for more about trusted publishing
+# https://docs.pypi.org/trusted-publishers/
+name: Release PyPI
 
 on:
-  workflow_call:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Binary version. No leading `v`.
+        required: true
+        type: string
+      dry_run:
+        description: Build wheels, but skip publishing.
+        required: true
+        default: false
+        type: boolean
 
 jobs:
   build:
@@ -48,25 +58,27 @@ jobs:
 
       - uses: astral-sh/setup-uv@v7
 
-      - name: "Download artifact"
-        uses: actions/download-artifact@v4
-        with:
-          name: artifacts-${{ matrix.this.target }}
-          path: artifacts
-
-      - name: "Extract binary"
+      - name: "Download binary"
         run: |
-          TARGET=${{ matrix.this.target }}
-
           # uv knows to copy `scripts/` to `.data/scripts/` in the wheel
           mkdir -p python/scripts
 
           if [[ "$TARGET" == *windows* ]]; then
-            unzip artifacts/air-$TARGET.zip
-            cp air-$TARGET/air.exe python/scripts/air.exe
+            TARGET=${{ matrix.this.target }}
+            ARCHIVE_NAME=air-$TARGET
+            ARCHIVE_FILE=$ARCHIVE_NAME.zip
+
+            curl -LsSfO https://github.com/posit-dev/air/releases/download/${{ inputs.version }}/$ARCHIVE_FILE
+            unzip $ARCHIVE_FILE
+            mv air.exe python/scripts/air.exe
           else
-            tar xzf artifacts/air-$TARGET.tar.gz
-            cp air-$TARGET/air python/scripts/air
+            TARGET=${{ matrix.this.target }}
+            ARCHIVE_NAME=air-$TARGET
+            ARCHIVE_FILE=$ARCHIVE_NAME.tar.gz
+
+            curl -LsSfO https://github.com/posit-dev/air/releases/download/${{ inputs.version }}/$ARCHIVE_FILE
+            tar -xvzf $ARCHIVE_FILE
+            mv $ARCHIVE_NAME/air python/scripts/air
             chmod +x python/scripts/air
           fi
 
@@ -86,3 +98,29 @@ jobs:
         with:
           name: wheels-${{ matrix.this.target }}
           path: wheel/*.whl
+
+  publish:
+    name: "Publish to PyPI"
+    runs-on: ubuntu-latest
+    needs: build
+
+    # For the restricted GitHub Environment
+    environment: pypi
+
+    permissions:
+      # For PyPI's trusted publishing
+      id-token: write
+
+    steps:
+      - uses: astral-sh/setup-uv@v7
+
+      - name: "Download wheels"
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          path: wheels
+          merge-multiple: true
+
+      - name: "Publish"
+        if: ${{ inputs.dry_run == false }}
+        run: uv publish wheels/*
