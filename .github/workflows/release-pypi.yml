@@ -60,11 +60,12 @@ jobs:
 
       - name: "Download binary"
         run: |
+          TARGET=${{ matrix.this.target }}
+
           # uv knows to copy `scripts/` to `.data/scripts/` in the wheel
           mkdir -p python/scripts
 
           if [[ "$TARGET" == *windows* ]]; then
-            TARGET=${{ matrix.this.target }}
             ARCHIVE_NAME=air-$TARGET
             ARCHIVE_FILE=$ARCHIVE_NAME.zip
 
@@ -72,7 +73,6 @@ jobs:
             unzip $ARCHIVE_FILE
             mv air.exe python/scripts/air.exe
           else
-            TARGET=${{ matrix.this.target }}
             ARCHIVE_NAME=air-$TARGET
             ARCHIVE_FILE=$ARCHIVE_NAME.tar.gz
 
