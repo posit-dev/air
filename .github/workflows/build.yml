@@ -24,8 +24,8 @@ jobs:
     uses: ./.github/workflows/build-linux.yml
     secrets: inherit
 
-  # build_wheels:
-  #   name: Build wheels
-  #   uses: ./.github/workflows/build-wheels.yml
-  #   secrets: inherit
-  #   needs: [build_macos, build_windows, build_linux]
+  build_wheels:
+    name: Build wheels
+    uses: ./.github/workflows/build-wheels.yml
+    secrets: inherit
+    needs: [build_macos, build_windows, build_linux]
