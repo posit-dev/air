@@ -50,21 +50,27 @@ When you want to cut a release of Air:
 
         -   Build the Air binaries and installer scripts.
 
-        -   Build the Python wheels from the Air binaries.
-
-        -   Push the Python wheels to PyPI.
-
         -   Create and push a git tag for the version.
 
         -   Create a GitHub Release attached to that git tag.
 
         -   Attach the binaries and installer scripts to that GitHub Release as artifacts.
 
+-   Manually run the [PyPI release workflow](https://github.com/posit-dev/air/actions/workflows/release-pypi.yml)
+
+    -   It runs on `workflow_dispatch`, you must specify the version of the Air binary to release, it should match the version you provided above.
+
+    -   The release workflow will:
+
+        -   Build the Python wheels from the Air binaries.
+
+        -   Push the Python wheels to PyPI if `!dry_run`.
+
 -   Manually run the [extension release workflow](https://github.com/posit-dev/air/actions/workflows/release-vscode.yml)
 
     -   It runs on `workflow_dispatch`, and automatically pulls in the latest release binary of Air from the binary release workflow above. It will release to both the VS Code marketplace and the OpenVSX marketplace.
 
--   Bump the version of Air recorded in Positron's [`product.json`](https://github.com/posit-dev/positron/blob/main/product.json) and do a PR to Positron.
+-   Bump the version of Air OpenVSX Extension version recorded in Positron's [`product.json`](https://github.com/posit-dev/positron/blob/main/product.json) and do a PR to Positron.
 
 -   Merge the release branch
 
@@ -111,15 +117,15 @@ If you have any questions about the process, refer to [Zed's update guide](https
 
 # Python wheels
 
-Python wheel creation and publishing is handled automatically at release time through `release.yml`. Here we document parts of that automated process.
+Python wheel creation and publishing is handled automatically at release time through `release-pypi.yml`. Here we document parts of that process.
 
 The Python wheels we distribute have the sole purpose of shipping the Air binary. There is no Python code in the wheel, and we don't support `python -m air` (meaning there is no `__main__.py` entry point). We expect it is more likely used as `uvx --from air-formatter air format .` (for a one off run) or as `uv tool install air-formatter` (for a global install of `air` which is symlinked into `~/.local/bin`), neither of which go through the thin Python shim that `python -m air` would do. Instead, these just call the shipped air binary directly.
 
 The scaffolding for the Python package is in `python/`. We use `uv_build` as the build system, since it has nice support for the `scripts/` directory, which is where we put the Air binary for distribution.
 
-In CI, `build-wheels.yml` runs as part of `build.yml`, which itself is called via cargo-dist's `release.yml`. `build-wheels.yml` collects the binaries from the other build steps and builds a per-platform wheel that puts the platform specific binary into `scripts/`. In `pyproject.toml`, we've set `[tool.uv.build-backend.data]` so that `uv_build` knows to copy over `scripts/` into the resulting wheel at build time. We then run `uv build` to build a generic "any" wheel without a specific platform, however, because there is a platform specific binary in there we really need it to be tagged with a specific platform. So we have to retag it with the known platform tag as a follow up. These platform tags tell PyPI how to deliver the right wheel when the user requests `air-formatter`.
+In CI, `release-pypi.yml` collects the binaries from `release.yml` and builds a per-platform wheel that puts the platform specific binary into `scripts/`. In `pyproject.toml`, we've set `[tool.uv.build-backend.data]` so that `uv_build` knows to copy over `scripts/` into the resulting wheel at build time. We then run `uv build` to build a generic "any" wheel without a specific platform, however, because there is a platform specific binary in there we really need it to be tagged with a specific platform. So we have to retag it with the known platform tag as a follow up. These platform tags tell PyPI how to deliver the right wheel when the user requests `air-formatter`.
 
-Later on in `release.yml`, the `publish-pypi.yml` job runs at publish time. It collects the wheels and uses `uv publish` to send them off to PyPI. This is a specially named job! It uses PyPI's Trusted Publishing so that we don't need any tokens. Instead, on Davis's PyPI account we have told PyPI to expect that `posit-dev/air` has a `publish-pypi.yml` workflow with a `environment: pypi` GitHub Environment set up, and when binaries are pushed from that source, PyPI will accept them without any additional tokens.
+`release-pypi.yml` then collects the wheels and uses `uv publish` to send them off to PyPI. This is a specially named job! It uses PyPI's Trusted Publishing so that we don't need any tokens. Instead, on Davis's PyPI account we have told PyPI to expect that `posit-dev/air` has a `release-pypi.yml` workflow with a `environment: pypi` GitHub Environment set up, and when binaries are pushed from that source, PyPI will accept them without any additional tokens.
 
 If you're testing the Python wheel generation locally, use `just build-wheel` to build the wheel, and `just run-wheel <air args>` to run it. This will build release Air, copy it into `scripts/`, build the "any" wheel (which is correct for you, since you just built Air), and then `run-wheel` will run it with `uv tool run`.
 
