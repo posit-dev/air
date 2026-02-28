@@ -139,7 +139,14 @@ If you're testing the Python wheel generation locally, use `just build-wheel` to
 
     This does not install the CLI, but instead builds it to `target/debug/air` (or `target/debug/air.exe` on Windows).
 
--   Install the development version of the VS Code or Positron extension:
+-   Install/activate the coordinated version of Node:
+
+    ```sh
+    (cd editors/code && nvm use)
+    ```
+
+-   Install the development version of the VS Code or Positron extension.
+    From the root:
 
     ``` bash
     # Install for Positron
