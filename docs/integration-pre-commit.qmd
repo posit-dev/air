@@ -1,0 +1,24 @@
+---
+title: "pre-commit"
+editor:
+  markdown:
+    wrap: sentence
+    canonical: true
+---
+
+Air can be used as a [pre-commit](https://pre-commit.com/) hook through [posit-dev/air-pre-commit](https://github.com/posit-dev/air-pre-commit).
+
+In your `.pre-commit-config.yaml`:
+
+``` yaml
+- repo: https://github.com/posit-dev/air-pre-commit
+  # Air version
+  rev: 0.8.2
+  hooks:
+    # Run the formatter
+    - id: air-format
+```
+
+::: callout-note
+## Only Air ≥0.8.2 can be pinned as a `rev`.
+:::

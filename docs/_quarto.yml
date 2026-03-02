@@ -35,6 +35,7 @@ website:
       - section: "Integrations"
         contents:
           - integration-github-actions.qmd
+          - integration-pre-commit.qmd
 
       - text: "Configuration"
         href: configuration.qmd
