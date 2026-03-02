@@ -66,6 +66,12 @@ When you want to cut a release of Air:
 
         -   Push the Python wheels to PyPI if `!dry_run`.
 
+-   Manually run the [air-pre-commit release workflow](https://github.com/posit-dev/air-pre-commit/actions/workflows/main.yml)
+
+    -   Ensure the PyPI release is successful first
+
+    -   This workflow will check if there is a new PyPI release of air-formatter available, and will create a new git tag for it and an accompanying GitHub Release. Then users of pre-commit can point at these git tags, which knows how to pull that version of Air from PyPI.
+
 -   Manually run the [extension release workflow](https://github.com/posit-dev/air/actions/workflows/release-vscode.yml)
 
     -   It runs on `workflow_dispatch`, and automatically pulls in the latest release binary of Air from the binary release workflow above. It will release to both the VS Code marketplace and the OpenVSX marketplace.
