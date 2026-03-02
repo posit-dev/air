@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Emacs – Air</title>
+<title>pre-commit – Air</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -125,7 +125,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./editors.html">Editors</a></li><li class="breadcrumb-item"><a href="./editor-emacs.html">Emacs</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./integration-github-actions.html">Integrations</a></li><li class="breadcrumb-item"><a href="./integration-pre-commit.html">pre-commit</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -204,7 +204,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./editor-emacs.html" class="sidebar-item-text sidebar-link active">
+  <a href="./editor-emacs.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Emacs</span></a>
   </div>
 </li>
@@ -227,7 +227,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./integration-pre-commit.html" class="sidebar-item-text sidebar-link">
+  <a href="./integration-pre-commit.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">pre-commit</span></a>
   </div>
 </li>
@@ -247,30 +247,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar"><div class="quarto-margin-header"><div class="margin-header-item">
 <p><img src="./images/air.png" alt="Logo" width="150"></p>
 </div></div>
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#installation" id="toc-installation" class="nav-link active" data-scroll-target="#installation">Installation</a>
-  <ul class="collapse">
-  <li><a href="#eglot" id="toc-eglot" class="nav-link" data-scroll-target="#eglot">eglot</a></li>
-  <li><a href="#lsp-mode" id="toc-lsp-mode" class="nav-link" data-scroll-target="#lsp-mode">lsp-mode</a></li>
-  </ul></li>
-  <li><a href="#features" id="toc-features" class="nav-link" data-scroll-target="#features">Features</a>
-  <ul class="collapse">
-  <li><a href="#format-on-save" id="toc-format-on-save" class="nav-link" data-scroll-target="#format-on-save">Format on save</a></li>
-  <li><a href="#format-document-or-region" id="toc-format-document-or-region" class="nav-link" data-scroll-target="#format-document-or-region">Format document or region</a></li>
-  </ul></li>
-  <li><a href="#known-issues" id="toc-known-issues" class="nav-link" data-scroll-target="#known-issues">Known Issues</a></li>
-  </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/editor-emacs.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./editors.html">Editors</a></li><li class="breadcrumb-item"><a href="./editor-emacs.html">Emacs</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./integration-github-actions.html">Integrations</a></li><li class="breadcrumb-item"><a href="./integration-pre-commit.html">pre-commit</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Emacs</h1>
+<h1 class="title">pre-commit</h1>
 </div>
 
 
@@ -287,88 +271,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Air provides first class support for Emacs, which supports the <a href="https://microsoft.github.io/language-server-protocol/">Language Server Protocol</a> via the eglot and <code>lsp-mode</code> modes.</p>
-<section id="installation" class="level1">
-<h1>Installation</h1>
-<section id="eglot" class="level2">
-<h2 class="anchored" data-anchor-id="eglot">eglot</h2>
-<p><code>eglot</code> is distributed with Emacs</p>
-<p>Adapt your <code>init.el</code> with the following configuration:</p>
-<pre class="elisp"><code>(add-to-list
-  'eglot-server-programs
-  '(ess-r-mode . ("air" "language-server")))
+<p>Air can be used as a <a href="https://pre-commit.com/">pre-commit</a> hook through <a href="https://github.com/posit-dev/air-pre-commit">posit-dev/air-pre-commit</a>.</p>
+<p>In your <code>.pre-commit-config.yaml</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">repo</span><span class="kw">:</span><span class="at"> https://github.com/posit-dev/air-pre-commit</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">  # Air version</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">rev</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.8.2</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">hooks</span><span class="kw">:</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">    # Run the formatter</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">id</span><span class="kw">:</span><span class="at"> air-format</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Only Air ≥0.8.2 can be pinned as a <code>rev</code>.
+</div>
+</div>
+<div class="callout-body-container callout-body">
 
-;; Start LSP when ess-r-mode is activated
-(add-hook 'ess-r-mode-hook 'eglot-ensure)</code></pre>
-</section>
-<section id="lsp-mode" class="level2">
-<h2 class="anchored" data-anchor-id="lsp-mode">lsp-mode</h2>
-<p><code>lsp-mode</code> can be installed from MELPA, see https://emacs-lsp.github.io/lsp-mode/page/installation</p>
-<p>If the <code>languageserver</code> R package is installed, <code>lsp-mode</code> will use it in <code>ess-r-mode</code> by default. To use the Air language server without the language server provided by the <code>languageserver</code> R package, adapt your <code>init.el</code> with the following configuration:</p>
-<pre class="elisp"><code>;; Disable languageserver entirely
-(add-to-list 'lsp-disabled-clients 'lsp-r)
-
-(lsp-register-client
-  (make-lsp-client
-    :new-connection (lsp-stdio-connection '("air" "language-server"))
-    :major-modes '(ess-r-mode)
-    :server-id 'lsp-r-air))
-
-;; Start LSP when ess-r-mode is activated
-(add-hook 'ess-r-mode-hook #'lsp-deferred)</code></pre>
-<p>To use Air in combination with <code>languageserver</code>, adapt your <code>init.el</code> with the following configuration.</p>
-<pre class="elisp"><code>  (lsp-register-client
-   (make-lsp-client
-    :new-connection (lsp-stdio-connection '("air" "language-server"))
-    :major-modes  '(ess-r-mode)
-    :server-id 'lsp-r-air
-    :add-on? t
-    :priority 1))</code></pre>
-<p>You will also need to add the following to your global and/or project-specific <code>.Rprofile</code> file to disable formatting by the <code>languageserver</code> package to avoid conflicts when using <code>lsp-format-region</code>:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">languageserver.server_capabilities =</span> <span class="fu">list</span>(</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">documentFormattingProvider =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">documentRangeFormattingProvider =</span> <span class="cn">FALSE</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>If you encounter timeout errors when using <code>lsp-mode</code> in large projects, refer to the lsp-mode documentation on <a href="https://emacs-lsp.github.io/lsp-mode/page/file-watchers/">how to disable file watchers</a>.</p>
-</section>
-</section>
-<section id="features" class="level1">
-<h1>Features</h1>
-<section id="format-on-save" class="level2">
-<h2 class="anchored" data-anchor-id="format-on-save">Format on save</h2>
-<p>Emacs doesn’t have official support for formatting on save, but hooking into the save action is easy.</p>
-<p>With <code>eglot</code>:</p>
-<pre class="elisp"><code>(defun my-eglot-format-on-save ()
-  "Formats buffer with Eglot on save for specified modes."
-  (when (member major-mode '(ess-r-mode))
-    (eglot-format-buffer)))
-
-(add-hook 'after-save-hook 'my-eglot-format-on-save))</code></pre>
-<p>With <code>lsp-mode</code>, from <a href="https://emacs-lsp.github.io/lsp-mode/page/main-features" class="uri">https://emacs-lsp.github.io/lsp-mode/page/main-features</a>:</p>
-<blockquote class="blockquote">
-<p>You can also trigger format on save by setting the variable lsp-format-buffer-on-save to a non-nil value. To select what major modes to format use lsp-format-buffer-on-save-list.</p>
-</blockquote>
-<pre class="elisp"><code>(setq lsp-format-buffer-on-save t)
-(setq lsp-format-buffer-on-save-list '("ess-r-mode"))</code></pre>
-</section>
-<section id="format-document-or-region" class="level2">
-<h2 class="anchored" data-anchor-id="format-document-or-region">Format document or region</h2>
-<ul>
-<li><p>With <code>eglot</code>: Run <code>M-x eglot-format</code> to format the current buffer or selection.</p></li>
-<li><p>With <code>lsp-mode</code>: Run <code>M-x lsp-format-buffer</code> to format the current buffer or <code>lsp-format-region</code> to format the current selection.</p></li>
-</ul>
-</section>
-</section>
-<section id="known-issues" class="level1">
-<h1>Known Issues</h1>
-<ul>
-<li>Attempting to format selection when multiple lines are selected seems not to be working, but selecting part or all a line in a multi-line expression will format that entire expression. This isssue occurs regardless of whether Air is used with Eglot or LSP-mode.</li>
-</ul>
+</div>
+</div>
 
 
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -796,4 +721,4 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/editor-emacs.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/integration-pre-commit.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

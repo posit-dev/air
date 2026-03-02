@@ -165,6 +165,27 @@
     ]
   },
   {
+    "objectID": "integration-pre-commit.html",
+    "href": "integration-pre-commit.html",
+    "title": "pre-commit",
+    "section": "",
+    "text": "Air can be used as a pre-commit hook through posit-dev/air-pre-commit.\nIn your .pre-commit-config.yaml:\n- repo: https://github.com/posit-dev/air-pre-commit\n  # Air version\n  rev: 0.8.2\n  hooks:\n    # Run the formatter\n    - id: air-format\n\n\n\n\n\n\nOnly Air ≥0.8.2 can be pinned as a rev.",
+    "crumbs": [
+      "Integrations",
+      "pre-commit"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Air",
+    "section": "",
+    "text": "Air is an R formatter and language server, written in Rust.\n\nIntegrates with your favorite editor with support for\n\nFormat on save\nFormat selection\n\nUsable from the command line with support for\n\nFormatting individual files\nRecursively formatting entire directories\n--check mode, suitable for a git pre-commit hook or a GitHub Actions workflow\n\n\nIf you’d like to use Air from the command line, read our installation guide. If you’d like to use Air inside a code editor, read our editors guide.",
+    "crumbs": [
+      "Air"
+    ]
+  },
+  {
     "objectID": "editor-neovim.html",
     "href": "editor-neovim.html",
     "title": "Neovim",
@@ -206,16 +227,6 @@
     "crumbs": [
       "Editors",
       "Neovim"
-    ]
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Air",
-    "section": "",
-    "text": "Air is an R formatter and language server, written in Rust.\n\nIntegrates with your favorite editor with support for\n\nFormat on save\nFormat selection\n\nUsable from the command line with support for\n\nFormatting individual files\nRecursively formatting entire directories\n--check mode, suitable for a git pre-commit hook or a GitHub Actions workflow\n\n\nIf you’d like to use Air from the command line, read our installation guide. If you’d like to use Air inside a code editor, read our editors guide.",
-    "crumbs": [
-      "Air"
     ]
   },
   {
