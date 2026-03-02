@@ -1,0 +1,36 @@
+---
+title: "uv"
+editor:
+  markdown:
+    wrap: sentence
+    canonical: true
+---
+
+Air can be installed via [uv](https://docs.astral.sh/uv/) due to the fact that Air's binary is distributed on PyPI via the [air-formatter](https://pypi.org/project/air-formatter/) Python package.
+
+::: callout-note
+## Only Air ≥0.8.2 can be installed via uv.
+:::
+
+To globally install Air using uv:
+
+```bash
+uv tool install air-formatter
+
+# Now you can do
+air format path/to/my/script.R
+```
+
+Alternatively, ephemerally invoke Air without installing it using uvx:
+
+```bash
+uvx --from air-formatter air format path/to/my/script.R
+```
+
+For a specific version of Air:
+
+```bash
+uv tool install air-formatter@0.8.2
+
+uvx --from air-formatter@0.8.2 air format path/to/my/script.R
+```

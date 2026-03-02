@@ -10,27 +10,44 @@ Air is usable both as a command line tool and as a language server inside your f
 
 On macOS and Linux:
 
-``` shell
+``` bash
 curl -LsSf https://github.com/posit-dev/air/releases/latest/download/air-installer.sh | sh
 ```
 
-Or, if you're familiar with [Homebrew](https://brew.sh/), install the [air formula](https://formulae.brew.sh/formula/air) with:
+On Windows:
+
+``` powershell
+powershell -ExecutionPolicy Bypass -c "irm https://github.com/posit-dev/air/releases/latest/download/air-installer.ps1 | iex"
+```
+
+The installer scripts will automatically add Air to your `PATH`.
+The very first time you install Air, for the `PATH` modifications to be applied you'll need to restart your terminal.
+
+For a specific version:
+
+``` bash
+curl -LsSf https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.sh | sh
+```
+
+``` powershell
+powershell -ExecutionPolicy Bypass -c "irm https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.ps1 | iex"
+```
+
+If you're on macOS and are familiar with [Homebrew](https://brew.sh/), you can alternatively install the [air formula](https://formulae.brew.sh/formula/air) with:
 
 ``` bash
 brew install air
 ```
 
-On Windows:
+If you use [uv](https://docs.astral.sh/uv/), you can install Air via the [air-formatter](https://pypi.org/project/air-formatter/) package:
 
-``` shell
-powershell -ExecutionPolicy Bypass -c "irm https://github.com/posit-dev/air/releases/latest/download/air-installer.ps1 | iex"
-```
+``` bash
+# Global install
+uv tool install air-formatter
+air format path/to/my/script.R
 
-For a specific version:
-
-``` shell
-curl -LsSf https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.sh | sh
-powershell -ExecutionPolicy Bypass -c "irm https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.ps1 | iex"
+# Invoke once without installing
+uvx --from air-formatter air format path/to/my/script.R
 ```
 
 The installer scripts will automatically add Air to your `PATH`. The very first time you install Air, you'll need to restart your shell for the `PATH` modifications to be applied.
