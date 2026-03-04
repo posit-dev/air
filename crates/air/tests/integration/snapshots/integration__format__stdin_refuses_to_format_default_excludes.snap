@@ -1,0 +1,13 @@
+---
+source: crates/air/tests/integration/format.rs
+expression: "Command::new(binary_path()).current_dir(directory).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped()).arg(\"format\").arg(\"--stdin-file-path\").arg(cpp11_path).run_with_stdin(cpp11_contents.to_string())"
+---
+success: true
+exit_code: 0
+----- stdout -----
+1 + 1
+
+----- stderr -----
+
+----- args -----
+format --stdin-file-path cpp11.R

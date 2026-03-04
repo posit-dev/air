@@ -1,0 +1,13 @@
+---
+source: crates/air/tests/integration/format.rs
+expression: "Command::new(binary_path()).current_dir(directory).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped()).arg(\"format\").arg(test_path).arg(\"--stdin-file-path\").arg(test_path).arg(\"--no-color\").run_with_stdin(test_contents.to_string()).normalize_os_path_separator()"
+---
+success: false
+exit_code: 255
+----- stdout -----
+
+----- stderr -----
+ERROR Can't supply paths when reading from stdin: 'test.R'
+
+----- args -----
+format test.R --stdin-file-path test.R --no-color

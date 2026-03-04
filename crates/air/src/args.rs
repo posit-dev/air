@@ -50,6 +50,15 @@ pub(crate) struct FormatCommand {
     /// and zero otherwise.
     #[arg(long)]
     pub check: bool,
+
+    /// Use this option to enable reading from stdin and writing to stdout. This specifies
+    /// a file path to associate the standard input with, which is used as the location to
+    /// begin searching for configuration files from. The file does not have to exist and
+    /// will not be read from. If a relative path is provided, it is resolved from the
+    /// current working directory. If this option is specified, no other files or
+    /// directories can be provided.
+    #[arg(long)]
+    pub stdin_file_path: Option<PathBuf>,
 }
 
 #[derive(Clone, Debug, Parser)]
