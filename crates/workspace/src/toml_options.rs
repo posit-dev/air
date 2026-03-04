@@ -215,7 +215,7 @@ pub struct FormatTomlOptions {
     /// disable these defaults by setting this option to `false`. The default
     /// set currently includes:
     ///
-    /// - `tribble()` from tribble
+    /// - `tribble()` from tibble
     /// - `fcase()` from data.table
     pub default_table: Option<bool>,
 }

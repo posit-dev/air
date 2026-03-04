@@ -265,25 +265,19 @@ igraph::graph_from_literal(A +-+ B +---+ C ++ D + E)
 
 ### table {#configuration-table}
 
-Some function calls are meant to be formatted as tables, rather than being
-formatted in a flat or expanded layout. For a single one-off function call,
-you can use a `# fmt: table` comment to request a table layout. For function
-calls that you use a lot, use this setting to add them to a list of function
-calls that are automatically formatted as tables without requiring a
-`# fmt: table` comment.
+Some function calls are meant to be formatted as tables, rather than being formatted in a flat or expanded layout.
+For a single one-off function call, you can use a `# fmt: table` comment to request a table layout.
+For function calls that you use a lot, use this setting to add them to a list of function calls that are automatically formatted as tables without requiring a `# fmt: table` comment.
 
-For example, using `table = ["my_table"]` would automatically format calls
-to `my_table()` in a table layout.
+For example, using `table = ["my_table"]` would automatically format calls to `my_table()` in a table layout.
 
-See `default-table` for the list of function calls that are automatically
-formatted as tables by default.
-table: Option<Table>,
+See `default-table` for the list of function calls that are automatically formatted as tables by default.
 
 ### default-table
 
-Air automatically formats a default set of calls as tables. You can
-disable these defaults by setting this option to `false`. The default
-set currently includes:
+Air automatically formats a default set of calls as tables.
+You can disable these defaults by setting this option to `false`.
+The default set currently includes:
 
-- `tribble()` from tribble
-- `fcase()` from data.table
+-   `tribble()` from tibble
+-   `fcase()` from data.table

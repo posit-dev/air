@@ -31,7 +31,7 @@
         },
         "default-table": {
           "title": "Whether or not to use defaults for `table`",
-          "description": "Air automatically formats a default set of calls as tables. You can\n disable these defaults by setting this option to `false`. The default\n set currently includes:\n\n - `tribble()` from tribble\n - `fcase()` from data.table",
+          "description": "Air automatically formats a default set of calls as tables. You can\n disable these defaults by setting this option to `false`. The default\n set currently includes:\n\n - `tribble()` from tibble\n - `fcase()` from data.table",
           "type": [
             "boolean",
             "null"
