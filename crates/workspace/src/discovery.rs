@@ -480,22 +480,55 @@ exclude = ["exclude/"]
 "#;
         std::fs::write(&air_path, air_contents)?;
 
-        std::fs::create_dir(tempdir.join("R"))?;
         std::fs::create_dir(tempdir.join("exclude"))?;
         std::fs::create_dir(tempdir.join("exclude").join("subdir"))?;
 
-        // Exclude all of these
+        // Should always exclude all of these
         std::fs::write(tempdir.join("exclude").join("test.R"), b"")?;
         std::fs::write(tempdir.join("exclude").join("subdir").join("test.R"), b"")?;
 
-        let mut resolver = PathResolver::new(Settings::default());
+        {
+            // Starting from `{tempdir}/`
+            let start = &[tempdir];
 
-        let mut settings = discover_settings(&[tempdir])?;
-        let settings = settings.pop().context("Should find air.toml")?;
-        resolver.add(&settings.directory, settings.settings);
+            let mut settings = discover_settings(start)?;
+            let settings = settings.pop().context("Should find air.toml")?;
 
-        let paths = discover_r_file_paths(&[tempdir], &resolver, true);
-        assert!(paths.is_empty());
+            let mut resolver = PathResolver::new(Settings::default());
+            resolver.add(&settings.directory, settings.settings);
+
+            let paths = discover_r_file_paths(start, &resolver, true);
+            assert!(paths.is_empty());
+        }
+
+        {
+            // Starting from `{tempdir}/exclude/`
+            let start = &[tempdir.join("exclude")];
+
+            let mut settings = discover_settings(start)?;
+            let settings = settings.pop().context("Should find air.toml")?;
+
+            let mut resolver = PathResolver::new(Settings::default());
+            resolver.add(&settings.directory, settings.settings);
+
+            let paths = discover_r_file_paths(start, &resolver, true);
+            assert!(paths.is_empty());
+        }
+
+        {
+            // Starting from `{tempdir}/exclude/subdir/`
+            // https://github.com/posit-dev/air/issues/472
+            let start = &[tempdir.join("exclude").join("subdir")];
+
+            let mut settings = discover_settings(start)?;
+            let settings = settings.pop().context("Should find air.toml")?;
+
+            let mut resolver = PathResolver::new(Settings::default());
+            resolver.add(&settings.directory, settings.settings);
+
+            let paths = discover_r_file_paths(start, &resolver, true);
+            assert!(paths.is_empty());
+        }
 
         Ok(())
     }
