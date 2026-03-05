@@ -3,6 +3,7 @@
   "permissions": {
     "defaultMode": "acceptEdits",
     "allow": [
+      "Bash(cargo insta accept:*)",
       "Bash(cat:*)",
       "Bash(find:*)",
       "Bash(gh issue list:*)",
@@ -10,13 +11,16 @@
       "Bash(gh pr diff:*)",
       "Bash(gh pr view:*)",
       "Bash(git checkout:*)",
+      "Bash(git diff:*)",
       "Bash(git grep:*)",
+      "Bash(git log:*)",
       "Bash(grep:*)",
+      "Bash(just test:*)",
       "Bash(ls:*)",
       "Bash(rm:*)",
       "Bash(sed:*)",
-      "WebFetch(domain:github.com)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch",
+      "WebSearch"
     ]
   }
 }
