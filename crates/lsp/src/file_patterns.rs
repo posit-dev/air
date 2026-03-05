@@ -40,20 +40,12 @@ fn is_document_excluded(
     // First check for explicit exclusions.
     // Checking ancestors is important. For a path of `renv/activate.R`, we'd miss the
     // default exclusion criteria of the `renv` folder if we don't look up the file tree.
-    if let Some(glob) =
-        exclude.and_then(|exclude| exclude.matched_path_or_any_parents(path, IS_DIRECTORY))
-    {
-        tracing::trace!(
-            "Excluded file due to '{glob}' {path}",
-            glob = glob.original(),
-            path = path.display()
-        );
-        return true;
-    }
-
-    if let Some(glob) = default_exclude
-        .and_then(|default_exclude| default_exclude.matched_path_or_any_parents(path, IS_DIRECTORY))
-    {
+    if let Some(glob) = workspace::discovery::any_exclude_matched_path_or_any_parents(
+        path,
+        IS_DIRECTORY,
+        exclude,
+        default_exclude,
+    ) {
         tracing::trace!(
             "Excluded file due to '{glob}' {path}",
             glob = glob.original(),
@@ -63,9 +55,11 @@ fn is_document_excluded(
     }
 
     // Then check for explicit inclusions (mostly for `.R` file extensions)
-    if let Some(glob) = default_include
-        .and_then(|default_include| default_include.matched_path_or_any_parents(path, IS_DIRECTORY))
-    {
+    if let Some(glob) = workspace::discovery::any_include_matched_path_or_any_parents(
+        path,
+        IS_DIRECTORY,
+        default_include,
+    ) {
         tracing::trace!(
             "Included file due to '{glob}' {path}",
             glob = glob.original(),
