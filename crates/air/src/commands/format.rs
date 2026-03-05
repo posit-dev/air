@@ -24,7 +24,7 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
 }
 
 fn check_argument_consistency(command: &FormatCommand) -> Option<ExitStatus> {
-    if command.stdin_file_path.is_some() & !command.paths.is_empty() {
+    if command.stdin_file_path.is_some() && !command.paths.is_empty() {
         tracing::error!(
             "Can't supply paths when reading from stdin: {paths}",
             paths = command
