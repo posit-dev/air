@@ -144,12 +144,8 @@ fn format_path<P: AsRef<Path>>(
     let path = path.as_ref();
     tracing::trace!("Formatting {path}", path = path.display());
 
-    let old = match std::fs::read_to_string(path) {
-        Ok(old) => old,
-        Err(err) => {
-            return Err(FormatPathError::Read(path.to_path_buf(), err));
-        }
-    };
+    let old = std::fs::read_to_string(path)
+        .map_err(|error| FormatPathError::Read(path.to_path_buf(), error))?;
 
     let options = settings.to_format_options(&old);
 
