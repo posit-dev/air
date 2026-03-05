@@ -371,7 +371,7 @@
     "href": "integration-pre-commit.html",
     "title": "pre-commit",
     "section": "",
-    "text": "Air can be used as a pre-commit hook through posit-dev/air-pre-commit.\nIn your .pre-commit-config.yaml:\n- repo: https://github.com/posit-dev/air-pre-commit\n  # Air version\n  rev: 0.8.2\n  hooks:\n    # Run the formatter\n    - id: air-format\n\n\n\n\n\n\nOnly Air ≥0.8.2 can be pinned as a rev.",
+    "text": "Air can be used as a pre-commit hook through posit-dev/air-pre-commit.\nIn your .pre-commit-config.yaml:\n- repo: https://github.com/posit-dev/air-pre-commit\n  # Air version\n  rev: 0.8.2\n  hooks:\n    # Run the formatter\n    - id: air-format\n\n\n\n\n\n\nOnly Air ≥0.8.2 can be pinned as a rev, see air-pre-commit’s releases for the full list of release tags that you can pin to.",
     "crumbs": [
       "Integrations",
       "pre-commit"
