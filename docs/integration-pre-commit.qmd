@@ -20,5 +20,5 @@ In your `.pre-commit-config.yaml`:
 ```
 
 ::: callout-note
-## Only Air ≥0.8.2 can be pinned as a `rev`.
+## Only Air ≥0.8.2 can be pinned as a `rev`, see [air-pre-commit's releases](https://github.com/posit-dev/air-pre-commit/releases) for the full list of release tags that you can pin to.
 :::
