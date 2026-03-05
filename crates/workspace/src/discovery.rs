@@ -6,11 +6,15 @@
 //
 
 use ignore::DirEntry;
+use ignore::gitignore::Glob;
 use rustc_hash::FxHashSet;
 use std::path::Path;
 use std::path::PathBuf;
 
 use crate::resolve::PathResolver;
+use crate::settings::DefaultExcludePatterns;
+use crate::settings::DefaultIncludePatterns;
+use crate::settings::ExcludePatterns;
 use crate::settings::Settings;
 use crate::toml::find_air_toml_in_directory;
 use crate::toml::parse_air_toml;
@@ -240,15 +244,38 @@ impl ignore::ParallelVisitor for FilesVisitor<'_, '_> {
         // Retrieve the settings for this `path`
         let settings = self.state.resolver.resolve_or_fallback(path);
 
-        if self.is_excluded(path, is_directory, settings) {
-            // Skip this file, and if it is a directory skip all of its children!
-            return ignore::WalkState::Skip;
-        }
+        if self.state.use_format_settings {
+            // Consult the format specific patterns if we are in a format context
 
-        if self.is_included(path, is_directory, settings) {
-            // Accept this file
-            self.files.push(Ok(entry.into_path()));
-            return ignore::WalkState::Continue;
+            if let Some(glob) = any_exclude_matched_path(
+                path,
+                is_directory,
+                settings.format.exclude.as_ref(),
+                settings.format.default_exclude.as_ref(),
+            ) {
+                tracing::trace!(
+                    "Excluded due to '{glob}' {path}",
+                    glob = glob.original(),
+                    path = path.display()
+                );
+                // Skip this file, and if it is a directory skip all of its children!
+                return ignore::WalkState::Skip;
+            }
+
+            if let Some(glob) = any_include_matched_path(
+                path,
+                is_directory,
+                settings.format.default_include.as_ref(),
+            ) {
+                tracing::trace!(
+                    "Included due to '{glob}' {path}",
+                    glob = glob.original(),
+                    path = path.display()
+                );
+                // Accept this file
+                self.files.push(Ok(entry.into_path()));
+                return ignore::WalkState::Continue;
+            }
         }
 
         // Didn't accept this file, just keep going
@@ -275,62 +302,94 @@ impl Drop for FilesVisitor<'_, '_> {
     }
 }
 
-impl FilesVisitor<'_, '_> {
-    fn is_excluded(&self, path: &Path, is_directory: bool, settings: &Settings) -> bool {
-        // Consult the format specific patterns if we are in a format context
-        if self.state.use_format_settings {
-            if let Some(glob) = settings
-                .format
-                .exclude
-                .as_ref()
-                .and_then(|exclude| exclude.matched(path, is_directory))
-            {
-                tracing::trace!(
-                    "Excluded file due to '{glob}' in `format.exclude` {path}",
-                    glob = glob.original(),
-                    path = path.display()
-                );
-                return true;
-            }
+/// Returns the glob that matches this `path`, or `None` if no glob matches
+///
+/// Does not search parents, so a path of `renv/activate.R` would not match
+/// a pattern of `**/renv/`
+fn any_exclude_matched_path<'patterns, P: AsRef<Path>>(
+    path: P,
+    is_directory: bool,
+    exclude: Option<&'patterns ExcludePatterns>,
+    default_exclude: Option<&'patterns DefaultExcludePatterns>,
+) -> Option<&'patterns Glob> {
+    let path = path.as_ref();
 
-            if let Some(glob) = settings
-                .format
-                .default_exclude
-                .as_ref()
-                .and_then(|default_exclude| default_exclude.matched(path, is_directory))
-            {
-                tracing::trace!(
-                    "Excluded file due to '{glob}' in `format.default_exclude` {path}",
-                    glob = glob.original(),
-                    path = path.display()
-                );
-                return true;
-            }
-        }
-
-        false
+    if let Some(glob) = exclude.and_then(|exclude| exclude.matched(path, is_directory)) {
+        return Some(glob);
     }
 
-    fn is_included(&self, path: &Path, is_directory: bool, settings: &Settings) -> bool {
-        // Consult the format specific patterns if we are in a format context
-        if self.state.use_format_settings {
-            if let Some(glob) = settings
-                .format
-                .default_include
-                .as_ref()
-                .and_then(|default_include| default_include.matched(path, is_directory))
-            {
-                tracing::trace!(
-                    "Included file due to '{glob}' in `format.default_include` {path}",
-                    glob = glob.original(),
-                    path = path.display()
-                );
-                return true;
-            }
-        }
-
-        false
+    if let Some(glob) =
+        default_exclude.and_then(|default_exclude| default_exclude.matched(path, is_directory))
+    {
+        return Some(glob);
     }
+
+    None
+}
+
+/// Returns the glob that matches this `path`, or `None` if no glob matches
+///
+/// Does not search parents, so a path of `renv/activate.R` would not match
+/// a pattern of `**/renv/`
+fn any_include_matched_path<P: AsRef<Path>>(
+    path: P,
+    is_directory: bool,
+    default_include: Option<&DefaultIncludePatterns>,
+) -> Option<&Glob> {
+    let path = path.as_ref();
+
+    if let Some(glob) =
+        default_include.and_then(|default_include| default_include.matched(path, is_directory))
+    {
+        return Some(glob);
+    }
+
+    None
+}
+
+/// Returns the glob that matches this `path`, or `None` if no glob matches
+///
+/// Searches parents, so a path of `renv/activate.R` would match a pattern of `**/renv/`,
+/// but this has a performance cost, so should only be used when necessary.
+pub fn any_exclude_matched_path_or_any_parents<'patterns, P: AsRef<Path>>(
+    path: P,
+    is_directory: bool,
+    exclude: Option<&'patterns ExcludePatterns>,
+    default_exclude: Option<&'patterns DefaultExcludePatterns>,
+) -> Option<&'patterns Glob> {
+    let path = path.as_ref();
+
+    if let Some(glob) =
+        exclude.and_then(|exclude| exclude.matched_path_or_any_parents(path, is_directory))
+    {
+        return Some(glob);
+    }
+
+    if let Some(glob) = default_exclude
+        .and_then(|default_exclude| default_exclude.matched_path_or_any_parents(path, is_directory))
+    {
+        return Some(glob);
+    }
+
+    None
+}
+
+/// Returns the glob that matches this `path`, or `None` if no glob matches
+///
+/// Searches parents, so a path of `renv/activate.R` would match a pattern of `**/renv/`,
+/// but this has a performance cost, so should only be used when necessary.
+pub fn any_include_matched_path_or_any_parents<P: AsRef<Path>>(
+    path: P,
+    is_directory: bool,
+    default_include: Option<&DefaultIncludePatterns>,
+) -> Option<&Glob> {
+    if let Some(glob) = default_include
+        .and_then(|default_include| default_include.matched_path_or_any_parents(path, is_directory))
+    {
+        return Some(glob);
+    }
+
+    None
 }
 
 #[cfg(test)]
