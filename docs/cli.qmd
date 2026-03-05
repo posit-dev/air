@@ -75,7 +75,7 @@ For example, in Zed you can specify:
 "formatter": {
   "external": {
     "command": "air",
-    "arguments": ["format" "--stdin-file-path", "{buffer_path}"]
+    "arguments": ["format", "--stdin-file-path", "{buffer_path}"]
   }
 }
 ```
