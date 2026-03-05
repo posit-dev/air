@@ -1,0 +1,12 @@
+---
+source: crates/air/tests/integration/format.rs
+expression: "Command::new(binary_path()).current_dir(directory).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped()).arg(\"format\").arg(\"--stdin-file-path\").arg(test_path).run_with_stdin(String::new())"
+---
+success: true
+exit_code: 0
+----- stdout -----
+
+----- stderr -----
+
+----- args -----
+format --stdin-file-path test.R

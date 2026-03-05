@@ -413,6 +413,43 @@ indent-width = 4
 }
 
 #[test]
+fn test_stdin_empty_input() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    let test_path = "test.R";
+
+    // Empty stdin in write mode should succeed and produce empty stdout
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .arg("format")
+            .arg("--stdin-file-path")
+            .arg(test_path)
+            .run_with_stdin(String::new())
+    );
+
+    // Empty stdin in check mode should succeed (nothing to change)
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .arg("format")
+            .arg("--stdin-file-path")
+            .arg(test_path)
+            .arg("--check")
+            .run_with_stdin(String::new())
+    );
+
+    Ok(())
+}
+
+#[test]
 fn test_stdin_errors_on_parse_error() -> anyhow::Result<()> {
     let directory = TempDir::new()?;
     let directory = directory.path();
