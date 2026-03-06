@@ -558,6 +558,7 @@ fn test_stdin_refuses_to_format_default_excludes() -> anyhow::Result<()> {
             .arg("--stdin-file-path")
             .arg(Path::new(renv_directory).join(activate_path))
             .run_with_stdin(activate_contents.to_string())
+            .normalize_os_path_separator()
     );
 
     Ok(())
