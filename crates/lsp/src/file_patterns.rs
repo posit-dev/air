@@ -54,12 +54,9 @@ fn is_document_excluded(
         return true;
     }
 
-    // Then check for explicit inclusions (mostly for `.R` file extensions)
-    if let Some(glob) = workspace::discovery::any_include_matched_path_or_any_parents(
-        path,
-        IS_DIRECTORY,
-        default_include,
-    ) {
+    // Then check for explicit inclusions (mostly for `.R` file extensions).
+    // No need for `IS_DIRECTORY` since includes are only applicable for files.
+    if let Some(glob) = workspace::discovery::any_include_matched_path(path, default_include) {
         tracing::trace!(
             "Included file due to '{glob}' {path}",
             glob = glob.original(),
