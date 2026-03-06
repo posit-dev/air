@@ -12,6 +12,7 @@ use itertools::Either;
 use itertools::Itertools;
 use thiserror::Error;
 use workspace::discovery::DiscoveredSettings;
+use workspace::discovery::FileDiscoveryMode;
 use workspace::discovery::discover_r_file_paths;
 use workspace::discovery::discover_settings;
 use workspace::format::FormatSourceError;
@@ -93,7 +94,7 @@ fn format_paths_write<P: AsRef<Path>>(
     paths: &[P],
     resolver: &PathResolver<Settings>,
 ) -> Vec<FormatPathError> {
-    let paths = discover_r_file_paths(paths, resolver, true);
+    let paths = discover_r_file_paths(paths, resolver, FileDiscoveryMode::Format);
 
     paths
         .into_iter()
@@ -117,7 +118,7 @@ fn format_paths_check<P: AsRef<Path>>(
     paths: &[P],
     resolver: &PathResolver<Settings>,
 ) -> (Vec<PathBuf>, Vec<FormatPathError>) {
-    let paths = discover_r_file_paths(paths, resolver, true);
+    let paths = discover_r_file_paths(paths, resolver, FileDiscoveryMode::Format);
 
     paths
         .into_iter()
