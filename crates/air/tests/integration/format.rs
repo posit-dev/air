@@ -1,3 +1,4 @@
+use std::path::Path;
 use std::process::Command;
 use std::process::Stdio;
 
@@ -66,8 +67,11 @@ fn test_default_exclude_patterns_with_explicit_format_file_request() -> anyhow::
     let cpp11_contents = "1+1";
     std::fs::write(directory.join(cpp11_path), cpp11_contents)?;
 
-    // Formatting on `cpp11.R` is explicitly requested, since this does not require
-    // any file discovery, we format it even though it matches a default `exclude`.
+    // Formatting of `air format cpp11.R` is explicitly requested, but it matches a
+    // `default_exclude`, so we refuse to format it. This helps with pre-commit and
+    // RStudio, which might supply these paths on behalf of the user and don't know
+    // anything about our `exclude` rules.
+    // https://github.com/posit-dev/air/issues/472
     let output = Command::new(binary_path())
         .current_dir(directory)
         .arg("format")
@@ -77,8 +81,8 @@ fn test_default_exclude_patterns_with_explicit_format_file_request() -> anyhow::
     assert!(output.status.success());
 
     assert_eq!(
-        std::fs::read_to_string(directory.join(cpp11_path))?,
-        String::from("1 + 1\n")
+        cpp11_contents,
+        std::fs::read_to_string(directory.join(cpp11_path))?
     );
 
     Ok(())
@@ -99,9 +103,8 @@ fn test_default_exclude_patterns_with_explicit_format_folder_request() -> anyhow
         activate_contents,
     )?;
 
-    // Formatting on `air format renv` is explicitly requested. We don't auto
-    // accept folders provided on the command line, so this goes through the standard
-    // path and ends up excluding everything in `renv/`.
+    // Formatting of `air format renv` is explicitly requested.
+    // Like with directly specified files that match `default_exclude`s, this is ignored.
     let output = Command::new(binary_path())
         .current_dir(directory)
         .arg("format")
@@ -522,25 +525,6 @@ fn test_stdin_works_correctly_with_check() -> anyhow::Result<()> {
     Ok(())
 }
 
-/// TODO!: This test should FAIL once we change Air's defaults regarding directly supplied
-/// files like `air format standalone-*.R` or `air format --stdin-file-path
-/// standalone-*.R` and how they interact with `exclude`, `default-exclude`, and
-/// `default-include`.
-///
-/// To better support pre-commit and RStudio, which will blindly provide whatever the user
-/// has touched / saved to air as a file to format, we SHOULD respect the `exclude` rules
-/// here by default and refuse to format this at the command line. If a user really wants
-/// to bypass the exclude rules then they can do something like
-/// `--ignore-exclude-for-directly-supplied-file` (or maybe we wouldn't allow this at
-/// all?). This is honestly more in line with the LSP. If you do `Format Document` in
-/// an excluded file, then we still refuse to format it!
-///
-/// Also, this would help with Quarto/Rmarkdown where people are trying to do `air format
-/// test.Rmd` and they either get an obscure parse error or it actually fake works due to
-/// chance. At the very least we'd now silently refuse to format this file because it
-/// isn't in our `default-includes`, even though they provided it directly at the command
-/// line. Or we could report a warning about this rather than being silent, and still
-/// refuse to format.
 #[test]
 fn test_stdin_refuses_to_format_default_excludes() -> anyhow::Result<()> {
     let directory = TempDir::new()?;
@@ -548,10 +532,9 @@ fn test_stdin_refuses_to_format_default_excludes() -> anyhow::Result<()> {
 
     let cpp11_path = "cpp11.R";
     let cpp11_contents = "1+1";
-    std::fs::write(directory.join(cpp11_path), cpp11_contents)?;
 
-    // `cpp11.R` is a `default-exclude` so it SHOULD refuse to format this
-    // and just reemit the existing `1+1` asis
+    // `**/cpp11.R` is a `default-exclude` so it should refuse to format `cpp11.R` and
+    // just reemit the existing `1+1` asis
     insta::assert_snapshot!(
         Command::new(binary_path())
             .current_dir(directory)
@@ -564,10 +547,30 @@ fn test_stdin_refuses_to_format_default_excludes() -> anyhow::Result<()> {
             .run_with_stdin(cpp11_contents.to_string())
     );
 
+    let renv_directory = "renv";
+    std::fs::create_dir(directory.join(renv_directory))?;
+
+    let activate_path = "activate.R";
+    let activate_contents = "1+1";
+
+    // `**/renv/` is a `default-exclude` so it should refuse to format `renv/activate.R`
+    // and just reemit the existing `1+1` asis
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .arg("format")
+            .arg("--stdin-file-path")
+            .arg(Path::new(renv_directory).join(activate_path))
+            .run_with_stdin(activate_contents.to_string())
+            .normalize_os_path_separator()
+    );
+
     Ok(())
 }
 
-// TODO!: This should also refuse to format. See above.
 #[test]
 fn test_stdin_refuses_to_format_user_excludes() -> anyhow::Result<()> {
     let directory = TempDir::new()?;
@@ -584,8 +587,8 @@ exclude = ["test.R"]
 "#;
     std::fs::write(directory.join(air_path), air_contents)?;
 
-    // `test.R` is an `exclude` so it SHOULD refuse to format this
-    // and just reemit the existing `1+1` asis
+    // `test.R` is an `exclude` so it should refuse to format this and just reemit the
+    // existing `1+1` asis
     insta::assert_snapshot!(
         Command::new(binary_path())
             .current_dir(directory)
