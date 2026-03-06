@@ -127,7 +127,7 @@ fn format_stdin(settings: &FormatSettings) -> Result<FormattedStdin, FormatStdin
 }
 
 fn asis_stdin() -> Result<FormattedStdin, FormatStdinError> {
-    tracing::trace!("Formatting stdin asis");
+    tracing::trace!("Passing stdin through unformatted");
 
     let old = read_stdin().map_err(FormatStdinError::Read)?;
 
