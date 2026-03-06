@@ -1,0 +1,14 @@
+---
+source: crates/air/tests/integration/format.rs
+expression: "Command::new(binary_path()).current_dir(path_root()).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped()).arg(\"format\").arg(\"--stdin-file-path\").arg(&fake_file).run_with_stdin(test_contents.to_string()).remove_arguments()"
+---
+success: true
+exit_code: 0
+----- stdout -----
+1 +
+  1
+
+----- stderr -----
+
+----- args -----
+<removed>

@@ -53,3 +53,47 @@ uvx --from air-formatter air format path/to/my/script.R
 ```
 
 Note that if you'd like to use Air inside VS Code or Positron, then the Extension for those editors comes pre-bundled with an Air binary, so there's nothing you need to do besides [download the Extension](editor-vscode.qmd).
+
+# Features
+
+## Stdin
+
+Air supports reading from stdin at the command line via `--stdin-file-path`.
+When this flag is supplied, Air will read input from stdin and emit the formatted output over stdout.
+
+``` bash
+cat path/to/file.R | air format --stdin-file-path path/to/file.R
+```
+
+`--stdin-file-path` provides the path to the file being formatted over stdin.
+This allows Air to begin a configuration file search from that location to ensure that the correct `air.toml` is found.
+
+If your IDE only supports formatting via stdin, it generally provides this file path as an input.
+For example, in Zed you can specify:
+
+``` json
+"formatter": {
+  "external": {
+    "command": "air",
+    "arguments": ["format", "--stdin-file-path", "{buffer_path}"]
+  }
+}
+```
+
+The path provided to `--stdin-file-path` does not have to exist.
+It is not read from, and is only used to start the configuration file search.
+This can be useful when you're about to write some content to a file, but haven't created it yet and want to format it first using the project's preexisting `air.toml`:
+
+``` bash
+content-on-stdout | air format --stdin-file-path project/eventual-file.R > project/eventual-file.R
+```
+
+Assuming there is an `air.toml` located at `project/air.toml`, it would be detected and used when formatting this content.
+
+When `--stdin-file-path` is used, no other files or directories can be provided, i.e. this would error:
+
+``` bash
+air format folder/ --stdin-file-path file.R
+```
+
+If a relative path is provided to `--stdin-file-path`, it is resolved from the current working directory.
