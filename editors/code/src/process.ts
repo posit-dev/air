@@ -15,13 +15,13 @@ export interface CommandError {
 export function isResult(
 	result: CommandResult | CommandError,
 ): result is CommandResult {
-	return result.type == "result";
+	return result.type === "result";
 }
 
 export function isError(
 	result: CommandResult | CommandError,
 ): result is CommandError {
-	return result.type == "error";
+	return result.type === "error";
 }
 
 /**
