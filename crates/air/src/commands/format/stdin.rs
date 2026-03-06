@@ -100,11 +100,12 @@ fn format_stdin_check<P: AsRef<Path>>(
 ) -> Result<bool, FormatStdinError> {
     let settings = resolver.resolve_or_fallback(&path);
 
-    let formatted = if is_stdin_formattable(path, settings) {
-        format_stdin(&settings.format)?
-    } else {
-        asis_stdin()?
-    };
+    if !is_stdin_formattable(path, settings) {
+        // Don't even attempt to read from stdin, we know nothing will change
+        return Ok(false);
+    }
+
+    let formatted = format_stdin(&settings.format)?;
 
     match formatted {
         FormattedStdin::Changed(_) => Ok(true),
