@@ -67,6 +67,7 @@ cat path/to/file.R | air format --stdin-file-path path/to/file.R
 
 `--stdin-file-path` provides the path to the file being formatted over stdin.
 This allows Air to begin a configuration file search from that location to ensure that the correct `air.toml` is found.
+This location is also used when applying `exclude` and `default-exclude` patterns to determine if stdin should be formatted or emitted verbatim.
 
 If your IDE only supports formatting via stdin, it generally provides this file path as an input.
 For example, in Zed you can specify:
@@ -80,8 +81,7 @@ For example, in Zed you can specify:
 }
 ```
 
-The path provided to `--stdin-file-path` does not have to exist.
-It is not read from, and is only used to start the configuration file search.
+The path provided to `--stdin-file-path` does not have to exist, and is not read from.
 This can be useful when you're about to write some content to a file, but haven't created it yet and want to format it first using the project's preexisting `air.toml`:
 
 ``` bash
