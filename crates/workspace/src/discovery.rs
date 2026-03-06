@@ -398,13 +398,7 @@ pub fn any_include_matched_path<P: AsRef<Path>>(
 
     let path = path.as_ref();
 
-    if let Some(glob) =
-        default_include.and_then(|default_include| default_include.matched(path, IS_DIRECTORY))
-    {
-        return Some(glob);
-    }
-
-    None
+    default_include.and_then(|default_include| default_include.matched(path, IS_DIRECTORY))
 }
 
 #[cfg(test)]
