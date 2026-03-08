@@ -1,0 +1,61 @@
+---
+source: crates/air/tests/integration/completions.rs
+assertion_line: 30
+expression: "Command::new(binary_path()).arg(\"completion\").arg(\"fish\").run().normalize_os_executable_name()"
+---
+success: true
+exit_code: 0
+----- stdout -----
+# Print an optspec for argparse to handle cmd's options that are independent of any subcommand.
+function __fish_air_global_optspecs
+	string join \n log-level= no-color h/help V/version
+end
+
+function __fish_air_needs_command
+	# Figure out if the current invocation already has a command.
+	set -l cmd (commandline -opc)
+	set -e cmd[1]
+	argparse -s (__fish_air_global_optspecs) -- $cmd 2>/dev/null
+	or return
+	if set -q argv[1]
+		# Also print the command, so this can be used to figure out what it is.
+		echo $argv[1]
+		return 1
+	end
+	return 0
+end
+
+function __fish_air_using_subcommand
+	set -l cmd (__fish_air_needs_command)
+	test -z "$cmd"
+	and return 1
+	contains -- $cmd[1] $argv
+end
+
+complete -c air -n "__fish_air_needs_command" -l log-level -d 'The log level. One of: `error`, `warn`, `info`, `debug`, or `trace`. Defaults to `warn`' -r
+complete -c air -n "__fish_air_needs_command" -l no-color -d 'Disable colored output. To turn colored output off, either set this option or set the environment variable `NO_COLOR` to any non-zero value'
+complete -c air -n "__fish_air_needs_command" -s h -l help -d 'Print help'
+complete -c air -n "__fish_air_needs_command" -s V -l version -d 'Print version'
+complete -c air -n "__fish_air_needs_command" -f -a "completion" -d 'Generate shell completion scripts'
+complete -c air -n "__fish_air_needs_command" -f -a "format" -d 'Format a set of files or directories'
+complete -c air -n "__fish_air_needs_command" -f -a "language-server" -d 'Start a language server'
+complete -c air -n "__fish_air_needs_command" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
+complete -c air -n "__fish_air_using_subcommand completion" -l log-level -d 'The log level. One of: `error`, `warn`, `info`, `debug`, or `trace`. Defaults to `warn`' -r
+complete -c air -n "__fish_air_using_subcommand completion" -l no-color -d 'Disable colored output. To turn colored output off, either set this option or set the environment variable `NO_COLOR` to any non-zero value'
+complete -c air -n "__fish_air_using_subcommand completion" -s h -l help -d 'Print help'
+complete -c air -n "__fish_air_using_subcommand format" -l log-level -d 'The log level. One of: `error`, `warn`, `info`, `debug`, or `trace`. Defaults to `warn`' -r
+complete -c air -n "__fish_air_using_subcommand format" -l check -d 'If enabled, format results are not written back to the file. Instead, exit with a non-zero status code if any files would have been modified, and zero otherwise'
+complete -c air -n "__fish_air_using_subcommand format" -l no-color -d 'Disable colored output. To turn colored output off, either set this option or set the environment variable `NO_COLOR` to any non-zero value'
+complete -c air -n "__fish_air_using_subcommand format" -s h -l help -d 'Print help'
+complete -c air -n "__fish_air_using_subcommand language-server" -l log-level -d 'The log level. One of: `error`, `warn`, `info`, `debug`, or `trace`. Defaults to `warn`' -r
+complete -c air -n "__fish_air_using_subcommand language-server" -l no-color -d 'Disable colored output. To turn colored output off, either set this option or set the environment variable `NO_COLOR` to any non-zero value'
+complete -c air -n "__fish_air_using_subcommand language-server" -s h -l help -d 'Print help'
+complete -c air -n "__fish_air_using_subcommand help; and not __fish_seen_subcommand_from completion format language-server help" -f -a "completion" -d 'Generate shell completion scripts'
+complete -c air -n "__fish_air_using_subcommand help; and not __fish_seen_subcommand_from completion format language-server help" -f -a "format" -d 'Format a set of files or directories'
+complete -c air -n "__fish_air_using_subcommand help; and not __fish_seen_subcommand_from completion format language-server help" -f -a "language-server" -d 'Start a language server'
+complete -c air -n "__fish_air_using_subcommand help; and not __fish_seen_subcommand_from completion format language-server help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
+
+----- stderr -----
+
+----- args -----
+completion fish
