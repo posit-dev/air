@@ -90,20 +90,40 @@ type DiscoveredFiles = Vec<Result<PathBuf, ignore::Error>>;
 /// Currently only for the formatter, but it is likely we would use the same
 /// infrastructure for a linter, but with different `exclude` and `include` rules.
 #[derive(Debug)]
-pub enum FileDiscoveryMode {
+pub enum Mode {
     /// Use formatter specific `exclude` and `include` rules
     Format,
 }
 
+#[derive(Debug, Copy, Clone)]
+pub enum Exclude {
+    /// Filter out files matching `exclude` and `default_exclude` patterns
+    Matched,
+
+    /// Exclude nothing
+    Nothing,
+}
+
+#[derive(Debug, Copy, Clone)]
+pub enum Include {
+    /// Filter for files matching `default_include` patterns
+    Matched,
+
+    /// Include everything
+    Everything,
+}
+
 /// For each provided `path`, recursively search for any R files within that `path`
-/// that match our inclusion criteria
+/// that match our criteria
 ///
-/// NOTE: Make sure that the inclusion criteria that guide `path` discovery are also
+/// NOTE: Make sure that the criteria that guide `path` discovery are also
 /// consistently applied to [discover_settings()].
 pub fn discover_r_file_paths<P: AsRef<Path>>(
     paths: &[P],
     resolver: &PathResolver<Settings>,
-    mode: FileDiscoveryMode,
+    mode: Mode,
+    exclude: Exclude,
+    include: Include,
 ) -> DiscoveredFiles {
     let paths: Vec<PathBuf> = paths.iter().map(fs::normalize_path).collect();
 
@@ -141,7 +161,7 @@ pub fn discover_r_file_paths<P: AsRef<Path>>(
     let walker = builder.build_parallel();
 
     // Run the `WalkParallel` to collect all R files.
-    let state = FilesState::new(resolver, mode);
+    let state = FilesState::new(resolver, mode, exclude, include);
     let mut visitor_builder = FilesVisitorBuilder::new(&state);
     walker.visit(&mut visitor_builder);
 
@@ -152,15 +172,24 @@ pub fn discover_r_file_paths<P: AsRef<Path>>(
 struct FilesState<'resolver> {
     files: std::sync::Mutex<DiscoveredFiles>,
     resolver: &'resolver PathResolver<Settings>,
-    mode: FileDiscoveryMode,
+    mode: Mode,
+    exclude: Exclude,
+    include: Include,
 }
 
 impl<'resolver> FilesState<'resolver> {
-    fn new(resolver: &'resolver PathResolver<Settings>, mode: FileDiscoveryMode) -> Self {
+    fn new(
+        resolver: &'resolver PathResolver<Settings>,
+        mode: Mode,
+        exclude: Exclude,
+        include: Include,
+    ) -> Self {
         Self {
             files: std::sync::Mutex::new(Vec::new()),
             resolver,
             mode,
+            exclude,
+            include,
         }
     }
 
@@ -233,7 +262,7 @@ impl ignore::ParallelVisitor for FilesVisitor<'_, '_> {
         };
 
         match self.state.mode {
-            FileDiscoveryMode::Format => self.visit_format(entry),
+            Mode::Format => self.visit_format(entry),
         }
     }
 }
@@ -258,6 +287,7 @@ impl FilesVisitor<'_, '_> {
         // and `air format renv/subdir/` are immediately skipped since `**/renv/` is an
         // excluded pattern and we look at the directly supplied path's parents.
         if is_directly_supplied
+            && matches!(self.state.exclude, Exclude::Matched)
             && let Some(glob) = any_exclude_matched_path_or_any_parents(
                 path,
                 is_directory,
@@ -276,6 +306,7 @@ impl FilesVisitor<'_, '_> {
         // If this `path` was found from recursive search, don't check the path's parents
         // when looking at exclusion rules
         if !is_directly_supplied
+            && matches!(self.state.exclude, Exclude::Matched)
             && let Some(glob) = any_exclude_matched_path(
                 path,
                 is_directory,
@@ -296,23 +327,36 @@ impl FilesVisitor<'_, '_> {
             return ignore::WalkState::Continue;
         }
 
-        // Files that haven't been excluded are only included if they match a
-        // `default_include` pattern, even if they are directly supplied by the user!
-        match any_include_matched_path(path, settings.format.default_include.as_ref()) {
-            Some(glob) => {
+        // Now handle files
+        match self.state.include {
+            Include::Matched => {
+                // Files that haven't been excluded are only included if they match a
+                // `default_include` pattern, even if they are directly supplied by the user!
+                match any_include_matched_path(path, settings.format.default_include.as_ref()) {
+                    Some(glob) => {
+                        tracing::trace!(
+                            "Included due to '{glob}': {path}",
+                            glob = glob.original(),
+                            path = path.display()
+                        );
+                        self.files.push(Ok(entry.into_path()));
+                        ignore::WalkState::Continue
+                    }
+                    None => {
+                        tracing::trace!(
+                            "Excluded due to not matching an include: {path}",
+                            path = path.display()
+                        );
+                        ignore::WalkState::Continue
+                    }
+                }
+            }
+            Include::Everything => {
                 tracing::trace!(
-                    "Included due to '{glob}': {path}",
-                    glob = glob.original(),
+                    "Included due to including everything: {path}",
                     path = path.display()
                 );
                 self.files.push(Ok(entry.into_path()));
-                ignore::WalkState::Continue
-            }
-            None => {
-                tracing::trace!(
-                    "Excluded due to not matching an include: {path}",
-                    path = path.display()
-                );
                 ignore::WalkState::Continue
             }
         }
@@ -406,7 +450,9 @@ mod test {
     use anyhow::Context;
     use tempfile::TempDir;
 
-    use crate::discovery::FileDiscoveryMode;
+    use crate::discovery::Exclude;
+    use crate::discovery::Include;
+    use crate::discovery::Mode;
     use crate::discovery::discover_r_file_paths;
     use crate::discovery::discover_settings;
     use crate::resolve::PathResolver;
@@ -429,7 +475,13 @@ mod test {
 
         let resolver = PathResolver::new(Settings::default());
 
-        let mut paths = discover_r_file_paths(&[tempdir], &resolver, FileDiscoveryMode::Format);
+        let mut paths = discover_r_file_paths(
+            &[tempdir],
+            &resolver,
+            Mode::Format,
+            Exclude::Matched,
+            Include::Matched,
+        );
 
         assert_eq!(paths.len(), 2);
         let mut paths = [paths.pop().unwrap()?, paths.pop().unwrap()?];
@@ -456,7 +508,13 @@ mod test {
 
         let resolver = PathResolver::new(Settings::default());
 
-        let mut paths = discover_r_file_paths(&[tempdir], &resolver, FileDiscoveryMode::Format);
+        let mut paths = discover_r_file_paths(
+            &[tempdir],
+            &resolver,
+            Mode::Format,
+            Exclude::Matched,
+            Include::Matched,
+        );
 
         assert_eq!(paths.len(), 1);
         let path = paths.pop().unwrap()?;
@@ -484,7 +542,13 @@ mod test {
             // Part of default includes, so accepted
             let start = &[&test_big_r];
             let resolver = PathResolver::new(Settings::default());
-            let mut paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            let mut paths = discover_r_file_paths(
+                start,
+                &resolver,
+                Mode::Format,
+                Exclude::Matched,
+                Include::Matched,
+            );
             assert_eq!(paths.len(), 1);
             assert_eq!(paths.pop().unwrap().unwrap(), test_big_r);
         }
@@ -494,7 +558,13 @@ mod test {
             // Part of default includes, so accepted
             let start = &[&test_little_r];
             let resolver = PathResolver::new(Settings::default());
-            let mut paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            let mut paths = discover_r_file_paths(
+                start,
+                &resolver,
+                Mode::Format,
+                Exclude::Matched,
+                Include::Matched,
+            );
             assert_eq!(paths.len(), 1);
             assert_eq!(paths.pop().unwrap().unwrap(), test_little_r);
         }
@@ -507,7 +577,13 @@ mod test {
             // to bork their qmd.
             let start = &[&test_qmd];
             let resolver = PathResolver::new(Settings::default());
-            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            let paths = discover_r_file_paths(
+                start,
+                &resolver,
+                Mode::Format,
+                Exclude::Matched,
+                Include::Matched,
+            );
             assert_eq!(paths.len(), 0);
         }
 
@@ -542,7 +618,13 @@ mod test {
             // Folder containing folders and files that match default excludes
             let start = &[tempdir];
             let resolver = PathResolver::new(Settings::default());
-            let mut paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            let mut paths = discover_r_file_paths(
+                start,
+                &resolver,
+                Mode::Format,
+                Exclude::Matched,
+                Include::Matched,
+            );
             assert_eq!(paths.len(), 1);
             assert_eq!(paths.pop().unwrap().unwrap(), test_path);
         }
@@ -553,7 +635,13 @@ mod test {
             // https://github.com/posit-dev/air/issues/472
             let start = &[tempdir.join("R").join("cpp11.R")];
             let resolver = PathResolver::new(Settings::default());
-            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            let paths = discover_r_file_paths(
+                start,
+                &resolver,
+                Mode::Format,
+                Exclude::Matched,
+                Include::Matched,
+            );
             assert_eq!(paths.len(), 0);
         }
 
@@ -563,7 +651,13 @@ mod test {
             // https://github.com/posit-dev/air/issues/472
             let start = &[tempdir.join("renv")];
             let resolver = PathResolver::new(Settings::default());
-            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            let paths = discover_r_file_paths(
+                start,
+                &resolver,
+                Mode::Format,
+                Exclude::Matched,
+                Include::Matched,
+            );
             assert_eq!(paths.len(), 0);
         }
 
@@ -573,7 +667,13 @@ mod test {
             // https://github.com/posit-dev/air/issues/472
             let start = &[tempdir.join("renv").join("activate.R")];
             let resolver = PathResolver::new(Settings::default());
-            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            let paths = discover_r_file_paths(
+                start,
+                &resolver,
+                Mode::Format,
+                Exclude::Matched,
+                Include::Matched,
+            );
             assert_eq!(paths.len(), 0);
         }
 
@@ -583,7 +683,13 @@ mod test {
             // https://github.com/posit-dev/air/issues/472
             let start = &[tempdir.join("renv").join("subdir")];
             let resolver = PathResolver::new(Settings::default());
-            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            let paths = discover_r_file_paths(
+                start,
+                &resolver,
+                Mode::Format,
+                Exclude::Matched,
+                Include::Matched,
+            );
             assert_eq!(paths.len(), 0);
         }
 
@@ -619,7 +725,13 @@ exclude = ["exclude/"]
             let mut resolver = PathResolver::new(Settings::default());
             resolver.add(&settings.directory, settings.settings);
 
-            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            let paths = discover_r_file_paths(
+                start,
+                &resolver,
+                Mode::Format,
+                Exclude::Matched,
+                Include::Matched,
+            );
             assert!(paths.is_empty());
         }
 
@@ -635,7 +747,13 @@ exclude = ["exclude/"]
             let mut resolver = PathResolver::new(Settings::default());
             resolver.add(&settings.directory, settings.settings);
 
-            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            let paths = discover_r_file_paths(
+                start,
+                &resolver,
+                Mode::Format,
+                Exclude::Matched,
+                Include::Matched,
+            );
             assert!(paths.is_empty());
         }
 
@@ -651,7 +769,13 @@ exclude = ["exclude/"]
             let mut resolver = PathResolver::new(Settings::default());
             resolver.add(&settings.directory, settings.settings);
 
-            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            let paths = discover_r_file_paths(
+                start,
+                &resolver,
+                Mode::Format,
+                Exclude::Matched,
+                Include::Matched,
+            );
             assert!(paths.is_empty());
         }
 
@@ -667,9 +791,143 @@ exclude = ["exclude/"]
             let mut resolver = PathResolver::new(Settings::default());
             resolver.add(&settings.directory, settings.settings);
 
-            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            let paths = discover_r_file_paths(
+                start,
+                &resolver,
+                Mode::Format,
+                Exclude::Matched,
+                Include::Matched,
+            );
             assert!(paths.is_empty());
         }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_exclude_nothing_allows_default_excluded_files() -> anyhow::Result<()> {
+        let tempdir = TempDir::new()?;
+        let tempdir = tempdir.path();
+
+        std::fs::create_dir(tempdir.join("R"))?;
+
+        let cpp11_path = tempdir.join("R").join("cpp11.R");
+        std::fs::write(&cpp11_path, b"")?;
+
+        // `cpp11.R` is a default exclude, but `Exclude::Nothing` bypasses it
+        let start = &[&cpp11_path];
+        let resolver = PathResolver::new(Settings::default());
+        let mut paths = discover_r_file_paths(
+            start,
+            &resolver,
+            Mode::Format,
+            Exclude::Nothing,
+            Include::Matched,
+        );
+        assert_eq!(paths.len(), 1);
+        assert_eq!(paths.pop().unwrap().unwrap(), cpp11_path);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_exclude_nothing_recursive_case() -> anyhow::Result<()> {
+        let tempdir = TempDir::new()?;
+        let tempdir = tempdir.path();
+
+        std::fs::create_dir(tempdir.join("R"))?;
+        std::fs::create_dir(tempdir.join("vignettes"))?;
+
+        let test_path = tempdir.join("R").join("test.R");
+        std::fs::write(&test_path, b"")?;
+
+        let cpp11_path = tempdir.join("R").join("cpp11.R");
+        std::fs::write(&cpp11_path, b"")?;
+
+        let test_qmd = tempdir.join("vignettes").join("test.qmd");
+        std::fs::write(&test_qmd, b"")?;
+
+        // Recursing into `tempdir` with `Exclude::Nothing` discovers `test.R` and
+        // `cpp11.R`, but not `test.qmd`
+        let start = &[tempdir];
+        let resolver = PathResolver::new(Settings::default());
+        let mut paths = discover_r_file_paths(
+            start,
+            &resolver,
+            Mode::Format,
+            Exclude::Nothing,
+            Include::Matched,
+        );
+
+        assert_eq!(paths.len(), 2);
+        let mut paths = [paths.pop().unwrap().unwrap(), paths.pop().unwrap().unwrap()];
+        paths.sort();
+        let mut expect = [test_path, cpp11_path];
+        expect.sort();
+        assert_eq!(paths, expect);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_include_everything_allows_non_r_files() -> anyhow::Result<()> {
+        let tempdir = TempDir::new()?;
+        let tempdir = tempdir.path();
+
+        let test_qmd = tempdir.join("test.qmd");
+        std::fs::write(&test_qmd, b"")?;
+
+        // `.qmd` is not part of default includes, but `Include::Everything` bypasses that
+        let start = &[&test_qmd];
+        let resolver = PathResolver::new(Settings::default());
+        let mut paths = discover_r_file_paths(
+            start,
+            &resolver,
+            Mode::Format,
+            Exclude::Matched,
+            Include::Everything,
+        );
+        assert_eq!(paths.len(), 1);
+        assert_eq!(paths.pop().unwrap().unwrap(), test_qmd);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_include_everything_recursive_case() -> anyhow::Result<()> {
+        let tempdir = TempDir::new()?;
+        let tempdir = tempdir.path();
+
+        std::fs::create_dir(tempdir.join("R"))?;
+        std::fs::create_dir(tempdir.join("vignettes"))?;
+
+        let test_path = tempdir.join("R").join("test.R");
+        std::fs::write(&test_path, b"")?;
+
+        let cpp11_path = tempdir.join("R").join("cpp11.R");
+        std::fs::write(&cpp11_path, b"")?;
+
+        let test_qmd = tempdir.join("vignettes").join("test.qmd");
+        std::fs::write(&test_qmd, b"")?;
+
+        // Recursing into `tempdir` with `Include::Everything` discovers `test.R` and
+        // `test.qmd`, but not `cpp11.R`
+        let start = &[tempdir];
+        let resolver = PathResolver::new(Settings::default());
+        let mut paths = discover_r_file_paths(
+            start,
+            &resolver,
+            Mode::Format,
+            Exclude::Matched,
+            Include::Everything,
+        );
+
+        assert_eq!(paths.len(), 2);
+        let mut paths = [paths.pop().unwrap().unwrap(), paths.pop().unwrap().unwrap()];
+        paths.sort();
+        let mut expect = [test_path, test_qmd];
+        expect.sort();
+        assert_eq!(paths, expect);
 
         Ok(())
     }
@@ -699,7 +957,13 @@ ignore/
             // When `ignore/` is "discovered" via recursive search, the `.gitignore` is respected
             let start = &[tempdir];
             let resolver = PathResolver::new(Settings::default());
-            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            let paths = discover_r_file_paths(
+                start,
+                &resolver,
+                Mode::Format,
+                Exclude::Matched,
+                Include::Matched,
+            );
             assert!(paths.is_empty());
         }
 
@@ -713,7 +977,13 @@ ignore/
             // <folder-that-has-been-gitignored>` directly.
             let start = &[tempdir.join("ignore")];
             let resolver = PathResolver::new(Settings::default());
-            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            let paths = discover_r_file_paths(
+                start,
+                &resolver,
+                Mode::Format,
+                Exclude::Matched,
+                Include::Matched,
+            );
             assert_eq!(paths.len(), 2);
         }
 

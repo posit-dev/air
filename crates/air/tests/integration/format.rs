@@ -596,3 +596,126 @@ exclude = ["test.R"]
 
     Ok(())
 }
+
+#[test]
+fn test_force_overrides_default_excludes_with_paths_write() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    let cpp11_path = "cpp11.R";
+    let cpp11_contents = "1+1";
+    std::fs::write(directory.join(cpp11_path), cpp11_contents)?;
+
+    // `--force` overrides the `default-exclude` that would normally skip `cpp11.R`
+    let output = Command::new(binary_path())
+        .current_dir(directory)
+        .arg("format")
+        .arg(cpp11_path)
+        .arg("--force")
+        .run();
+
+    assert!(output.status.success());
+
+    assert!(cpp11_contents != std::fs::read_to_string(directory.join(cpp11_path))?);
+
+    Ok(())
+}
+
+#[test]
+fn test_force_overrides_default_excludes_with_paths_check() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    let cpp11_path = "cpp11.R";
+
+    // `--force --check` reports that `cpp11.R` would be reformatted
+    let cpp11_contents = "1+1\n";
+    std::fs::write(directory.join(cpp11_path), cpp11_contents)?;
+    let output = Command::new(binary_path())
+        .current_dir(directory)
+        .arg("format")
+        .arg(cpp11_path)
+        .arg("--force")
+        .arg("--check")
+        .run();
+    assert!(!output.status.success());
+
+    // `--force --check` reports that `cpp11.R` would not be reformatted
+    let cpp11_contents = "1 + 1\n";
+    std::fs::write(directory.join(cpp11_path), cpp11_contents)?;
+    let output = Command::new(binary_path())
+        .current_dir(directory)
+        .arg("format")
+        .arg(cpp11_path)
+        .arg("--force")
+        .arg("--check")
+        .run();
+    assert!(output.status.success());
+
+    Ok(())
+}
+
+#[test]
+fn test_force_overrides_default_excludes_with_stdin_write() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    let cpp11_path = "cpp11.R";
+    let cpp11_contents = "1+1";
+
+    // `--force` overrides the `default-exclude` and actually formats the stdin content
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .arg("format")
+            .arg("--stdin-file-path")
+            .arg(cpp11_path)
+            .arg("--force")
+            .run_with_stdin(cpp11_contents.to_string())
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_force_overrides_default_excludes_with_stdin_check() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    let cpp11_path = "cpp11.R";
+
+    // `--force --check` with stdin reports that formatting would change it
+    let cpp11_contents = "1+1\n";
+    let output = Command::new(binary_path())
+        .current_dir(directory)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .arg("format")
+        .arg("--stdin-file-path")
+        .arg(cpp11_path)
+        .arg("--force")
+        .arg("--check")
+        .run_with_stdin(cpp11_contents.to_string());
+    assert!(!output.status.success());
+
+    // `--force --check` with stdin reports that formatting would not change it
+    let cpp11_contents = "1 + 1\n";
+    let output = Command::new(binary_path())
+        .current_dir(directory)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .arg("format")
+        .arg("--stdin-file-path")
+        .arg(cpp11_path)
+        .arg("--force")
+        .arg("--check")
+        .run_with_stdin(cpp11_contents.to_string());
+    assert!(output.status.success());
+
+    Ok(())
+}

@@ -7,6 +7,7 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use thiserror::Error;
+use workspace::discovery;
 use workspace::discovery::DiscoveredSettings;
 use workspace::discovery::discover_settings;
 use workspace::format::FormatSourceError;
@@ -33,7 +34,12 @@ enum FormatStdinError {
     Write(io::Error),
 }
 
-pub(crate) fn format(path: PathBuf, mode: FormatMode) -> anyhow::Result<ExitStatus> {
+pub(crate) fn format(
+    path: PathBuf,
+    mode: FormatMode,
+    exclude: discovery::Exclude,
+    include: discovery::Include,
+) -> anyhow::Result<ExitStatus> {
     // Normalize up front, relative to current working directory
     let path = fs::normalize_path(path);
 
@@ -48,14 +54,14 @@ pub(crate) fn format(path: PathBuf, mode: FormatMode) -> anyhow::Result<ExitStat
     }
 
     match mode {
-        FormatMode::Write => match format_stdin_write(&path, &resolver) {
+        FormatMode::Write => match format_stdin_write(&path, &resolver, exclude, include) {
             Ok(()) => Ok(ExitStatus::Success),
             Err(error) => {
                 tracing::error!("{error}");
                 Ok(ExitStatus::Error)
             }
         },
-        FormatMode::Check => match format_stdin_check(&path, &resolver) {
+        FormatMode::Check => match format_stdin_check(&path, &resolver, exclude, include) {
             Ok(changed) => {
                 if changed {
                     Ok(ExitStatus::Failure)
@@ -74,10 +80,12 @@ pub(crate) fn format(path: PathBuf, mode: FormatMode) -> anyhow::Result<ExitStat
 fn format_stdin_write<P: AsRef<Path>>(
     path: P,
     resolver: &PathResolver<Settings>,
+    exclude: discovery::Exclude,
+    include: discovery::Include,
 ) -> Result<(), FormatStdinError> {
     let settings = resolver.resolve_or_fallback(&path);
 
-    let formatted = if is_stdin_formattable(path, settings) {
+    let formatted = if is_stdin_formattable(path, settings, exclude, include) {
         format_stdin(&settings.format)?
     } else {
         asis_stdin()?
@@ -97,10 +105,12 @@ fn format_stdin_write<P: AsRef<Path>>(
 fn format_stdin_check<P: AsRef<Path>>(
     path: P,
     resolver: &PathResolver<Settings>,
+    exclude: discovery::Exclude,
+    include: discovery::Include,
 ) -> Result<bool, FormatStdinError> {
     let settings = resolver.resolve_or_fallback(&path);
 
-    if !is_stdin_formattable(path, settings) {
+    if !is_stdin_formattable(path, settings, exclude, include) {
         // Don't even attempt to read from stdin, we know nothing will change
         return Ok(false);
     }
@@ -153,7 +163,12 @@ fn read_stdin() -> io::Result<String> {
 /// air format path/to/this.R
 /// air format --stdin-file-path path/to/this.R
 /// ```
-fn is_stdin_formattable<P: AsRef<Path>>(path: P, settings: &Settings) -> bool {
+fn is_stdin_formattable<P: AsRef<Path>>(
+    path: P,
+    settings: &Settings,
+    exclude: discovery::Exclude,
+    include: discovery::Include,
+) -> bool {
     const IS_DIRECTORY: bool = false;
 
     let path = path.as_ref();
@@ -162,12 +177,14 @@ fn is_stdin_formattable<P: AsRef<Path>>(path: P, settings: &Settings) -> bool {
     // Like `discover_r_file_paths()`, matches against the path and its parents, because
     // using stdin to format `renv/activate.R` should refuse to format due to our
     // `default_exclude` of `**/renv/`.
-    if let Some(glob) = workspace::discovery::any_exclude_matched_path_or_any_parents(
-        path,
-        IS_DIRECTORY,
-        settings.format.exclude.as_ref(),
-        settings.format.default_exclude.as_ref(),
-    ) {
+    if matches!(exclude, discovery::Exclude::Matched)
+        && let Some(glob) = workspace::discovery::any_exclude_matched_path_or_any_parents(
+            path,
+            IS_DIRECTORY,
+            settings.format.exclude.as_ref(),
+            settings.format.default_exclude.as_ref(),
+        )
+    {
         tracing::trace!(
             "Excluded due to '{glob}': {path}",
             glob = glob.original(),
@@ -176,26 +193,37 @@ fn is_stdin_formattable<P: AsRef<Path>>(path: P, settings: &Settings) -> bool {
         return false;
     }
 
-    // `default_include` must include it.
-    // No need for `IS_DIRECTORY` since includes are only applicable for files.
-    match workspace::discovery::any_include_matched_path(
-        path,
-        settings.format.default_include.as_ref(),
-    ) {
-        Some(glob) => {
+    match include {
+        discovery::Include::Matched => {
+            // `default_include` must include it.
+            // No need for `IS_DIRECTORY` since includes are only applicable for files.
+            match workspace::discovery::any_include_matched_path(
+                path,
+                settings.format.default_include.as_ref(),
+            ) {
+                Some(glob) => {
+                    tracing::trace!(
+                        "Included due to '{glob}': {path}",
+                        glob = glob.original(),
+                        path = path.display()
+                    );
+                    true
+                }
+                None => {
+                    tracing::trace!(
+                        "Excluded due to not matching an include: {path}",
+                        path = path.display()
+                    );
+                    false
+                }
+            }
+        }
+        discovery::Include::Everything => {
             tracing::trace!(
-                "Included due to '{glob}': {path}",
-                glob = glob.original(),
+                "Included due to including everything: {path}",
                 path = path.display()
             );
             true
-        }
-        None => {
-            tracing::trace!(
-                "Excluded due to not matching an include: {path}",
-                path = path.display()
-            );
-            false
         }
     }
 }
@@ -213,6 +241,7 @@ impl Display for FormatStdinError {
 #[cfg(test)]
 mod test {
     use tempfile::TempDir;
+    use workspace::discovery;
     use workspace::settings::Settings;
 
     use crate::commands::format::stdin::is_stdin_formattable;
@@ -227,24 +256,33 @@ mod test {
         let test_qmd = tempdir.join("test3.qmd");
 
         let settings = Settings::default();
+        let exclude = discovery::Exclude::Matched;
+        let include = discovery::Include::Matched;
 
         {
             // `{tempdir}/test1.R`
             // Part of default includes, so accepted
-            assert!(is_stdin_formattable(test_big_r, &settings));
+            assert!(is_stdin_formattable(
+                test_big_r, &settings, exclude, include
+            ));
         }
 
         {
             // `{tempdir}/test2.r`
             // Part of default includes, so accepted
-            assert!(is_stdin_formattable(test_little_r, &settings));
+            assert!(is_stdin_formattable(
+                test_little_r,
+                &settings,
+                exclude,
+                include
+            ));
         }
 
         {
             // `{tempdir}/test3.qmd`
             // Not part of default includes, so rejected even though the user supplied it
             // directly.
-            assert!(!is_stdin_formattable(test_qmd, &settings));
+            assert!(!is_stdin_formattable(test_qmd, &settings, exclude, include));
         }
 
         Ok(())
@@ -263,20 +301,87 @@ mod test {
         std::fs::write(tempdir.join("renv").join("activate.R"), b"")?;
 
         let settings = Settings::default();
+        let exclude = discovery::Exclude::Matched;
+        let include = discovery::Include::Matched;
 
         {
             // `{tempdir}/R/cpp11.R`
             // Directly supplied file matching default excludes is excluded
             let start = tempdir.join("R").join("cpp11.R");
-            assert!(!is_stdin_formattable(start.as_path(), &settings));
+            assert!(!is_stdin_formattable(
+                start.as_path(),
+                &settings,
+                exclude,
+                include
+            ));
         }
 
         {
             // `{tempdir}/renv/activate.R`
             // Directly supplied file with parent matching default excludes is excluded
             let start = tempdir.join("renv").join("activate.R");
-            assert!(!is_stdin_formattable(start.as_path(), &settings));
+            assert!(!is_stdin_formattable(
+                start.as_path(),
+                &settings,
+                exclude,
+                include
+            ));
         }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_exclude_nothing_allows_default_excluded_files() -> anyhow::Result<()> {
+        let tempdir = TempDir::new()?;
+        let tempdir = tempdir.path();
+
+        std::fs::create_dir(tempdir.join("R"))?;
+        std::fs::create_dir(tempdir.join("renv"))?;
+
+        let settings = Settings::default();
+        let exclude = discovery::Exclude::Nothing;
+        let include = discovery::Include::Matched;
+
+        {
+            // `cpp11.R` is a default exclude, but `Exclude::Nothing` bypasses it
+            let start = tempdir.join("R").join("cpp11.R");
+            assert!(is_stdin_formattable(
+                start.as_path(),
+                &settings,
+                exclude,
+                include
+            ));
+        }
+
+        {
+            // `renv/activate.R` has a parent matching default excludes, but
+            // `Exclude::Nothing` bypasses it
+            let start = tempdir.join("renv").join("activate.R");
+            assert!(is_stdin_formattable(
+                start.as_path(),
+                &settings,
+                exclude,
+                include
+            ));
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_include_everything_allows_non_r_files() -> anyhow::Result<()> {
+        let tempdir = TempDir::new()?;
+        let tempdir = tempdir.path();
+
+        let test_qmd = tempdir.join("test.qmd");
+
+        let settings = Settings::default();
+        let exclude = discovery::Exclude::Matched;
+        let include = discovery::Include::Everything;
+
+        // `.qmd` is not part of default includes, but `Include::Everything` bypasses that
+        assert!(is_stdin_formattable(test_qmd, &settings, exclude, include));
 
         Ok(())
     }

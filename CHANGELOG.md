@@ -6,6 +6,8 @@
 
   Similarly, `air format my.qmd` no longer attempts to format `my.qmd`. This file is not excluded by `exclude` or `default-exclude`, but is also not included by our internal set of `default-include`s, which currently only accept `.R` and `.r` files. Rather than blindly trying to format this directly supplied file, Air now ignores it (#476).
 
+- New `--force` flag to bypass all exclusion and inclusion rules and force a file or folder to be formatted. This flag applies recursively, meaning that all files within a forced folder will also be forcibly formatted, regardless of file type. This flag should rarely be needed, but serves as an escape hatch for cases like `air format r-code.txt --force`, which is no longer automatically formatted by Air as of this release due to the change mentioned above.
+
 - New `air generate-shell-completion <SHELL>` hidden command that emits a script to stdout that generates shell completions. Supports bash, zsh, fish, powershell, and elvish (#477, @salim-b).
 
   For zsh, run the following to add to your `.zshrc`:

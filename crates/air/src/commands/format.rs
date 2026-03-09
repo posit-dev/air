@@ -1,3 +1,5 @@
+use workspace::discovery;
+
 use crate::ExitStatus;
 use crate::args::FormatCommand;
 
@@ -17,9 +19,15 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
 
     let mode = FormatMode::from_command(&command);
 
+    let (exclude, include) = if command.force {
+        (discovery::Exclude::Nothing, discovery::Include::Everything)
+    } else {
+        (discovery::Exclude::Matched, discovery::Include::Matched)
+    };
+
     match command.stdin_file_path {
-        Some(path) => stdin::format(path, mode),
-        None => paths::format(command.paths, mode),
+        Some(path) => stdin::format(path, mode, exclude, include),
+        None => paths::format(command.paths, mode, exclude, include),
     }
 }
 
