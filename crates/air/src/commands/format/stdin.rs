@@ -173,24 +173,29 @@ fn is_stdin_formattable<P: AsRef<Path>>(
 
     let path = path.as_ref();
 
-    // `exclude` or `default_exclude` may exclude it.
-    // Like `discover_r_file_paths()`, matches against the path and its parents, because
-    // using stdin to format `renv/activate.R` should refuse to format due to our
-    // `default_exclude` of `**/renv/`.
-    if matches!(exclude, discovery::Exclude::Matched)
-        && let Some(glob) = workspace::discovery::any_exclude_matched_path_or_any_parents(
-            path,
-            IS_DIRECTORY,
-            settings.format.exclude.as_ref(),
-            settings.format.default_exclude.as_ref(),
-        )
-    {
-        tracing::trace!(
-            "Excluded due to '{glob}': {path}",
-            glob = glob.original(),
-            path = path.display()
-        );
-        return false;
+    match exclude {
+        discovery::Exclude::Matched => {
+            // `exclude` or `default_exclude` may exclude it. Like
+            // `discover_r_file_paths()`, matches against the path and its parents,
+            // because using stdin to format `renv/activate.R` should refuse to format due
+            // to our `default_exclude` of `**/renv/`.
+            if let Some(glob) = workspace::discovery::any_exclude_matched_path_or_any_parents(
+                path,
+                IS_DIRECTORY,
+                settings.format.exclude.as_ref(),
+                settings.format.default_exclude.as_ref(),
+            ) {
+                tracing::trace!(
+                    "Excluded due to '{glob}': {path}",
+                    glob = glob.original(),
+                    path = path.display()
+                );
+                return false;
+            }
+        }
+        discovery::Exclude::Nothing => {
+            // Exclusion patterns are not considered
+        }
     }
 
     match include {

@@ -281,45 +281,51 @@ impl FilesVisitor<'_, '_> {
         // Retrieve the settings for this `path`
         let settings = self.state.resolver.resolve_or_fallback(path);
 
-        // Throw out any directly supplied `path` where the path itself or any parent is
-        // excluded. For example, `air format cpp11.R` is immediately skipped since
-        // `**/cpp11.R` is an excluded pattern. Similarly, `air format renv/activate.R`
-        // and `air format renv/subdir/` are immediately skipped since `**/renv/` is an
-        // excluded pattern and we look at the directly supplied path's parents.
-        if is_directly_supplied
-            && matches!(self.state.exclude, Exclude::Matched)
-            && let Some(glob) = any_exclude_matched_path_or_any_parents(
-                path,
-                is_directory,
-                settings.format.exclude.as_ref(),
-                settings.format.default_exclude.as_ref(),
-            )
-        {
-            tracing::trace!(
-                "Excluded due to '{glob}': {path}",
-                glob = glob.original(),
-                path = path.display()
-            );
-            return ignore::WalkState::Skip;
-        }
+        match self.state.exclude {
+            Exclude::Matched => {
+                // Throw out any directly supplied `path` where the path itself or any
+                // parent is excluded. For example, `air format cpp11.R` is immediately
+                // skipped since `**/cpp11.R` is an excluded pattern. Similarly, `air
+                // format renv/activate.R` and `air format renv/subdir/` are immediately
+                // skipped since `**/renv/` is an excluded pattern and we look at the
+                // directly supplied path's parents.
+                if is_directly_supplied
+                    && let Some(glob) = any_exclude_matched_path_or_any_parents(
+                        path,
+                        is_directory,
+                        settings.format.exclude.as_ref(),
+                        settings.format.default_exclude.as_ref(),
+                    )
+                {
+                    tracing::trace!(
+                        "Excluded due to '{glob}': {path}",
+                        glob = glob.original(),
+                        path = path.display()
+                    );
+                    return ignore::WalkState::Skip;
+                }
 
-        // If this `path` was found from recursive search, don't check the path's parents
-        // when looking at exclusion rules
-        if !is_directly_supplied
-            && matches!(self.state.exclude, Exclude::Matched)
-            && let Some(glob) = any_exclude_matched_path(
-                path,
-                is_directory,
-                settings.format.exclude.as_ref(),
-                settings.format.default_exclude.as_ref(),
-            )
-        {
-            tracing::trace!(
-                "Excluded due to '{glob}': {path}",
-                glob = glob.original(),
-                path = path.display()
-            );
-            return ignore::WalkState::Skip;
+                // If this `path` was found from recursive search, don't check the path's
+                // parents when looking at exclusion rules
+                if !is_directly_supplied
+                    && let Some(glob) = any_exclude_matched_path(
+                        path,
+                        is_directory,
+                        settings.format.exclude.as_ref(),
+                        settings.format.default_exclude.as_ref(),
+                    )
+                {
+                    tracing::trace!(
+                        "Excluded due to '{glob}': {path}",
+                        glob = glob.original(),
+                        path = path.display()
+                    );
+                    return ignore::WalkState::Skip;
+                }
+            }
+            Exclude::Nothing => {
+                // Exclusion patterns are not considered
+            }
         }
 
         if is_directory {
