@@ -1,0 +1,29 @@
+---
+source: crates/air/tests/integration/generate_shell_completion.rs
+expression: "Command::new(binary_path()).arg(\"generate-shell-completion\").arg(\"--help\").run()"
+---
+success: true
+exit_code: 0
+----- stdout -----
+Generate shell completion scripts
+
+Usage: air generate-shell-completion [OPTIONS] <SHELL>
+
+Arguments:
+  <SHELL>  The shell for which to generate the completion script [possible values: bash, elvish,
+           fish, powershell, zsh]
+
+Options:
+  -h, --help  Print help
+
+Global options:
+      --log-level <LOG_LEVEL>  The log level [default: warn] [possible values: error, warn, info,
+                               debug, trace]
+      --no-color               Disable colored output. To turn colored output off, either set this
+                               option or set the environment variable `NO_COLOR` to any non-zero
+                               value
+
+----- stderr -----
+
+----- args -----
+generate-shell-completion --help

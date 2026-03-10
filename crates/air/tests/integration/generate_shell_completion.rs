@@ -4,6 +4,16 @@ use crate::helpers::CommandExt;
 use crate::helpers::binary_path;
 
 #[test]
+fn test_completions_help() {
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .arg("generate-shell-completion")
+            .arg("--help")
+            .run()
+    );
+}
+
+#[test]
 fn test_completions_bash() {
     insta::assert_snapshot!(
         Command::new(binary_path())
