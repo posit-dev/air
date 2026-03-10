@@ -69,8 +69,7 @@ pub(crate) struct GenerateShellCompletionCommand {
 #[derive(Debug, Default, clap::Args)]
 #[command(next_help_heading = "Global options")]
 pub(crate) struct GlobalOptions {
-    /// The log level. One of: `error`, `warn`, `info`, `debug`, or `trace`. Defaults
-    /// to `warn`.
+    /// The log level [default: warn]
     #[arg(long, global = true)]
     pub(crate) log_level: Option<logging::LogLevel>,
 

@@ -61,7 +61,7 @@ _air() {
             fi
             case "${prev}" in
                 --log-level)
-                    COMPREPLY=($(compgen -f "${cur}"))
+                    COMPREPLY=($(compgen -W "error warn info debug trace" -- "${cur}"))
                     return 0
                     ;;
                 *)
@@ -79,7 +79,7 @@ _air() {
             fi
             case "${prev}" in
                 --log-level)
-                    COMPREPLY=($(compgen -f "${cur}"))
+                    COMPREPLY=($(compgen -W "error warn info debug trace" -- "${cur}"))
                     return 0
                     ;;
                 *)
@@ -97,7 +97,7 @@ _air() {
             fi
             case "${prev}" in
                 --log-level)
-                    COMPREPLY=($(compgen -f "${cur}"))
+                    COMPREPLY=($(compgen -W "error warn info debug trace" -- "${cur}"))
                     return 0
                     ;;
                 *)
@@ -185,7 +185,7 @@ _air() {
             fi
             case "${prev}" in
                 --log-level)
-                    COMPREPLY=($(compgen -f "${cur}"))
+                    COMPREPLY=($(compgen -W "error warn info debug trace" -- "${cur}"))
                     return 0
                     ;;
                 *)

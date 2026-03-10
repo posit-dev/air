@@ -18,8 +18,8 @@ Options:
   -h, --help   Print help
 
 Global options:
-      --log-level <LOG_LEVEL>  The log level. One of: `error`, `warn`, `info`, `debug`, or `trace`.
-                               Defaults to `warn`
+      --log-level <LOG_LEVEL>  The log level [default: warn] [possible values: error, warn, info,
+                               debug, trace]
       --no-color               Disable colored output. To turn colored output off, either set this
                                option or set the environment variable `NO_COLOR` to any non-zero
                                value

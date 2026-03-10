@@ -22,7 +22,7 @@ _air() {
 
     local context curcontext="$curcontext" state line
     _arguments "${_arguments_options[@]}" : \
-'--log-level=[The log level. One of\: \`error\`, \`warn\`, \`info\`, \`debug\`, or \`trace\`. Defaults to \`warn\`]:LOG_LEVEL:_default' \
+'--log-level=[The log level \[default\: warn\]]:LOG_LEVEL:(error warn info debug trace)' \
 '--no-color[Disable colored output. To turn colored output off, either set this option or set the environment variable \`NO_COLOR\` to any non-zero value]' \
 '-h[Print help]' \
 '--help[Print help]' \
@@ -39,7 +39,7 @@ _air() {
         case $line[1] in
             (format)
 _arguments "${_arguments_options[@]}" : \
-'--log-level=[The log level. One of\: \`error\`, \`warn\`, \`info\`, \`debug\`, or \`trace\`. Defaults to \`warn\`]:LOG_LEVEL:_default' \
+'--log-level=[The log level \[default\: warn\]]:LOG_LEVEL:(error warn info debug trace)' \
 '--check[If enabled, format results are not written back to the file. Instead, exit with a non-zero status code if any files would have been modified, and zero otherwise]' \
 '--no-color[Disable colored output. To turn colored output off, either set this option or set the environment variable \`NO_COLOR\` to any non-zero value]' \
 '-h[Print help]' \
@@ -49,7 +49,7 @@ _arguments "${_arguments_options[@]}" : \
 ;;
 (language-server)
 _arguments "${_arguments_options[@]}" : \
-'--log-level=[The log level. One of\: \`error\`, \`warn\`, \`info\`, \`debug\`, or \`trace\`. Defaults to \`warn\`]:LOG_LEVEL:_default' \
+'--log-level=[The log level \[default\: warn\]]:LOG_LEVEL:(error warn info debug trace)' \
 '--no-color[Disable colored output. To turn colored output off, either set this option or set the environment variable \`NO_COLOR\` to any non-zero value]' \
 '-h[Print help]' \
 '--help[Print help]' \
@@ -57,7 +57,7 @@ _arguments "${_arguments_options[@]}" : \
 ;;
 (generate-shell-completion)
 _arguments "${_arguments_options[@]}" : \
-'--log-level=[The log level. One of\: \`error\`, \`warn\`, \`info\`, \`debug\`, or \`trace\`. Defaults to \`warn\`]:LOG_LEVEL:_default' \
+'--log-level=[The log level \[default\: warn\]]:LOG_LEVEL:(error warn info debug trace)' \
 '--no-color[Disable colored output. To turn colored output off, either set this option or set the environment variable \`NO_COLOR\` to any non-zero value]' \
 '-h[Print help]' \
 '--help[Print help]' \
