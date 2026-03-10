@@ -28,6 +28,11 @@ test-insta *ARGS:
 test-quick:
   cargo test --package air_r_formatter --test quick_test -- quick_test --exact --show-output --ignored
 
+# Install the air binary to `~/.cargo/bin/air`.
+# Note that a `~/.local/bin/air` installed another way may shadow this.
+install-binary:
+  cargo install --path crates/air
+
 install-vscode:
   cd editors/code && rm -rf *.vsix && vsce package && code --install-extension *.vsix
 
