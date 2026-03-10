@@ -1,7 +1,6 @@
 ---
-source: crates/air/tests/integration/completions.rs
-assertion_line: 19
-expression: "Command::new(binary_path()).arg(\"completion\").arg(\"zsh\").run().normalize_os_executable_name()"
+source: crates/air/tests/integration/generate_shell_completion.rs
+expression: "Command::new(binary_path()).arg(\"generate-shell-completion\").arg(\"zsh\").run().normalize_os_executable_name()"
 ---
 success: true
 exit_code: 0
@@ -38,16 +37,7 @@ _air() {
         (( CURRENT += 1 ))
         curcontext="${curcontext%:*:*}:air-command-$line[1]:"
         case $line[1] in
-            (completion)
-_arguments "${_arguments_options[@]}" : \
-'--log-level=[The log level. One of\: \`error\`, \`warn\`, \`info\`, \`debug\`, or \`trace\`. Defaults to \`warn\`]:LOG_LEVEL:_default' \
-'--no-color[Disable colored output. To turn colored output off, either set this option or set the environment variable \`NO_COLOR\` to any non-zero value]' \
-'-h[Print help]' \
-'--help[Print help]' \
-':shell -- The shell for which to generate the completion script:(bash elvish fish powershell zsh)' \
-&& ret=0
-;;
-(format)
+            (format)
 _arguments "${_arguments_options[@]}" : \
 '--log-level=[The log level. One of\: \`error\`, \`warn\`, \`info\`, \`debug\`, or \`trace\`. Defaults to \`warn\`]:LOG_LEVEL:_default' \
 '--check[If enabled, format results are not written back to the file. Instead, exit with a non-zero status code if any files would have been modified, and zero otherwise]' \
@@ -65,6 +55,15 @@ _arguments "${_arguments_options[@]}" : \
 '--help[Print help]' \
 && ret=0
 ;;
+(generate-shell-completion)
+_arguments "${_arguments_options[@]}" : \
+'--log-level=[The log level. One of\: \`error\`, \`warn\`, \`info\`, \`debug\`, or \`trace\`. Defaults to \`warn\`]:LOG_LEVEL:_default' \
+'--no-color[Disable colored output. To turn colored output off, either set this option or set the environment variable \`NO_COLOR\` to any non-zero value]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':shell -- The shell for which to generate the completion script:(bash elvish fish powershell zsh)' \
+&& ret=0
+;;
 (help)
 _arguments "${_arguments_options[@]}" : \
 ":: :_air__help_commands" \
@@ -77,15 +76,15 @@ _arguments "${_arguments_options[@]}" : \
         (( CURRENT += 1 ))
         curcontext="${curcontext%:*:*}:air-help-command-$line[1]:"
         case $line[1] in
-            (completion)
-_arguments "${_arguments_options[@]}" : \
-&& ret=0
-;;
-(format)
+            (format)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
 (language-server)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(generate-shell-completion)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
@@ -105,42 +104,42 @@ esac
 (( $+functions[_air_commands] )) ||
 _air_commands() {
     local commands; commands=(
-'completion:Generate shell completion scripts' \
 'format:Format a set of files or directories' \
 'language-server:Start a language server' \
+'generate-shell-completion:Generate shell completion scripts' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'air commands' commands "$@"
-}
-(( $+functions[_air__completion_commands] )) ||
-_air__completion_commands() {
-    local commands; commands=()
-    _describe -t commands 'air completion commands' commands "$@"
 }
 (( $+functions[_air__format_commands] )) ||
 _air__format_commands() {
     local commands; commands=()
     _describe -t commands 'air format commands' commands "$@"
 }
+(( $+functions[_air__generate-shell-completion_commands] )) ||
+_air__generate-shell-completion_commands() {
+    local commands; commands=()
+    _describe -t commands 'air generate-shell-completion commands' commands "$@"
+}
 (( $+functions[_air__help_commands] )) ||
 _air__help_commands() {
     local commands; commands=(
-'completion:Generate shell completion scripts' \
 'format:Format a set of files or directories' \
 'language-server:Start a language server' \
+'generate-shell-completion:Generate shell completion scripts' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'air help commands' commands "$@"
-}
-(( $+functions[_air__help__completion_commands] )) ||
-_air__help__completion_commands() {
-    local commands; commands=()
-    _describe -t commands 'air help completion commands' commands "$@"
 }
 (( $+functions[_air__help__format_commands] )) ||
 _air__help__format_commands() {
     local commands; commands=()
     _describe -t commands 'air help format commands' commands "$@"
+}
+(( $+functions[_air__help__generate-shell-completion_commands] )) ||
+_air__help__generate-shell-completion_commands() {
+    local commands; commands=()
+    _describe -t commands 'air help generate-shell-completion commands' commands "$@"
 }
 (( $+functions[_air__help__help_commands] )) ||
 _air__help__help_commands() {
@@ -167,4 +166,4 @@ fi
 ----- stderr -----
 
 ----- args -----
-completion zsh
+generate-shell-completion zsh

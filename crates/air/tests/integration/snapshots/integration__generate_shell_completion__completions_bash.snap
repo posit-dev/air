@@ -1,7 +1,6 @@
 ---
-source: crates/air/tests/integration/completions.rs
-assertion_line: 8
-expression: "Command::new(binary_path()).arg(\"completion\").arg(\"bash\").run().normalize_os_executable_name()"
+source: crates/air/tests/integration/generate_shell_completion.rs
+expression: "Command::new(binary_path()).arg(\"generate-shell-completion\").arg(\"bash\").run().normalize_os_executable_name()"
 ---
 success: true
 exit_code: 0
@@ -24,11 +23,11 @@ _air() {
             ",$1")
                 cmd="air"
                 ;;
-            air,completion)
-                cmd="air__completion"
-                ;;
             air,format)
                 cmd="air__format"
+                ;;
+            air,generate-shell-completion)
+                cmd="air__generate__shell__completion"
                 ;;
             air,help)
                 cmd="air__help"
@@ -36,11 +35,11 @@ _air() {
             air,language-server)
                 cmd="air__language__server"
                 ;;
-            air__help,completion)
-                cmd="air__help__completion"
-                ;;
             air__help,format)
                 cmd="air__help__format"
+                ;;
+            air__help,generate-shell-completion)
+                cmd="air__help__generate__shell__completion"
                 ;;
             air__help,help)
                 cmd="air__help__help"
@@ -55,26 +54,8 @@ _air() {
 
     case "${cmd}" in
         air)
-            opts="-h -V --log-level --no-color --help --version completion format language-server help"
+            opts="-h -V --log-level --no-color --help --version format language-server generate-shell-completion help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                --log-level)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        air__completion)
-            opts="-h --log-level --no-color --help bash elvish fish powershell zsh"
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -108,8 +89,26 @@ _air() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        air__generate__shell__completion)
+            opts="-h --log-level --no-color --help bash elvish fish powershell zsh"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --log-level)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         air__help)
-            opts="completion format language-server help"
+            opts="format language-server generate-shell-completion help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -122,7 +121,7 @@ _air() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        air__help__completion)
+        air__help__format)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -136,7 +135,7 @@ _air() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        air__help__format)
+        air__help__generate__shell__completion)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -208,4 +207,4 @@ fi
 ----- stderr -----
 
 ----- args -----
-completion bash
+generate-shell-completion bash

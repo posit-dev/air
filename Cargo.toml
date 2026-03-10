@@ -33,6 +33,7 @@ bytes = "1.8.0"
 cargo_metadata = "0.20.0"
 case = "1.0.0"
 clap = { version = "4.5.20", features = ["derive"] }
+clap_complete = "4.5.66"
 colored = "3.0.0"
 comments = { path = "./crates/comments" }
 crates = { path = "./crates/crates" }

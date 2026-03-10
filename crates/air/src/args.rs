@@ -32,14 +32,15 @@ pub struct Args {
 
 #[derive(Subcommand)]
 pub(crate) enum Command {
-    /// Generate shell completion scripts
-    Completion(CompletionCommand),
-
     /// Format a set of files or directories
     Format(FormatCommand),
 
     /// Start a language server
     LanguageServer(LanguageServerCommand),
+
+    /// Generate shell completion scripts
+    #[clap(hide = true)]
+    GenerateShellCompletion(GenerateShellCompletionCommand),
 }
 
 #[derive(Clone, Debug, Parser)]
@@ -59,9 +60,8 @@ pub(crate) struct FormatCommand {
 pub(crate) struct LanguageServerCommand {}
 
 #[derive(Clone, Debug, Parser)]
-pub(crate) struct CompletionCommand {
+pub(crate) struct GenerateShellCompletionCommand {
     /// The shell for which to generate the completion script
-    #[arg(value_enum)]
     pub shell: clap_complete::Shell,
 }
 

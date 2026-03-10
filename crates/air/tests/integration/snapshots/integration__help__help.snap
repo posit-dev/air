@@ -1,6 +1,5 @@
 ---
 source: crates/air/tests/integration/help.rs
-assertion_line: 8
 expression: "&mut Command::new(binary_path()).run().normalize_os_executable_name()"
 ---
 success: false
@@ -13,7 +12,6 @@ Air: An R language server and formatter
 Usage: air [OPTIONS] <COMMAND>
 
 Commands:
-  completion       Generate shell completion scripts
   format           Format a set of files or directories
   language-server  Start a language server
   help             Print this message or the help of the given subcommand(s)
