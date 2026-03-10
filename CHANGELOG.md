@@ -2,6 +2,24 @@
 
 # Development version
 
+- New `air generate-shell-completion <SHELL>` hidden command that emits a script to stdout that generates shell completions. Supports bash, zsh, fish, powershell, and elvish (#477, @salim-b).
+
+  For zsh, run the following to add to your `.zshrc`:
+
+  ```bash
+  echo 'eval "$(air generate-shell-completion zsh)"' >> ~/.zshrc
+  ```
+
+  For powershell, run the following to add to your profile:
+
+  ```powershell
+  if (!(Test-Path -Path $PROFILE)) {
+    New-Item -ItemType File -Path $PROFILE -Force
+  }
+  Add-Content -Path $PROFILE -Value '(& air generate-shell-completion powershell) | Out-String | Invoke-Expression'
+  ```
+
+  Then restart your shell and type `air <tab>` to see completions.
 
 # 0.8.2
 
