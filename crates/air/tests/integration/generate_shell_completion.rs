@@ -10,6 +10,7 @@ fn test_completions_help() {
             .arg("generate-shell-completion")
             .arg("--help")
             .run()
+            .normalize_os_executable_name()
     );
 }
 
