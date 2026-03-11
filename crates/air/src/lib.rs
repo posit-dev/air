@@ -17,6 +17,9 @@ pub fn run(args: Args) -> anyhow::Result<ExitStatus> {
     }
 
     match args.command {
+        Command::GenerateShellCompletion(command) => {
+            commands::generate_shell_completion::generate_shell_completion(command)
+        }
         Command::Format(command) => commands::format::format(command),
         Command::LanguageServer(command) => commands::language_server::language_server(command),
     }

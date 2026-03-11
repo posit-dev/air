@@ -1,0 +1,93 @@
+---
+source: crates/air/tests/integration/generate_shell_completion.rs
+expression: "Command::new(binary_path()).arg(\"generate-shell-completion\").arg(\"powershell\").run().normalize_os_executable_name()"
+---
+success: true
+exit_code: 0
+----- stdout -----
+
+using namespace System.Management.Automation
+using namespace System.Management.Automation.Language
+
+Register-ArgumentCompleter -Native -CommandName 'air' -ScriptBlock {
+    param($wordToComplete, $commandAst, $cursorPosition)
+
+    $commandElements = $commandAst.CommandElements
+    $command = @(
+        'air'
+        for ($i = 1; $i -lt $commandElements.Count; $i++) {
+            $element = $commandElements[$i]
+            if ($element -isnot [StringConstantExpressionAst] -or
+                $element.StringConstantType -ne [StringConstantType]::BareWord -or
+                $element.Value.StartsWith('-') -or
+                $element.Value -eq $wordToComplete) {
+                break
+        }
+        $element.Value
+    }) -join ';'
+
+    $completions = @(switch ($command) {
+        'air' {
+            [CompletionResult]::new('--log-level', '--log-level', [CompletionResultType]::ParameterName, 'The log level [default: warn]')
+            [CompletionResult]::new('--no-color', '--no-color', [CompletionResultType]::ParameterName, 'Disable colored output. To turn colored output off, either set this option or set the environment variable `NO_COLOR` to any non-zero value')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('-V', '-V ', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('format', 'format', [CompletionResultType]::ParameterValue, 'Format a set of files or directories')
+            [CompletionResult]::new('language-server', 'language-server', [CompletionResultType]::ParameterValue, 'Start a language server')
+            [CompletionResult]::new('generate-shell-completion', 'generate-shell-completion', [CompletionResultType]::ParameterValue, 'Generate shell completion scripts')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'air;format' {
+            [CompletionResult]::new('--log-level', '--log-level', [CompletionResultType]::ParameterName, 'The log level [default: warn]')
+            [CompletionResult]::new('--check', '--check', [CompletionResultType]::ParameterName, 'If enabled, format results are not written back to the file. Instead, exit with a non-zero status code if any files would have been modified, and zero otherwise')
+            [CompletionResult]::new('--no-color', '--no-color', [CompletionResultType]::ParameterName, 'Disable colored output. To turn colored output off, either set this option or set the environment variable `NO_COLOR` to any non-zero value')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'air;language-server' {
+            [CompletionResult]::new('--log-level', '--log-level', [CompletionResultType]::ParameterName, 'The log level [default: warn]')
+            [CompletionResult]::new('--no-color', '--no-color', [CompletionResultType]::ParameterName, 'Disable colored output. To turn colored output off, either set this option or set the environment variable `NO_COLOR` to any non-zero value')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'air;generate-shell-completion' {
+            [CompletionResult]::new('--log-level', '--log-level', [CompletionResultType]::ParameterName, 'The log level [default: warn]')
+            [CompletionResult]::new('--no-color', '--no-color', [CompletionResultType]::ParameterName, 'Disable colored output. To turn colored output off, either set this option or set the environment variable `NO_COLOR` to any non-zero value')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'air;help' {
+            [CompletionResult]::new('format', 'format', [CompletionResultType]::ParameterValue, 'Format a set of files or directories')
+            [CompletionResult]::new('language-server', 'language-server', [CompletionResultType]::ParameterValue, 'Start a language server')
+            [CompletionResult]::new('generate-shell-completion', 'generate-shell-completion', [CompletionResultType]::ParameterValue, 'Generate shell completion scripts')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'air;help;format' {
+            break
+        }
+        'air;help;language-server' {
+            break
+        }
+        'air;help;generate-shell-completion' {
+            break
+        }
+        'air;help;help' {
+            break
+        }
+    })
+
+    $completions.Where{ $_.CompletionText -like "$wordToComplete*" } |
+        Sort-Object -Property ListItemText
+}
+
+----- stderr -----
+
+----- args -----
+generate-shell-completion powershell

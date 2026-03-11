@@ -46,6 +46,7 @@ version = "0.8.2"
 dependencies = [
  "anyhow",
  "clap",
+ "clap_complete",
  "colored",
  "crates",
  "fs",
@@ -587,6 +588,15 @@ dependencies = [
  "clap_lex",
  "strsim",
  "terminal_size",
+]
+
+[[package]]
+name = "clap_complete"
+version = "4.5.66"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c757a3b7e39161a4e56f9365141ada2a6c915a8622c408ab6bb4b5d047371031"
+dependencies = [
+ "clap",
 ]
 
 [[package]]

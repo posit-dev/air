@@ -37,6 +37,10 @@ pub(crate) enum Command {
 
     /// Start a language server
     LanguageServer(LanguageServerCommand),
+
+    /// Generate shell completion scripts
+    #[clap(hide = true)]
+    GenerateShellCompletion(GenerateShellCompletionCommand),
 }
 
 #[derive(Clone, Debug, Parser)]
@@ -55,12 +59,17 @@ pub(crate) struct FormatCommand {
 #[derive(Clone, Debug, Parser)]
 pub(crate) struct LanguageServerCommand {}
 
+#[derive(Clone, Debug, Parser)]
+pub(crate) struct GenerateShellCompletionCommand {
+    /// The shell for which to generate the completion script
+    pub shell: clap_complete::Shell,
+}
+
 /// All configuration options that can be passed "globally"
 #[derive(Debug, Default, clap::Args)]
 #[command(next_help_heading = "Global options")]
 pub(crate) struct GlobalOptions {
-    /// The log level. One of: `error`, `warn`, `info`, `debug`, or `trace`. Defaults
-    /// to `warn`.
+    /// The log level [default: warn]
     #[arg(long, global = true)]
     pub(crate) log_level: Option<logging::LogLevel>,
 

@@ -58,7 +58,7 @@ fn turn_off_colors(
     layer.with_ansi(false)
 }
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, clap::ValueEnum)]
 pub(crate) enum LogLevel {
     Error,
     #[default]

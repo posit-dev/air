@@ -7,5 +7,6 @@
 /// - Compilation times, by only having 1 integration test binary
 /// - Dead code analysis of integration test helpers https://github.com/rust-lang/rust/issues/46379
 mod format;
+mod generate_shell_completion;
 mod help;
 mod helpers;

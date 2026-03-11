@@ -53,3 +53,49 @@ uvx --from air-formatter air format path/to/my/script.R
 ```
 
 Note that if you'd like to use Air inside VS Code or Positron, then the Extension for those editors comes pre-bundled with an Air binary, so there's nothing you need to do besides [download the Extension](editor-vscode.qmd).
+
+# Features
+
+## Shell completions
+
+Air supports completions for many shells.
+`air generate-shell-completion <SHELL>` emits a shell specific completion script over stdout, which can be invoked on shell startup to provide completions for Air.
+`<SHELL>` must be one of: `bash`, `zsh`, `powershell`, `fish`, or `elvish`.
+
+To enable shell completions, run one of the following to add an `air generate-shell-completion` call to your shell's startup procedure, then restart the shell.
+After that, `air <tab>` should provide completions for Air commands.
+
+::: panel-tabset
+## Bash
+
+``` bash
+echo 'eval "$(air generate-shell-completion bash)"' >> ~/.bashrc
+```
+
+## Zsh
+
+``` bash
+echo 'eval "$(air generate-shell-completion zsh)"' >> ~/.zshrc
+```
+
+## Powershell
+
+``` powershell
+if (!(Test-Path -Path $PROFILE)) {
+  New-Item -ItemType File -Path $PROFILE -Force
+}
+Add-Content -Path $PROFILE -Value '(& air generate-shell-completion powershell) | Out-String | Invoke-Expression'
+```
+
+## Fish
+
+``` bash
+echo 'air generate-shell-completion fish | source' > ~/.config/fish/completions/air.fish
+```
+
+## Elvish
+
+``` bash
+echo 'eval (air generate-shell-completion elvish | slurp)' >> ~/.elvish/rc.elv
+```
+:::
