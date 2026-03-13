@@ -141,3 +141,19 @@ echo 'air generate-shell-completion fish | source' > ~/.config/fish/completions/
 echo 'eval (air generate-shell-completion elvish | slurp)' >> ~/.elvish/rc.elv
 ```
 :::
+
+## Git
+
+Air respects your `.gitignore` while performing file discovery, i.e. while looking for R files within `folder/` when running `air format folder/`.
+For example, with a project level `.gitignore` containing `scratch/`, a call to `air format .` would refuse to search within a `scratch/` folder.
+
+`.gitignore` works slightly differently from `exclude` with directly supplied files and folders.
+For a call to `air format file.R`:
+
+-   If you have an `exclude` of `exclude = ["file.R"]`, then Air would refuse to format `file.R` even though it was directly supplied.
+
+-   If your `.gitignore` contains `file.R`, then Air would still format `file.R`.
+
+Similarly, a call to `air format folder/` would be refused with `exclude = ["folder/"]`, but would be searched with a `.gitignore` containing `folder/`.
+
+These differences are mostly for technical reasons, and we hope they do not cause many practical difficulties.
