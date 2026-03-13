@@ -66,8 +66,8 @@ syn = "2.0.59"
 tempfile = "3.9.0"
 tests_macros = { path = "./crates/tests_macros" }
 thiserror = "2.0.5"
-tokio = "1.41.1"
-tokio-util = "0.7.12"
+tokio = "1.50.0"
+tokio-util = "0.7.18"
 toml = "0.8.19"
 # For https://github.com/ebkalderon/tower-lsp/pull/428
 tower-lsp = { branch = "bugfix/patches", git = "https://github.com/lionel-/tower-lsp" }
