@@ -55,6 +55,12 @@ pub(crate) struct FormatCommand {
     #[arg(long)]
     pub check: bool,
 
+    /// Force formatting to occur regardless of exclusion patterns. This applies
+    /// recursively to directories. This serves as an escape hatch for cases like `air
+    /// format r-code.txt --force`, but is very rarely needed.
+    #[arg(long)]
+    pub force: bool,
+
     /// Use this option to enable reading from stdin and writing to stdout. This specifies
     /// a file path to associate the standard input with, which is used as the location to
     /// begin searching for configuration files from. The file does not have to exist and

@@ -11,8 +11,8 @@ use fs::relativize_path;
 use itertools::Either;
 use itertools::Itertools;
 use thiserror::Error;
+use workspace::discovery;
 use workspace::discovery::DiscoveredSettings;
-use workspace::discovery::FileDiscoveryMode;
 use workspace::discovery::discover_r_file_paths;
 use workspace::discovery::discover_settings;
 use workspace::format::FormatSourceError;
@@ -32,7 +32,12 @@ enum FormatPathError {
     Ignore(#[from] ignore::Error),
 }
 
-pub(crate) fn format(paths: Vec<PathBuf>, mode: FormatMode) -> anyhow::Result<ExitStatus> {
+pub(crate) fn format(
+    paths: Vec<PathBuf>,
+    mode: FormatMode,
+    exclude: discovery::Exclude,
+    include: discovery::Include,
+) -> anyhow::Result<ExitStatus> {
     let mut resolver = PathResolver::new(Settings::default());
 
     for DiscoveredSettings {
@@ -45,7 +50,7 @@ pub(crate) fn format(paths: Vec<PathBuf>, mode: FormatMode) -> anyhow::Result<Ex
 
     match mode {
         FormatMode::Write => {
-            let errors = format_paths_write(&paths, &resolver);
+            let errors = format_paths_write(&paths, &resolver, exclude, include);
 
             for error in &errors {
                 tracing::error!("{error}");
@@ -58,7 +63,7 @@ pub(crate) fn format(paths: Vec<PathBuf>, mode: FormatMode) -> anyhow::Result<Ex
             }
         }
         FormatMode::Check => {
-            let (paths, errors) = format_paths_check(&paths, &resolver);
+            let (paths, errors) = format_paths_check(&paths, &resolver, exclude, include);
 
             for error in &errors {
                 tracing::error!("{error}");
@@ -93,8 +98,10 @@ fn inform_changed(paths: &[PathBuf], f: &mut impl Write) -> io::Result<()> {
 fn format_paths_write<P: AsRef<Path>>(
     paths: &[P],
     resolver: &PathResolver<Settings>,
+    exclude: discovery::Exclude,
+    include: discovery::Include,
 ) -> Vec<FormatPathError> {
-    let paths = discover_r_file_paths(paths, resolver, FileDiscoveryMode::Format);
+    let paths = discover_r_file_paths(paths, resolver, discovery::Mode::Format, exclude, include);
 
     paths
         .into_iter()
@@ -117,8 +124,10 @@ fn format_paths_write<P: AsRef<Path>>(
 fn format_paths_check<P: AsRef<Path>>(
     paths: &[P],
     resolver: &PathResolver<Settings>,
+    exclude: discovery::Exclude,
+    include: discovery::Include,
 ) -> (Vec<PathBuf>, Vec<FormatPathError>) {
-    let paths = discover_r_file_paths(paths, resolver, FileDiscoveryMode::Format);
+    let paths = discover_r_file_paths(paths, resolver, discovery::Mode::Format, exclude, include);
 
     paths
         .into_iter()
