@@ -41,6 +41,7 @@ Register-ArgumentCompleter -Native -CommandName 'air' -ScriptBlock {
             break
         }
         'air;format' {
+            [CompletionResult]::new('--stdin-file-path', '--stdin-file-path', [CompletionResultType]::ParameterName, 'Use this option to enable reading from stdin and writing to stdout. This specifies a file path to associate the standard input with, which is used as the location to begin searching for configuration files from. The file does not have to exist and will not be read from. If a relative path is provided, it is resolved from the current working directory. If this option is specified, no other files or directories can be provided')
             [CompletionResult]::new('--log-level', '--log-level', [CompletionResultType]::ParameterName, 'The log level [default: warn]')
             [CompletionResult]::new('--check', '--check', [CompletionResultType]::ParameterName, 'If enabled, format results are not written back to the file. Instead, exit with a non-zero status code if any files would have been modified, and zero otherwise')
             [CompletionResult]::new('--no-color', '--no-color', [CompletionResultType]::ParameterName, 'Disable colored output. To turn colored output off, either set this option or set the environment variable `NO_COLOR` to any non-zero value')

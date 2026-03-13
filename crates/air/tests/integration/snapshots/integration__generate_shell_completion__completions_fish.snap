@@ -43,6 +43,7 @@ complete -c air -n "__fish_air_needs_command" -f -a "format" -d 'Format a set of
 complete -c air -n "__fish_air_needs_command" -f -a "language-server" -d 'Start a language server'
 complete -c air -n "__fish_air_needs_command" -f -a "generate-shell-completion" -d 'Generate shell completion scripts'
 complete -c air -n "__fish_air_needs_command" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
+complete -c air -n "__fish_air_using_subcommand format" -l stdin-file-path -d 'Use this option to enable reading from stdin and writing to stdout. This specifies a file path to associate the standard input with, which is used as the location to begin searching for configuration files from. The file does not have to exist and will not be read from. If a relative path is provided, it is resolved from the current working directory. If this option is specified, no other files or directories can be provided' -r -F
 complete -c air -n "__fish_air_using_subcommand format" -l log-level -d 'The log level [default: warn]' -r -f -a "error\t''
 warn\t''
 info\t''
