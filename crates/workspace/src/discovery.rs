@@ -56,6 +56,13 @@ pub fn discover_settings<P: AsRef<Path>>(paths: &[P]) -> anyhow::Result<Vec<Disc
         }
     }
 
+    for discovered_setting in &discovered_settings {
+        tracing::trace!(
+            "Discovered settings at '{directory}'",
+            directory = discovered_setting.directory.display()
+        );
+    }
+
     // TODO(hierarchical): Also iterate into the directories and collect `air.toml`
     // found nested withing the directories for hierarchical support
 

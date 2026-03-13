@@ -1,0 +1,13 @@
+---
+source: crates/air/tests/integration/format.rs
+expression: "Command::new(binary_path()).current_dir(directory).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped()).arg(\"format\").arg(\"--stdin-file-path\").arg(test_path).arg(\"--no-color\").run_with_stdin(test_contents.to_string()).remove_arguments()"
+---
+success: false
+exit_code: 255
+----- stdout -----
+
+----- stderr -----
+ERROR Failed to format stdin: Failed to parse due to syntax errors.
+
+----- args -----
+<removed>

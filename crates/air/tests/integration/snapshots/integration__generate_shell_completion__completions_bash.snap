@@ -72,12 +72,16 @@ _air() {
             return 0
             ;;
         air__format)
-            opts="-h --check --log-level --no-color --help [PATHS]..."
+            opts="-h --check --stdin-file-path --log-level --no-color --help [PATHS]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
+                --stdin-file-path)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 --log-level)
                     COMPREPLY=($(compgen -W "error warn info debug trace" -- "${cur}"))
                     return 0
