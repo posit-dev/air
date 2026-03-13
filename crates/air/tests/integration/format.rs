@@ -264,13 +264,6 @@ fn test_stdin_uses_default_air_toml_settings() -> anyhow::Result<()> {
     let test_contents = "1+\n1";
     std::fs::write(directory.join(test_path), test_contents)?;
 
-    let air_path = "air.toml";
-    let air_contents = r#"
-[format]
-indent-width = 4
-"#;
-    std::fs::write(directory.join(air_path), air_contents)?;
-
     // Running in `directory` with a relative path to `test_path`. No `air.toml` found in
     // `directory` or its ancestors, so we use default settings.
     insta::assert_snapshot!(

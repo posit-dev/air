@@ -6,7 +6,7 @@ success: true
 exit_code: 0
 ----- stdout -----
 1 +
-    1
+  1
 
 ----- stderr -----
 
