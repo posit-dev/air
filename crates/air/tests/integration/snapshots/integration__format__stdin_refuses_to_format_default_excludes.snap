@@ -5,8 +5,7 @@ expression: "Command::new(binary_path()).current_dir(directory).stdin(Stdio::pip
 success: true
 exit_code: 0
 ----- stdout -----
-1 + 1
-
+1+1
 ----- stderr -----
 
 ----- args -----

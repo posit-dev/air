@@ -2,6 +2,10 @@
 
 # Development version
 
+- Air's behavior relating to directly supplied files and the `exclude` / `default-exclude` options has changed to be safer by default. Previously, `air format cpp11.R` would format `cpp11.R`, even though it was part of the set of `default-exclude`s, because we assumed that a direct request from a user like this could override these rules. However, tools such as pre-commit or IDEs that format via stdin will blindly call `air format` on any file that changes and have no knowledge of whether that file should be excluded or not. For this reason, we now exclude files that match `exclude` or `default-exclude` patterns even if they are directly supplied on the command line.
+
+  Similarly, `air format my.qmd` no longer attempts to format `my.qmd`. This file is not excluded by `exclude` or `default-exclude`, but is also not included by our internal set of `default-include`s, which currently only accept `.R` and `.r` files. Rather than blindly trying to format this directly supplied file, Air now ignores it (#476).
+
 - New `air generate-shell-completion <SHELL>` hidden command that emits a script to stdout that generates shell completions. Supports bash, zsh, fish, powershell, and elvish (#477, @salim-b).
 
   For zsh, run the following to add to your `.zshrc`:

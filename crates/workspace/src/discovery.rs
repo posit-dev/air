@@ -6,11 +6,15 @@
 //
 
 use ignore::DirEntry;
+use ignore::gitignore::Glob;
 use rustc_hash::FxHashSet;
 use std::path::Path;
 use std::path::PathBuf;
 
 use crate::resolve::PathResolver;
+use crate::settings::DefaultExcludePatterns;
+use crate::settings::DefaultIncludePatterns;
+use crate::settings::ExcludePatterns;
 use crate::settings::Settings;
 use crate::toml::find_air_toml_in_directory;
 use crate::toml::parse_air_toml;
@@ -81,6 +85,16 @@ fn parse_settings(toml: &Path, root_directory: &Path) -> anyhow::Result<Settings
 
 type DiscoveredFiles = Vec<Result<PathBuf, ignore::Error>>;
 
+/// File discovery mode
+///
+/// Currently only for the formatter, but it is likely we would use the same
+/// infrastructure for a linter, but with different `exclude` and `include` rules.
+#[derive(Debug)]
+pub enum FileDiscoveryMode {
+    /// Use formatter specific `exclude` and `include` rules
+    Format,
+}
+
 /// For each provided `path`, recursively search for any R files within that `path`
 /// that match our inclusion criteria
 ///
@@ -89,7 +103,7 @@ type DiscoveredFiles = Vec<Result<PathBuf, ignore::Error>>;
 pub fn discover_r_file_paths<P: AsRef<Path>>(
     paths: &[P],
     resolver: &PathResolver<Settings>,
-    use_format_settings: bool,
+    mode: FileDiscoveryMode,
 ) -> DiscoveredFiles {
     let paths: Vec<PathBuf> = paths.iter().map(fs::normalize_path).collect();
 
@@ -127,7 +141,7 @@ pub fn discover_r_file_paths<P: AsRef<Path>>(
     let walker = builder.build_parallel();
 
     // Run the `WalkParallel` to collect all R files.
-    let state = FilesState::new(resolver, use_format_settings);
+    let state = FilesState::new(resolver, mode);
     let mut visitor_builder = FilesVisitorBuilder::new(&state);
     walker.visit(&mut visitor_builder);
 
@@ -138,15 +152,15 @@ pub fn discover_r_file_paths<P: AsRef<Path>>(
 struct FilesState<'resolver> {
     files: std::sync::Mutex<DiscoveredFiles>,
     resolver: &'resolver PathResolver<Settings>,
-    use_format_settings: bool,
+    mode: FileDiscoveryMode,
 }
 
 impl<'resolver> FilesState<'resolver> {
-    fn new(resolver: &'resolver PathResolver<Settings>, use_format_settings: bool) -> Self {
+    fn new(resolver: &'resolver PathResolver<Settings>, mode: FileDiscoveryMode) -> Self {
         Self {
             files: std::sync::Mutex::new(Vec::new()),
             resolver,
-            use_format_settings,
+            mode,
         }
     }
 
@@ -218,45 +232,90 @@ impl ignore::ParallelVisitor for FilesVisitor<'_, '_> {
             }
         };
 
+        match self.state.mode {
+            FileDiscoveryMode::Format => self.visit_format(entry),
+        }
+    }
+}
+
+impl FilesVisitor<'_, '_> {
+    /// Visit each entry using formatter specific `exclude` and `include` rules
+    fn visit_format(&mut self, entry: DirEntry) -> ignore::WalkState {
         let path = entry.path();
 
-        // An entry is explicit if it was provided directly, not discovered by looking into a directory
-        let is_explicit = entry.depth() == 0;
-        let is_directory = entry.file_type().is_none_or(|ft| ft.is_dir());
+        // An entry is directly supplied if the user provided it directly on the command
+        // line, and it was not discovered by looking into a directory
+        let is_directly_supplied = entry.depth() == 0;
 
-        if is_explicit && !is_directory {
-            // Accept explicitly provided files, regardless of exclusion/inclusion
-            // criteria (including extension). This is the user supplying `air format
-            // file.R`. Note we don't do this for directories, i.e. `air format renv`
-            // should do nothing since we have a default `exclude` for `renv/`.
-            tracing::trace!(
-                "Included file due to explicit provision {path}",
-                path = path.display()
-            );
-            self.files.push(Ok(entry.into_path()));
-            return ignore::WalkState::Continue;
-        }
+        let is_directory = entry.file_type().is_none_or(|ft| ft.is_dir());
 
         // Retrieve the settings for this `path`
         let settings = self.state.resolver.resolve_or_fallback(path);
 
-        if self.is_excluded(path, is_directory, settings) {
-            // Skip this file, and if it is a directory skip all of its children!
+        // Throw out any directly supplied `path` where the path itself or any parent is
+        // excluded. For example, `air format cpp11.R` is immediately skipped since
+        // `**/cpp11.R` is an excluded pattern. Similarly, `air format renv/activate.R`
+        // and `air format renv/subdir/` are immediately skipped since `**/renv/` is an
+        // excluded pattern and we look at the directly supplied path's parents.
+        if is_directly_supplied
+            && let Some(glob) = any_exclude_matched_path_or_any_parents(
+                path,
+                is_directory,
+                settings.format.exclude.as_ref(),
+                settings.format.default_exclude.as_ref(),
+            )
+        {
+            tracing::trace!(
+                "Excluded due to '{glob}': {path}",
+                glob = glob.original(),
+                path = path.display()
+            );
             return ignore::WalkState::Skip;
         }
 
-        if self.is_included(path, is_directory, settings) {
-            // Accept this file
-            self.files.push(Ok(entry.into_path()));
+        // If this `path` was found from recursive search, don't check the path's parents
+        // when looking at exclusion rules
+        if !is_directly_supplied
+            && let Some(glob) = any_exclude_matched_path(
+                path,
+                is_directory,
+                settings.format.exclude.as_ref(),
+                settings.format.default_exclude.as_ref(),
+            )
+        {
+            tracing::trace!(
+                "Excluded due to '{glob}': {path}",
+                glob = glob.original(),
+                path = path.display()
+            );
+            return ignore::WalkState::Skip;
+        }
+
+        if is_directory {
+            // Recurse into any directory that hasn't been excluded
             return ignore::WalkState::Continue;
         }
 
-        // Didn't accept this file, just keep going
-        tracing::trace!(
-            "Excluded file due to fallthrough {path}",
-            path = path.display()
-        );
-        ignore::WalkState::Continue
+        // Files that haven't been excluded are only included if they match a
+        // `default_include` pattern, even if they are directly supplied by the user!
+        match any_include_matched_path(path, settings.format.default_include.as_ref()) {
+            Some(glob) => {
+                tracing::trace!(
+                    "Included due to '{glob}': {path}",
+                    glob = glob.original(),
+                    path = path.display()
+                );
+                self.files.push(Ok(entry.into_path()));
+                ignore::WalkState::Continue
+            }
+            None => {
+                tracing::trace!(
+                    "Excluded due to not matching an include: {path}",
+                    path = path.display()
+                );
+                ignore::WalkState::Continue
+            }
+        }
     }
 }
 
@@ -275,62 +334,71 @@ impl Drop for FilesVisitor<'_, '_> {
     }
 }
 
-impl FilesVisitor<'_, '_> {
-    fn is_excluded(&self, path: &Path, is_directory: bool, settings: &Settings) -> bool {
-        // Consult the format specific patterns if we are in a format context
-        if self.state.use_format_settings {
-            if let Some(glob) = settings
-                .format
-                .exclude
-                .as_ref()
-                .and_then(|exclude| exclude.matched(path, is_directory))
-            {
-                tracing::trace!(
-                    "Excluded file due to '{glob}' in `format.exclude` {path}",
-                    glob = glob.original(),
-                    path = path.display()
-                );
-                return true;
-            }
+/// Returns the glob that matches this `path`, or `None` if no glob matches
+///
+/// Does not search parents, so a path of `renv/activate.R` would not match
+/// a pattern of `**/renv/`
+fn any_exclude_matched_path<'patterns, P: AsRef<Path>>(
+    path: P,
+    is_directory: bool,
+    exclude: Option<&'patterns ExcludePatterns>,
+    default_exclude: Option<&'patterns DefaultExcludePatterns>,
+) -> Option<&'patterns Glob> {
+    let path = path.as_ref();
 
-            if let Some(glob) = settings
-                .format
-                .default_exclude
-                .as_ref()
-                .and_then(|default_exclude| default_exclude.matched(path, is_directory))
-            {
-                tracing::trace!(
-                    "Excluded file due to '{glob}' in `format.default_exclude` {path}",
-                    glob = glob.original(),
-                    path = path.display()
-                );
-                return true;
-            }
-        }
-
-        false
+    if let Some(glob) = exclude.and_then(|exclude| exclude.matched(path, is_directory)) {
+        return Some(glob);
     }
 
-    fn is_included(&self, path: &Path, is_directory: bool, settings: &Settings) -> bool {
-        // Consult the format specific patterns if we are in a format context
-        if self.state.use_format_settings {
-            if let Some(glob) = settings
-                .format
-                .default_include
-                .as_ref()
-                .and_then(|default_include| default_include.matched(path, is_directory))
-            {
-                tracing::trace!(
-                    "Included file due to '{glob}' in `format.default_include` {path}",
-                    glob = glob.original(),
-                    path = path.display()
-                );
-                return true;
-            }
-        }
-
-        false
+    if let Some(glob) =
+        default_exclude.and_then(|default_exclude| default_exclude.matched(path, is_directory))
+    {
+        return Some(glob);
     }
+
+    None
+}
+
+/// Returns the glob that matches this `path`, or `None` if no glob matches
+///
+/// Searches parents, so a path of `renv/activate.R` would match a pattern of `**/renv/`,
+/// but this has a performance cost, so should only be used when necessary.
+pub fn any_exclude_matched_path_or_any_parents<'patterns, P: AsRef<Path>>(
+    path: P,
+    is_directory: bool,
+    exclude: Option<&'patterns ExcludePatterns>,
+    default_exclude: Option<&'patterns DefaultExcludePatterns>,
+) -> Option<&'patterns Glob> {
+    let path = path.as_ref();
+
+    if let Some(glob) =
+        exclude.and_then(|exclude| exclude.matched_path_or_any_parents(path, is_directory))
+    {
+        return Some(glob);
+    }
+
+    if let Some(glob) = default_exclude
+        .and_then(|default_exclude| default_exclude.matched_path_or_any_parents(path, is_directory))
+    {
+        return Some(glob);
+    }
+
+    None
+}
+
+/// Returns the glob that matches this `path`, or `None` if no glob matches
+///
+/// Includes are only about files, so this is only ever called on a file and never a
+/// directory
+pub fn any_include_matched_path<P: AsRef<Path>>(
+    path: P,
+    default_include: Option<&DefaultIncludePatterns>,
+) -> Option<&Glob> {
+    const IS_DIRECTORY: bool = false;
+
+    let path = path.as_ref();
+
+    default_include.and_then(|default_include| default_include.matched(path, IS_DIRECTORY))
 }
 
 #[cfg(test)]
@@ -338,6 +406,7 @@ mod test {
     use anyhow::Context;
     use tempfile::TempDir;
 
+    use crate::discovery::FileDiscoveryMode;
     use crate::discovery::discover_r_file_paths;
     use crate::discovery::discover_settings;
     use crate::resolve::PathResolver;
@@ -360,7 +429,7 @@ mod test {
 
         let resolver = PathResolver::new(Settings::default());
 
-        let mut paths = discover_r_file_paths(&[tempdir], &resolver, true);
+        let mut paths = discover_r_file_paths(&[tempdir], &resolver, FileDiscoveryMode::Format);
 
         assert_eq!(paths.len(), 2);
         let mut paths = [paths.pop().unwrap()?, paths.pop().unwrap()?];
@@ -375,12 +444,84 @@ mod test {
     }
 
     #[test]
+    fn test_default_includes_respected_during_recursive_discovery() -> anyhow::Result<()> {
+        let tempdir = TempDir::new()?;
+        let tempdir = tempdir.path();
+
+        let test_r = tempdir.join("test.R");
+        let test_py = tempdir.join("test.py");
+
+        std::fs::write(&test_r, b"")?;
+        std::fs::write(&test_py, b"")?;
+
+        let resolver = PathResolver::new(Settings::default());
+
+        let mut paths = discover_r_file_paths(&[tempdir], &resolver, FileDiscoveryMode::Format);
+
+        assert_eq!(paths.len(), 1);
+        let path = paths.pop().unwrap()?;
+
+        assert_eq!(path, test_r);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_default_includes_respected_for_directly_supplied_paths() -> anyhow::Result<()> {
+        let tempdir = TempDir::new()?;
+        let tempdir = tempdir.path();
+
+        let test_big_r = tempdir.join("test1.R");
+        let test_little_r = tempdir.join("test2.r");
+        let test_qmd = tempdir.join("test3.qmd");
+
+        std::fs::write(&test_big_r, b"")?;
+        std::fs::write(&test_little_r, b"")?;
+        std::fs::write(&test_qmd, b"")?;
+
+        {
+            // `{tempdir}/test1.R`
+            // Part of default includes, so accepted
+            let start = &[&test_big_r];
+            let resolver = PathResolver::new(Settings::default());
+            let mut paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            assert_eq!(paths.len(), 1);
+            assert_eq!(paths.pop().unwrap().unwrap(), test_big_r);
+        }
+
+        {
+            // `{tempdir}/test2.r`
+            // Part of default includes, so accepted
+            let start = &[&test_little_r];
+            let resolver = PathResolver::new(Settings::default());
+            let mut paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            assert_eq!(paths.len(), 1);
+            assert_eq!(paths.pop().unwrap().unwrap(), test_little_r);
+        }
+
+        {
+            // `{tempdir}/test3.qmd`
+            // Not part of default includes, so rejected even though the user supplied it
+            // directly. Historically this has proven to be important, because people will
+            // do `air format my.qmd` and be surprised if by chance it parses then happens
+            // to bork their qmd.
+            let start = &[&test_qmd];
+            let resolver = PathResolver::new(Settings::default());
+            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            assert_eq!(paths.len(), 0);
+        }
+
+        Ok(())
+    }
+
+    #[test]
     fn test_default_exclude_patterns() -> anyhow::Result<()> {
         let tempdir = TempDir::new()?;
         let tempdir = tempdir.path();
 
         std::fs::create_dir(tempdir.join("R"))?;
         std::fs::create_dir(tempdir.join("renv"))?;
+        std::fs::create_dir(tempdir.join("renv").join("subdir"))?;
         std::fs::create_dir(tempdir.join("revdep"))?;
         std::fs::create_dir(tempdir.join("revdep").join("pkg"))?;
 
@@ -396,21 +537,61 @@ mod test {
         std::fs::write(tempdir.join("R").join("extendr-wrappers.R"), b"")?;
         std::fs::write(tempdir.join("R").join("import-standalone-types.R"), b"")?;
 
-        let resolver = PathResolver::new(Settings::default());
+        {
+            // `{tempdir}`
+            // Folder containing folders and files that match default excludes
+            let start = &[tempdir];
+            let resolver = PathResolver::new(Settings::default());
+            let mut paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            assert_eq!(paths.len(), 1);
+            assert_eq!(paths.pop().unwrap().unwrap(), test_path);
+        }
 
-        let mut paths = discover_r_file_paths(&[tempdir], &resolver, true);
+        {
+            // `{tempdir}/R/cpp11.R`
+            // Directly supplied file matching default excludes is excluded
+            // https://github.com/posit-dev/air/issues/472
+            let start = &[tempdir.join("R").join("cpp11.R")];
+            let resolver = PathResolver::new(Settings::default());
+            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            assert_eq!(paths.len(), 0);
+        }
 
-        assert_eq!(paths.len(), 1);
-        assert_eq!(
-            paths.pop().context("Should have a path")?.unwrap(),
-            test_path
-        );
+        {
+            // `{tempdir}/renv`
+            // Directly supplied directory matching default excludes is excluded
+            // https://github.com/posit-dev/air/issues/472
+            let start = &[tempdir.join("renv")];
+            let resolver = PathResolver::new(Settings::default());
+            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            assert_eq!(paths.len(), 0);
+        }
+
+        {
+            // `{tempdir}/renv/activate.R`
+            // Directly supplied file with parent matching default excludes is excluded
+            // https://github.com/posit-dev/air/issues/472
+            let start = &[tempdir.join("renv").join("activate.R")];
+            let resolver = PathResolver::new(Settings::default());
+            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            assert_eq!(paths.len(), 0);
+        }
+
+        {
+            // `{tempdir}/renv/subdir/`
+            // Directly supplied directory with parent matching default excludes is excluded
+            // https://github.com/posit-dev/air/issues/472
+            let start = &[tempdir.join("renv").join("subdir")];
+            let resolver = PathResolver::new(Settings::default());
+            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            assert_eq!(paths.len(), 0);
+        }
 
         Ok(())
     }
 
     #[test]
-    fn test_excludes_directory_children() -> anyhow::Result<()> {
+    fn test_user_exclude_patterns() -> anyhow::Result<()> {
         let tempdir = TempDir::new()?;
         let tempdir = tempdir.path();
 
@@ -421,22 +602,120 @@ exclude = ["exclude/"]
 "#;
         std::fs::write(&air_path, air_contents)?;
 
-        std::fs::create_dir(tempdir.join("R"))?;
         std::fs::create_dir(tempdir.join("exclude"))?;
         std::fs::create_dir(tempdir.join("exclude").join("subdir"))?;
 
-        // Exclude all of these
+        // Should always exclude all of these
         std::fs::write(tempdir.join("exclude").join("test.R"), b"")?;
         std::fs::write(tempdir.join("exclude").join("subdir").join("test.R"), b"")?;
 
-        let mut resolver = PathResolver::new(Settings::default());
+        {
+            // `{tempdir}`
+            let start = &[tempdir];
 
-        let mut settings = discover_settings(&[tempdir])?;
-        let settings = settings.pop().context("Should find air.toml")?;
-        resolver.add(&settings.directory, settings.settings);
+            let mut settings = discover_settings(start)?;
+            let settings = settings.pop().context("Should find air.toml")?;
 
-        let paths = discover_r_file_paths(&[tempdir], &resolver, true);
-        assert!(paths.is_empty());
+            let mut resolver = PathResolver::new(Settings::default());
+            resolver.add(&settings.directory, settings.settings);
+
+            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            assert!(paths.is_empty());
+        }
+
+        {
+            // `{tempdir}/exclude/`
+            // Directly supplied directory matching user exclude is excluded
+            // https://github.com/posit-dev/air/issues/472
+            let start = &[tempdir.join("exclude")];
+
+            let mut settings = discover_settings(start)?;
+            let settings = settings.pop().context("Should find air.toml")?;
+
+            let mut resolver = PathResolver::new(Settings::default());
+            resolver.add(&settings.directory, settings.settings);
+
+            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            assert!(paths.is_empty());
+        }
+
+        {
+            // `{tempdir}/exclude/test.R`
+            // Directly supplied file with parent matching user exclude is excluded
+            // https://github.com/posit-dev/air/issues/472
+            let start = &[tempdir.join("exclude").join("test.R")];
+
+            let mut settings = discover_settings(start)?;
+            let settings = settings.pop().context("Should find air.toml")?;
+
+            let mut resolver = PathResolver::new(Settings::default());
+            resolver.add(&settings.directory, settings.settings);
+
+            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            assert!(paths.is_empty());
+        }
+
+        {
+            // `{tempdir}/exclude/subdir/`
+            // Directly supplied folder with parent matching user exclude is excluded
+            // https://github.com/posit-dev/air/issues/472
+            let start = &[tempdir.join("exclude").join("subdir")];
+
+            let mut settings = discover_settings(start)?;
+            let settings = settings.pop().context("Should find air.toml")?;
+
+            let mut resolver = PathResolver::new(Settings::default());
+            resolver.add(&settings.directory, settings.settings);
+
+            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            assert!(paths.is_empty());
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_gitignore() -> anyhow::Result<()> {
+        let tempdir = TempDir::new()?;
+        let tempdir = tempdir.path();
+
+        // You have to create a `.git` directory for `ignore` to respect `.gitignore` by default
+        std::fs::create_dir(tempdir.join(".git"))?;
+
+        let gitignore_path = tempdir.join(".gitignore");
+        let gitignore_contents = r#"
+ignore/
+"#;
+        std::fs::write(&gitignore_path, gitignore_contents)?;
+
+        std::fs::create_dir(tempdir.join("ignore"))?;
+        std::fs::create_dir(tempdir.join("ignore").join("subdir"))?;
+
+        std::fs::write(tempdir.join("ignore").join("test.R"), b"")?;
+        std::fs::write(tempdir.join("ignore").join("subdir").join("test.R"), b"")?;
+
+        {
+            // `{tempdir}/`
+            // When `ignore/` is "discovered" via recursive search, the `.gitignore` is respected
+            let start = &[tempdir];
+            let resolver = PathResolver::new(Settings::default());
+            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            assert!(paths.is_empty());
+        }
+
+        {
+            // `{tempdir}/ignore/`
+            // When `ignore/` is directly provided, `.gitignore` is bypassed unlike our
+            // `exclude` behavior that searches the parents of any user provided
+            // directories. This is {ignore} specific behavior that we don't control, and
+            // {ignore}'s author prefers this. It's probably not a very big deal, because
+            // it's unlikely that a user (or pre-commit or RStudio) will call `air format
+            // <folder-that-has-been-gitignored>` directly.
+            let start = &[tempdir.join("ignore")];
+            let resolver = PathResolver::new(Settings::default());
+            let paths = discover_r_file_paths(start, &resolver, FileDiscoveryMode::Format);
+            assert_eq!(paths.len(), 2);
+        }
 
         Ok(())
     }
