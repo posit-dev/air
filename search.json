@@ -120,6 +120,16 @@
     ]
   },
   {
+    "objectID": "cli.html#git",
+    "href": "cli.html#git",
+    "title": "Command line interface",
+    "section": "Git",
+    "text": "Git\nAir respects your .gitignore while performing file discovery, i.e. while looking for R files within folder/ when running air format folder/. For example, with a project level .gitignore containing scratch/, a call to air format . would refuse to search within a scratch/ folder.\n.gitignore works slightly differently from exclude with directly supplied files and folders. For a call to air format file.R:\n\nIf you have an exclude of exclude = [\"file.R\"], then Air would refuse to format file.R even though it was directly supplied.\nIf your .gitignore contains file.R, then Air would still format file.R.\n\nSimilarly, a call to air format folder/ would be refused with exclude = [\"folder/\"], but would be searched with a .gitignore containing folder/.\nThese differences are mostly for technical reasons, and we hope they do not cause many practical difficulties.",
+    "crumbs": [
+      "Command line"
+    ]
+  },
+  {
     "objectID": "editor-vscode.html",
     "href": "editor-vscode.html",
     "title": "VS Code and Positron",

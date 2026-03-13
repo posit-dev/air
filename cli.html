@@ -262,6 +262,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#stdin" id="toc-stdin" class="nav-link" data-scroll-target="#stdin">Stdin</a></li>
   <li><a href="#shell-completions" id="toc-shell-completions" class="nav-link" data-scroll-target="#shell-completions">Shell completions</a></li>
+  <li><a href="#git" id="toc-git" class="nav-link" data-scroll-target="#git">Git</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/posit-dev/air/blob/main/docs/cli.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/posit-dev/air/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -358,6 +359,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
+</section>
+<section id="git" class="level2">
+<h2 class="anchored" data-anchor-id="git">Git</h2>
+<p>Air respects your <code>.gitignore</code> while performing file discovery, i.e.&nbsp;while looking for R files within <code>folder/</code> when running <code>air format folder/</code>. For example, with a project level <code>.gitignore</code> containing <code>scratch/</code>, a call to <code>air format .</code> would refuse to search within a <code>scratch/</code> folder.</p>
+<p><code>.gitignore</code> works slightly differently from <code>exclude</code> with directly supplied files and folders. For a call to <code>air format file.R</code>:</p>
+<ul>
+<li><p>If you have an <code>exclude</code> of <code>exclude = ["file.R"]</code>, then Air would refuse to format <code>file.R</code> even though it was directly supplied.</p></li>
+<li><p>If your <code>.gitignore</code> contains <code>file.R</code>, then Air would still format <code>file.R</code>.</p></li>
+</ul>
+<p>Similarly, a call to <code>air format folder/</code> would be refused with <code>exclude = ["folder/"]</code>, but would be searched with a <code>.gitignore</code> containing <code>folder/</code>.</p>
+<p>These differences are mostly for technical reasons, and we hope they do not cause many practical difficulties.</p>
 
 
 </section>
