@@ -4,7 +4,7 @@
 
 Air is an R language server and formatter written in Rust. Workspace crate layout under `crates/` with a CLI binary in `crates/air/`.
 
-- Edition 2024, Rust 1.87+
+- Rust edition and version are reported in workspace level `Cargo.toml`
 - Uses `biome_formatter` for the formatting engine and `ignore` crate for file walking
 - Config file: `air.toml` discovered by walking up directory ancestors
 - Snapshot testing with `insta`
