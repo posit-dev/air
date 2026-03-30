@@ -27,14 +27,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: "Install rust"
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
-          targets: ${{ matrix.this.target }}
+      - name: "Install rust toolchain (rust-toolchain.toml)"
+        run: |
+          rustup toolchain install
+          rustup show
 
-      - name: "Report rust toolchain"
-        run: rustup show
+      - name: "Install rust target"
+        run: |
+          rustup target add ${{ matrix.this.target }}
+          rustup target list --installed
 
       - name: "Build"
         run: cargo build --release --locked --target ${{ matrix.this.target }} -p air

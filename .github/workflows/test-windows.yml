@@ -7,20 +7,19 @@ on:
 jobs:
   windows:
     runs-on: windows-latest
-    name: "Rust: ${{ matrix.config.rust }}"
+    name: "Rust: stable"
     strategy:
       fail-fast: false
-      matrix:
-        config:
-          - { rust: 'stable' }
     timeout-minutes: 30
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Report rust toolchain
-        run: rustup show
+      - name: Install rust toolchain (rust-toolchain.toml)
+        run: |
+          rustup toolchain install
+          rustup show
 
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
