@@ -38,6 +38,8 @@ When you want to cut a release of Air:
 
     -   In `python/pyproject.toml`, bump the version.
 
+    -   In `README.md` and `cli.qmd`, update `releases/download/{version}` to the latest version.
+
     -   In `editors/code/package.json`, bump the minor version to the next even number for standard releases, or to the next odd number for preview releases.
 
     -   Open a PR with these changes.
