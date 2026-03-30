@@ -3,9 +3,6 @@ name: "Build Linux"
 on:
   workflow_call:
 
-env:
-  RUST_TOOLCHAIN: "1.87"
-
 jobs:
   build:
     name: "Build Linux (${{ matrix.this.target }})"
