@@ -27,6 +27,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Docker container doesn't come with rustup
+      - name: "Install rustup"
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain none
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
       - name: "Install rust toolchain (rust-toolchain.toml)"
         run: |
           rustup toolchain install
