@@ -23,6 +23,7 @@ jobs:
     timeout-minutes: 30
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      RUSTUP_TOOLCHAIN: ${{ matrix.config.rust == 'nightly' && 'nightly' || '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -30,12 +31,10 @@ jobs:
         run: |
           sudo apt-get update
 
-      - name: Install nightly rust
-        uses: dtolnay/rust-toolchain@nightly
-        if: matrix.config.rust == 'nightly'
-
-      - name: Report rust toolchain
-        run: rustup show
+      - name: Install rust toolchain (rust-toolchain.toml / RUSTUP_TOOLCHAIN)
+        run: |
+          rustup toolchain install
+          rustup show
 
       - name: Rust cache
         uses: Swatinem/rust-cache@v2

@@ -27,14 +27,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: "Install rust"
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
-          targets: ${{ matrix.this.target }}
+      # Docker container doesn't come with rustup
+      - name: "Install rustup"
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain none
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
-      - name: "Report rust toolchain"
-        run: rustup show
+      - name: "Install rust toolchain (rust-toolchain.toml)"
+        run: |
+          rustup toolchain install
+          rustup show
+
+      - name: "Install rust target"
+        run: |
+          rustup target add ${{ matrix.this.target }}
+          rustup target list --installed
 
       - name: "Build"
         run: cargo build --release --locked --target ${{ matrix.this.target }} -p air
