@@ -26,11 +26,11 @@ The very first time you install Air, for the `PATH` modifications to be applied 
 For a specific version:
 
 ``` bash
-curl -LsSf https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.sh | sh
+curl -LsSf https://github.com/posit-dev/air/releases/download/0.9.0/air-installer.sh | sh
 ```
 
 ``` powershell
-powershell -ExecutionPolicy Bypass -c "irm https://github.com/posit-dev/air/releases/download/0.1.1/air-installer.ps1 | iex"
+powershell -ExecutionPolicy Bypass -c "irm https://github.com/posit-dev/air/releases/download/0.9.0/air-installer.ps1 | iex"
 ```
 
 If you're on macOS and are familiar with [Homebrew](https://brew.sh/), you can alternatively install the [air formula](https://formulae.brew.sh/formula/air) with:
