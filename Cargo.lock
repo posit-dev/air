@@ -232,7 +232,7 @@ dependencies = [
 [[package]]
 name = "biome_console"
 version = "0.5.7"
-source = "git+https://github.com/lionel-/biome?rev=41d799cfa4cedd25625fc3f6bd7898532873f051#41d799cfa4cedd25625fc3f6bd7898532873f051"
+source = "git+https://github.com/lionel-/biome?rev=a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9#a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9"
 dependencies = [
  "biome_markup",
  "biome_text_size",
@@ -245,7 +245,7 @@ dependencies = [
 [[package]]
 name = "biome_deserialize"
 version = "0.6.0"
-source = "git+https://github.com/lionel-/biome?rev=41d799cfa4cedd25625fc3f6bd7898532873f051#41d799cfa4cedd25625fc3f6bd7898532873f051"
+source = "git+https://github.com/lionel-/biome?rev=a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9#a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9"
 dependencies = [
  "biome_console",
  "biome_diagnostics",
@@ -260,7 +260,7 @@ dependencies = [
 [[package]]
 name = "biome_deserialize_macros"
 version = "0.6.0"
-source = "git+https://github.com/lionel-/biome?rev=41d799cfa4cedd25625fc3f6bd7898532873f051#41d799cfa4cedd25625fc3f6bd7898532873f051"
+source = "git+https://github.com/lionel-/biome?rev=a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9#a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9"
 dependencies = [
  "biome_string_case",
  "proc-macro-error2",
@@ -272,7 +272,7 @@ dependencies = [
 [[package]]
 name = "biome_diagnostics"
 version = "0.5.7"
-source = "git+https://github.com/lionel-/biome?rev=41d799cfa4cedd25625fc3f6bd7898532873f051#41d799cfa4cedd25625fc3f6bd7898532873f051"
+source = "git+https://github.com/lionel-/biome?rev=a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9#a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9"
 dependencies = [
  "backtrace",
  "biome_console",
@@ -292,7 +292,7 @@ dependencies = [
 [[package]]
 name = "biome_diagnostics_categories"
 version = "0.5.7"
-source = "git+https://github.com/lionel-/biome?rev=41d799cfa4cedd25625fc3f6bd7898532873f051#41d799cfa4cedd25625fc3f6bd7898532873f051"
+source = "git+https://github.com/lionel-/biome?rev=a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9#a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9"
 dependencies = [
  "quote",
  "serde",
@@ -301,7 +301,7 @@ dependencies = [
 [[package]]
 name = "biome_diagnostics_macros"
 version = "0.5.7"
-source = "git+https://github.com/lionel-/biome?rev=41d799cfa4cedd25625fc3f6bd7898532873f051#41d799cfa4cedd25625fc3f6bd7898532873f051"
+source = "git+https://github.com/lionel-/biome?rev=a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9#a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9"
 dependencies = [
  "proc-macro-error2",
  "proc-macro2",
@@ -312,7 +312,7 @@ dependencies = [
 [[package]]
 name = "biome_formatter"
 version = "0.5.7"
-source = "git+https://github.com/lionel-/biome?rev=41d799cfa4cedd25625fc3f6bd7898532873f051#41d799cfa4cedd25625fc3f6bd7898532873f051"
+source = "git+https://github.com/lionel-/biome?rev=a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9#a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9"
 dependencies = [
  "biome_console",
  "biome_deserialize",
@@ -333,7 +333,7 @@ dependencies = [
 [[package]]
 name = "biome_json_factory"
 version = "0.5.7"
-source = "git+https://github.com/lionel-/biome?rev=41d799cfa4cedd25625fc3f6bd7898532873f051#41d799cfa4cedd25625fc3f6bd7898532873f051"
+source = "git+https://github.com/lionel-/biome?rev=a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9#a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9"
 dependencies = [
  "biome_json_syntax",
  "biome_rowan",
@@ -342,7 +342,7 @@ dependencies = [
 [[package]]
 name = "biome_json_parser"
 version = "0.5.7"
-source = "git+https://github.com/lionel-/biome?rev=41d799cfa4cedd25625fc3f6bd7898532873f051#41d799cfa4cedd25625fc3f6bd7898532873f051"
+source = "git+https://github.com/lionel-/biome?rev=a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9#a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9"
 dependencies = [
  "biome_console",
  "biome_diagnostics",
@@ -358,7 +358,7 @@ dependencies = [
 [[package]]
 name = "biome_json_syntax"
 version = "0.5.7"
-source = "git+https://github.com/lionel-/biome?rev=41d799cfa4cedd25625fc3f6bd7898532873f051#41d799cfa4cedd25625fc3f6bd7898532873f051"
+source = "git+https://github.com/lionel-/biome?rev=a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9#a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9"
 dependencies = [
  "biome_rowan",
  "biome_string_case",
@@ -369,7 +369,7 @@ dependencies = [
 [[package]]
 name = "biome_line_index"
 version = "0.1.0"
-source = "git+https://github.com/lionel-/biome?rev=41d799cfa4cedd25625fc3f6bd7898532873f051#41d799cfa4cedd25625fc3f6bd7898532873f051"
+source = "git+https://github.com/lionel-/biome?rev=a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9#a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9"
 dependencies = [
  "biome_text_size",
  "rustc-hash",
@@ -378,7 +378,7 @@ dependencies = [
 [[package]]
 name = "biome_markup"
 version = "0.5.7"
-source = "git+https://github.com/lionel-/biome?rev=41d799cfa4cedd25625fc3f6bd7898532873f051#41d799cfa4cedd25625fc3f6bd7898532873f051"
+source = "git+https://github.com/lionel-/biome?rev=a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9#a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9"
 dependencies = [
  "proc-macro-error2",
  "proc-macro2",
@@ -388,7 +388,7 @@ dependencies = [
 [[package]]
 name = "biome_parser"
 version = "0.5.7"
-source = "git+https://github.com/lionel-/biome?rev=41d799cfa4cedd25625fc3f6bd7898532873f051#41d799cfa4cedd25625fc3f6bd7898532873f051"
+source = "git+https://github.com/lionel-/biome?rev=a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9#a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9"
 dependencies = [
  "biome_console",
  "biome_diagnostics",
@@ -402,7 +402,7 @@ dependencies = [
 [[package]]
 name = "biome_rowan"
 version = "0.5.7"
-source = "git+https://github.com/lionel-/biome?rev=41d799cfa4cedd25625fc3f6bd7898532873f051#41d799cfa4cedd25625fc3f6bd7898532873f051"
+source = "git+https://github.com/lionel-/biome?rev=a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9#a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9"
 dependencies = [
  "biome_text_edit",
  "biome_text_size",
@@ -414,7 +414,7 @@ dependencies = [
 [[package]]
 name = "biome_string_case"
 version = "0.5.7"
-source = "git+https://github.com/lionel-/biome?rev=41d799cfa4cedd25625fc3f6bd7898532873f051#41d799cfa4cedd25625fc3f6bd7898532873f051"
+source = "git+https://github.com/lionel-/biome?rev=a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9#a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9"
 dependencies = [
  "biome_rowan",
 ]
@@ -422,7 +422,7 @@ dependencies = [
 [[package]]
 name = "biome_text_edit"
 version = "0.5.7"
-source = "git+https://github.com/lionel-/biome?rev=41d799cfa4cedd25625fc3f6bd7898532873f051#41d799cfa4cedd25625fc3f6bd7898532873f051"
+source = "git+https://github.com/lionel-/biome?rev=a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9#a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9"
 dependencies = [
  "biome_text_size",
  "serde",
@@ -432,7 +432,7 @@ dependencies = [
 [[package]]
 name = "biome_text_size"
 version = "0.5.7"
-source = "git+https://github.com/lionel-/biome?rev=41d799cfa4cedd25625fc3f6bd7898532873f051#41d799cfa4cedd25625fc3f6bd7898532873f051"
+source = "git+https://github.com/lionel-/biome?rev=a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9#a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9"
 dependencies = [
  "serde",
 ]
@@ -444,7 +444,7 @@ version = "0.3.1"
 [[package]]
 name = "biome_unicode_table"
 version = "0.5.7"
-source = "git+https://github.com/lionel-/biome?rev=41d799cfa4cedd25625fc3f6bd7898532873f051#41d799cfa4cedd25625fc3f6bd7898532873f051"
+source = "git+https://github.com/lionel-/biome?rev=a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9#a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9"
 
 [[package]]
 name = "bitflags"
