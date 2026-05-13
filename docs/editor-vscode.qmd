@@ -33,7 +33,7 @@ We generally recommend modifying workspace level settings for two reasons:
 The easiest way to set up a workspace level `settings.json` with the recommended settings is by running the command `Air: Initialize Workspace Folder`.
 This is equivalent to running [`usethis::use_air()`](https://usethis.r-lib.org/dev/reference/use_air.html) from an R console.
 
-Alternatively, to open your `settings.json` file from the Command Palette (`Cmd + P` on Mac/Linux, `Ctrl + P` on Windows):
+Alternatively, to open your `settings.json` file from the Command Palette (`Cmd + Shift + P` on Mac/Linux, `Ctrl + Shift + P` on Windows):
 
 -   Run `Preferences: Open Workspace Settings (JSON)` to modify workspace specific settings (recommended).
 -   Run `Preferences: Open User Settings (JSON)` to modify global user settings.
