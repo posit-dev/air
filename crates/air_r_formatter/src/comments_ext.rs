@@ -46,13 +46,25 @@ impl CommentsExt for RComments {
     }
 }
 
+// We intentionally only consider directives in leading comments. This is a
+// departure from Biome (and Ruff?).
 fn directives(comments: &RComments, node: &RSyntaxNode) -> impl Iterator<Item = Directive> {
-    // We intentionally only consider directives in leading comments. This is a
-    // departure from Biome (and Ruff?).
+    let matches = |c: &biome_formatter::comments::SourceComment<RLanguage>| {
+        comments::parse_comment_directive(c.piece().text())
+    };
+
+    // In argument lists, comments get attached to `R_ARGUMENT` nodes. So check
+    // there for directives.
+    let parent = node.parent();
+    let target_node = parent
+        .as_ref()
+        .filter(|p| p.kind() == RSyntaxKind::R_ARGUMENT)
+        .unwrap_or(node);
+
     comments
-        .leading_comments(node)
+        .leading_comments(target_node)
         .iter()
-        .filter_map(|c| comments::parse_comment_directive(c.piece().text()))
+        .filter_map(matches)
 }
 
 fn can_have_directive(node: &RSyntaxNode) -> bool {
@@ -66,9 +78,7 @@ fn can_have_directive(node: &RSyntaxNode) -> bool {
     // - Binary expression sides (like the RHS of a pipe chain)
     matches!(
         parent.kind(),
-        RSyntaxKind::R_EXPRESSION_LIST
-            | RSyntaxKind::R_ARGUMENT_LIST
-            | RSyntaxKind::R_BINARY_EXPRESSION
+        RSyntaxKind::R_EXPRESSION_LIST | RSyntaxKind::R_ARGUMENT | RSyntaxKind::R_BINARY_EXPRESSION
     )
 }
 
