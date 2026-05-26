@@ -12,13 +12,7 @@ bpaf = { version = "0.9.15", features = ["derive"] }
 git2 = { version = "0.19.0", default-features = false }
 proc-macro2 = { workspace = true, features = ["span-locations"] }
 quote = { workspace = true }
-schemars = { workspace = true }
-serde_json = { workspace = true }
-workspace = { workspace = true, features = ["schemars"] }
 xtask = { version = "0.0", path = "../" }
-
-[dev-dependencies]
-insta = { workspace = true }
 
 [lints]
 workspace = true

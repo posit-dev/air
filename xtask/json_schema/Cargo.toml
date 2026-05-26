@@ -1,0 +1,18 @@
+[package]
+name = "xtask_json_schema"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+anyhow = { workspace = true }
+schemars = { workspace = true }
+serde_json = { workspace = true }
+# This pulls in air_r_syntax, so we keep it separate from the codegen xtask
+workspace = { workspace = true, features = ["schemars"] }
+
+[dev-dependencies]
+insta = { workspace = true }
+
+[lints]
+workspace = true

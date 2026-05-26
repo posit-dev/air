@@ -2821,13 +2821,20 @@ dependencies = [
  "biome_ungrammar",
  "bpaf",
  "git2",
- "insta",
  "proc-macro2",
  "quote",
+ "xtask",
+]
+
+[[package]]
+name = "xtask_json_schema"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "insta",
  "schemars",
  "serde_json",
  "workspace",
- "xtask",
 ]
 
 [[package]]

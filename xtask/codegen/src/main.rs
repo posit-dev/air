@@ -1,9 +1,7 @@
 use xtask::{project_root, pushd, Result};
 
 use xtask::Mode::Overwrite;
-use xtask_codegen::{
-    generate_ast, generate_formatters, generate_json_schema, task_command, TaskCommand,
-};
+use xtask_codegen::{generate_ast, generate_formatters, task_command, TaskCommand};
 
 fn main() -> Result<()> {
     let _d = pushd(project_root());
@@ -19,9 +17,6 @@ fn main() -> Result<()> {
         TaskCommand::All => {
             generate_ast(Overwrite, vec![])?;
             generate_formatters();
-        }
-        TaskCommand::JsonSchema => {
-            generate_json_schema()?;
         }
     }
 

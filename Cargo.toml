@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/*", "editors/zed", "xtask/codegen"]
+members = ["crates/*", "editors/zed", "xtask/codegen", "xtask/json_schema"]
 
 [workspace.package]
 authors = ["Posit Software, PBC"]

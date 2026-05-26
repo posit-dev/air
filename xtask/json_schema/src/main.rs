@@ -2,7 +2,11 @@ use std::path::PathBuf;
 
 const ROOT_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../");
 
-pub fn generate_json_schema() -> anyhow::Result<()> {
+fn main() -> anyhow::Result<()> {
+    generate_json_schema()
+}
+
+fn generate_json_schema() -> anyhow::Result<()> {
     let schema = json_schema()?;
     let schema_path = schema_path();
     std::fs::write(schema_path, schema.as_bytes())?;
@@ -23,8 +27,8 @@ fn schema_path() -> PathBuf {
 
 #[cfg(test)]
 mod tests {
-    use crate::r_json_schema::json_schema;
-    use crate::r_json_schema::schema_path;
+    use crate::json_schema;
+    use crate::schema_path;
 
     #[test]
     fn test_schema_can_be_generated_and_hasnt_changed() -> anyhow::Result<()> {
