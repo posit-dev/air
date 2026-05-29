@@ -5,7 +5,6 @@ expression: snapshot
 ## Input
 
 ```R
-return
 break
 next
 TRUE
@@ -28,82 +27,77 @@ NA_character_
 RRoot {
     bom_token: missing (optional),
     expressions: RExpressionList [
-        RReturnExpression {
-            return_token: RETURN_KW@0..6 "return" [] [],
-        },
         RBreakExpression {
-            break_token: BREAK_KW@6..12 "break" [Newline("\n")] [],
+            break_token: BREAK_KW@0..5 "break" [] [],
         },
         RNextExpression {
-            next_token: NEXT_KW@12..17 "next" [Newline("\n")] [],
+            next_token: NEXT_KW@5..10 "next" [Newline("\n")] [],
         },
         RTrueExpression {
-            true_token: TRUE_KW@17..22 "TRUE" [Newline("\n")] [],
+            true_token: TRUE_KW@10..15 "TRUE" [Newline("\n")] [],
         },
         RFalseExpression {
-            false_token: FALSE_KW@22..28 "FALSE" [Newline("\n")] [],
+            false_token: FALSE_KW@15..21 "FALSE" [Newline("\n")] [],
         },
         RNullExpression {
-            null_token: NULL_KW@28..33 "NULL" [Newline("\n")] [],
+            null_token: NULL_KW@21..26 "NULL" [Newline("\n")] [],
         },
         RInfExpression {
-            inf_token: INF_KW@33..37 "Inf" [Newline("\n")] [],
+            inf_token: INF_KW@26..30 "Inf" [Newline("\n")] [],
         },
         RNanExpression {
-            nan_token: NAN_KW@37..41 "NaN" [Newline("\n")] [],
+            nan_token: NAN_KW@30..34 "NaN" [Newline("\n")] [],
         },
         RNaExpression {
-            value: NA_LOGICAL_KW@41..44 "NA" [Newline("\n")] [],
+            value: NA_LOGICAL_KW@34..37 "NA" [Newline("\n")] [],
         },
         RNaExpression {
-            value: NA_INTEGER_KW@44..56 "NA_integer_" [Newline("\n")] [],
+            value: NA_INTEGER_KW@37..49 "NA_integer_" [Newline("\n")] [],
         },
         RNaExpression {
-            value: NA_DOUBLE_KW@56..65 "NA_real_" [Newline("\n")] [],
+            value: NA_DOUBLE_KW@49..58 "NA_real_" [Newline("\n")] [],
         },
         RNaExpression {
-            value: NA_COMPLEX_KW@65..77 "NA_complex_" [Newline("\n")] [],
+            value: NA_COMPLEX_KW@58..70 "NA_complex_" [Newline("\n")] [],
         },
         RNaExpression {
-            value: NA_CHARACTER_KW@77..91 "NA_character_" [Newline("\n")] [],
+            value: NA_CHARACTER_KW@70..84 "NA_character_" [Newline("\n")] [],
         },
     ],
-    eof_token: EOF@91..92 "" [Newline("\n")] [],
+    eof_token: EOF@84..85 "" [Newline("\n")] [],
 }
 ```
 
 ## CST
 
 ```
-0: R_ROOT@0..92
+0: R_ROOT@0..85
   0: (empty)
-  1: R_EXPRESSION_LIST@0..91
-    0: R_RETURN_EXPRESSION@0..6
-      0: RETURN_KW@0..6 "return" [] []
-    1: R_BREAK_EXPRESSION@6..12
-      0: BREAK_KW@6..12 "break" [Newline("\n")] []
-    2: R_NEXT_EXPRESSION@12..17
-      0: NEXT_KW@12..17 "next" [Newline("\n")] []
-    3: R_TRUE_EXPRESSION@17..22
-      0: TRUE_KW@17..22 "TRUE" [Newline("\n")] []
-    4: R_FALSE_EXPRESSION@22..28
-      0: FALSE_KW@22..28 "FALSE" [Newline("\n")] []
-    5: R_NULL_EXPRESSION@28..33
-      0: NULL_KW@28..33 "NULL" [Newline("\n")] []
-    6: R_INF_EXPRESSION@33..37
-      0: INF_KW@33..37 "Inf" [Newline("\n")] []
-    7: R_NAN_EXPRESSION@37..41
-      0: NAN_KW@37..41 "NaN" [Newline("\n")] []
-    8: R_NA_EXPRESSION@41..44
-      0: NA_LOGICAL_KW@41..44 "NA" [Newline("\n")] []
-    9: R_NA_EXPRESSION@44..56
-      0: NA_INTEGER_KW@44..56 "NA_integer_" [Newline("\n")] []
-    10: R_NA_EXPRESSION@56..65
-      0: NA_DOUBLE_KW@56..65 "NA_real_" [Newline("\n")] []
-    11: R_NA_EXPRESSION@65..77
-      0: NA_COMPLEX_KW@65..77 "NA_complex_" [Newline("\n")] []
-    12: R_NA_EXPRESSION@77..91
-      0: NA_CHARACTER_KW@77..91 "NA_character_" [Newline("\n")] []
-  2: EOF@91..92 "" [Newline("\n")] []
+  1: R_EXPRESSION_LIST@0..84
+    0: R_BREAK_EXPRESSION@0..5
+      0: BREAK_KW@0..5 "break" [] []
+    1: R_NEXT_EXPRESSION@5..10
+      0: NEXT_KW@5..10 "next" [Newline("\n")] []
+    2: R_TRUE_EXPRESSION@10..15
+      0: TRUE_KW@10..15 "TRUE" [Newline("\n")] []
+    3: R_FALSE_EXPRESSION@15..21
+      0: FALSE_KW@15..21 "FALSE" [Newline("\n")] []
+    4: R_NULL_EXPRESSION@21..26
+      0: NULL_KW@21..26 "NULL" [Newline("\n")] []
+    5: R_INF_EXPRESSION@26..30
+      0: INF_KW@26..30 "Inf" [Newline("\n")] []
+    6: R_NAN_EXPRESSION@30..34
+      0: NAN_KW@30..34 "NaN" [Newline("\n")] []
+    7: R_NA_EXPRESSION@34..37
+      0: NA_LOGICAL_KW@34..37 "NA" [Newline("\n")] []
+    8: R_NA_EXPRESSION@37..49
+      0: NA_INTEGER_KW@37..49 "NA_integer_" [Newline("\n")] []
+    9: R_NA_EXPRESSION@49..58
+      0: NA_DOUBLE_KW@49..58 "NA_real_" [Newline("\n")] []
+    10: R_NA_EXPRESSION@58..70
+      0: NA_COMPLEX_KW@58..70 "NA_complex_" [Newline("\n")] []
+    11: R_NA_EXPRESSION@70..84
+      0: NA_CHARACTER_KW@70..84 "NA_character_" [Newline("\n")] []
+  2: EOF@84..85 "" [Newline("\n")] []
 
 ```
