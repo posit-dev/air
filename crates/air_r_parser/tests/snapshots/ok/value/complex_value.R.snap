@@ -10,6 +10,9 @@ expression: snapshot
 1e6i
 0x123Fi
 
+# https://github.com/r-lib/tree-sitter-r/pull/198
+.1i
+
 ```
 
 
@@ -31,17 +34,20 @@ RRoot {
         RComplexValue {
             value_token: R_COMPLEX_LITERAL@12..20 "0x123Fi" [Newline("\n")] [],
         },
+        RComplexValue {
+            value_token: R_COMPLEX_LITERAL@20..75 ".1i" [Newline("\n"), Newline("\n"), Comments("# https://github.com/ ..."), Newline("\n")] [],
+        },
     ],
-    eof_token: EOF@20..21 "" [Newline("\n")] [],
+    eof_token: EOF@75..76 "" [Newline("\n")] [],
 }
 ```
 
 ## CST
 
 ```
-0: R_ROOT@0..21
+0: R_ROOT@0..76
   0: (empty)
-  1: R_EXPRESSION_LIST@0..20
+  1: R_EXPRESSION_LIST@0..75
     0: R_COMPLEX_VALUE@0..2
       0: R_COMPLEX_LITERAL@0..2 "1i" [] []
     1: R_COMPLEX_VALUE@2..7
@@ -50,6 +56,8 @@ RRoot {
       0: R_COMPLEX_LITERAL@7..12 "1e6i" [Newline("\n")] []
     3: R_COMPLEX_VALUE@12..20
       0: R_COMPLEX_LITERAL@12..20 "0x123Fi" [Newline("\n")] []
-  2: EOF@20..21 "" [Newline("\n")] []
+    4: R_COMPLEX_VALUE@20..75
+      0: R_COMPLEX_LITERAL@20..75 ".1i" [Newline("\n"), Newline("\n"), Comments("# https://github.com/ ..."), Newline("\n")] []
+  2: EOF@75..76 "" [Newline("\n")] []
 
 ```
