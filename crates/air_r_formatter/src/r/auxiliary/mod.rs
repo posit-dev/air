@@ -31,7 +31,6 @@ pub(crate) mod parameter_default;
 pub(crate) mod parameters;
 pub(crate) mod parenthesized_expression;
 pub(crate) mod repeat_statement;
-pub(crate) mod return_expression;
 pub(crate) mod root;
 pub(crate) mod string_value;
 pub(crate) mod subset;
