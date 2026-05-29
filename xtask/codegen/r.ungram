@@ -311,7 +311,10 @@ AnyRValue =
 RIntegerValue = value: 'r_integer_literal'
 RDoubleValue = value: 'r_double_literal'
 RComplexValue = value: 'r_complex_literal'
-RStringValue = value: 'r_string_literal'
+RStringValue =
+  open: 'string_open'
+  content: 'string_content'?
+  close: 'string_close'
 
 // ----------------------------------------------------------------
 // Keywords
