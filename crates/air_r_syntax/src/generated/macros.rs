@@ -136,10 +136,6 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RRepeatStatement::new_unchecked(node) };
                     $body
                 }
-                $crate::RSyntaxKind::R_RETURN_EXPRESSION => {
-                    let $pattern = unsafe { $crate::RReturnExpression::new_unchecked(node) };
-                    $body
-                }
                 $crate::RSyntaxKind::R_ROOT => {
                     let $pattern = unsafe { $crate::RRoot::new_unchecked(node) };
                     $body
