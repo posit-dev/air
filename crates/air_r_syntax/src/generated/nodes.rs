@@ -1303,11 +1303,19 @@ impl RStringValue {
     }
     pub fn as_fields(&self) -> RStringValueFields {
         RStringValueFields {
-            value_token: self.value_token(),
+            open_token: self.open_token(),
+            content_token: self.content_token(),
+            close_token: self.close_token(),
         }
     }
-    pub fn value_token(&self) -> SyntaxResult<SyntaxToken> {
+    pub fn open_token(&self) -> SyntaxResult<SyntaxToken> {
         support::required_token(&self.syntax, 0usize)
+    }
+    pub fn content_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, 1usize)
+    }
+    pub fn close_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 2usize)
     }
 }
 impl Serialize for RStringValue {
@@ -1320,7 +1328,9 @@ impl Serialize for RStringValue {
 }
 #[derive(Serialize)]
 pub struct RStringValueFields {
-    pub value_token: SyntaxResult<SyntaxToken>,
+    pub open_token: SyntaxResult<SyntaxToken>,
+    pub content_token: Option<SyntaxToken>,
+    pub close_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RSubset {
@@ -3265,9 +3275,14 @@ impl AstNode for RStringValue {
 impl std::fmt::Debug for RStringValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("RStringValue")
+            .field("open_token", &support::DebugSyntaxResult(self.open_token()))
             .field(
-                "value_token",
-                &support::DebugSyntaxResult(self.value_token()),
+                "content_token",
+                &support::DebugOptionalElement(self.content_token()),
+            )
+            .field(
+                "close_token",
+                &support::DebugSyntaxResult(self.close_token()),
             )
             .finish()
     }
