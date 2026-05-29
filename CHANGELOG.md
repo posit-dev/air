@@ -1,5 +1,9 @@
 # Changelog
 
+- Updated bundled tree-sitter-r, which comes with a few small fixes:
+
+  - Hexadecimal constants with decimals are no longer parsed as two separate values (#495).
+
 # Development version
 
 # 0.9.0
