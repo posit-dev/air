@@ -18,6 +18,7 @@ use crate::context::RFormatContext;
 use crate::context::RFormatOptions;
 use crate::cst::FormatRSyntaxNode;
 
+pub(crate) mod call_arguments_table;
 pub mod comments;
 pub mod comments_ext;
 pub mod context;
