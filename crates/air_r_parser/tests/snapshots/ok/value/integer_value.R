@@ -1,6 +1,9 @@
 1L
 1e5L
 
+# https://github.com/r-lib/tree-sitter-r/pull/198
+.1L
+
 # Hexadecimal
 # `x` vs `X`
 0x123L

@@ -4,6 +4,8 @@
 
   - Hexadecimal constants with decimals are no longer parsed as two separate values (#495).
 
+  - `.{digit}` (like `.1`) is now correctly parsed as a double rather than as an identifier. This means that things like `function(.1 = 1) {}`, where `.1` is expected to be an identifier but not a double, now correctly fails to parse (#496).
+
 # Development version
 
 # 0.9.0
