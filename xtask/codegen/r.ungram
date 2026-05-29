@@ -286,7 +286,6 @@ AnyRExpression =
 	| RCall
 	| RSubset
 	| RSubset2
-	| RReturnExpression
 	| RNextExpression
 	| RBreakExpression
 	| RTrueExpression
@@ -316,8 +315,6 @@ RStringValue = value: 'r_string_literal'
 
 // ----------------------------------------------------------------
 // Keywords
-
-RReturnExpression = 'return'
 
 RNextExpression = 'next'
 
