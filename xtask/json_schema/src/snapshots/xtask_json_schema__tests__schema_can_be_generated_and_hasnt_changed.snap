@@ -1,5 +1,5 @@
 ---
-source: xtask/codegen/src/r_json_schema.rs
+source: xtask/json_schema/src/main.rs
 expression: schema
 ---
 {

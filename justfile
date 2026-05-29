@@ -8,7 +8,7 @@ gen-grammar:
 
 # Generates the `air.schema.json`
 gen-schema:
-    cargo run -p xtask_codegen -- json-schema
+    cargo run -p xtask_json_schema
 
 # Run the tests
 test *ARGS:

@@ -8,7 +8,6 @@ mod generate_nodes;
 mod generate_nodes_mut;
 mod generate_syntax_factory;
 mod generate_syntax_kinds;
-mod r_json_schema;
 mod r_kinds_src;
 
 mod kind_src;
@@ -22,7 +21,6 @@ use xtask::{glue::fs2, Mode, Result};
 
 pub use self::ast::generate_ast;
 pub use self::formatter::generate_formatters;
-pub use self::r_json_schema::generate_json_schema;
 
 pub enum UpdateResult {
     NotUpdated,
@@ -73,6 +71,4 @@ pub enum TaskCommand {
     /// Runs ALL the codegen
     #[bpaf(command)]
     All,
-    #[bpaf(command, long("json-schema"))]
-    JsonSchema,
 }
