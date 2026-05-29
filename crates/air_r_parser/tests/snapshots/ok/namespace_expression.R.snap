@@ -89,7 +89,9 @@ RRoot {
             },
             operator: COLON2@29..31 "::" [] [],
             right: RStringValue {
-                value_token: R_STRING_LITERAL@31..34 "\"b\"" [] [],
+                open_token: STRING_OPEN@31..32 "\"" [] [],
+                content_token: STRING_CONTENT@32..33 "b" [] [],
+                close_token: STRING_CLOSE@33..34 "\"" [] [],
             },
         },
         RNamespaceExpression {
@@ -98,7 +100,9 @@ RRoot {
             },
             operator: COLON3@36..39 ":::" [] [],
             right: RStringValue {
-                value_token: R_STRING_LITERAL@39..42 "\"b\"" [] [],
+                open_token: STRING_OPEN@39..40 "\"" [] [],
+                content_token: STRING_CONTENT@40..41 "b" [] [],
+                close_token: STRING_CLOSE@41..42 "\"" [] [],
             },
         },
         RCall {
@@ -325,13 +329,17 @@ RRoot {
         0: IDENT@26..29 "a" [Newline("\n"), Newline("\n")] []
       1: COLON2@29..31 "::" [] []
       2: R_STRING_VALUE@31..34
-        0: R_STRING_LITERAL@31..34 "\"b\"" [] []
+        0: STRING_OPEN@31..32 "\"" [] []
+        1: STRING_CONTENT@32..33 "b" [] []
+        2: STRING_CLOSE@33..34 "\"" [] []
     5: R_NAMESPACE_EXPRESSION@34..42
       0: R_IDENTIFIER@34..36
         0: IDENT@34..36 "a" [Newline("\n")] []
       1: COLON3@36..39 ":::" [] []
       2: R_STRING_VALUE@39..42
-        0: R_STRING_LITERAL@39..42 "\"b\"" [] []
+        0: STRING_OPEN@39..40 "\"" [] []
+        1: STRING_CONTENT@40..41 "b" [] []
+        2: STRING_CLOSE@41..42 "\"" [] []
     6: R_CALL@42..50
       0: R_NAMESPACE_EXPRESSION@42..48
         0: R_IDENTIFIER@42..45

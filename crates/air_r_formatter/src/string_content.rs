@@ -1,4 +1,4 @@
-use air_r_syntax::RSyntaxKind::R_STRING_LITERAL;
+use air_r_syntax::RSyntaxKind::STRING_CONTENT;
 use air_r_syntax::RSyntaxToken;
 use biome_formatter::Format;
 use biome_formatter::FormatResult;
@@ -10,51 +10,56 @@ use std::borrow::Cow;
 use crate::RFormatter;
 use crate::context::RFormatContext;
 
-/// Helper utility for formatting a string literal token
+/// Helper utility for formatting a string content token
 ///
 /// The main job of this utility is to `normalize()` the string and handle the
 /// complicated way we have to call [format_replaced] with that normalized result.
-pub(crate) struct FormatStringLiteralToken<'token> {
-    /// The string literal token to format
+pub(crate) struct FormatStringContentToken<'token> {
+    /// The string content token to format
     token: &'token RSyntaxToken,
 }
 
-impl<'token> FormatStringLiteralToken<'token> {
+impl<'token> FormatStringContentToken<'token> {
     pub(crate) fn new(token: &'token RSyntaxToken) -> Self {
         Self { token }
     }
 
-    fn normalize(&self) -> FormatNormalizedStringLiteralToken<'_> {
+    fn normalize(&self) -> FormatNormalizedStringContentToken<'_> {
         let token = self.token;
 
         debug_assert!(
-            matches!(token.kind(), R_STRING_LITERAL),
+            matches!(token.kind(), STRING_CONTENT),
             "Found kind {:?}",
             token.kind()
         );
+        debug_assert!(
+            token.text() == token.text_trimmed(),
+            "String content tokens should never have trivia. \
+            Trivia should be on string open or string close tokens instead."
+        );
 
-        let text = token.text_trimmed();
+        let text = token.text();
         let text = normalize_string(text);
 
-        FormatNormalizedStringLiteralToken { token, text }
+        FormatNormalizedStringContentToken { token, text }
     }
 }
 
-impl Format<RFormatContext> for FormatStringLiteralToken<'_> {
+impl Format<RFormatContext> for FormatStringContentToken<'_> {
     fn fmt(&self, f: &mut RFormatter) -> FormatResult<()> {
         self.normalize().fmt(f)
     }
 }
 
-struct FormatNormalizedStringLiteralToken<'token> {
-    /// The original string literal token before normalization
+struct FormatNormalizedStringContentToken<'token> {
+    /// The original string content token before normalization
     token: &'token RSyntaxToken,
 
     /// The normalized text
     text: Cow<'token, str>,
 }
 
-impl Format<RFormatContext> for FormatNormalizedStringLiteralToken<'_> {
+impl Format<RFormatContext> for FormatNormalizedStringContentToken<'_> {
     fn fmt(&self, f: &mut Formatter<RFormatContext>) -> FormatResult<()> {
         format_replaced(
             self.token,
@@ -80,10 +85,11 @@ impl Format<RFormatContext> for FormatNormalizedStringLiteralToken<'_> {
 /// `line_ending` crate because we don't own the string.
 ///
 /// This function is particularly useful for multiline strings, which capture the existing
-/// line ending inside the string token itself. We must normalize those line endings to
-/// `\n` before the formatter -> printer stage, because the printer can't handle other
-/// line endings and will panic on them. At the printer -> string stage at the very end,
-/// the printer will replace all `\n` with the `LineEnding` requested by the user.
+/// line ending inside the string content token itself. We must normalize those line
+/// endings to `\n` before the formatter -> printer stage, because the printer can't
+/// handle other line endings and will panic on them. At the printer -> string stage at
+/// the very end, the printer will replace all `\n` with the `LineEnding` requested by the
+/// user.
 /// https://github.com/biomejs/biome/blob/a658a294087c143b83350cbeb6b44f7a2e9afdd1/crates/biome_formatter/src/printer/mod.rs#L714-L718
 fn normalize_string(input: &str) -> Cow<'_, str> {
     // The normalized string if `input` is not yet normalized.
@@ -122,7 +128,7 @@ fn normalize_string(input: &str) -> Cow<'_, str> {
 
 #[cfg(test)]
 mod tests {
-    use crate::string_literal::normalize_string;
+    use crate::string_content::normalize_string;
     use std::borrow::Cow;
 
     #[test]

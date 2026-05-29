@@ -887,10 +887,24 @@ impl SyntaxFactory for RSyntaxFactory {
             }
             R_STRING_VALUE => {
                 let mut elements = (&children).into_iter();
-                let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
+                let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
                 if let Some(element) = &current_element {
-                    if element.kind() == R_STRING_LITERAL {
+                    if element.kind() == STRING_OPEN {
+                        slots.mark_present();
+                        current_element = elements.next();
+                    }
+                }
+                slots.next_slot();
+                if let Some(element) = &current_element {
+                    if element.kind() == STRING_CONTENT {
+                        slots.mark_present();
+                        current_element = elements.next();
+                    }
+                }
+                slots.next_slot();
+                if let Some(element) = &current_element {
+                    if element.kind() == STRING_CLOSE {
                         slots.mark_present();
                         current_element = elements.next();
                     }

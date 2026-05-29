@@ -234,7 +234,9 @@ RRoot {
                             RArgument {
                                 name_clause: missing (optional),
                                 value: RStringValue {
-                                    value_token: R_STRING_LITERAL@170..175 "\"..1\"" [] [],
+                                    open_token: STRING_OPEN@170..171 "\"" [] [],
+                                    content_token: STRING_CONTENT@171..174 "..1" [] [],
+                                    close_token: STRING_CLOSE@174..175 "\"" [] [],
                                 },
                             },
                         ],
@@ -252,7 +254,9 @@ RRoot {
                             RArgument {
                                 name_clause: missing (optional),
                                 value: RStringValue {
-                                    value_token: R_STRING_LITERAL@183..188 "\"..2\"" [] [],
+                                    open_token: STRING_OPEN@183..184 "\"" [] [],
+                                    content_token: STRING_CONTENT@184..187 "..2" [] [],
+                                    close_token: STRING_CLOSE@187..188 "\"" [] [],
                                 },
                             },
                         ],
@@ -303,7 +307,9 @@ RRoot {
                             RArgument {
                                 name_clause: missing (optional),
                                 value: RStringValue {
-                                    value_token: R_STRING_LITERAL@221..226 "\"..1\"" [] [],
+                                    open_token: STRING_OPEN@221..222 "\"" [] [],
+                                    content_token: STRING_CONTENT@222..225 "..1" [] [],
+                                    close_token: STRING_CLOSE@225..226 "\"" [] [],
                                 },
                             },
                         ],
@@ -321,7 +327,9 @@ RRoot {
                             RArgument {
                                 name_clause: missing (optional),
                                 value: RStringValue {
-                                    value_token: R_STRING_LITERAL@234..239 "\"..2\"" [] [],
+                                    open_token: STRING_OPEN@234..235 "\"" [] [],
+                                    content_token: STRING_CONTENT@235..238 "..2" [] [],
+                                    close_token: STRING_CLOSE@238..239 "\"" [] [],
                                 },
                             },
                         ],
@@ -529,7 +537,9 @@ RRoot {
               0: R_ARGUMENT@170..175
                 0: (empty)
                 1: R_STRING_VALUE@170..175
-                  0: R_STRING_LITERAL@170..175 "\"..1\"" [] []
+                  0: STRING_OPEN@170..171 "\"" [] []
+                  1: STRING_CONTENT@171..174 "..1" [] []
+                  2: STRING_CLOSE@174..175 "\"" [] []
             2: R_PAREN@175..176 ")" [] []
         1: PLUS@176..178 "+" [Whitespace(" ")] []
         2: R_CALL@178..189
@@ -541,7 +551,9 @@ RRoot {
               0: R_ARGUMENT@183..188
                 0: (empty)
                 1: R_STRING_VALUE@183..188
-                  0: R_STRING_LITERAL@183..188 "\"..2\"" [] []
+                  0: STRING_OPEN@183..184 "\"" [] []
+                  1: STRING_CONTENT@184..187 "..2" [] []
+                  2: STRING_CLOSE@187..188 "\"" [] []
             2: R_PAREN@188..189 ")" [] []
     8: R_FUNCTION_DEFINITION@189..240
       0: FUNCTION_KW@189..198 "function" [Newline("\n")] []
@@ -574,7 +586,9 @@ RRoot {
               0: R_ARGUMENT@221..226
                 0: (empty)
                 1: R_STRING_VALUE@221..226
-                  0: R_STRING_LITERAL@221..226 "\"..1\"" [] []
+                  0: STRING_OPEN@221..222 "\"" [] []
+                  1: STRING_CONTENT@222..225 "..1" [] []
+                  2: STRING_CLOSE@225..226 "\"" [] []
             2: R_PAREN@226..227 ")" [] []
         1: PLUS@227..229 "+" [Whitespace(" ")] []
         2: R_CALL@229..240
@@ -586,7 +600,9 @@ RRoot {
               0: R_ARGUMENT@234..239
                 0: (empty)
                 1: R_STRING_VALUE@234..239
-                  0: R_STRING_LITERAL@234..239 "\"..2\"" [] []
+                  0: STRING_OPEN@234..235 "\"" [] []
+                  1: STRING_CONTENT@235..238 "..2" [] []
+                  2: STRING_CLOSE@238..239 "\"" [] []
             2: R_PAREN@239..240 ")" [] []
     9: R_FUNCTION_DEFINITION@240..277
       0: FUNCTION_KW@240..249 "function" [Newline("\n")] []
