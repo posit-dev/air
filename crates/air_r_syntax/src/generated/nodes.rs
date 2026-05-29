@@ -1243,41 +1243,6 @@ pub struct RRepeatStatementFields {
     pub body: SyntaxResult<AnyRExpression>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub struct RReturnExpression {
-    pub(crate) syntax: SyntaxNode,
-}
-impl RReturnExpression {
-    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
-    #[doc = r""]
-    #[doc = r" # Safety"]
-    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
-    #[doc = r" or a match on [SyntaxNode::kind]"]
-    #[inline]
-    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
-        Self { syntax }
-    }
-    pub fn as_fields(&self) -> RReturnExpressionFields {
-        RReturnExpressionFields {
-            return_token: self.return_token(),
-        }
-    }
-    pub fn return_token(&self) -> SyntaxResult<SyntaxToken> {
-        support::required_token(&self.syntax, 0usize)
-    }
-}
-impl Serialize for RReturnExpression {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        self.as_fields().serialize(serializer)
-    }
-}
-#[derive(Serialize)]
-pub struct RReturnExpressionFields {
-    pub return_token: SyntaxResult<SyntaxToken>,
-}
-#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RRoot {
     pub(crate) syntax: SyntaxNode,
 }
@@ -1721,7 +1686,6 @@ pub enum AnyRExpression {
     RNullExpression(RNullExpression),
     RParenthesizedExpression(RParenthesizedExpression),
     RRepeatStatement(RRepeatStatement),
-    RReturnExpression(RReturnExpression),
     RSubset(RSubset),
     RSubset2(RSubset2),
     RTrueExpression(RTrueExpression),
@@ -1858,12 +1822,6 @@ impl AnyRExpression {
     pub fn as_r_repeat_statement(&self) -> Option<&RRepeatStatement> {
         match &self {
             AnyRExpression::RRepeatStatement(item) => Some(item),
-            _ => None,
-        }
-    }
-    pub fn as_r_return_expression(&self) -> Option<&RReturnExpression> {
-        match &self {
-            AnyRExpression::RReturnExpression(item) => Some(item),
             _ => None,
         }
     }
@@ -3241,47 +3199,6 @@ impl From<RRepeatStatement> for SyntaxElement {
         n.syntax.into()
     }
 }
-impl AstNode for RReturnExpression {
-    type Language = Language;
-    const KIND_SET: SyntaxKindSet<Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(R_RETURN_EXPRESSION as u16));
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == R_RETURN_EXPRESSION
-    }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        if Self::can_cast(syntax.kind()) {
-            Some(Self { syntax })
-        } else {
-            None
-        }
-    }
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode {
-        self.syntax
-    }
-}
-impl std::fmt::Debug for RReturnExpression {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("RReturnExpression")
-            .field(
-                "return_token",
-                &support::DebugSyntaxResult(self.return_token()),
-            )
-            .finish()
-    }
-}
-impl From<RReturnExpression> for SyntaxNode {
-    fn from(n: RReturnExpression) -> SyntaxNode {
-        n.syntax
-    }
-}
-impl From<RReturnExpression> for SyntaxElement {
-    fn from(n: RReturnExpression) -> SyntaxElement {
-        n.syntax.into()
-    }
-}
 impl AstNode for RRoot {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> = SyntaxKindSet::from_raw(RawSyntaxKind(R_ROOT as u16));
@@ -3864,11 +3781,6 @@ impl From<RRepeatStatement> for AnyRExpression {
         AnyRExpression::RRepeatStatement(node)
     }
 }
-impl From<RReturnExpression> for AnyRExpression {
-    fn from(node: RReturnExpression) -> AnyRExpression {
-        AnyRExpression::RReturnExpression(node)
-    }
-}
 impl From<RSubset> for AnyRExpression {
     fn from(node: RSubset) -> AnyRExpression {
         AnyRExpression::RSubset(node)
@@ -3918,7 +3830,6 @@ impl AstNode for AnyRExpression {
         .union(RNullExpression::KIND_SET)
         .union(RParenthesizedExpression::KIND_SET)
         .union(RRepeatStatement::KIND_SET)
-        .union(RReturnExpression::KIND_SET)
         .union(RSubset::KIND_SET)
         .union(RSubset2::KIND_SET)
         .union(RTrueExpression::KIND_SET)
@@ -3947,7 +3858,6 @@ impl AstNode for AnyRExpression {
             | R_NULL_EXPRESSION
             | R_PARENTHESIZED_EXPRESSION
             | R_REPEAT_STATEMENT
-            | R_RETURN_EXPRESSION
             | R_SUBSET
             | R_SUBSET2
             | R_TRUE_EXPRESSION
@@ -3990,7 +3900,6 @@ impl AstNode for AnyRExpression {
                 AnyRExpression::RParenthesizedExpression(RParenthesizedExpression { syntax })
             }
             R_REPEAT_STATEMENT => AnyRExpression::RRepeatStatement(RRepeatStatement { syntax }),
-            R_RETURN_EXPRESSION => AnyRExpression::RReturnExpression(RReturnExpression { syntax }),
             R_SUBSET => AnyRExpression::RSubset(RSubset { syntax }),
             R_SUBSET2 => AnyRExpression::RSubset2(RSubset2 { syntax }),
             R_TRUE_EXPRESSION => AnyRExpression::RTrueExpression(RTrueExpression { syntax }),
@@ -4028,7 +3937,6 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RNullExpression(it) => &it.syntax,
             AnyRExpression::RParenthesizedExpression(it) => &it.syntax,
             AnyRExpression::RRepeatStatement(it) => &it.syntax,
-            AnyRExpression::RReturnExpression(it) => &it.syntax,
             AnyRExpression::RSubset(it) => &it.syntax,
             AnyRExpression::RSubset2(it) => &it.syntax,
             AnyRExpression::RTrueExpression(it) => &it.syntax,
@@ -4060,7 +3968,6 @@ impl AstNode for AnyRExpression {
             AnyRExpression::RNullExpression(it) => it.syntax,
             AnyRExpression::RParenthesizedExpression(it) => it.syntax,
             AnyRExpression::RRepeatStatement(it) => it.syntax,
-            AnyRExpression::RReturnExpression(it) => it.syntax,
             AnyRExpression::RSubset(it) => it.syntax,
             AnyRExpression::RSubset2(it) => it.syntax,
             AnyRExpression::RTrueExpression(it) => it.syntax,
@@ -4095,7 +4002,6 @@ impl std::fmt::Debug for AnyRExpression {
             AnyRExpression::RNullExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RParenthesizedExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RRepeatStatement(it) => std::fmt::Debug::fmt(it, f),
-            AnyRExpression::RReturnExpression(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RSubset(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RSubset2(it) => std::fmt::Debug::fmt(it, f),
             AnyRExpression::RTrueExpression(it) => std::fmt::Debug::fmt(it, f),
@@ -4129,7 +4035,6 @@ impl From<AnyRExpression> for SyntaxNode {
             AnyRExpression::RNullExpression(it) => it.into(),
             AnyRExpression::RParenthesizedExpression(it) => it.into(),
             AnyRExpression::RRepeatStatement(it) => it.into(),
-            AnyRExpression::RReturnExpression(it) => it.into(),
             AnyRExpression::RSubset(it) => it.into(),
             AnyRExpression::RSubset2(it) => it.into(),
             AnyRExpression::RTrueExpression(it) => it.into(),
@@ -4564,11 +4469,6 @@ impl std::fmt::Display for RParenthesizedExpression {
     }
 }
 impl std::fmt::Display for RRepeatStatement {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Display::fmt(self.syntax(), f)
-    }
-}
-impl std::fmt::Display for RReturnExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }

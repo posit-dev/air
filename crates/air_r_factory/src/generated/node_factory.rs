@@ -367,12 +367,6 @@ pub fn r_repeat_statement(repeat_token: SyntaxToken, body: AnyRExpression) -> RR
         ],
     ))
 }
-pub fn r_return_expression(return_token: SyntaxToken) -> RReturnExpression {
-    RReturnExpression::unwrap_cast(SyntaxNode::new_detached(
-        RSyntaxKind::R_RETURN_EXPRESSION,
-        [Some(SyntaxElement::Token(return_token))],
-    ))
-}
 pub fn r_root(expressions: RExpressionList, eof_token: SyntaxToken) -> RRootBuilder {
     RRootBuilder {
         expressions,

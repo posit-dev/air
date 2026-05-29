@@ -111,7 +111,6 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "float" => RSyntaxKind::R_DOUBLE_VALUE,
         "complex" => RSyntaxKind::R_COMPLEX_VALUE,
         "string" => RSyntaxKind::R_STRING_VALUE,
-        "return" => RSyntaxKind::R_RETURN_EXPRESSION,
         "next" => RSyntaxKind::R_NEXT_EXPRESSION,
         "break" => RSyntaxKind::R_BREAK_EXPRESSION,
         "true" => RSyntaxKind::R_TRUE_EXPRESSION,

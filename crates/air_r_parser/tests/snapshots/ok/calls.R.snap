@@ -60,6 +60,9 @@ fn(
 fn(
   NULL = ,
 )
+
+# Standard call as of https://github.com/r-lib/tree-sitter-r/pull/197
+return()
 ```
 
 
@@ -677,17 +680,27 @@ RRoot {
                 r_paren_token: R_PAREN@466..468 ")" [Newline("\n")] [],
             },
         },
+        RCall {
+            function: RIdentifier {
+                name_token: IDENT@468..546 "return" [Newline("\n"), Newline("\n"), Comments("# Standard call as of ..."), Newline("\n")] [],
+            },
+            arguments: RCallArguments {
+                l_paren_token: L_PAREN@546..547 "(" [] [],
+                items: RArgumentList [],
+                r_paren_token: R_PAREN@547..548 ")" [] [],
+            },
+        },
     ],
-    eof_token: EOF@468..468 "" [] [],
+    eof_token: EOF@548..548 "" [] [],
 }
 ```
 
 ## CST
 
 ```
-0: R_ROOT@0..468
+0: R_ROOT@0..548
   0: (empty)
-  1: R_EXPRESSION_LIST@0..468
+  1: R_EXPRESSION_LIST@0..548
     0: R_CALL@0..4
       0: R_IDENTIFIER@0..2
         0: IDENT@0..2 "fn" [] []
@@ -1094,6 +1107,13 @@ RRoot {
             0: (empty)
             1: (empty)
         2: R_PAREN@466..468 ")" [Newline("\n")] []
-  2: EOF@468..468 "" [] []
+    26: R_CALL@468..548
+      0: R_IDENTIFIER@468..546
+        0: IDENT@468..546 "return" [Newline("\n"), Newline("\n"), Comments("# Standard call as of ..."), Newline("\n")] []
+      1: R_CALL_ARGUMENTS@546..548
+        0: L_PAREN@546..547 "(" [] []
+        1: R_ARGUMENT_LIST@547..547
+        2: R_PAREN@547..548 ")" [] []
+  2: EOF@548..548 "" [] []
 
 ```

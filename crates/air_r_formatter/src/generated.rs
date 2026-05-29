@@ -1060,42 +1060,6 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RRepeatStatement {
         )
     }
 }
-impl FormatRule<air_r_syntax::RReturnExpression>
-    for crate::r::auxiliary::return_expression::FormatRReturnExpression
-{
-    type Context = RFormatContext;
-    #[inline(always)]
-    fn fmt(&self, node: &air_r_syntax::RReturnExpression, f: &mut RFormatter) -> FormatResult<()> {
-        FormatNodeRule::<air_r_syntax::RReturnExpression>::fmt(self, node, f)
-    }
-}
-impl AsFormat<RFormatContext> for air_r_syntax::RReturnExpression {
-    type Format<'a> = FormatRefWithRule<
-        'a,
-        air_r_syntax::RReturnExpression,
-        crate::r::auxiliary::return_expression::FormatRReturnExpression,
-    >;
-    fn format(&self) -> Self::Format<'_> {
-        #![allow(clippy::default_constructed_unit_structs)]
-        FormatRefWithRule::new(
-            self,
-            crate::r::auxiliary::return_expression::FormatRReturnExpression::default(),
-        )
-    }
-}
-impl IntoFormat<RFormatContext> for air_r_syntax::RReturnExpression {
-    type Format = FormatOwnedWithRule<
-        air_r_syntax::RReturnExpression,
-        crate::r::auxiliary::return_expression::FormatRReturnExpression,
-    >;
-    fn into_format(self) -> Self::Format {
-        #![allow(clippy::default_constructed_unit_structs)]
-        FormatOwnedWithRule::new(
-            self,
-            crate::r::auxiliary::return_expression::FormatRReturnExpression::default(),
-        )
-    }
-}
 impl FormatRule<air_r_syntax::RRoot> for crate::r::auxiliary::root::FormatRRoot {
     type Context = RFormatContext;
     #[inline(always)]

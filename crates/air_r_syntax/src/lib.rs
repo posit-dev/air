@@ -56,7 +56,6 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::REPEAT_KW
             | RSyntaxKind::IF_KW
             | RSyntaxKind::ELSE_KW
-            | RSyntaxKind::RETURN_KW
             | RSyntaxKind::NEXT_KW
             | RSyntaxKind::BREAK_KW
             | RSyntaxKind::TRUE_KW
@@ -112,7 +111,6 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_DOUBLE_VALUE
             | RSyntaxKind::R_COMPLEX_VALUE
             | RSyntaxKind::R_STRING_VALUE
-            | RSyntaxKind::R_RETURN_EXPRESSION
             | RSyntaxKind::R_NEXT_EXPRESSION
             | RSyntaxKind::R_BREAK_EXPRESSION
             | RSyntaxKind::R_TRUE_EXPRESSION
@@ -196,7 +194,6 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::REPEAT_KW
             | RSyntaxKind::IF_KW
             | RSyntaxKind::ELSE_KW
-            | RSyntaxKind::RETURN_KW
             | RSyntaxKind::NEXT_KW
             | RSyntaxKind::BREAK_KW
             | RSyntaxKind::TRUE_KW
@@ -213,7 +210,6 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_DOUBLE_LITERAL
             | RSyntaxKind::R_COMPLEX_LITERAL
             | RSyntaxKind::R_STRING_LITERAL
-            | RSyntaxKind::R_RETURN_EXPRESSION
             | RSyntaxKind::R_NEXT_EXPRESSION
             | RSyntaxKind::R_BREAK_EXPRESSION
             | RSyntaxKind::R_TRUE_EXPRESSION

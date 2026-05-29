@@ -296,7 +296,6 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_IDENTIFIER
             | RSyntaxKind::R_DOT_DOT_I
             | RSyntaxKind::R_DOTS
-            | RSyntaxKind::R_RETURN_EXPRESSION
             | RSyntaxKind::R_NEXT_EXPRESSION
             | RSyntaxKind::R_BREAK_EXPRESSION
             | RSyntaxKind::R_TRUE_EXPRESSION
@@ -390,7 +389,6 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::WHITESPACE
             | RSyntaxKind::IDENT
             | RSyntaxKind::DOTDOTI
-            | RSyntaxKind::RETURN_KW
             | RSyntaxKind::NEXT_KW
             | RSyntaxKind::BREAK_KW
             | RSyntaxKind::TRUE_KW
@@ -437,9 +435,6 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_IDENTIFIER => self.handle_value_leave(node, kind, RSyntaxKind::IDENT),
             RSyntaxKind::R_DOTS => self.handle_value_leave(node, kind, RSyntaxKind::DOTS),
             RSyntaxKind::R_DOT_DOT_I => self.handle_value_leave(node, kind, RSyntaxKind::DOTDOTI),
-            RSyntaxKind::R_RETURN_EXPRESSION => {
-                self.handle_value_leave(node, kind, RSyntaxKind::RETURN_KW)
-            }
             RSyntaxKind::R_NEXT_EXPRESSION => {
                 self.handle_value_leave(node, kind, RSyntaxKind::NEXT_KW)
             }
@@ -546,7 +541,6 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::NEWLINE
             | RSyntaxKind::WHITESPACE
             | RSyntaxKind::IDENT
-            | RSyntaxKind::RETURN_KW
             | RSyntaxKind::NEXT_KW
             | RSyntaxKind::BREAK_KW
             | RSyntaxKind::TRUE_KW

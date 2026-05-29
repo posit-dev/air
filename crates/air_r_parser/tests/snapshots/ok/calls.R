@@ -53,3 +53,6 @@ fn(
 fn(
   NULL = ,
 )
+
+# Standard call as of https://github.com/r-lib/tree-sitter-r/pull/197
+return()

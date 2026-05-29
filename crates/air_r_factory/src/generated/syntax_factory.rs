@@ -855,25 +855,6 @@ impl SyntaxFactory for RSyntaxFactory {
                 }
                 slots.into_node(R_REPEAT_STATEMENT, children)
             }
-            R_RETURN_EXPRESSION => {
-                let mut elements = (&children).into_iter();
-                let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
-                let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![return] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
-                }
-                slots.next_slot();
-                if current_element.is_some() {
-                    return RawSyntaxNode::new(
-                        R_RETURN_EXPRESSION.to_bogus(),
-                        children.into_iter().map(Some),
-                    );
-                }
-                slots.into_node(R_RETURN_EXPRESSION, children)
-            }
             R_ROOT => {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
