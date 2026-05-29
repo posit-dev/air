@@ -41,67 +41,109 @@ RRoot {
     bom_token: missing (optional),
     expressions: RExpressionList [
         RStringValue {
-            value_token: R_STRING_LITERAL@0..11 "\"hi there!\"" [] [],
+            open_token: STRING_OPEN@0..1 "\"" [] [],
+            content_token: STRING_CONTENT@1..10 "hi there!" [] [],
+            close_token: STRING_CLOSE@10..11 "\"" [] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@11..16 "\"\\\"\"" [Newline("\n")] [],
+            open_token: STRING_OPEN@11..13 "\"" [Newline("\n")] [],
+            content_token: STRING_CONTENT@13..15 "\\\"" [] [],
+            close_token: STRING_CLOSE@15..16 "\"" [] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@16..28 "'hi there!'" [Newline("\n")] [],
+            open_token: STRING_OPEN@16..18 "'" [Newline("\n")] [],
+            content_token: STRING_CONTENT@18..27 "hi there!" [] [],
+            close_token: STRING_CLOSE@27..28 "'" [] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@28..33 "'\\''" [Newline("\n")] [],
+            open_token: STRING_OPEN@28..30 "'" [Newline("\n")] [],
+            content_token: STRING_CONTENT@30..32 "\\'" [] [],
+            close_token: STRING_CLOSE@32..33 "'" [] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@33..37 "\"'\"" [Newline("\n")] [],
+            open_token: STRING_OPEN@33..35 "\"" [Newline("\n")] [],
+            content_token: STRING_CONTENT@35..36 "'" [] [],
+            close_token: STRING_CLOSE@36..37 "\"" [] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@37..56 "\"multiline\nstring\"" [Newline("\n")] [],
+            open_token: STRING_OPEN@37..39 "\"" [Newline("\n")] [],
+            content_token: STRING_CONTENT@39..55 "multiline\nstring" [] [],
+            close_token: STRING_CLOSE@55..56 "\"" [] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@56..63 "r\"(\")\"" [Newline("\n")] [],
+            open_token: STRING_OPEN@56..60 "r\"(" [Newline("\n")] [],
+            content_token: STRING_CONTENT@60..61 "\"" [] [],
+            close_token: STRING_CLOSE@61..63 ")\"" [] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@63..71 "r\"(\"\")\"" [Newline("\n")] [],
+            open_token: STRING_OPEN@63..67 "r\"(" [Newline("\n")] [],
+            content_token: STRING_CONTENT@67..69 "\"\"" [] [],
+            close_token: STRING_CLOSE@69..71 ")\"" [] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@71..78 "r\"(')\"" [Newline("\n")] [],
+            open_token: STRING_OPEN@71..75 "r\"(" [Newline("\n")] [],
+            content_token: STRING_CONTENT@75..76 "'" [] [],
+            close_token: STRING_CLOSE@76..78 ")\"" [] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@78..86 "r\"('')\"" [Newline("\n")] [],
+            open_token: STRING_OPEN@78..82 "r\"(" [Newline("\n")] [],
+            content_token: STRING_CONTENT@82..84 "''" [] [],
+            close_token: STRING_CLOSE@84..86 ")\"" [] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@86..95 "r\"-(-)-\"" [Newline("\n")] [],
+            open_token: STRING_OPEN@86..91 "r\"-(" [Newline("\n")] [],
+            content_token: STRING_CONTENT@91..92 "-" [] [],
+            close_token: STRING_CLOSE@92..95 ")-\"" [] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@95..105 "r\"-()-)-\"" [Newline("\n")] [],
+            open_token: STRING_OPEN@95..100 "r\"-(" [Newline("\n")] [],
+            content_token: STRING_CONTENT@100..102 ")-" [] [],
+            close_token: STRING_CLOSE@102..105 ")-\"" [] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@105..118 "r\"--()-\")--\"" [Newline("\n")] [],
+            open_token: STRING_OPEN@105..111 "r\"--(" [Newline("\n")] [],
+            content_token: STRING_CONTENT@111..114 ")-\"" [] [],
+            close_token: STRING_CLOSE@114..118 ")--\"" [] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@118..128 "r\"( () )\"" [Newline("\n")] [],
+            open_token: STRING_OPEN@118..122 "r\"(" [Newline("\n")] [],
+            content_token: STRING_CONTENT@122..126 " () " [] [],
+            close_token: STRING_CLOSE@126..128 ")\"" [] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@128..136 "r\"(())\"" [Newline("\n")] [],
+            open_token: STRING_OPEN@128..132 "r\"(" [Newline("\n")] [],
+            content_token: STRING_CONTENT@132..134 "()" [] [],
+            close_token: STRING_CLOSE@134..136 ")\"" [] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@136..145 "r\"( ())\"" [Newline("\n")] [],
+            open_token: STRING_OPEN@136..140 "r\"(" [Newline("\n")] [],
+            content_token: STRING_CONTENT@140..143 " ()" [] [],
+            close_token: STRING_CLOSE@143..145 ")\"" [] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@145..154 "r\"(() )\"" [Newline("\n")] [],
+            open_token: STRING_OPEN@145..149 "r\"(" [Newline("\n")] [],
+            content_token: STRING_CONTENT@149..152 "() " [] [],
+            close_token: STRING_CLOSE@152..154 ")\"" [] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@154..163 "r\"-())-\"" [Newline("\n")] [],
+            open_token: STRING_OPEN@154..159 "r\"-(" [Newline("\n")] [],
+            content_token: STRING_CONTENT@159..160 ")" [] [],
+            close_token: STRING_CLOSE@160..163 ")-\"" [] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@163..175 "r\"-(())-)-\"" [Newline("\n")] [],
+            open_token: STRING_OPEN@163..168 "r\"-(" [Newline("\n")] [],
+            content_token: STRING_CONTENT@168..172 "())-" [] [],
+            close_token: STRING_CLOSE@172..175 ")-\"" [] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@175..192 "r\"(raw\nstring\n)\"" [Newline("\n")] [],
+            open_token: STRING_OPEN@175..179 "r\"(" [Newline("\n")] [],
+            content_token: STRING_CONTENT@179..190 "raw\nstring\n" [] [],
+            close_token: STRING_CLOSE@190..192 ")\"" [] [],
         },
         RStringValue {
-            value_token: R_STRING_LITERAL@192..224 "r\"(\"some raw string\nbusiness\")\"" [Newline("\n")] [],
+            open_token: STRING_OPEN@192..196 "r\"(" [Newline("\n")] [],
+            content_token: STRING_CONTENT@196..222 "\"some raw string\nbusiness\"" [] [],
+            close_token: STRING_CLOSE@222..224 ")\"" [] [],
         },
     ],
     eof_token: EOF@224..225 "" [Newline("\n")] [],
@@ -115,47 +157,89 @@ RRoot {
   0: (empty)
   1: R_EXPRESSION_LIST@0..224
     0: R_STRING_VALUE@0..11
-      0: R_STRING_LITERAL@0..11 "\"hi there!\"" [] []
+      0: STRING_OPEN@0..1 "\"" [] []
+      1: STRING_CONTENT@1..10 "hi there!" [] []
+      2: STRING_CLOSE@10..11 "\"" [] []
     1: R_STRING_VALUE@11..16
-      0: R_STRING_LITERAL@11..16 "\"\\\"\"" [Newline("\n")] []
+      0: STRING_OPEN@11..13 "\"" [Newline("\n")] []
+      1: STRING_CONTENT@13..15 "\\\"" [] []
+      2: STRING_CLOSE@15..16 "\"" [] []
     2: R_STRING_VALUE@16..28
-      0: R_STRING_LITERAL@16..28 "'hi there!'" [Newline("\n")] []
+      0: STRING_OPEN@16..18 "'" [Newline("\n")] []
+      1: STRING_CONTENT@18..27 "hi there!" [] []
+      2: STRING_CLOSE@27..28 "'" [] []
     3: R_STRING_VALUE@28..33
-      0: R_STRING_LITERAL@28..33 "'\\''" [Newline("\n")] []
+      0: STRING_OPEN@28..30 "'" [Newline("\n")] []
+      1: STRING_CONTENT@30..32 "\\'" [] []
+      2: STRING_CLOSE@32..33 "'" [] []
     4: R_STRING_VALUE@33..37
-      0: R_STRING_LITERAL@33..37 "\"'\"" [Newline("\n")] []
+      0: STRING_OPEN@33..35 "\"" [Newline("\n")] []
+      1: STRING_CONTENT@35..36 "'" [] []
+      2: STRING_CLOSE@36..37 "\"" [] []
     5: R_STRING_VALUE@37..56
-      0: R_STRING_LITERAL@37..56 "\"multiline\nstring\"" [Newline("\n")] []
+      0: STRING_OPEN@37..39 "\"" [Newline("\n")] []
+      1: STRING_CONTENT@39..55 "multiline\nstring" [] []
+      2: STRING_CLOSE@55..56 "\"" [] []
     6: R_STRING_VALUE@56..63
-      0: R_STRING_LITERAL@56..63 "r\"(\")\"" [Newline("\n")] []
+      0: STRING_OPEN@56..60 "r\"(" [Newline("\n")] []
+      1: STRING_CONTENT@60..61 "\"" [] []
+      2: STRING_CLOSE@61..63 ")\"" [] []
     7: R_STRING_VALUE@63..71
-      0: R_STRING_LITERAL@63..71 "r\"(\"\")\"" [Newline("\n")] []
+      0: STRING_OPEN@63..67 "r\"(" [Newline("\n")] []
+      1: STRING_CONTENT@67..69 "\"\"" [] []
+      2: STRING_CLOSE@69..71 ")\"" [] []
     8: R_STRING_VALUE@71..78
-      0: R_STRING_LITERAL@71..78 "r\"(')\"" [Newline("\n")] []
+      0: STRING_OPEN@71..75 "r\"(" [Newline("\n")] []
+      1: STRING_CONTENT@75..76 "'" [] []
+      2: STRING_CLOSE@76..78 ")\"" [] []
     9: R_STRING_VALUE@78..86
-      0: R_STRING_LITERAL@78..86 "r\"('')\"" [Newline("\n")] []
+      0: STRING_OPEN@78..82 "r\"(" [Newline("\n")] []
+      1: STRING_CONTENT@82..84 "''" [] []
+      2: STRING_CLOSE@84..86 ")\"" [] []
     10: R_STRING_VALUE@86..95
-      0: R_STRING_LITERAL@86..95 "r\"-(-)-\"" [Newline("\n")] []
+      0: STRING_OPEN@86..91 "r\"-(" [Newline("\n")] []
+      1: STRING_CONTENT@91..92 "-" [] []
+      2: STRING_CLOSE@92..95 ")-\"" [] []
     11: R_STRING_VALUE@95..105
-      0: R_STRING_LITERAL@95..105 "r\"-()-)-\"" [Newline("\n")] []
+      0: STRING_OPEN@95..100 "r\"-(" [Newline("\n")] []
+      1: STRING_CONTENT@100..102 ")-" [] []
+      2: STRING_CLOSE@102..105 ")-\"" [] []
     12: R_STRING_VALUE@105..118
-      0: R_STRING_LITERAL@105..118 "r\"--()-\")--\"" [Newline("\n")] []
+      0: STRING_OPEN@105..111 "r\"--(" [Newline("\n")] []
+      1: STRING_CONTENT@111..114 ")-\"" [] []
+      2: STRING_CLOSE@114..118 ")--\"" [] []
     13: R_STRING_VALUE@118..128
-      0: R_STRING_LITERAL@118..128 "r\"( () )\"" [Newline("\n")] []
+      0: STRING_OPEN@118..122 "r\"(" [Newline("\n")] []
+      1: STRING_CONTENT@122..126 " () " [] []
+      2: STRING_CLOSE@126..128 ")\"" [] []
     14: R_STRING_VALUE@128..136
-      0: R_STRING_LITERAL@128..136 "r\"(())\"" [Newline("\n")] []
+      0: STRING_OPEN@128..132 "r\"(" [Newline("\n")] []
+      1: STRING_CONTENT@132..134 "()" [] []
+      2: STRING_CLOSE@134..136 ")\"" [] []
     15: R_STRING_VALUE@136..145
-      0: R_STRING_LITERAL@136..145 "r\"( ())\"" [Newline("\n")] []
+      0: STRING_OPEN@136..140 "r\"(" [Newline("\n")] []
+      1: STRING_CONTENT@140..143 " ()" [] []
+      2: STRING_CLOSE@143..145 ")\"" [] []
     16: R_STRING_VALUE@145..154
-      0: R_STRING_LITERAL@145..154 "r\"(() )\"" [Newline("\n")] []
+      0: STRING_OPEN@145..149 "r\"(" [Newline("\n")] []
+      1: STRING_CONTENT@149..152 "() " [] []
+      2: STRING_CLOSE@152..154 ")\"" [] []
     17: R_STRING_VALUE@154..163
-      0: R_STRING_LITERAL@154..163 "r\"-())-\"" [Newline("\n")] []
+      0: STRING_OPEN@154..159 "r\"-(" [Newline("\n")] []
+      1: STRING_CONTENT@159..160 ")" [] []
+      2: STRING_CLOSE@160..163 ")-\"" [] []
     18: R_STRING_VALUE@163..175
-      0: R_STRING_LITERAL@163..175 "r\"-(())-)-\"" [Newline("\n")] []
+      0: STRING_OPEN@163..168 "r\"-(" [Newline("\n")] []
+      1: STRING_CONTENT@168..172 "())-" [] []
+      2: STRING_CLOSE@172..175 ")-\"" [] []
     19: R_STRING_VALUE@175..192
-      0: R_STRING_LITERAL@175..192 "r\"(raw\nstring\n)\"" [Newline("\n")] []
+      0: STRING_OPEN@175..179 "r\"(" [Newline("\n")] []
+      1: STRING_CONTENT@179..190 "raw\nstring\n" [] []
+      2: STRING_CLOSE@190..192 ")\"" [] []
     20: R_STRING_VALUE@192..224
-      0: R_STRING_LITERAL@192..224 "r\"(\"some raw string\nbusiness\")\"" [Newline("\n")] []
+      0: STRING_OPEN@192..196 "r\"(" [Newline("\n")] []
+      1: STRING_CONTENT@196..222 "\"some raw string\nbusiness\"" [] []
+      2: STRING_CLOSE@222..224 ")\"" [] []
   2: EOF@224..225 "" [Newline("\n")] []
 
 ```

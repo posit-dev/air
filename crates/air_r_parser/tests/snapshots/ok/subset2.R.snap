@@ -308,7 +308,9 @@ RRoot {
                     RArgument {
                         name_clause: RArgumentNameClause {
                             name: RStringValue {
-                                value_token: R_STRING_LITERAL@142..147 "\"arg\"" [] [],
+                                open_token: STRING_OPEN@142..143 "\"" [] [],
+                                content_token: STRING_CONTENT@143..146 "arg" [] [],
+                                close_token: STRING_CLOSE@146..147 "\"" [] [],
                             },
                             eq_token: EQUAL@147..149 "=" [Whitespace(" ")] [],
                         },
@@ -330,7 +332,9 @@ RRoot {
                     RArgument {
                         name_clause: RArgumentNameClause {
                             name: RStringValue {
-                                value_token: R_STRING_LITERAL@158..163 "\"arg\"" [] [],
+                                open_token: STRING_OPEN@158..159 "\"" [] [],
+                                content_token: STRING_CONTENT@159..162 "arg" [] [],
+                                close_token: STRING_CLOSE@162..163 "\"" [] [],
                             },
                             eq_token: EQUAL@163..165 "=" [Whitespace(" ")] [],
                         },
@@ -726,7 +730,9 @@ RRoot {
           0: R_ARGUMENT@142..151
             0: R_ARGUMENT_NAME_CLAUSE@142..149
               0: R_STRING_VALUE@142..147
-                0: R_STRING_LITERAL@142..147 "\"arg\"" [] []
+                0: STRING_OPEN@142..143 "\"" [] []
+                1: STRING_CONTENT@143..146 "arg" [] []
+                2: STRING_CLOSE@146..147 "\"" [] []
               1: EQUAL@147..149 "=" [Whitespace(" ")] []
             1: R_DOUBLE_VALUE@149..151
               0: R_DOUBLE_LITERAL@149..151 "1" [Whitespace(" ")] []
@@ -740,7 +746,9 @@ RRoot {
           0: R_ARGUMENT@158..165
             0: R_ARGUMENT_NAME_CLAUSE@158..165
               0: R_STRING_VALUE@158..163
-                0: R_STRING_LITERAL@158..163 "\"arg\"" [] []
+                0: STRING_OPEN@158..159 "\"" [] []
+                1: STRING_CONTENT@159..162 "arg" [] []
+                2: STRING_CLOSE@162..163 "\"" [] []
               1: EQUAL@163..165 "=" [Whitespace(" ")] []
             1: (empty)
         2: R_BRACK2@165..167 "]]" [] []
