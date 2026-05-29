@@ -29,6 +29,16 @@ expression: snapshot
 0x0p-0
 0x0p+123
 0x0p-123
+# Decimal point
+0x.
+0x1.
+0x.1
+0x1.1
+# Decimal point with exponent
+0x.p1
+0x1.p1
+0x.1p1
+0x1.1p1
 ```
 
 
@@ -92,17 +102,41 @@ RRoot {
         RDoubleValue {
             value_token: R_DOUBLE_LITERAL@186..195 "0x0p-123" [Newline("\n")] [],
         },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@195..215 "0x." [Newline("\n"), Comments("# Decimal point"), Newline("\n")] [],
+        },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@215..220 "0x1." [Newline("\n")] [],
+        },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@220..225 "0x.1" [Newline("\n")] [],
+        },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@225..231 "0x1.1" [Newline("\n")] [],
+        },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@231..267 "0x.p1" [Newline("\n"), Comments("# Decimal point with  ..."), Newline("\n")] [],
+        },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@267..274 "0x1.p1" [Newline("\n")] [],
+        },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@274..281 "0x.1p1" [Newline("\n")] [],
+        },
+        RDoubleValue {
+            value_token: R_DOUBLE_LITERAL@281..289 "0x1.1p1" [Newline("\n")] [],
+        },
     ],
-    eof_token: EOF@195..195 "" [] [],
+    eof_token: EOF@289..289 "" [] [],
 }
 ```
 
 ## CST
 
 ```
-0: R_ROOT@0..195
+0: R_ROOT@0..289
   0: (empty)
-  1: R_EXPRESSION_LIST@0..195
+  1: R_EXPRESSION_LIST@0..289
     0: R_DOUBLE_VALUE@0..1
       0: R_DOUBLE_LITERAL@0..1 "1" [] []
     1: R_DOUBLE_VALUE@1..5
@@ -139,6 +173,22 @@ RRoot {
       0: R_DOUBLE_LITERAL@177..186 "0x0p+123" [Newline("\n")] []
     17: R_DOUBLE_VALUE@186..195
       0: R_DOUBLE_LITERAL@186..195 "0x0p-123" [Newline("\n")] []
-  2: EOF@195..195 "" [] []
+    18: R_DOUBLE_VALUE@195..215
+      0: R_DOUBLE_LITERAL@195..215 "0x." [Newline("\n"), Comments("# Decimal point"), Newline("\n")] []
+    19: R_DOUBLE_VALUE@215..220
+      0: R_DOUBLE_LITERAL@215..220 "0x1." [Newline("\n")] []
+    20: R_DOUBLE_VALUE@220..225
+      0: R_DOUBLE_LITERAL@220..225 "0x.1" [Newline("\n")] []
+    21: R_DOUBLE_VALUE@225..231
+      0: R_DOUBLE_LITERAL@225..231 "0x1.1" [Newline("\n")] []
+    22: R_DOUBLE_VALUE@231..267
+      0: R_DOUBLE_LITERAL@231..267 "0x.p1" [Newline("\n"), Comments("# Decimal point with  ..."), Newline("\n")] []
+    23: R_DOUBLE_VALUE@267..274
+      0: R_DOUBLE_LITERAL@267..274 "0x1.p1" [Newline("\n")] []
+    24: R_DOUBLE_VALUE@274..281
+      0: R_DOUBLE_LITERAL@274..281 "0x.1p1" [Newline("\n")] []
+    25: R_DOUBLE_VALUE@281..289
+      0: R_DOUBLE_LITERAL@281..289 "0x1.1p1" [Newline("\n")] []
+  2: EOF@289..289 "" [] []
 
 ```
