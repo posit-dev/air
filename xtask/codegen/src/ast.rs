@@ -210,7 +210,7 @@ fn classify_node_rule(grammar: &Grammar, rule: &Rule) -> NodeRuleClassification 
             } else {
                 NodeRuleClassification::List {
                     separator: None,
-                    element_name: element_type.to_string(),
+                    element_name: element_type.clone(),
                 }
             }
         }

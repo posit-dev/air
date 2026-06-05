@@ -1136,10 +1136,10 @@ fn should_group_last_argument(list: &RArgumentList, comments: &RComments) -> Syn
     // ensure that the underlying `name` node inside `name_clause` does not
     // have any comments (they get put on `name_clause` instead), so we should
     // not need to check that.
-    if let Some(name_clause) = last.name_clause() {
-        if comments.has_comments(name_clause.syntax()) {
-            return Ok(false);
-        }
+    if let Some(name_clause) = last.name_clause()
+        && comments.has_comments(name_clause.syntax())
+    {
+        return Ok(false);
     }
 
     let Some(last) = last.value() else {

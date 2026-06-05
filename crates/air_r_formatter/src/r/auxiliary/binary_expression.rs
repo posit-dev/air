@@ -226,11 +226,9 @@ fn fmt_binary_assignment(
 
 fn format_assignment_rhs(right: &AnyRExpression, table: bool) -> impl Format<RFormatContext> {
     format_with(move |f| {
-        if table {
-            if let AnyRExpression::RCall(call) = right {
-                let options = FormatRCallArgumentsOptions { table: true };
-                return write!(f, [call.format().with_options(options)]);
-            }
+        if table && let AnyRExpression::RCall(call) = right {
+            let options = FormatRCallArgumentsOptions { table: true };
+            return write!(f, [call.format().with_options(options)]);
         }
         write!(f, [right.format()])
     })

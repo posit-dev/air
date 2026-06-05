@@ -150,14 +150,13 @@ fn handle_for_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacement<
     // ) {
     // }
     // ```
-    if let Ok(body) = for_statement.body() {
-        if let Some(following) = comment.following_node() {
-            if let Some(following_token) = comment.following_token() {
-                if body.syntax() == following && following_token.kind() != RSyntaxKind::R_PAREN {
-                    return place_leading_or_dangling_body_comment(body, comment);
-                }
-            }
-        }
+    if let Ok(body) = for_statement.body()
+        && let Some(following) = comment.following_node()
+        && let Some(following_token) = comment.following_token()
+        && body.syntax() == following
+        && following_token.kind() != RSyntaxKind::R_PAREN
+    {
+        return place_leading_or_dangling_body_comment(body, comment);
     }
 
     // Otherwise if the comment is "enclosed" by the `for_statement` then it can only be
@@ -249,14 +248,13 @@ fn handle_while_comment(comment: DecoratedComment<RLanguage>) -> CommentPlacemen
     // ) {
     // }
     // ```
-    if let Ok(body) = while_statement.body() {
-        if let Some(following) = comment.following_node() {
-            if let Some(following_token) = comment.following_token() {
-                if body.syntax() == following && following_token.kind() != RSyntaxKind::R_PAREN {
-                    return place_leading_or_dangling_body_comment(body, comment);
-                }
-            }
-        }
+    if let Ok(body) = while_statement.body()
+        && let Some(following) = comment.following_node()
+        && let Some(following_token) = comment.following_token()
+        && body.syntax() == following
+        && following_token.kind() != RSyntaxKind::R_PAREN
+    {
+        return place_leading_or_dangling_body_comment(body, comment);
     }
 
     // Otherwise if the comment is "enclosed" by the `while_statement` then it can only be
@@ -361,12 +359,11 @@ fn handle_function_comment(comment: DecoratedComment<RLanguage>) -> CommentPlace
     // # becomes leading on everything
     // () a
     // ```
-    if let Ok(parameters) = function_definition.parameters() {
-        if let Some(following) = comment.following_node() {
-            if parameters.syntax() == following {
-                return CommentPlacement::leading(function_definition.into_syntax(), comment);
-            }
-        };
+    if let Ok(parameters) = function_definition.parameters()
+        && let Some(following) = comment.following_node()
+        && parameters.syntax() == following
+    {
+        return CommentPlacement::leading(function_definition.into_syntax(), comment);
     };
 
     // If the following node is the `body`, we make the comment lead the first node of
@@ -392,12 +389,11 @@ fn handle_function_comment(comment: DecoratedComment<RLanguage>) -> CommentPlace
     //   a
     // }
     // ```
-    if let Ok(body) = function_definition.body() {
-        if let Some(following) = comment.following_node() {
-            if body.syntax() == following {
-                return place_leading_or_dangling_body_comment(body, comment);
-            }
-        };
+    if let Ok(body) = function_definition.body()
+        && let Some(following) = comment.following_node()
+        && body.syntax() == following
+    {
+        return place_leading_or_dangling_body_comment(body, comment);
     };
 
     CommentPlacement::Default(comment)
@@ -441,14 +437,12 @@ fn handle_if_statement_comment(
     // if (condition) # comment
     //   consequence
     // ```
-    if let Some(preceding) = comment.preceding_node() {
-        if let Some(following_token) = comment.following_token() {
-            if condition.syntax() == preceding
-                && matches!(following_token.kind(), RSyntaxKind::R_PAREN)
-            {
-                return CommentPlacement::trailing(preceding.clone(), comment);
-            }
-        }
+    if let Some(preceding) = comment.preceding_node()
+        && let Some(following_token) = comment.following_token()
+        && condition.syntax() == preceding
+        && matches!(following_token.kind(), RSyntaxKind::R_PAREN)
+    {
+        return CommentPlacement::trailing(preceding.clone(), comment);
     }
 
     // Figure out if this is a comment that comes directly before the
@@ -482,10 +476,10 @@ fn handle_if_statement_comment(
     // ) {
     // }
     // ```
-    if let Some(following) = comment.following_node() {
-        if consequence.syntax() == following {
-            return place_leading_or_dangling_body_comment(consequence, comment);
-        }
+    if let Some(following) = comment.following_node()
+        && consequence.syntax() == following
+    {
+        return place_leading_or_dangling_body_comment(consequence, comment);
     }
 
     // Move comments directly before an `else_clause` to the correct location
@@ -579,22 +573,22 @@ fn handle_if_statement_comment(
             return CommentPlacement::Default(comment);
         };
 
-        if let Some(following) = comment.following_node() {
-            if else_clause.syntax() == following {
-                return match comment.text_position() {
-                    // End of line comments lead the `consequence` body
-                    CommentTextPosition::EndOfLine => {
-                        place_leading_or_dangling_body_comment(consequence, comment)
-                    }
-                    // Own line comments lead the `alternative` body
-                    CommentTextPosition::OwnLine => {
-                        place_leading_or_dangling_alternative_comment(alternative, comment)
-                    }
-                    CommentTextPosition::SameLine => {
-                        unreachable!("Inline comments aren't possible in R")
-                    }
-                };
-            }
+        if let Some(following) = comment.following_node()
+            && else_clause.syntax() == following
+        {
+            return match comment.text_position() {
+                // End of line comments lead the `consequence` body
+                CommentTextPosition::EndOfLine => {
+                    place_leading_or_dangling_body_comment(consequence, comment)
+                }
+                // Own line comments lead the `alternative` body
+                CommentTextPosition::OwnLine => {
+                    place_leading_or_dangling_alternative_comment(alternative, comment)
+                }
+                CommentTextPosition::SameLine => {
+                    unreachable!("Inline comments aren't possible in R")
+                }
+            };
         }
     }
 
@@ -635,10 +629,10 @@ fn handle_else_clause_comment(comment: DecoratedComment<RLanguage>) -> CommentPl
     //   }
     // }
     // ```
-    if let Some(following) = comment.following_node() {
-        if alternative.syntax() == following {
-            return place_leading_or_dangling_alternative_comment(alternative, comment);
-        }
+    if let Some(following) = comment.following_node()
+        && alternative.syntax() == following
+    {
+        return place_leading_or_dangling_alternative_comment(alternative, comment);
     }
 
     CommentPlacement::Default(comment)

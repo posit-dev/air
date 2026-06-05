@@ -990,12 +990,11 @@ impl<'src> RWalk<'src> {
                     | RSyntaxKind::R_DOTS
                     | RSyntaxKind::R_DOT_DOT_I
                     | RSyntaxKind::R_NULL_EXPRESSION => {
-                        if !seen_equal {
-                            if let Some(next_field_name) = iter.peek_field_name() {
-                                if next_field_name == "name" {
-                                    self.handle_node_enter(RSyntaxKind::R_ARGUMENT_NAME_CLAUSE)
-                                }
-                            }
+                        if !seen_equal
+                            && let Some(next_field_name) = iter.peek_field_name()
+                            && next_field_name == "name"
+                        {
+                            self.handle_node_enter(RSyntaxKind::R_ARGUMENT_NAME_CLAUSE)
                         }
                         self.walk_next(iter);
                     }
