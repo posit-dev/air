@@ -1,9 +1,11 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
-    "defaultMode": "acceptEdits",
+    "defaultMode": "auto",
     "allow": [
-      "Bash(cargo insta accept:*)",
+      "Bash(cargo check:*)",
+      "Bash(cargo insta:*)",
+      "Bash(cargo tree:*)",
       "Bash(cat:*)",
       "Bash(find:*)",
       "Bash(gh issue list:*)",
@@ -15,7 +17,7 @@
       "Bash(git grep:*)",
       "Bash(git log:*)",
       "Bash(grep:*)",
-      "Bash(just test:*)",
+      "Bash(just:*)",
       "Bash(ls:*)",
       "Bash(rm:*)",
       "Bash(sed:*)",
