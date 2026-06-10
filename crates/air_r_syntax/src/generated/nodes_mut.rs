@@ -1,6 +1,6 @@
 //! Generated file, do not edit by hand, see `xtask/codegen`
 
-use crate::{generated::nodes::*, RSyntaxToken as SyntaxToken};
+use crate::{RSyntaxToken as SyntaxToken, generated::nodes::*};
 use biome_rowan::AstNode;
 use std::iter::once;
 impl RArgument {

@@ -21,18 +21,18 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if RArgumentNameClause::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && RArgumentNameClause::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if AnyRExpression::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -47,18 +47,18 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if AnyRArgumentName::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRArgumentName::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if element.kind() == T ! [=] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T ! [=]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -73,15 +73,15 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if AnyRExpression::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if matches!(
+                if let Some(element) = &current_element
+                    && matches!(
                         element.kind(),
                         T ! [?]
                             | T ! [:]
@@ -110,17 +110,17 @@ impl SyntaxFactory for RSyntaxFactory {
                             | T ! [**]
                             | T ! [|>]
                             | SPECIAL
-                    ) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                    )
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if AnyRExpression::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -135,25 +135,25 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T!['{'] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T!['{']
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if RExpressionList::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && RExpressionList::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if element.kind() == T!['}'] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T!['}']
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -168,11 +168,11 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![break] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![break]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -187,18 +187,18 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if AnyRExpression::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if RCallArguments::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && RCallArguments::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -210,25 +210,25 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T!['('] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T!['(']
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if RArgumentList::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && RArgumentList::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![')'] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![')']
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -243,11 +243,11 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == R_COMPLEX_LITERAL {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == R_COMPLEX_LITERAL
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -262,11 +262,11 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == DOTDOTI {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == DOTDOTI
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -281,11 +281,11 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T ! [...] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T ! [...]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -297,11 +297,11 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == R_DOUBLE_LITERAL {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == R_DOUBLE_LITERAL
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -316,18 +316,18 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![else] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![else]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if AnyRExpression::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -342,25 +342,25 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if AnyRExpression::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if matches!(element.kind(), T ! [$] | T ! [@]) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && matches!(element.kind(), T ! [$] | T ! [@])
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if AnyRSelector::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRSelector::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -375,11 +375,11 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![false] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![false]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -394,53 +394,53 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<7usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![for] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![for]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if element.kind() == T!['('] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T!['(']
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if RIdentifier::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && RIdentifier::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![in] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![in]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if AnyRExpression::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![')'] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![')']
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if AnyRExpression::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -455,25 +455,25 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if matches!(element.kind(), T![function] | T!["\\"]) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && matches!(element.kind(), T![function] | T!["\\"])
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if RParameters::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && RParameters::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if AnyRExpression::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -488,11 +488,11 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == IDENT {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == IDENT
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -507,46 +507,46 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<6usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![if] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![if]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if element.kind() == T!['('] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T!['(']
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if AnyRExpression::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![')'] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![')']
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if AnyRExpression::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if RElseClause::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && RElseClause::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -561,11 +561,11 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![inf] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![inf]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -580,11 +580,11 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == R_INTEGER_LITERAL {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == R_INTEGER_LITERAL
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -599,18 +599,18 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if matches!(
+                if let Some(element) = &current_element
+                    && matches!(
                         element.kind(),
                         T![na_logical]
                             | T![na_integer]
                             | T![na_double]
                             | T![na_complex]
                             | T![na_character]
-                    ) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                    )
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -625,25 +625,25 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if AnyRSelector::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRSelector::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if matches!(element.kind(), T ! [::] | T ! [:::]) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && matches!(element.kind(), T ! [::] | T ! [:::])
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if AnyRSelector::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRSelector::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -658,11 +658,11 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![nan] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![nan]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -677,11 +677,11 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![next] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![next]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -696,11 +696,11 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![null] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![null]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -715,18 +715,18 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if AnyRParameterName::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRParameterName::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if RParameterDefault::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && RParameterDefault::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -741,18 +741,18 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T ! [=] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T ! [=]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if AnyRExpression::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -767,25 +767,25 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T!['('] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T!['(']
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if RParameterList::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && RParameterList::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![')'] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![')']
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -800,25 +800,25 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T!['('] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T!['(']
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if AnyRExpression::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![')'] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![')']
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -833,18 +833,18 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![repeat] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![repeat]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if AnyRExpression::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -859,25 +859,25 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![UNICODE_BOM] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![UNICODE_BOM]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if RExpressionList::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && RExpressionList::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![EOF] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![EOF]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -889,11 +889,11 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == R_STRING_LITERAL {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == R_STRING_LITERAL
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -908,18 +908,18 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if AnyRExpression::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if RSubsetArguments::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && RSubsetArguments::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -931,18 +931,18 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if AnyRExpression::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if RSubset2Arguments::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && RSubset2Arguments::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -957,25 +957,25 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T!["[["] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T!["[["]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if RArgumentList::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && RArgumentList::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if element.kind() == T!["]]"] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T!["]]"]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -990,25 +990,25 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T!['['] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T!['[']
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if RArgumentList::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && RArgumentList::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![']'] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![']']
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -1023,11 +1023,11 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![true] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![true]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -1042,21 +1042,21 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if matches!(
+                if let Some(element) = &current_element
+                    && matches!(
                         element.kind(),
                         T ! [+] | T ! [-] | T ! [~] | T![!] | T ! [?]
-                    ) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                    )
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if AnyRExpression::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {
@@ -1071,39 +1071,39 @@ impl SyntaxFactory for RSyntaxFactory {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<5usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![while] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![while]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if element.kind() == T!['('] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T!['(']
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if AnyRExpression::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if element.kind() == T![')'] {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && element.kind() == T![')']
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
-                if let Some(element) = &current_element {
-                    if AnyRExpression::can_cast(element.kind()) {
-                        slots.mark_present();
-                        current_element = elements.next();
-                    }
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
                 }
                 slots.next_slot();
                 if current_element.is_some() {

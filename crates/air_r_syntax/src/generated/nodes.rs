@@ -3,13 +3,13 @@
 #![allow(clippy::enum_variant_names)]
 #![allow(clippy::match_like_matches_macro)]
 use crate::{
-    macros::map_syntax_node,
     RLanguage as Language, RSyntaxElement as SyntaxElement,
     RSyntaxElementChildren as SyntaxElementChildren,
     RSyntaxKind::{self as SyntaxKind, *},
     RSyntaxList as SyntaxList, RSyntaxNode as SyntaxNode, RSyntaxToken as SyntaxToken,
+    macros::map_syntax_node,
 };
-use biome_rowan::{support, AstNode, RawSyntaxKind, SyntaxKindSet, SyntaxResult};
+use biome_rowan::{AstNode, RawSyntaxKind, SyntaxKindSet, SyntaxResult, support};
 #[allow(unused)]
 use biome_rowan::{
     AstNodeList, AstNodeListIterator, AstNodeSlotMap, AstSeparatedList,
