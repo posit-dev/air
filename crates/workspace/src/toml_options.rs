@@ -21,6 +21,7 @@ use crate::settings::ExcludePatterns;
 use crate::settings::FormatSettings;
 use crate::settings::LineEnding;
 use crate::settings::Settings;
+use settings::AssignmentStyle;
 use settings::IndentStyle;
 use settings::IndentWidth;
 use settings::LineWidth;
@@ -121,6 +122,19 @@ pub struct FormatTomlOptions {
     /// It may be preferable to ignore persistent line breaks if you prefer that `line-width`
     /// should be the only value that influences line breaks.
     pub persistent_line_breaks: Option<bool>,
+
+    /// # The preferred assignment style
+    ///
+    /// - `preserve` (default): Assignment operators are preserved as is.
+    ///
+    /// - `arrow`: Use `<-`.
+    ///
+    /// - `equal`: Use `=`.
+    ///
+    /// Note that changing from `<-` to `=` is not always possible. For example, `f(x <-
+    /// 5)` can't be rewritten as `f(x = 5)` because that would parse as an argument named
+    /// `x`. In these cases, the `<-` is left as is.
+    pub assignment_style: Option<AssignmentStyle>,
 
     /// # Patterns to exclude from formatting
     ///
@@ -248,6 +262,7 @@ impl TomlOptions {
                 }
                 None => PersistentLineBreaks::Respect,
             },
+            assignment_style: format.assignment_style.unwrap_or_default(),
             exclude: match format.exclude {
                 Some(exclude) => {
                     let exclude = exclude.iter().map(String::as_str);

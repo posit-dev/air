@@ -11,6 +11,7 @@ pub use exclude_patterns::ExcludePatterns;
 pub(crate) use line_ending::LineEnding;
 
 use air_r_formatter::context::RFormatOptions;
+use settings::AssignmentStyle;
 use settings::IndentStyle;
 use settings::IndentWidth;
 use settings::LineWidth;
@@ -35,6 +36,7 @@ pub struct FormatSettings {
     pub line_ending: LineEnding,
     pub line_width: LineWidth,
     pub persistent_line_breaks: PersistentLineBreaks,
+    pub assignment_style: AssignmentStyle,
     pub exclude: Option<ExcludePatterns>,
     pub default_exclude: Option<DefaultExcludePatterns>,
     pub default_include: Option<DefaultIncludePatterns>,
@@ -54,6 +56,7 @@ impl Default for FormatSettings {
             line_ending: Default::default(),
             line_width: Default::default(),
             persistent_line_breaks: Default::default(),
+            assignment_style: Default::default(),
             exclude: Default::default(),
             default_exclude: Some(Default::default()),
             default_include: Some(Default::default()),
@@ -72,6 +75,7 @@ impl FormatSettings {
             .with_line_ending(self.line_ending.finalize(source))
             .with_line_width(self.line_width)
             .with_persistent_line_breaks(self.persistent_line_breaks)
+            .with_assignment_style(self.assignment_style)
             // Note that `clone()` on these options is ultimately on an `Arc`
             .with_skip(self.skip.clone())
             .with_table(self.table.clone())

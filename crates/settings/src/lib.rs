@@ -1,3 +1,4 @@
+mod assignment_style;
 mod indent_style;
 mod indent_width;
 mod line_ending;
@@ -7,6 +8,7 @@ mod skip;
 mod sorted_strings;
 mod table;
 
+pub use assignment_style::*;
 pub use indent_style::*;
 pub use indent_width::*;
 pub use line_ending::*;

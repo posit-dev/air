@@ -20,6 +20,7 @@ indent-width = 2
 indent-style = "space"
 line-ending = "auto"
 persistent-line-breaks = true
+assignment-style = "preserve"
 exclude = []
 default-exclude = true
 skip = []
@@ -195,6 +196,22 @@ dictionary <- list(apple = 0.75, banana = 0.25, cherry = 0.50)
 Alternatively, use a tool such as [codegrip](https://github.com/lionel-/codegrip) bound to a keyboard shortcut to flatten the code, and Air will keep it flattened as long as it fits within the `line-width`.
 
 It may be preferable to ignore persistent line breaks if you prefer that `line-width` should be the only value that influences line breaks.
+
+### assignment-style
+
+The preferred assignment style to use.
+
+One of the following values, with a default of `"preserve"`:
+
+-   `"preserve"`: Assignment operators are preserved as is.
+
+-   `"arrow"`: Use `<-`.
+
+-   `"equal"`: Use `=`.
+
+Note that changing from `<-` to `=` is not always possible.
+For example, `f(x <- 5)` can't be rewritten as `f(x = 5)` because that would parse as an argument named `x`.
+In these cases, the `<-` is left as is.
 
 ### exclude
 
