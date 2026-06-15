@@ -7,6 +7,7 @@ use biome_formatter::FormatContext;
 use biome_formatter::FormatOptions;
 use biome_formatter::TransformSourceMap;
 use biome_formatter::printer::PrinterOptions;
+use settings::AssignmentStyle;
 use settings::IndentStyle;
 use settings::IndentWidth;
 use settings::LineEnding;
@@ -83,6 +84,9 @@ pub struct RFormatOptions {
     /// The behavior of persistent line breaks.
     persistent_line_breaks: PersistentLineBreaks,
 
+    /// The assignment style to use.
+    assignment_style: AssignmentStyle,
+
     /// The set of functions that are skipped without requiring a `# fmt: skip` comment.
     skip: Option<Skip>,
 
@@ -125,6 +129,11 @@ impl RFormatOptions {
         self
     }
 
+    pub fn with_assignment_style(mut self, assignment_style: AssignmentStyle) -> Self {
+        self.assignment_style = assignment_style;
+        self
+    }
+
     pub fn with_skip(mut self, skip: Option<Skip>) -> Self {
         self.skip = skip;
         self
@@ -155,6 +164,10 @@ impl RFormatOptions {
         self.persistent_line_breaks = persistent_line_breaks;
     }
 
+    pub fn set_assignment_style(&mut self, assignment_style: AssignmentStyle) {
+        self.assignment_style = assignment_style;
+    }
+
     pub fn set_skip(&mut self, skip: Option<Skip>) {
         self.skip = skip;
     }
@@ -165,6 +178,10 @@ impl RFormatOptions {
 
     pub fn persistent_line_breaks(&self) -> PersistentLineBreaks {
         self.persistent_line_breaks
+    }
+
+    pub fn assignment_style(&self) -> AssignmentStyle {
+        self.assignment_style
     }
 
     pub fn skip(&self) -> Option<&Skip> {
@@ -205,6 +222,7 @@ impl fmt::Display for RFormatOptions {
         writeln!(f, "Line ending: {}", self.line_ending)?;
         writeln!(f, "Line width: {}", self.line_width.value())?;
         writeln!(f, "Persistent line breaks: {}", self.persistent_line_breaks)?;
+        writeln!(f, "Assignment style: {}", self.assignment_style)?;
         if let Some(skip) = &self.skip {
             writeln!(f, "Skip: {skip}")?;
         };

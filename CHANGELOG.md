@@ -2,6 +2,16 @@
 
 # Development version
 
+- New `assignment-style` option to enforce a preferred assignment operator, with the following values:
+
+  - `"arrow"`: Use `<-`. This is the default, aligning Air further with the [tidyverse style guide](https://style.tidyverse.org/syntax.html#assignment-1).
+
+  - `"equal"`: Use `=`.
+
+  - `"preserve"`: Assignment operators are preserved as is.
+
+  Note that prior to this option, Air's behavior was implicitly `"preserve"`. Set `"preserve"` or `"equal"` directly if you prefer either of those behaviors (#502).
+
 - Updated bundled tree-sitter-r, which comes with a few small fixes:
 
   - Hexadecimal constants with decimals are no longer parsed as two separate values (#495).

@@ -17,10 +17,42 @@
   },
   "additionalProperties": false,
   "$defs": {
+    "AssignmentStyle": {
+      "oneOf": [
+        {
+          "title": "Use `<-`",
+          "type": "string",
+          "const": "arrow"
+        },
+        {
+          "title": "Use `=`",
+          "description": "Note that changing from `<-` to `=` is not always possible. For example, `f(x <-\n 5)` can't be rewritten as `f(x = 5)` because that would parse as an argument named\n `x`. In these cases, the `<-` is left as is.",
+          "type": "string",
+          "const": "equal"
+        },
+        {
+          "title": "Assignment operators are preserved as is",
+          "type": "string",
+          "const": "preserve"
+        }
+      ]
+    },
     "FormatTomlOptions": {
       "description": "Options to configure code formatting.",
       "type": "object",
       "properties": {
+        "assignment-style": {
+          "title": "The preferred assignment style",
+          "description": "- `arrow` (default): Use `<-`.\n\n - `equal`: Use `=`.\n\n - `preserve`: Assignment operators are preserved as is.\n\n Note that changing from `<-` to `=` is not always possible. For example, `f(x <-\n 5)` can't be rewritten as `f(x = 5)` because that would parse as an argument named\n `x`. In these cases, the `<-` is left as is.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AssignmentStyle"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "default-exclude": {
           "title": "Whether or not to use default exclude patterns",
           "description": "Air automatically excludes a default set of folders and files. If this option is\n set to `false`, these files will be formatted as well.\n\n The default set of excluded patterns are:\n - `.git/`\n - `renv/`\n - `revdep/`\n - `cpp11.R`\n - `RcppExports.R`\n - `extendr-wrappers.R`\n - `import-standalone-*.R`",

@@ -1,3 +1,6 @@
+#' [format]
+#' assignment-style = "preserve"
+
 1 + 2 + 3 + 4
 
 argument_that_is_quite_long + argument_that_is_quite_long + argument_that_is_quite_long + argument_that_is_quite_long

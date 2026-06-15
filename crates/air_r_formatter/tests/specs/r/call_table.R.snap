@@ -443,6 +443,7 @@ Indent width: 2
 Line ending: LF
 Line width: 80
 Persistent line breaks: Respect
+Assignment style: Arrow
 Table: fcase, tribble
 -----
 
@@ -667,7 +668,7 @@ foo <<- list(
 )
 
 # fmt: table
-foo = list(
+foo <- list(
   1 + 1 , 1 + 1 ,
   1 + 1 , 1 + 1
 )
@@ -880,8 +881,8 @@ tribble(
 
 ## Unimplemented nodes/tokens
 
-"(\n\"foo\n\",  2)" => 5299..5312
-"(\n{ foo },  2\n)" => 5331..5346
+"(\n\"foo\n\",  2)" => 5300..5313
+"(\n{ foo },  2\n)" => 5332..5347
 # Lines exceeding max width of 80 characters
 ```
    91:   foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo , baaaaaaaaar , foooooooooo(baaaaaaaaar, foooooooooo, baaaaaaaaar) ,
