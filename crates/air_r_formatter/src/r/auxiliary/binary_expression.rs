@@ -258,10 +258,6 @@ fn fmt_left_assignment_operator(
     f: &mut RFormatter,
 ) -> FormatResult<()> {
     match f.options().assignment_style() {
-        AssignmentStyle::Preserve => {
-            // Preserve as is
-            operator.format().fmt(f)
-        }
         AssignmentStyle::Arrow => match left_assignment_kind {
             LeftAssignmentKind::Equal => format_replaced(
                 operator,
@@ -290,6 +286,10 @@ fn fmt_left_assignment_operator(
                 }
             }
         },
+        AssignmentStyle::Preserve => {
+            // Preserve as is
+            operator.format().fmt(f)
+        }
     }
 }
 

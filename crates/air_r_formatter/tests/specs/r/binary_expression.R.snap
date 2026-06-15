@@ -5,6 +5,9 @@ info: r/binary_expression.R
 # Input
 
 ```R
+#' [format]
+#' assignment-style = "preserve"
+
 1 + 2 + 3 + 4
 
 argument_that_is_quite_long + argument_that_is_quite_long + argument_that_is_quite_long + argument_that_is_quite_long
@@ -696,10 +699,14 @@ Indent width: 2
 Line ending: LF
 Line width: 80
 Persistent line breaks: Respect
+Assignment style: Preserve
 Table: fcase, tribble
 -----
 
 ```R
+#' [format]
+#' assignment-style = "preserve"
+
 1 + 2 + 3 + 4
 
 argument_that_is_quite_long +
@@ -1517,17 +1524,17 @@ y ~ x1 +
 
 # Lines exceeding max width of 80 characters
 ```
-  203: # TODO: Do we really want these chained? It seems like no good can come of that even though they have same precedence
-  579: a_really_really_really_really_really_really_long_thing_here ~ a_really_really_really_really_really_really_long_thing_here2
-  580: a_really_really_really_really_really_really_long_thing_here = a_really_really_really_really_really_really_long_thing_here2
-  581: a_really_really_really_really_really_really_long_thing_here := a_really_really_really_really_really_really_long_thing_here2
-  582: a_really_really_really_really_really_really_long_thing_here <- a_really_really_really_really_really_really_long_thing_here2
-  583: a_really_really_really_really_really_really_long_thing_here -> a_really_really_really_really_really_really_long_thing_here2
-  584: a_really_really_really_really_really_really_long_thing_here <<- a_really_really_really_really_really_really_long_thing_here2
-  585: a_really_really_really_really_really_really_long_thing_here ->> a_really_really_really_really_really_really_long_thing_here2
-  697: a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2 ~ a_really_really_long_thing_here3
-  698: a_really_really_long_thing_here1 ~ a_really_really_really_really_really_really_long_thing_here2 ~ a_really_really_long_thing_here3
-  699: (a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2) ~ a_really_really_long_thing_here3
-  700: a_really_really_long_thing_here1 ~ (a_really_really_long_thing_here2 ~ a_really_really_long_thing_here3)
-  753: # https://github.com/posit-dev/positron/discussions/6095#discussioncomment-13112983
+  206: # TODO: Do we really want these chained? It seems like no good can come of that even though they have same precedence
+  582: a_really_really_really_really_really_really_long_thing_here ~ a_really_really_really_really_really_really_long_thing_here2
+  583: a_really_really_really_really_really_really_long_thing_here = a_really_really_really_really_really_really_long_thing_here2
+  584: a_really_really_really_really_really_really_long_thing_here := a_really_really_really_really_really_really_long_thing_here2
+  585: a_really_really_really_really_really_really_long_thing_here <- a_really_really_really_really_really_really_long_thing_here2
+  586: a_really_really_really_really_really_really_long_thing_here -> a_really_really_really_really_really_really_long_thing_here2
+  587: a_really_really_really_really_really_really_long_thing_here <<- a_really_really_really_really_really_really_long_thing_here2
+  588: a_really_really_really_really_really_really_long_thing_here ->> a_really_really_really_really_really_really_long_thing_here2
+  700: a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2 ~ a_really_really_long_thing_here3
+  701: a_really_really_long_thing_here1 ~ a_really_really_really_really_really_really_long_thing_here2 ~ a_really_really_long_thing_here3
+  702: (a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2) ~ a_really_really_long_thing_here3
+  703: a_really_really_long_thing_here1 ~ (a_really_really_long_thing_here2 ~ a_really_really_long_thing_here3)
+  756: # https://github.com/posit-dev/positron/discussions/6095#discussioncomment-13112983
 ```

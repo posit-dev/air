@@ -9,11 +9,8 @@ use std::str::FromStr;
 )]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub enum AssignmentStyle {
-    /// # Assignment operators are preserved as is
-    #[default]
-    Preserve,
-
     /// # Use `<-`
+    #[default]
     Arrow,
 
     /// # Use `=`
@@ -22,6 +19,9 @@ pub enum AssignmentStyle {
     /// 5)` can't be rewritten as `f(x = 5)` because that would parse as an argument named
     /// `x`. In these cases, the `<-` is left as is.
     Equal,
+
+    /// # Assignment operators are preserved as is
+    Preserve,
 }
 
 impl FromStr for AssignmentStyle {
@@ -29,9 +29,9 @@ impl FromStr for AssignmentStyle {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "preserve" => Ok(Self::Preserve),
             "arrow" => Ok(Self::Arrow),
             "equal" => Ok(Self::Equal),
+            "preserve" => Ok(Self::Preserve),
             _ => Err("Unsupported value for this option"),
         }
     }
@@ -40,9 +40,9 @@ impl FromStr for AssignmentStyle {
 impl Display for AssignmentStyle {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            AssignmentStyle::Preserve => std::write!(f, "Preserve"),
             AssignmentStyle::Arrow => std::write!(f, "Arrow"),
             AssignmentStyle::Equal => std::write!(f, "Equal"),
+            AssignmentStyle::Preserve => std::write!(f, "Preserve"),
         }
     }
 }

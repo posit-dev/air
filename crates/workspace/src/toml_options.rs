@@ -125,11 +125,11 @@ pub struct FormatTomlOptions {
 
     /// # The preferred assignment style
     ///
-    /// - `preserve` (default): Assignment operators are preserved as is.
-    ///
-    /// - `arrow`: Use `<-`.
+    /// - `arrow` (default): Use `<-`.
     ///
     /// - `equal`: Use `=`.
+    ///
+    /// - `preserve`: Assignment operators are preserved as is.
     ///
     /// Note that changing from `<-` to `=` is not always possible. For example, `f(x <-
     /// 5)` can't be rewritten as `f(x = 5)` because that would parse as an argument named

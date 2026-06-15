@@ -222,12 +222,7 @@ impl fmt::Display for RFormatOptions {
         writeln!(f, "Line ending: {}", self.line_ending)?;
         writeln!(f, "Line width: {}", self.line_width.value())?;
         writeln!(f, "Persistent line breaks: {}", self.persistent_line_breaks)?;
-        match self.assignment_style {
-            AssignmentStyle::Preserve => (),
-            AssignmentStyle::Arrow | AssignmentStyle::Equal => {
-                writeln!(f, "Assignment style: {}", self.assignment_style)?
-            }
-        }
+        writeln!(f, "Assignment style: {}", self.assignment_style)?;
         if let Some(skip) = &self.skip {
             writeln!(f, "Skip: {skip}")?;
         };

@@ -20,11 +20,6 @@
     "AssignmentStyle": {
       "oneOf": [
         {
-          "title": "Assignment operators are preserved as is",
-          "type": "string",
-          "const": "preserve"
-        },
-        {
           "title": "Use `<-`",
           "type": "string",
           "const": "arrow"
@@ -34,6 +29,11 @@
           "description": "Note that changing from `<-` to `=` is not always possible. For example, `f(x <-\n 5)` can't be rewritten as `f(x = 5)` because that would parse as an argument named\n `x`. In these cases, the `<-` is left as is.",
           "type": "string",
           "const": "equal"
+        },
+        {
+          "title": "Assignment operators are preserved as is",
+          "type": "string",
+          "const": "preserve"
         }
       ]
     },
@@ -43,7 +43,7 @@
       "properties": {
         "assignment-style": {
           "title": "The preferred assignment style",
-          "description": "- `preserve` (default): Assignment operators are preserved as is.\n\n - `arrow`: Use `<-`.\n\n - `equal`: Use `=`.\n\n Note that changing from `<-` to `=` is not always possible. For example, `f(x <-\n 5)` can't be rewritten as `f(x = 5)` because that would parse as an argument named\n `x`. In these cases, the `<-` is left as is.",
+          "description": "- `arrow` (default): Use `<-`.\n\n - `equal`: Use `=`.\n\n - `preserve`: Assignment operators are preserved as is.\n\n Note that changing from `<-` to `=` is not always possible. For example, `f(x <-\n 5)` can't be rewritten as `f(x = 5)` because that would parse as an argument named\n `x`. In these cases, the `<-` is left as is.",
           "anyOf": [
             {
               "$ref": "#/$defs/AssignmentStyle"

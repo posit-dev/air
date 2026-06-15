@@ -20,7 +20,7 @@ indent-width = 2
 indent-style = "space"
 line-ending = "auto"
 persistent-line-breaks = true
-assignment-style = "preserve"
+assignment-style = "arrow"
 exclude = []
 default-exclude = true
 skip = []
@@ -201,13 +201,13 @@ It may be preferable to ignore persistent line breaks if you prefer that `line-w
 
 The preferred assignment style to use.
 
-One of the following values, with a default of `"preserve"`:
-
--   `"preserve"`: Assignment operators are preserved as is.
+One of the following values, with a default of `"arrow"`:
 
 -   `"arrow"`: Use `<-`.
 
 -   `"equal"`: Use `=`.
+
+-   `"preserve"`: Assignment operators are preserved as is.
 
 Note that changing from `<-` to `=` is not always possible.
 For example, `f(x <- 5)` can't be rewritten as `f(x = 5)` because that would parse as an argument named `x`.
