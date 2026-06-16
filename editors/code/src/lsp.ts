@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import * as lc from "vscode-languageclient/node";
+import * as path from "path";
 import { default as PQueue } from "p-queue";
 import { getInitializationOptions, getWorkspaceSettings } from "./settings";
 import {
@@ -11,6 +12,7 @@ import { SYNC_FILE_SETTINGS } from "./notification/sync-file-settings";
 import { registerLogger } from "./output";
 import { resolveAirBinaryPath } from "./binary";
 import { getRootWorkspaceFolder } from "./workspace";
+import { EnvironmentVariableManager } from "./environment";
 
 // All session management operations are put on a queue. They can't run
 // concurrently and either result in a started or stopped state. Starting when
@@ -41,9 +43,15 @@ export class Lsp {
 
 	private onSettingsNotificationEmitter: vscode.EventEmitter<SyncFileSettingsParams>;
 
+	private environmentVariableManager: EnvironmentVariableManager;
+
 	constructor(context: vscode.ExtensionContext) {
 		this.channel = vscode.window.createOutputChannel("Air Language Server");
 		context.subscriptions.push(this.channel, registerLogger(this.channel));
+
+		this.environmentVariableManager = new EnvironmentVariableManager(
+			context.environmentVariableCollection,
+		);
 
 		this.stateQueue = new PQueue({ concurrency: 1 });
 		this.fileSettings = new FileSettingsState(context);
@@ -204,6 +212,13 @@ export class Lsp {
 		this.client = client;
 		this.binaryPath = binaryPath;
 		this.state = State.Started;
+
+		// Only update PATH if no error occurred
+		if (workspaceSettings.addExecutableToPATH) {
+			this.environmentVariableManager.prependToPATH(
+				path.dirname(binaryPath),
+			);
+		}
 	}
 
 	private async stopImpl() {
@@ -211,6 +226,8 @@ export class Lsp {
 		if (this.state === State.Stopped) {
 			return;
 		}
+
+		this.environmentVariableManager.clear();
 
 		try {
 			await this.client?.stop();
