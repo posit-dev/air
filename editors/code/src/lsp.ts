@@ -12,21 +12,33 @@ import { SYNC_FILE_SETTINGS } from "./notification/sync-file-settings";
 import { registerLogger } from "./output";
 import { resolveAirBinaryPath } from "./binary";
 import { getRootWorkspaceFolder } from "./workspace";
-import { EnvironmentVariableManager } from "./environment";
 
 // All session management operations are put on a queue. They can't run
 // concurrently and either result in a started or stopped state. Starting when
 // started is a noop, same for stopping when stopped. On the other hand
 // restarting is always scheduled.
-enum State {
+export enum State {
 	Started = "started",
 	Stopped = "stopped",
 }
+
+export interface StateChangeStarted {
+	state: State;
+	binaryPath: string;
+	workspaceFolder: vscode.WorkspaceFolder;
+}
+export interface StateChangeStopped {
+	state: State;
+}
+export type StateChange = StateChangeStarted | StateChangeStopped;
 
 export class Lsp {
 	private client: lc.LanguageClient | null = null;
 
 	private binaryPath: string | null = null;
+
+	public onStateChange: vscode.Event<StateChange>;
+	private onStateChangeEmitter: vscode.EventEmitter<StateChange>;
 
 	// We've received and processed an `air.toml` settings synchronization
 	// notification. Used to synchronize unit tests with the LSP.
@@ -43,18 +55,16 @@ export class Lsp {
 
 	private onSettingsNotificationEmitter: vscode.EventEmitter<SyncFileSettingsParams>;
 
-	private environmentVariableManager: EnvironmentVariableManager;
-
 	constructor(context: vscode.ExtensionContext) {
 		this.channel = vscode.window.createOutputChannel("Air Language Server");
 		context.subscriptions.push(this.channel, registerLogger(this.channel));
 
-		this.environmentVariableManager = new EnvironmentVariableManager(
-			context.environmentVariableCollection,
-		);
-
 		this.stateQueue = new PQueue({ concurrency: 1 });
 		this.fileSettings = new FileSettingsState(context);
+
+		this.onStateChangeEmitter = new vscode.EventEmitter<StateChange>();
+		context.subscriptions.push(this.onStateChangeEmitter);
+		this.onStateChange = this.onStateChangeEmitter.event;
 
 		this.onSettingsNotificationEmitter =
 			new vscode.EventEmitter<SyncFileSettingsParams>();
@@ -212,13 +222,11 @@ export class Lsp {
 		this.client = client;
 		this.binaryPath = binaryPath;
 		this.state = State.Started;
-
-		// Only update PATH if no error occurred
-		if (workspaceSettings.addExecutableToPATH) {
-			this.environmentVariableManager.prependToPATH(
-				path.dirname(binaryPath),
-			);
-		}
+		this.onStateChangeEmitter.fire({
+			state: this.state,
+			binaryPath: this.binaryPath,
+			workspaceFolder: workspaceFolder,
+		});
 	}
 
 	private async stopImpl() {
@@ -226,8 +234,6 @@ export class Lsp {
 		if (this.state === State.Stopped) {
 			return;
 		}
-
-		this.environmentVariableManager.clear();
 
 		try {
 			await this.client?.stop();
@@ -238,6 +244,9 @@ export class Lsp {
 			this.state = State.Stopped;
 			this.client = null;
 			this.binaryPath = null;
+			this.onStateChangeEmitter.fire({
+				state: this.state,
+			});
 		}
 	}
 
