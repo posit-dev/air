@@ -4,15 +4,14 @@ import * as path from "path";
 import * as output from "./output";
 import { getWorkspaceSettings } from "./settings";
 import { State, StateChange } from "./lsp";
-import { Disposable } from "vscode-languageclient";
 
 // Manages the `PATH` environment variable contribution we make to integrated
 // terminals.
-export class PathEnvironmentVariableManager implements Disposable {
+export class PathEnvironmentVariableManager implements vscode.Disposable {
 	private executableDirectory: string | null = null;
 	private workspaceFolder: vscode.WorkspaceFolder | null = null;
 
-	private subscriptions: Disposable[] = [];
+	private subscriptions: vscode.Disposable[] = [];
 
 	constructor(
 		private collection: vscode.EnvironmentVariableCollection,
