@@ -23,12 +23,12 @@ export enum State {
 }
 
 export interface StateChangeStarted {
-	state: State;
+	state: State.Started;
 	binaryPath: string;
 	workspaceFolder: vscode.WorkspaceFolder;
 }
 export interface StateChangeStopped {
-	state: State;
+	state: State.Stopped;
 }
 export type StateChange = StateChangeStarted | StateChangeStopped;
 

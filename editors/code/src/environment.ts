@@ -3,7 +3,7 @@ import * as path from "path";
 
 import * as output from "./output";
 import { getWorkspaceSettings } from "./settings";
-import { StateChangeStarted, State, StateChange } from "./lsp";
+import { State, StateChange } from "./lsp";
 import { Disposable } from "vscode-languageclient";
 
 // Manages the `PATH` environment variable contribution we make to integrated
@@ -24,11 +24,10 @@ export class PathEnvironmentVariableManager implements Disposable {
 			onStateChange((change) => {
 				switch (change.state) {
 					case State.Started: {
-						const started = change as StateChangeStarted;
 						this.executableDirectory = path.dirname(
-							started.binaryPath,
+							change.binaryPath,
 						);
-						this.workspaceFolder = started.workspaceFolder;
+						this.workspaceFolder = change.workspaceFolder;
 						this.update();
 						break;
 					}
