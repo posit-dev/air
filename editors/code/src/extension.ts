@@ -3,7 +3,6 @@ import { Ctx } from "./context";
 import { Lsp } from "./lsp";
 import { registerCommands } from "./commands";
 import { PathEnvironmentVariableManager } from "./environment";
-import path from "path";
 
 let ctx: Ctx;
 
