@@ -9,6 +9,7 @@ use biome_formatter::write;
 use biome_rowan::Direction;
 use biome_rowan::SyntaxElement;
 use comments::{Directive, FormatDirective, parse_comment_directive, parse_special_skip_file};
+use settings::LineEnding;
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct FormatRRoot;
@@ -83,19 +84,34 @@ impl FormatNodeRule<RRoot> for FormatRRoot {
     // does not work out well for `RRoot` because it doesn't format
     // trivia verbatim. So we use a custom implementation instead.
     fn fmt_suppressed(&self, node: &RRoot, f: &mut RFormatter) -> FormatResult<()> {
+        let syntax = node.syntax();
+
         // Mark everything as visited so the formatter doesn't panic
         // thinking we've missed elements. We're going to print each element
         // manually with `dynamic_text()`.
-        mark_visited(node.syntax(), f);
+        mark_visited(syntax, f);
 
         // `node.to_trimmed_string()` trims trivia so we get the raw text on the syntax
         // node instead
-        let text: String = node.syntax().text_with_trivia().into();
+        let text: String = syntax.text_with_trivia().into();
+        let start = syntax.text_range_with_trivia().start();
+
+        // Printing all of `RRoot` means that all whitespace and newlines are also printed
+        // as part of the `dynamic_text()` token. The formatter's printer requires that
+        // all tokens have `\n` newlines, so we must normalize here, and then the printer
+        // will rewrite any `\n` it sees using the user's chosen `LineEnding`. This is
+        // very similar to how `FormatStringContentToken` works, where the newlines are
+        // part of the string content token, so we take responsibility for normalization
+        // (#498, #127).
+        let text = match line_ending::infer(&text) {
+            LineEnding::Lf => text,
+            LineEnding::Crlf => line_ending::normalize(text),
+        };
 
         // Formatting with `format_suppressed_node()` does not work well
         // here because it only formats the node verbatim, not the leading
         // and trailing trivia
-        dynamic_text(&text, node.syntax().text_range_with_trivia().start()).fmt(f)
+        dynamic_text(&text, start).fmt(f)
     }
 }
 

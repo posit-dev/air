@@ -179,6 +179,22 @@ fn test_check_returns_cleanly_for_multiline_strings_with_crlf_line_endings() {
 }
 
 #[test]
+fn test_check_returns_cleanly_for_skip_file_with_crlf_line_endings() {
+    // A `# fmt: skip file` file is printed verbatim, so it must round-trip
+    // through formatting untouched (#498).
+    let path = relative_path_fixtures().join("crlf").join("skip_file.R");
+
+    let output = Command::new(binary_path())
+        .current_dir(path_root())
+        .arg("format")
+        .arg(path)
+        .arg("--check")
+        .run();
+
+    assert!(output.status.success());
+}
+
+#[test]
 fn test_check_when_no_formatting_is_required() {
     let path = relative_path_fixtures().join("formatted.R");
     let path = path.to_str().unwrap();
