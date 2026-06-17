@@ -179,7 +179,7 @@ fn test_check_returns_cleanly_for_multiline_strings_with_crlf_line_endings() {
 }
 
 #[test]
-fn test_check_returns_cleanly_for_skip_file_with_crlf_line_endings() {
+fn test_check_returns_cleanly_for_skip_file_with_crlf_line_endings_and_the_auto_setting() {
     // A `# fmt: skip file` file is printed verbatim, so it must round-trip
     // through formatting untouched (#498).
     let path = relative_path_fixtures().join("crlf").join("skip_file.R");
@@ -192,6 +192,39 @@ fn test_check_returns_cleanly_for_skip_file_with_crlf_line_endings() {
         .run();
 
     assert!(output.status.success());
+}
+
+#[test]
+fn test_check_does_not_return_cleanly_for_skip_file_with_crlf_line_endings_and_the_lf_setting()
+-> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    let from_path = relative_path_fixtures().join("crlf").join("skip_file.R");
+    std::fs::copy(from_path, directory.join("skip_file.R"))?;
+
+    let air_path = "air.toml";
+    let air_contents = r#"
+[format]
+line-ending = "lf"
+"#;
+    std::fs::write(directory.join(air_path), air_contents)?;
+
+    let output = Command::new(binary_path())
+        .current_dir(directory)
+        .arg("format")
+        .arg(".")
+        .arg("--check")
+        .run();
+
+    // Fails because `\r\n` are rewritten as `\n` even though we skipped the file.
+    // The biome printer's `print_char()` is in charge of normalizing newlines to the
+    // user's chosen `LineEnding`, and this happens even when we use `fmt_suppressed()`
+    // on the `RRoot`. A better option if a user cares about this is probably to use
+    // an `exclude` on this file (#498).
+    assert!(!output.status.success());
+
+    Ok(())
 }
 
 #[test]
