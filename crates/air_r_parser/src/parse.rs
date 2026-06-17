@@ -1391,6 +1391,18 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_trivia_comment_crlf_test() {
+        // Trailing comment: `1 # hi\r\n` (r-lib/tree-sitter-r#184)
+        assert_eq_trivia(
+            trivia("1 # hi\r\n"),
+            vec![ws(1, 2, Pos::Trailing), cmt(2, 6, Pos::Trailing), nl(6, 8)],
+        );
+
+        // Own-line comment: `# hi\r\n1`
+        assert_eq_trivia(trivia("# hi\r\n1"), vec![cmt(0, 4, Pos::Leading), nl(4, 6)]);
+    }
+
+    #[test]
     fn test_parse_trivia_comment_nothing_else_test() {
         assert_eq_trivia(trivia("#"), vec![cmt(0, 1, Pos::Leading)]);
     }

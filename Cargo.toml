@@ -74,7 +74,7 @@ tower-lsp = { branch = "bugfix/patches", git = "https://github.com/lionel-/tower
 tracing = { version = "0.1.40", default-features = false, features = ["std"] }
 tracing-subscriber = "0.3.19"
 tree-sitter = "0.24.7"
-tree-sitter-r = { git = "https://github.com/r-lib/tree-sitter-r", rev = "3ee0e0a024a5b21b13506b7904a69b54652136d3" }
+tree-sitter-r = { git = "https://github.com/r-lib/tree-sitter-r", rev = "462c29d96cc8f8c9b93294d172da9d351d410a5c" }
 url = "2.5.3"
 uuid = { version = "1.11.0", features = ["v4"] }
 workspace = { path = "./crates/workspace" }
