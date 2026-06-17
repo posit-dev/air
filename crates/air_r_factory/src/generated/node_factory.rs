@@ -395,11 +395,33 @@ impl RRootBuilder {
         ))
     }
 }
-pub fn r_string_value(value_token: SyntaxToken) -> RStringValue {
-    RStringValue::unwrap_cast(SyntaxNode::new_detached(
-        RSyntaxKind::R_STRING_VALUE,
-        [Some(SyntaxElement::Token(value_token))],
-    ))
+pub fn r_string_value(open_token: SyntaxToken, close_token: SyntaxToken) -> RStringValueBuilder {
+    RStringValueBuilder {
+        open_token,
+        close_token,
+        content_token: None,
+    }
+}
+pub struct RStringValueBuilder {
+    open_token: SyntaxToken,
+    close_token: SyntaxToken,
+    content_token: Option<SyntaxToken>,
+}
+impl RStringValueBuilder {
+    pub fn with_content_token(mut self, content_token: SyntaxToken) -> Self {
+        self.content_token = Some(content_token);
+        self
+    }
+    pub fn build(self) -> RStringValue {
+        RStringValue::unwrap_cast(SyntaxNode::new_detached(
+            RSyntaxKind::R_STRING_VALUE,
+            [
+                Some(SyntaxElement::Token(self.open_token)),
+                self.content_token.map(|token| SyntaxElement::Token(token)),
+                Some(SyntaxElement::Token(self.close_token)),
+            ],
+        ))
+    }
 }
 pub fn r_subset(function: AnyRExpression, arguments: RSubsetArguments) -> RSubset {
     RSubset::unwrap_cast(SyntaxNode::new_detached(

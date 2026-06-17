@@ -2,14 +2,13 @@
 mod generated;
 pub mod argument_ext;
 pub mod call_ext;
-pub mod string_ext;
 mod syntax_node;
 
 pub use self::generated::*;
 pub use biome_rowan::{TextLen, TextRange, TextSize, TokenAtOffset, TriviaPieceKind, WalkEvent};
 pub use syntax_node::*;
 
-use biome_rowan::{RawSyntaxKind, SyntaxKind, TokenText};
+use biome_rowan::{RawSyntaxKind, SyntaxKind};
 
 impl From<u16> for RSyntaxKind {
     fn from(d: u16) -> RSyntaxKind {
@@ -71,12 +70,14 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_INTEGER_LITERAL
             | RSyntaxKind::R_DOUBLE_LITERAL
             | RSyntaxKind::R_COMPLEX_LITERAL
-            | RSyntaxKind::R_STRING_LITERAL
             | RSyntaxKind::NEWLINE
             | RSyntaxKind::WHITESPACE
             | RSyntaxKind::IDENT
             | RSyntaxKind::COMMENT
             | RSyntaxKind::BACKSLASH
+            | RSyntaxKind::STRING_OPEN
+            | RSyntaxKind::STRING_CONTENT
+            | RSyntaxKind::STRING_CLOSE
             | RSyntaxKind::R_ROOT
             | RSyntaxKind::R_DOTS
             | RSyntaxKind::R_DOT_DOT_I
@@ -209,7 +210,6 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_INTEGER_LITERAL
             | RSyntaxKind::R_DOUBLE_LITERAL
             | RSyntaxKind::R_COMPLEX_LITERAL
-            | RSyntaxKind::R_STRING_LITERAL
             | RSyntaxKind::R_NEXT_EXPRESSION
             | RSyntaxKind::R_BREAK_EXPRESSION
             | RSyntaxKind::R_TRUE_EXPRESSION
@@ -223,6 +223,9 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::IDENT
             | RSyntaxKind::COMMENT
             | RSyntaxKind::BACKSLASH
+            | RSyntaxKind::STRING_OPEN
+            | RSyntaxKind::STRING_CONTENT
+            | RSyntaxKind::STRING_CLOSE
             | RSyntaxKind::R_ROOT
             | RSyntaxKind::R_IDENTIFIER
             | RSyntaxKind::R_DOTS
@@ -391,16 +394,4 @@ impl OperatorPrecedence {
             _ => return None,
         })
     }
-}
-
-/// Text of `token`, excluding all trivia and removing quotes if `token` is a string literal.
-pub fn inner_string_text(token: &RSyntaxToken) -> TokenText {
-    let mut text = token.token_text_trimmed();
-    if token.kind() == RSyntaxKind::R_STRING_VALUE {
-        // remove string delimiters
-        // SAFETY: string literal token have a delimiters at the start and the end of the string
-        let range = TextRange::new(1.into(), text.len() - TextSize::from(1));
-        text = text.slice(range);
-    }
-    text
 }

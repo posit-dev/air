@@ -83,7 +83,9 @@ RRoot {
             },
             operator: DOLLAR@23..24 "$" [] [],
             right: RStringValue {
-                value_token: R_STRING_LITERAL@24..27 "\"b\"" [] [],
+                open_token: STRING_OPEN@24..25 "\"" [] [],
+                content_token: STRING_CONTENT@25..26 "b" [] [],
+                close_token: STRING_CLOSE@26..27 "\"" [] [],
             },
         },
         RExtractExpression {
@@ -92,7 +94,9 @@ RRoot {
             },
             operator: AT@29..30 "@" [] [],
             right: RStringValue {
-                value_token: R_STRING_LITERAL@30..33 "\"b\"" [] [],
+                open_token: STRING_OPEN@30..31 "\"" [] [],
+                content_token: STRING_CONTENT@31..32 "b" [] [],
+                close_token: STRING_CLOSE@32..33 "\"" [] [],
             },
         },
         RExtractExpression {
@@ -283,13 +287,17 @@ RRoot {
         0: IDENT@20..23 "a" [Newline("\n"), Newline("\n")] []
       1: DOLLAR@23..24 "$" [] []
       2: R_STRING_VALUE@24..27
-        0: R_STRING_LITERAL@24..27 "\"b\"" [] []
+        0: STRING_OPEN@24..25 "\"" [] []
+        1: STRING_CONTENT@25..26 "b" [] []
+        2: STRING_CLOSE@26..27 "\"" [] []
     5: R_EXTRACT_EXPRESSION@27..33
       0: R_IDENTIFIER@27..29
         0: IDENT@27..29 "a" [Newline("\n")] []
       1: AT@29..30 "@" [] []
       2: R_STRING_VALUE@30..33
-        0: R_STRING_LITERAL@30..33 "\"b\"" [] []
+        0: STRING_OPEN@30..31 "\"" [] []
+        1: STRING_CONTENT@31..32 "b" [] []
+        2: STRING_CLOSE@32..33 "\"" [] []
     6: R_EXTRACT_EXPRESSION@33..40
       0: R_CALL@33..38
         0: R_IDENTIFIER@33..36
