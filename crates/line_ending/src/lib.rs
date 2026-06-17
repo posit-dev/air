@@ -2,6 +2,7 @@
 //! This module does line ending conversion and detection (so that we can
 //! convert back to `\r\n` on the way out as needed).
 
+use std::borrow::Cow;
 use std::sync::LazyLock;
 
 use memchr::memmem;
@@ -62,6 +63,17 @@ pub fn normalize(x: String) -> String {
         let new_len = buf.len() - gap_len;
         buf.set_len(new_len);
         String::from_utf8_unchecked(buf)
+    }
+}
+
+/// Normalize line endings, only allocating if required
+///
+/// Prefer [normalize()] when you have an owned [String] as that modifies in place,
+/// reusing the owned [String]'s existing allocation.
+pub fn normalize_ref(x: &str) -> Cow<'_, str> {
+    match infer(x) {
+        LineEnding::Lf => Cow::Borrowed(x),
+        LineEnding::Crlf => Cow::Owned(normalize(x.to_string())),
     }
 }
 
