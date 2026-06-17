@@ -301,6 +301,15 @@ if (this || this || this || this || this || this || this || this || this || this
 }
 
 # ---------------------------------------------------------------------------
+# `else`-like identifier is not treated as `else` (#499) 
+
+# ASCII letter
+{
+  if (TRUE) 1
+  elseidx <- 1
+}
+
+# ---------------------------------------------------------------------------
 # Auto bracing
 
 # Not allowed on one line without braces (effect position)

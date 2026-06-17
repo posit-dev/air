@@ -14,6 +14,48 @@ if # comment1
   1 else # comment3
   2 # comment4
 
+# ------------------------------------------------------------------------------
+# `else`-like identifier is not treated as `else` (#499)
+
+# ASCII letter
+{
+  if (TRUE) 1
+  elseidx <- 1
+}
+
+# ASCII number
+{
+  if (TRUE) 1
+  else1idx <- 1
+}
+
+# ASCII `_`
+{
+  if (TRUE) 1
+  else_idx <- 1
+}
+
+# ASCII `.`
+{
+  if (TRUE) 1
+  else.idx <- 1
+}
+
+# Non-ASCII, but considered `iswalnum()` in R with UTF-8 locale.
+# Not considered `iswalnum()` in our scanner with C locale, but
+# our overapproximation with `>= 128` allows this and aligns with R.
+{
+  if (TRUE) 1
+  elseμ <- 1
+}
+
+# Non-ASCII (U+00B7), rejected by R as syntax error since `iswalnum()` returns false.
+# Our overapproximation with `>= 128` allows this, but that's ok since the R
+# side behavior is a syntax error.
+{
+  if (TRUE) 1
+  else· <- 1
+}
 ```
 
 
@@ -100,17 +142,179 @@ RRoot {
                 },
             },
         },
+        RBracedExpressions {
+            l_curly_token: L_CURLY@121..278 "{" [Newline("\n"), Newline("\n"), Comments("# ------------------- ..."), Newline("\n"), Comments("# `else`-like identif ..."), Newline("\n"), Newline("\n"), Comments("# ASCII letter"), Newline("\n")] [],
+            expressions: RExpressionList [
+                RIfStatement {
+                    if_token: IF_KW@278..283 "if" [Newline("\n"), Whitespace("  ")] [],
+                    l_paren_token: L_PAREN@283..285 "(" [Whitespace(" ")] [],
+                    condition: RTrueExpression {
+                        true_token: TRUE_KW@285..289 "TRUE" [] [],
+                    },
+                    r_paren_token: R_PAREN@289..290 ")" [] [],
+                    consequence: RDoubleValue {
+                        value_token: R_DOUBLE_LITERAL@290..292 "1" [Whitespace(" ")] [],
+                    },
+                    else_clause: missing (optional),
+                },
+                RBinaryExpression {
+                    left: RIdentifier {
+                        name_token: IDENT@292..302 "elseidx" [Newline("\n"), Whitespace("  ")] [],
+                    },
+                    operator: ASSIGN@302..305 "<-" [Whitespace(" ")] [],
+                    right: RDoubleValue {
+                        value_token: R_DOUBLE_LITERAL@305..307 "1" [Whitespace(" ")] [],
+                    },
+                },
+            ],
+            r_curly_token: R_CURLY@307..309 "}" [Newline("\n")] [],
+        },
+        RBracedExpressions {
+            l_curly_token: L_CURLY@309..327 "{" [Newline("\n"), Newline("\n"), Comments("# ASCII number"), Newline("\n")] [],
+            expressions: RExpressionList [
+                RIfStatement {
+                    if_token: IF_KW@327..332 "if" [Newline("\n"), Whitespace("  ")] [],
+                    l_paren_token: L_PAREN@332..334 "(" [Whitespace(" ")] [],
+                    condition: RTrueExpression {
+                        true_token: TRUE_KW@334..338 "TRUE" [] [],
+                    },
+                    r_paren_token: R_PAREN@338..339 ")" [] [],
+                    consequence: RDoubleValue {
+                        value_token: R_DOUBLE_LITERAL@339..341 "1" [Whitespace(" ")] [],
+                    },
+                    else_clause: missing (optional),
+                },
+                RBinaryExpression {
+                    left: RIdentifier {
+                        name_token: IDENT@341..352 "else1idx" [Newline("\n"), Whitespace("  ")] [],
+                    },
+                    operator: ASSIGN@352..355 "<-" [Whitespace(" ")] [],
+                    right: RDoubleValue {
+                        value_token: R_DOUBLE_LITERAL@355..357 "1" [Whitespace(" ")] [],
+                    },
+                },
+            ],
+            r_curly_token: R_CURLY@357..359 "}" [Newline("\n")] [],
+        },
+        RBracedExpressions {
+            l_curly_token: L_CURLY@359..374 "{" [Newline("\n"), Newline("\n"), Comments("# ASCII `_`"), Newline("\n")] [],
+            expressions: RExpressionList [
+                RIfStatement {
+                    if_token: IF_KW@374..379 "if" [Newline("\n"), Whitespace("  ")] [],
+                    l_paren_token: L_PAREN@379..381 "(" [Whitespace(" ")] [],
+                    condition: RTrueExpression {
+                        true_token: TRUE_KW@381..385 "TRUE" [] [],
+                    },
+                    r_paren_token: R_PAREN@385..386 ")" [] [],
+                    consequence: RDoubleValue {
+                        value_token: R_DOUBLE_LITERAL@386..388 "1" [Whitespace(" ")] [],
+                    },
+                    else_clause: missing (optional),
+                },
+                RBinaryExpression {
+                    left: RIdentifier {
+                        name_token: IDENT@388..399 "else_idx" [Newline("\n"), Whitespace("  ")] [],
+                    },
+                    operator: ASSIGN@399..402 "<-" [Whitespace(" ")] [],
+                    right: RDoubleValue {
+                        value_token: R_DOUBLE_LITERAL@402..404 "1" [Whitespace(" ")] [],
+                    },
+                },
+            ],
+            r_curly_token: R_CURLY@404..406 "}" [Newline("\n")] [],
+        },
+        RBracedExpressions {
+            l_curly_token: L_CURLY@406..421 "{" [Newline("\n"), Newline("\n"), Comments("# ASCII `.`"), Newline("\n")] [],
+            expressions: RExpressionList [
+                RIfStatement {
+                    if_token: IF_KW@421..426 "if" [Newline("\n"), Whitespace("  ")] [],
+                    l_paren_token: L_PAREN@426..428 "(" [Whitespace(" ")] [],
+                    condition: RTrueExpression {
+                        true_token: TRUE_KW@428..432 "TRUE" [] [],
+                    },
+                    r_paren_token: R_PAREN@432..433 ")" [] [],
+                    consequence: RDoubleValue {
+                        value_token: R_DOUBLE_LITERAL@433..435 "1" [Whitespace(" ")] [],
+                    },
+                    else_clause: missing (optional),
+                },
+                RBinaryExpression {
+                    left: RIdentifier {
+                        name_token: IDENT@435..446 "else.idx" [Newline("\n"), Whitespace("  ")] [],
+                    },
+                    operator: ASSIGN@446..449 "<-" [Whitespace(" ")] [],
+                    right: RDoubleValue {
+                        value_token: R_DOUBLE_LITERAL@449..451 "1" [Whitespace(" ")] [],
+                    },
+                },
+            ],
+            r_curly_token: R_CURLY@451..453 "}" [Newline("\n")] [],
+        },
+        RBracedExpressions {
+            l_curly_token: L_CURLY@453..654 "{" [Newline("\n"), Newline("\n"), Comments("# Non-ASCII, but cons ..."), Newline("\n"), Comments("# Not considered `isw ..."), Newline("\n"), Comments("# our overapproximati ..."), Newline("\n")] [],
+            expressions: RExpressionList [
+                RIfStatement {
+                    if_token: IF_KW@654..659 "if" [Newline("\n"), Whitespace("  ")] [],
+                    l_paren_token: L_PAREN@659..661 "(" [Whitespace(" ")] [],
+                    condition: RTrueExpression {
+                        true_token: TRUE_KW@661..665 "TRUE" [] [],
+                    },
+                    r_paren_token: R_PAREN@665..666 ")" [] [],
+                    consequence: RDoubleValue {
+                        value_token: R_DOUBLE_LITERAL@666..668 "1" [Whitespace(" ")] [],
+                    },
+                    else_clause: missing (optional),
+                },
+                RBinaryExpression {
+                    left: RIdentifier {
+                        name_token: IDENT@668..677 "elseμ" [Newline("\n"), Whitespace("  ")] [],
+                    },
+                    operator: ASSIGN@677..680 "<-" [Whitespace(" ")] [],
+                    right: RDoubleValue {
+                        value_token: R_DOUBLE_LITERAL@680..682 "1" [Whitespace(" ")] [],
+                    },
+                },
+            ],
+            r_curly_token: R_CURLY@682..684 "}" [Newline("\n")] [],
+        },
+        RBracedExpressions {
+            l_curly_token: L_CURLY@684..885 "{" [Newline("\n"), Newline("\n"), Comments("# Non-ASCII (U+00B7), ..."), Newline("\n"), Comments("# Our overapproximati ..."), Newline("\n"), Comments("# side behavior is a  ..."), Newline("\n")] [],
+            expressions: RExpressionList [
+                RIfStatement {
+                    if_token: IF_KW@885..890 "if" [Newline("\n"), Whitespace("  ")] [],
+                    l_paren_token: L_PAREN@890..892 "(" [Whitespace(" ")] [],
+                    condition: RTrueExpression {
+                        true_token: TRUE_KW@892..896 "TRUE" [] [],
+                    },
+                    r_paren_token: R_PAREN@896..897 ")" [] [],
+                    consequence: RDoubleValue {
+                        value_token: R_DOUBLE_LITERAL@897..899 "1" [Whitespace(" ")] [],
+                    },
+                    else_clause: missing (optional),
+                },
+                RBinaryExpression {
+                    left: RIdentifier {
+                        name_token: IDENT@899..908 "else·" [Newline("\n"), Whitespace("  ")] [],
+                    },
+                    operator: ASSIGN@908..911 "<-" [Whitespace(" ")] [],
+                    right: RDoubleValue {
+                        value_token: R_DOUBLE_LITERAL@911..913 "1" [Whitespace(" ")] [],
+                    },
+                },
+            ],
+            r_curly_token: R_CURLY@913..915 "}" [Newline("\n")] [],
+        },
     ],
-    eof_token: EOF@121..122 "" [Newline("\n")] [],
+    eof_token: EOF@915..915 "" [] [],
 }
 ```
 
 ## CST
 
 ```
-0: R_ROOT@0..122
+0: R_ROOT@0..915
   0: (empty)
-  1: R_EXPRESSION_LIST@0..121
+  1: R_EXPRESSION_LIST@0..915
     0: R_IF_STATEMENT@0..8
       0: IF_KW@0..2 "if" [] []
       1: L_PAREN@2..4 "(" [Whitespace(" ")] []
@@ -166,6 +370,120 @@ RRoot {
         0: ELSE_KW@90..106 "else" [Whitespace(" ")] [Whitespace(" "), Comments("# comment3")]
         1: R_DOUBLE_VALUE@106..121
           0: R_DOUBLE_LITERAL@106..121 "2" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment4")]
-  2: EOF@121..122 "" [Newline("\n")] []
+    4: R_BRACED_EXPRESSIONS@121..309
+      0: L_CURLY@121..278 "{" [Newline("\n"), Newline("\n"), Comments("# ------------------- ..."), Newline("\n"), Comments("# `else`-like identif ..."), Newline("\n"), Newline("\n"), Comments("# ASCII letter"), Newline("\n")] []
+      1: R_EXPRESSION_LIST@278..307
+        0: R_IF_STATEMENT@278..292
+          0: IF_KW@278..283 "if" [Newline("\n"), Whitespace("  ")] []
+          1: L_PAREN@283..285 "(" [Whitespace(" ")] []
+          2: R_TRUE_EXPRESSION@285..289
+            0: TRUE_KW@285..289 "TRUE" [] []
+          3: R_PAREN@289..290 ")" [] []
+          4: R_DOUBLE_VALUE@290..292
+            0: R_DOUBLE_LITERAL@290..292 "1" [Whitespace(" ")] []
+          5: (empty)
+        1: R_BINARY_EXPRESSION@292..307
+          0: R_IDENTIFIER@292..302
+            0: IDENT@292..302 "elseidx" [Newline("\n"), Whitespace("  ")] []
+          1: ASSIGN@302..305 "<-" [Whitespace(" ")] []
+          2: R_DOUBLE_VALUE@305..307
+            0: R_DOUBLE_LITERAL@305..307 "1" [Whitespace(" ")] []
+      2: R_CURLY@307..309 "}" [Newline("\n")] []
+    5: R_BRACED_EXPRESSIONS@309..359
+      0: L_CURLY@309..327 "{" [Newline("\n"), Newline("\n"), Comments("# ASCII number"), Newline("\n")] []
+      1: R_EXPRESSION_LIST@327..357
+        0: R_IF_STATEMENT@327..341
+          0: IF_KW@327..332 "if" [Newline("\n"), Whitespace("  ")] []
+          1: L_PAREN@332..334 "(" [Whitespace(" ")] []
+          2: R_TRUE_EXPRESSION@334..338
+            0: TRUE_KW@334..338 "TRUE" [] []
+          3: R_PAREN@338..339 ")" [] []
+          4: R_DOUBLE_VALUE@339..341
+            0: R_DOUBLE_LITERAL@339..341 "1" [Whitespace(" ")] []
+          5: (empty)
+        1: R_BINARY_EXPRESSION@341..357
+          0: R_IDENTIFIER@341..352
+            0: IDENT@341..352 "else1idx" [Newline("\n"), Whitespace("  ")] []
+          1: ASSIGN@352..355 "<-" [Whitespace(" ")] []
+          2: R_DOUBLE_VALUE@355..357
+            0: R_DOUBLE_LITERAL@355..357 "1" [Whitespace(" ")] []
+      2: R_CURLY@357..359 "}" [Newline("\n")] []
+    6: R_BRACED_EXPRESSIONS@359..406
+      0: L_CURLY@359..374 "{" [Newline("\n"), Newline("\n"), Comments("# ASCII `_`"), Newline("\n")] []
+      1: R_EXPRESSION_LIST@374..404
+        0: R_IF_STATEMENT@374..388
+          0: IF_KW@374..379 "if" [Newline("\n"), Whitespace("  ")] []
+          1: L_PAREN@379..381 "(" [Whitespace(" ")] []
+          2: R_TRUE_EXPRESSION@381..385
+            0: TRUE_KW@381..385 "TRUE" [] []
+          3: R_PAREN@385..386 ")" [] []
+          4: R_DOUBLE_VALUE@386..388
+            0: R_DOUBLE_LITERAL@386..388 "1" [Whitespace(" ")] []
+          5: (empty)
+        1: R_BINARY_EXPRESSION@388..404
+          0: R_IDENTIFIER@388..399
+            0: IDENT@388..399 "else_idx" [Newline("\n"), Whitespace("  ")] []
+          1: ASSIGN@399..402 "<-" [Whitespace(" ")] []
+          2: R_DOUBLE_VALUE@402..404
+            0: R_DOUBLE_LITERAL@402..404 "1" [Whitespace(" ")] []
+      2: R_CURLY@404..406 "}" [Newline("\n")] []
+    7: R_BRACED_EXPRESSIONS@406..453
+      0: L_CURLY@406..421 "{" [Newline("\n"), Newline("\n"), Comments("# ASCII `.`"), Newline("\n")] []
+      1: R_EXPRESSION_LIST@421..451
+        0: R_IF_STATEMENT@421..435
+          0: IF_KW@421..426 "if" [Newline("\n"), Whitespace("  ")] []
+          1: L_PAREN@426..428 "(" [Whitespace(" ")] []
+          2: R_TRUE_EXPRESSION@428..432
+            0: TRUE_KW@428..432 "TRUE" [] []
+          3: R_PAREN@432..433 ")" [] []
+          4: R_DOUBLE_VALUE@433..435
+            0: R_DOUBLE_LITERAL@433..435 "1" [Whitespace(" ")] []
+          5: (empty)
+        1: R_BINARY_EXPRESSION@435..451
+          0: R_IDENTIFIER@435..446
+            0: IDENT@435..446 "else.idx" [Newline("\n"), Whitespace("  ")] []
+          1: ASSIGN@446..449 "<-" [Whitespace(" ")] []
+          2: R_DOUBLE_VALUE@449..451
+            0: R_DOUBLE_LITERAL@449..451 "1" [Whitespace(" ")] []
+      2: R_CURLY@451..453 "}" [Newline("\n")] []
+    8: R_BRACED_EXPRESSIONS@453..684
+      0: L_CURLY@453..654 "{" [Newline("\n"), Newline("\n"), Comments("# Non-ASCII, but cons ..."), Newline("\n"), Comments("# Not considered `isw ..."), Newline("\n"), Comments("# our overapproximati ..."), Newline("\n")] []
+      1: R_EXPRESSION_LIST@654..682
+        0: R_IF_STATEMENT@654..668
+          0: IF_KW@654..659 "if" [Newline("\n"), Whitespace("  ")] []
+          1: L_PAREN@659..661 "(" [Whitespace(" ")] []
+          2: R_TRUE_EXPRESSION@661..665
+            0: TRUE_KW@661..665 "TRUE" [] []
+          3: R_PAREN@665..666 ")" [] []
+          4: R_DOUBLE_VALUE@666..668
+            0: R_DOUBLE_LITERAL@666..668 "1" [Whitespace(" ")] []
+          5: (empty)
+        1: R_BINARY_EXPRESSION@668..682
+          0: R_IDENTIFIER@668..677
+            0: IDENT@668..677 "elseμ" [Newline("\n"), Whitespace("  ")] []
+          1: ASSIGN@677..680 "<-" [Whitespace(" ")] []
+          2: R_DOUBLE_VALUE@680..682
+            0: R_DOUBLE_LITERAL@680..682 "1" [Whitespace(" ")] []
+      2: R_CURLY@682..684 "}" [Newline("\n")] []
+    9: R_BRACED_EXPRESSIONS@684..915
+      0: L_CURLY@684..885 "{" [Newline("\n"), Newline("\n"), Comments("# Non-ASCII (U+00B7), ..."), Newline("\n"), Comments("# Our overapproximati ..."), Newline("\n"), Comments("# side behavior is a  ..."), Newline("\n")] []
+      1: R_EXPRESSION_LIST@885..913
+        0: R_IF_STATEMENT@885..899
+          0: IF_KW@885..890 "if" [Newline("\n"), Whitespace("  ")] []
+          1: L_PAREN@890..892 "(" [Whitespace(" ")] []
+          2: R_TRUE_EXPRESSION@892..896
+            0: TRUE_KW@892..896 "TRUE" [] []
+          3: R_PAREN@896..897 ")" [] []
+          4: R_DOUBLE_VALUE@897..899
+            0: R_DOUBLE_LITERAL@897..899 "1" [Whitespace(" ")] []
+          5: (empty)
+        1: R_BINARY_EXPRESSION@899..913
+          0: R_IDENTIFIER@899..908
+            0: IDENT@899..908 "else·" [Newline("\n"), Whitespace("  ")] []
+          1: ASSIGN@908..911 "<-" [Whitespace(" ")] []
+          2: R_DOUBLE_VALUE@911..913
+            0: R_DOUBLE_LITERAL@911..913 "1" [Whitespace(" ")] []
+      2: R_CURLY@913..915 "}" [Newline("\n")] []
+  2: EOF@915..915 "" [] []
 
 ```

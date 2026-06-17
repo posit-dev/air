@@ -18,6 +18,8 @@
 
   - `.{digit}` (like `.1`) is now correctly parsed as a double rather than as an identifier. This means that things like `function(.1 = 1) {}`, where `.1` is expected to be an identifier but not a double, now correctly fails to parse (#496).
 
+  - `else` is no longer consumed as eagerly in some special cases (#499).
+
 # 0.9.0
 
 - New `--stdin-file-path <path>` to read from stdin. Read more about this on [the website](https://posit-dev.github.io/air/cli.html#stdin) (#471).
