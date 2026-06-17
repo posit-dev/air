@@ -15,6 +15,7 @@ export type InitializationOptions = {
 export type WorkspaceSettings = {
 	executableStrategy: ExecutableStrategy;
 	executablePath?: string;
+	addExecutableToPath: boolean;
 };
 
 export function getInitializationOptions(
@@ -41,6 +42,7 @@ export function getWorkspaceSettings(
 		executableStrategy:
 			config.get<ExecutableStrategy>("executableStrategy") ?? "bundled",
 		executablePath: config.get<string>("executablePath"),
+		addExecutableToPath: config.get<boolean>("addExecutableToPath") ?? true,
 	};
 }
 

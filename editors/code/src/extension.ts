@@ -2,11 +2,28 @@ import * as vscode from "vscode";
 import { Ctx } from "./context";
 import { Lsp } from "./lsp";
 import { registerCommands } from "./commands";
+import { PathEnvironmentVariableManager } from "./environment";
 
 let ctx: Ctx;
 
 export function activate(context: vscode.ExtensionContext) {
+	// Contributed environment variables should mirror the running server's
+	// resolved binary, should be recomputed on each start, and don't cache
+	// across IDE sessions. In particular, it would be bad if a collection was
+	// restored after an Air extension update, in which case there would be a
+	// short period where terminal `PATH`s point to an outdated location where
+	// an `air` executable no longer exists.
+	context.environmentVariableCollection.persistent = false;
+
 	let lsp = new Lsp(context);
+
+	context.subscriptions.push(
+		new PathEnvironmentVariableManager(
+			context.environmentVariableCollection,
+			lsp.onStateChange,
+		),
+	);
+
 	lsp.start();
 
 	ctx = new Ctx(context, lsp);

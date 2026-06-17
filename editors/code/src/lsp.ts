@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import * as lc from "vscode-languageclient/node";
+import * as path from "path";
 import { default as PQueue } from "p-queue";
 import { getInitializationOptions, getWorkspaceSettings } from "./settings";
 import {
@@ -16,15 +17,28 @@ import { getRootWorkspaceFolder } from "./workspace";
 // concurrently and either result in a started or stopped state. Starting when
 // started is a noop, same for stopping when stopped. On the other hand
 // restarting is always scheduled.
-enum State {
+export enum State {
 	Started = "started",
 	Stopped = "stopped",
 }
+
+export interface StateChangeStarted {
+	state: State.Started;
+	binaryPath: string;
+	workspaceFolder: vscode.WorkspaceFolder;
+}
+export interface StateChangeStopped {
+	state: State.Stopped;
+}
+export type StateChange = StateChangeStarted | StateChangeStopped;
 
 export class Lsp {
 	private client: lc.LanguageClient | null = null;
 
 	private binaryPath: string | null = null;
+
+	public onStateChange: vscode.Event<StateChange>;
+	private onStateChangeEmitter: vscode.EventEmitter<StateChange>;
 
 	// We've received and processed an `air.toml` settings synchronization
 	// notification. Used to synchronize unit tests with the LSP.
@@ -47,6 +61,10 @@ export class Lsp {
 
 		this.stateQueue = new PQueue({ concurrency: 1 });
 		this.fileSettings = new FileSettingsState(context);
+
+		this.onStateChangeEmitter = new vscode.EventEmitter<StateChange>();
+		context.subscriptions.push(this.onStateChangeEmitter);
+		this.onStateChange = this.onStateChangeEmitter.event;
 
 		this.onSettingsNotificationEmitter =
 			new vscode.EventEmitter<SyncFileSettingsParams>();
@@ -204,6 +222,11 @@ export class Lsp {
 		this.client = client;
 		this.binaryPath = binaryPath;
 		this.state = State.Started;
+		this.onStateChangeEmitter.fire({
+			state: this.state,
+			binaryPath: this.binaryPath,
+			workspaceFolder: workspaceFolder,
+		});
 	}
 
 	private async stopImpl() {
@@ -221,6 +244,9 @@ export class Lsp {
 			this.state = State.Stopped;
 			this.client = null;
 			this.binaryPath = null;
+			this.onStateChangeEmitter.fire({
+				state: this.state,
+			});
 		}
 	}
 

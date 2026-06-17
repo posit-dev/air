@@ -83,7 +83,7 @@
 				},
 				"air.executableStrategy": {
 					"default": "bundled",
-					"markdownDescription": "Strategy used to locate the `air` executable to start the language server with.",
+					"markdownDescription": "Strategy used to locate the `air` executable.",
 					"enum": [
 						"bundled",
 						"environment",
@@ -102,6 +102,12 @@
 					"markdownDescription": "The path to an `air` executable. Only utilized when `air.executableStrategy` is set to \"path\".",
 					"scope": "window",
 					"type": "string"
+				},
+				"air.addExecutableToPath": {
+					"default": true,
+					"markdownDescription": "Whether to add the directory containing the `air` executable resolved by `air.executableStrategy` to the `PATH` of integrated terminals. This ensures that `air` invoked in an integrated terminal matches `air` used by the editor.",
+					"scope": "window",
+					"type": "boolean"
 				}
 			}
 		},
