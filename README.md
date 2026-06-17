@@ -20,9 +20,6 @@ On Windows:
 powershell -ExecutionPolicy Bypass -c "irm https://github.com/posit-dev/air/releases/latest/download/air-installer.ps1 | iex"
 ```
 
-The installer scripts will automatically add Air to your `PATH`.
-The very first time you install Air, for the `PATH` modifications to be applied you'll need to restart your terminal.
-
 For a specific version:
 
 ``` bash
@@ -33,11 +30,10 @@ curl -LsSf https://github.com/posit-dev/air/releases/download/0.9.0/air-installe
 powershell -ExecutionPolicy Bypass -c "irm https://github.com/posit-dev/air/releases/download/0.9.0/air-installer.ps1 | iex"
 ```
 
-If you're on macOS and are familiar with [Homebrew](https://brew.sh/), you can alternatively install the [air formula](https://formulae.brew.sh/formula/air) with:
+The installer scripts will automatically add Air to your `PATH`.
+The very first time you install Air, for the `PATH` modifications to be applied you'll need to restart your terminal.
 
-``` bash
-brew install air
-```
+## uv
 
 If you use [uv](https://docs.astral.sh/uv/), you can install Air via the [air-formatter](https://pypi.org/project/air-formatter/) package:
 
@@ -50,7 +46,47 @@ air format path/to/my/script.R
 uvx --from air-formatter air format path/to/my/script.R
 ```
 
-The installer scripts will automatically add Air to your `PATH`. The very first time you install Air, you'll need to restart your shell for the `PATH` modifications to be applied.
+## Homebrew
+
+If you're on macOS and are familiar with [Homebrew](https://brew.sh/), you can install the [air formula](https://formulae.brew.sh/formula/air) with:
+
+``` bash
+brew install air
+```
+
+Homebrew support is community maintained.
+
+## Pixi
+
+You can use [Pixi](https://pixi.prefix.dev/latest/) to install Air because it is on [conda-forge](https://github.com/conda-forge/air-feedstock):
+
+``` bash
+# Add to a project
+pixi add air
+pixi run air format path/to/my/script.R
+
+# Install globally
+pixi global install air
+
+# Temporary environment
+pixi exec air format path/to/my/script.R
+```
+
+Pixi support is community maintained.
+
+## mise
+
+You can use [mise](https://mise.jdx.dev/) to install Air via [conda-forge](https://github.com/conda-forge/air-feedstock):
+
+``` bash
+# Add to a project
+mise use conda:air
+
+# Install globally
+mise use --global conda:air
+```
+
+mise support is community maintained.
 
 # Acknowledgements and inspiration
 
