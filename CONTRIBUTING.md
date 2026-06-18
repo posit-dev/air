@@ -80,7 +80,9 @@ When you want to cut a release of Air:
 
 -   Bump the version of Air OpenVSX Extension version recorded in Positron's [`product.json`](https://github.com/posit-dev/positron/blob/main/product.json) and do a PR to Positron.
 
--   Merge the release branch
+-   Merge the release branch via a standard merge
+
+    -   Do NOT squash merge, as this deletes the commit the git release tag is pinned to!
 
     -   There is no need to bump to an intermediate "dev version" after a release.
 
