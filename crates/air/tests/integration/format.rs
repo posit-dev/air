@@ -163,6 +163,139 @@ default-exclude = false
 }
 
 #[test]
+fn test_skipped_multiline_node_with_crlf_line_endings_isnt_corrupted() -> anyhow::Result<()> {
+    // The `1\r\n+1` is treated as a single token, but is normalized to `1\n+1` before the
+    // printer sees it, which the printer then rewrites back to `1\r\n+1` (#498).
+
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    let test_path = "test.R";
+    let test_contents = "# fmt: skip\r\n1\r\n+1\r\n2+2\r\n";
+
+    std::fs::write(directory.join(test_path), test_contents)?;
+
+    let output = Command::new(binary_path())
+        .current_dir(directory)
+        .arg("format")
+        .arg(".")
+        .run();
+
+    assert!(output.status.success());
+    assert_eq!(
+        std::fs::read_to_string(directory.join(test_path))?,
+        "# fmt: skip\r\n1\r\n+1\r\n2 + 2\r\n"
+    );
+    Ok(())
+}
+
+#[test]
+fn test_skipped_file_with_crlf_line_endings_isnt_corrupted() -> anyhow::Result<()> {
+    // All of `# fmt: skip file\r\n1+1\r\n2+2\r\n` is treated as a single token, but is
+    // normalized to `# fmt: skip file\n1+1\n2+2\n` before the printer sees it, which the
+    // printer then rewrites back with `\r\n` (#498).
+
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    let test_path = "test.R";
+    let test_contents = "# fmt: skip file\r\n1+1\r\n2+2\r\n";
+
+    std::fs::write(directory.join(test_path), test_contents)?;
+
+    let output = Command::new(binary_path())
+        .current_dir(directory)
+        .arg("format")
+        .arg(".")
+        .run();
+
+    assert!(output.status.success());
+    assert_eq!(
+        std::fs::read_to_string(directory.join(test_path))?,
+        test_contents
+    );
+    Ok(())
+}
+
+#[test]
+fn test_skipped_multiline_node_with_crlf_line_endings_can_have_line_endings_rewritten()
+-> anyhow::Result<()> {
+    // `# fmt: skip` means `1\r\n+1` won't be reformatted, but the line endings MUST still
+    // be rewritten to `\n` due to `line-ending = "lf"`, otherwise it would create a file
+    // with mixed line endings, and that would be madness.
+    //
+    // So `# fmt: skip` is considered orthogonal to `line-ending` (#507).
+
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    let test_path = "test.R";
+    let test_contents = "# fmt: skip\r\n1\r\n+1\r\n2+2\r\n";
+
+    let air_path = "air.toml";
+    let air_contents = r#"
+[format]
+line-ending = "lf"
+"#;
+
+    std::fs::write(directory.join(test_path), test_contents)?;
+    std::fs::write(directory.join(air_path), air_contents)?;
+
+    let output = Command::new(binary_path())
+        .current_dir(directory)
+        .arg("format")
+        .arg(".")
+        .run();
+
+    assert!(output.status.success());
+    assert_eq!(
+        std::fs::read_to_string(directory.join(test_path))?,
+        "# fmt: skip\n1\n+1\n2 + 2\n"
+    );
+    Ok(())
+}
+
+#[test]
+fn test_skipped_file_with_crlf_line_endings_can_have_line_endings_rewritten() -> anyhow::Result<()>
+{
+    // `# fmt: skip file` means `# fmt: skip file\r\n1+1\r\n2+2\r\n` won't be reformatted,
+    // but the line endings MUST still be rewritten to `\n` due to `line-ending = "lf"`.
+    //
+    // We asserted above that `# fmt: skip` must rewrite to `\n` to avoid mixed line
+    // endings in a single file. `# fmt: skip file` should be consistent with that,
+    // so it is also considered orthogonal to `line-ending`. If you truly want to avoid
+    // any changes to the file, `exclude` it (#507).
+
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    let test_path = "test.R";
+    let test_contents = "# fmt: skip file\r\n1+1\r\n2+2\r\n";
+
+    let air_path = "air.toml";
+    let air_contents = r#"
+[format]
+line-ending = "lf"
+"#;
+
+    std::fs::write(directory.join(test_path), test_contents)?;
+    std::fs::write(directory.join(air_path), air_contents)?;
+
+    let output = Command::new(binary_path())
+        .current_dir(directory)
+        .arg("format")
+        .arg(".")
+        .run();
+
+    assert!(output.status.success());
+    assert_eq!(
+        std::fs::read_to_string(directory.join(test_path))?,
+        "# fmt: skip file\n1+1\n2+2\n"
+    );
+    Ok(())
+}
+
+#[test]
 fn test_check_returns_cleanly_for_multiline_strings_with_crlf_line_endings() {
     let path = relative_path_fixtures()
         .join("crlf")

@@ -616,6 +616,27 @@ Specifying this would retain the original formatting of the `graph_from_literal(
 skip = ["graph_from_literal"]
 ```
 
+## Line endings
+
+When using `# fmt: skip`, `# fmt: skip file`, or `skip` in `air.toml`, line endings are never considered skipped.
+
+For example, if you've set `line-ending = "lf"` in `air.toml` and have the following file with (invisible) CRLF line endings:
+
+``` r
+1+1
+
+# fmt: skip
+fn(
+  a, b
+)
+```
+
+Then the visible text making up the multiline call to `fn()` will be left as is, but the invisible CRLF line endings following `fn(` and `b` will be converted to LF line endings, even though they belong to the skipped node. Without this, you'd end up with a file containing mixed line endings, which would be very confusing!
+
+The only place this may be surprisingly is with `# fmt: skip file`, where the visible text within the file is untouched, but the line endings may be rewritten to match the `line-ending` option.
+Since `# fmt: skip file` is an extension of `# fmt: skip` to all nodes, we consider this behavior to be consistent.
+If you'd like Air to completely ignore a file, use an `air.toml` level `exclude` instead.
+
 # Comment directives
 
 With `# fmt: skip` we've already seen one kind of comment directive, but that's not all.

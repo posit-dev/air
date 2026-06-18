@@ -18,6 +18,7 @@ biome_formatter = { workspace = true }
 biome_rowan = { workspace = true }
 comments = { workspace = true }
 itertools = { workspace = true }
+line_ending = { workspace = true }
 settings = { workspace = true, features = ["biome", "serde"] }
 tracing = { workspace = true }
 
