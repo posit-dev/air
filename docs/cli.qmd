@@ -58,11 +58,11 @@ If you're on macOS and are familiar with [Homebrew](https://brew.sh/), you can i
 brew install air
 ```
 
-Homebrew support is community maintained.
+Air's Homebrew formula is community-maintained.
 
 ## Pixi
 
-You can use [Pixi](https://pixi.prefix.dev/latest/) to install Air because it is on [conda-forge](https://github.com/conda-forge/air-feedstock):
+You can use [Pixi](https://pixi.prefix.dev/latest/) to install Air from [conda-forge](https://github.com/conda-forge/air-feedstock):
 
 ``` bash
 # Add to a project
@@ -72,25 +72,29 @@ pixi run air format path/to/my/script.R
 # Install globally
 pixi global install air
 
-# Temporary environment
+# Run one-off command
 pixi exec air format path/to/my/script.R
 ```
 
-Pixi support is community maintained.
+Air's conda-forge package is community-maintained.
 
 ## mise
 
-You can use [mise](https://mise.jdx.dev/) to install Air via [conda-forge](https://github.com/conda-forge/air-feedstock):
+You can use [mise](https://mise.jdx.dev/) to install Air from [conda-forge](https://github.com/conda-forge/air-feedstock):
 
 ``` bash
 # Add to a project
 mise use conda:air
+air format path/to/my/script.R
 
 # Install globally
 mise use --global conda:air
+
+# Run one-off command
+mise exec conda:air -- air format path/to/my/script.R
 ```
 
-mise support is community maintained.
+Air's conda-forge package is community-maintained.
 
 # Features
 
