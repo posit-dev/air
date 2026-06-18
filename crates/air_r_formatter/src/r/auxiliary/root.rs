@@ -101,8 +101,10 @@ impl FormatNodeRule<RRoot> for FormatRRoot {
         // all tokens have `\n` newlines, so we must normalize here, and then the printer
         // will rewrite any `\n` it sees using the user's chosen `LineEnding`. This is
         // very similar to how `FormatStringContentToken` works, where the newlines are
-        // part of the string content token, so we take responsibility for normalization
-        // (#498, #127).
+        // part of the string content token, so we take responsibility for normalization.
+        // This is also identical to how `fmt_suppressed()`'s default works via
+        // `format_suppressed_node()` and `FormatVerbatimNode`. It normalizes line endings
+        // right before calling `dynamic_text()` (#498, #127).
         let text = match line_ending::infer(&text) {
             LineEnding::Lf => text,
             LineEnding::Crlf => line_ending::normalize(text),
