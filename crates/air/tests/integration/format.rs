@@ -163,6 +163,78 @@ default-exclude = false
 }
 
 #[test]
+fn test_doesnt_format_skipped_file_with_crlf_line_endings_and_the_auto_setting()
+-> anyhow::Result<()> {
+    // A `# fmt: skip file` file is printed verbatim, so it must round-trip
+    // through formatting untouched (#498).
+
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    let test_path = "test.R";
+    let test_contents = "# fmt: skip file\r\n1+1\r\n2+2\r\n";
+
+    std::fs::write(directory.join(test_path), test_contents)?;
+
+    let output = Command::new(binary_path())
+        .current_dir(directory)
+        .arg("format")
+        .arg(".")
+        .run();
+
+    assert!(output.status.success());
+
+    assert_eq!(
+        std::fs::read_to_string(directory.join(test_path))?,
+        test_contents
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_formats_skipped_file_with_crlf_line_endings_and_the_lf_setting() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    let test_path = "test.R";
+    let test_contents = "# fmt: skip file\r\n1+1\r\n2+2\r\n";
+
+    let air_path = "air.toml";
+    let air_contents = r#"
+[format]
+line-ending = "lf"
+"#;
+
+    std::fs::write(directory.join(test_path), test_contents)?;
+    std::fs::write(directory.join(air_path), air_contents)?;
+
+    let output = Command::new(binary_path())
+        .current_dir(directory)
+        .arg("format")
+        .arg(".")
+        .run();
+
+    assert!(output.status.success());
+
+    // The `\r\n` are rewritten as `\n` even though we skipped the file.
+    // The biome printer's `print_char()` is in charge of normalizing newlines to the
+    // user's chosen `LineEnding`, and this happens even when we use `fmt_suppressed()`
+    // on the `RRoot`. A better option if a user cares about this is probably to use
+    // an `exclude` on this file (#498).
+    //
+    // This is really a biome bug that we probably need some new biome infra for, but it
+    // is a rare one and not super high priority for us:
+    // https://github.com/biomejs/biome/discussions/10682
+    assert_eq!(
+        std::fs::read_to_string(directory.join(test_path))?,
+        "# fmt: skip file\n1+1\n2+2\n"
+    );
+
+    Ok(())
+}
+
+#[test]
 fn test_check_returns_cleanly_for_multiline_strings_with_crlf_line_endings() {
     let path = relative_path_fixtures()
         .join("crlf")
@@ -176,55 +248,6 @@ fn test_check_returns_cleanly_for_multiline_strings_with_crlf_line_endings() {
         .run();
 
     assert!(output.status.success());
-}
-
-#[test]
-fn test_check_returns_cleanly_for_skip_file_with_crlf_line_endings_and_the_auto_setting() {
-    // A `# fmt: skip file` file is printed verbatim, so it must round-trip
-    // through formatting untouched (#498).
-    let path = relative_path_fixtures().join("crlf").join("skip_file.R");
-
-    let output = Command::new(binary_path())
-        .current_dir(path_root())
-        .arg("format")
-        .arg(path)
-        .arg("--check")
-        .run();
-
-    assert!(output.status.success());
-}
-
-#[test]
-fn test_check_does_not_return_cleanly_for_skip_file_with_crlf_line_endings_and_the_lf_setting()
--> anyhow::Result<()> {
-    let directory = TempDir::new()?;
-    let directory = directory.path();
-
-    let from_path = relative_path_fixtures().join("crlf").join("skip_file.R");
-    std::fs::copy(from_path, directory.join("skip_file.R"))?;
-
-    let air_path = "air.toml";
-    let air_contents = r#"
-[format]
-line-ending = "lf"
-"#;
-    std::fs::write(directory.join(air_path), air_contents)?;
-
-    let output = Command::new(binary_path())
-        .current_dir(directory)
-        .arg("format")
-        .arg(".")
-        .arg("--check")
-        .run();
-
-    // Fails because `\r\n` are rewritten as `\n` even though we skipped the file.
-    // The biome printer's `print_char()` is in charge of normalizing newlines to the
-    // user's chosen `LineEnding`, and this happens even when we use `fmt_suppressed()`
-    // on the `RRoot`. A better option if a user cares about this is probably to use
-    // an `exclude` on this file (#498).
-    assert!(!output.status.success());
-
-    Ok(())
 }
 
 #[test]
