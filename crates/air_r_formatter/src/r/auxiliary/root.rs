@@ -104,7 +104,7 @@ impl FormatNodeRule<RRoot> for FormatRRoot {
         // part of the string content token, so we take responsibility for normalization.
         // This is also identical to how `fmt_suppressed()`'s default works via
         // `format_suppressed_node()` and `FormatVerbatimNode`. It normalizes line endings
-        // right before calling `dynamic_text()` (#498, #127).
+        // right before calling `dynamic_text()` (#507).
         let text = match line_ending::infer(&text) {
             LineEnding::Lf => text,
             LineEnding::Crlf => line_ending::normalize(text),
