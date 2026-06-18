@@ -569,6 +569,16 @@
     ]
   },
   {
+    "objectID": "formatter.html#line-endings",
+    "href": "formatter.html#line-endings",
+    "title": "Formatter",
+    "section": "Line endings",
+    "text": "Line endings\nWhen using # fmt: skip, # fmt: skip file, or skip in air.toml, line endings are never considered skipped.\nFor example, if you’ve set line-ending = \"lf\" in air.toml and have the following file with (invisible) CRLF line endings:\n1+1\n\n# fmt: skip\nfn(\n  a, b\n)\nThen the visible text making up the multiline call to fn() will be left as is, but the invisible CRLF line endings following fn( and b will be converted to LF line endings, even though they belong to the skipped node. Without this, you’d end up with a file containing mixed line endings, which would be very confusing!\nThe only place this may be surprisingly is with # fmt: skip file, where the visible text within the file is untouched, but the line endings may be rewritten to match the line-ending option. Since # fmt: skip file is an extension of # fmt: skip to all nodes, we consider this behavior to be consistent. If you’d like Air to completely ignore a file, use an air.toml level exclude instead.",
+    "crumbs": [
+      "Formatter"
+    ]
+  },
+  {
     "objectID": "formatter.html#table-formatting",
     "href": "formatter.html#table-formatting",
     "title": "Formatter",

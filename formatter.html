@@ -277,6 +277,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#skip-comments" id="toc-skip-comments" class="nav-link" data-scroll-target="#skip-comments">Skip comments</a></li>
   <li><a href="#skip-configuration" id="toc-skip-configuration" class="nav-link" data-scroll-target="#skip-configuration">Skip configuration</a></li>
+  <li><a href="#line-endings" id="toc-line-endings" class="nav-link" data-scroll-target="#line-endings">Line endings</a></li>
   </ul></li>
   <li><a href="#comment-directives" id="toc-comment-directives" class="nav-link" data-scroll-target="#comment-directives">Comment directives</a>
   <ul class="collapse">
@@ -703,6 +704,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>If you use <code>graph_from_literal()</code> often, it would be annoying to add <code># fmt: skip</code> comments at every call site. Instead, <code>air.toml</code> supports a <a href="./configuration.html#configuration-skip"><code>skip</code> field</a> that allows you to specify function names that you never want formatting for. Specifying this would retain the original formatting of the <code>graph_from_literal()</code> call, even without a <code># fmt: skip</code> comment:</p>
 <div class="sourceCode" id="cb41"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="dt">skip</span> <span class="op">=</span> <span class="op">[</span><span class="st">"graph_from_literal"</span><span class="op">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
+<section id="line-endings" class="level2">
+<h2 class="anchored" data-anchor-id="line-endings">Line endings</h2>
+<p>When using <code># fmt: skip</code>, <code># fmt: skip file</code>, or <code>skip</code> in <code>air.toml</code>, line endings are never considered skipped.</p>
+<p>For example, if you’ve set <code>line-ending = "lf"</code> in <code>air.toml</code> and have the following file with (invisible) CRLF line endings:</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span><span class="sc">+</span><span class="dv">1</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="co"># fmt: skip</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a><span class="fu">fn</span>(</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  a, b</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Then the visible text making up the multiline call to <code>fn()</code> will be left as is, but the invisible CRLF line endings following <code>fn(</code> and <code>b</code> will be converted to LF line endings, even though they belong to the skipped node. Without this, you’d end up with a file containing mixed line endings, which would be very confusing!</p>
+<p>The only place this may be surprisingly is with <code># fmt: skip file</code>, where the visible text within the file is untouched, but the line endings may be rewritten to match the <code>line-ending</code> option. Since <code># fmt: skip file</code> is an extension of <code># fmt: skip</code> to all nodes, we consider this behavior to be consistent. If you’d like Air to completely ignore a file, use an <code>air.toml</code> level <code>exclude</code> instead.</p>
+</section>
 </section>
 <section id="comment-directives" class="level1">
 <h1>Comment directives</h1>
@@ -735,13 +749,13 @@ Note: This feature is experimental. We’d be grateful for any feedback!
 <li>Everything else is left-aligned, making it easier to read from left to right</li>
 <li>Complex calls are formatted in a flat layout, avoiding line breaks where possible.</li>
 </ul>
-<div class="sourceCode" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tribble</span>(</span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="sc">~</span>customer   , <span class="sc">~</span>product   , <span class="sc">~</span>price  , <span class="sc">~</span>units_sold ,</span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ACME"</span>      , <span class="st">"Computer"</span> , <span class="fl">1499.99</span> ,          <span class="dv">25</span> ,</span>
-<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Globex"</span>    , <span class="st">"Monitor"</span>  ,  <span class="fl">889.5</span>  ,        <span class="dv">1005</span> ,</span>
-<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Stark"</span>     , <span class="st">"Tablet"</span>   ,   <span class="fl">99.99</span> ,         <span class="dv">304</span> ,</span>
-<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"WayneEnt."</span> , <span class="st">"Tablet"</span>   ,  <span class="dv">259</span>    ,          <span class="dv">40</span> ,</span>
-<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tribble</span>(</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="sc">~</span>customer   , <span class="sc">~</span>product   , <span class="sc">~</span>price  , <span class="sc">~</span>units_sold ,</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ACME"</span>      , <span class="st">"Computer"</span> , <span class="fl">1499.99</span> ,          <span class="dv">25</span> ,</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Globex"</span>    , <span class="st">"Monitor"</span>  ,  <span class="fl">889.5</span>  ,        <span class="dv">1005</span> ,</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Stark"</span>     , <span class="st">"Tablet"</span>   ,   <span class="fl">99.99</span> ,         <span class="dv">304</span> ,</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"WayneEnt."</span> , <span class="st">"Tablet"</span>   ,  <span class="dv">259</span>    ,          <span class="dv">40</span> ,</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>In addition:</p>
 <ul>
 <li>The layout of the table is never changed by the formatter. It never introduces line breaks that don’t already exist to avoid messing up the tabular data, which could be hard to recover from.</li>
