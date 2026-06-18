@@ -321,11 +321,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="homebrew">Homebrew</h2>
 <p>If you’re on macOS and are familiar with <a href="https://brew.sh/">Homebrew</a>, you can install the <a href="https://formulae.brew.sh/formula/air">air formula</a> with:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">brew</span> install air</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Homebrew support is community maintained.</p>
+<p>Air’s Homebrew formula is community-maintained.</p>
 </section>
 <section id="pixi" class="level2">
 <h2 class="anchored" data-anchor-id="pixi">Pixi</h2>
-<p>You can use <a href="https://pixi.prefix.dev/latest/">Pixi</a> to install Air because it is on <a href="https://github.com/conda-forge/air-feedstock">conda-forge</a>:</p>
+<p>You can use <a href="https://pixi.prefix.dev/latest/">Pixi</a> to install Air from <a href="https://github.com/conda-forge/air-feedstock">conda-forge</a>:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Add to a project</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pixi</span> add air</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pixi</span> run air format path/to/my/script.R</span>
@@ -333,19 +333,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Install globally</span></span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="ex">pixi</span> global install air</span>
 <span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Temporary environment</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Run one-off command</span></span>
 <span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="ex">pixi</span> exec air format path/to/my/script.R</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Pixi support is community maintained.</p>
+<p>Air’s conda-forge package is community-maintained.</p>
 </section>
 <section id="mise" class="level2">
 <h2 class="anchored" data-anchor-id="mise">mise</h2>
-<p>You can use <a href="https://mise.jdx.dev/">mise</a> to install Air via <a href="https://github.com/conda-forge/air-feedstock">conda-forge</a>:</p>
+<p>You can use <a href="https://mise.jdx.dev/">mise</a> to install Air from <a href="https://github.com/conda-forge/air-feedstock">conda-forge</a>:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Add to a project</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">mise</span> use conda:air</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Install globally</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="ex">mise</span> use <span class="at">--global</span> conda:air</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>mise support is community maintained.</p>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ex">air</span> format path/to/my/script.R</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Install globally</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="ex">mise</span> use <span class="at">--global</span> conda:air</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Run one-off command</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="ex">mise</span> exec conda:air <span class="at">--</span> air format path/to/my/script.R</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Air’s conda-forge package is community-maintained.</p>
 </section>
 </section>
 <section id="features" class="level1">
