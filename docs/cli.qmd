@@ -27,11 +27,11 @@ powershell -ExecutionPolicy Bypass -c "irm https://github.com/posit-dev/air/rele
 For a specific version:
 
 ``` bash
-curl -LsSf https://github.com/posit-dev/air/releases/download/0.9.0/air-installer.sh | sh
+curl -LsSf https://github.com/posit-dev/air/releases/download/0.10.0/air-installer.sh | sh
 ```
 
 ``` powershell
-powershell -ExecutionPolicy Bypass -c "irm https://github.com/posit-dev/air/releases/download/0.9.0/air-installer.ps1 | iex"
+powershell -ExecutionPolicy Bypass -c "irm https://github.com/posit-dev/air/releases/download/0.10.0/air-installer.ps1 | iex"
 ```
 
 The installer scripts will automatically add Air to your `PATH`.

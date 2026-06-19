@@ -2,6 +2,8 @@
 
 # Development version
 
+# 0.10.0
+
 - New `assignment-style` option to enforce a preferred assignment operator, with the following values:
 
   - `"arrow"`: Use `<-`. This is the default, aligning Air further with the [tidyverse style guide](https://style.tidyverse.org/syntax.html#assignment-1).
