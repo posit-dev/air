@@ -2,8 +2,6 @@
 
 # Development version
 
-- Fixed an issue where `# fmt: skip file` in a file with CRLF line endings would result in `\r\n` line endings getting converted to `\r\r\n` (#498).
-
 - New `assignment-style` option to enforce a preferred assignment operator, with the following values:
 
   - `"arrow"`: Use `<-`. This is the default, aligning Air further with the [tidyverse style guide](https://style.tidyverse.org/syntax.html#assignment-1).
@@ -13,6 +11,8 @@
   - `"preserve"`: Assignment operators are preserved as is.
 
   Note that prior to this option, Air's behavior was implicitly `"preserve"`. Set `"preserve"` or `"equal"` directly if you prefer either of those behaviors (#502).
+
+- Fixed an issue where `# fmt: skip file` in a file with CRLF line endings would result in `\r\n` line endings getting converted to `\r\r\n` (#498).
 
 - Updated bundled tree-sitter-r, which comes with a few small fixes:
 
