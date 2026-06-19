@@ -103,7 +103,7 @@
 					"scope": "window",
 					"type": "string"
 				},
-				"air.addExecutableToPath": {
+				"air.addExecutableToTerminalPath": {
 					"default": true,
 					"markdownDescription": "Whether to add the directory containing the `air` executable resolved by `air.executableStrategy` to the `PATH` of integrated terminals. This ensures that `air` invoked in an integrated terminal matches `air` used by the editor.",
 					"scope": "window",

@@ -40,10 +40,14 @@ export class PathEnvironmentVariableManager implements vscode.Disposable {
 			}),
 		);
 
-		// When the user changes `air.addExecutableToPath`, reflect this immediately in new terminals
+		// When the user changes `air.addExecutableToTerminalPath`, reflect this immediately in new terminals
 		this.subscriptions.push(
 			vscode.workspace.onDidChangeConfiguration((event) => {
-				if (event.affectsConfiguration("air.addExecutableToPath")) {
+				if (
+					event.affectsConfiguration(
+						"air.addExecutableToTerminalPath",
+					)
+				) {
 					this.update();
 				}
 			}),
