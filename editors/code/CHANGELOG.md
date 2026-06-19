@@ -7,6 +7,11 @@
 
 ## Development version
 
+
+## 0.26.0
+
+- [Air 0.10.0](https://github.com/posit-dev/air/blob/main/CHANGELOG.md) is now bundled with the extension.
+
 - New `air.addExecutableToTerminalPath` configuration option to control whether the `air` executable located by `air.executableStrategy` is also added to the `PATH` of all integrated terminals. This ensures that a call to `air` in an integrated terminal uses the same version of Air used by the editor, which is particularly useful when agents call Air on your behalf. It is on by default (#500).
 
 
