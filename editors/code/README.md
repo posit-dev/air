@@ -4,7 +4,7 @@ A Visual Studio Code extension for [Air](https://github.com/posit-dev/air), an R
 
 Once installed, Air will automatically be activated when you open an R file. To configure your settings to allow Air to format R code on save, enable the `editor.formatOnSave` action in your `settings.json`.
 
-``` json
+```json
 {
     "[r]": {
         "editor.formatOnSave": true
@@ -12,6 +12,6 @@ Once installed, Air will automatically be activated when you open an R file. To 
 }
 ```
 
-Click [here](https://posit-dev.github.io/air/editor-vscode.html) to learn about all of Air's features.
+Learn about [all of Air's features](https://posit-dev.github.io/air/editor-vscode.html).
 
-Click [here](https://posit-dev.github.io/air/configuration.html) to learn about how Air can be configured.
+Learn about [how Air can be configured](https://posit-dev.github.io/air/configuration.html).
