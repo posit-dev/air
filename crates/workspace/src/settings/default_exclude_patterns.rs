@@ -1,7 +1,7 @@
 use std::ops::Deref;
 use std::sync::LazyLock;
 
-use crate::file_patterns::DefaultFilePatterns;
+use crate::file_patterns::UnrootedFilePatterns;
 
 /// The set of default exclude patterns
 ///
@@ -33,8 +33,8 @@ static DEFAULT_EXCLUDE_PATTERN_NAMES: &[&str] = &[
     "**/import-standalone-*.R",
 ];
 
-static DEFAULT_EXCLUDE_PATTERNS: LazyLock<DefaultFilePatterns> = LazyLock::new(|| {
-    DefaultFilePatterns::try_from_iter(DEFAULT_EXCLUDE_PATTERN_NAMES.iter().copied())
+static DEFAULT_EXCLUDE_PATTERNS: LazyLock<UnrootedFilePatterns> = LazyLock::new(|| {
+    UnrootedFilePatterns::try_from_iter(DEFAULT_EXCLUDE_PATTERN_NAMES.iter().copied())
         .expect("Can create default exclude patterns")
 });
 
@@ -43,7 +43,7 @@ static DEFAULT_EXCLUDE_PATTERNS: LazyLock<DefaultFilePatterns> = LazyLock::new(|
 /// Allows for free creation of [DefaultExcludePatterns] structs without needing to clone
 /// the global [DEFAULT_EXCLUDE_PATTERNS] object.
 #[derive(Debug)]
-pub struct DefaultExcludePatterns(&'static DefaultFilePatterns);
+pub struct DefaultExcludePatterns(&'static UnrootedFilePatterns);
 
 impl Default for DefaultExcludePatterns {
     /// Default exclude patterns
@@ -56,7 +56,7 @@ impl Default for DefaultExcludePatterns {
 }
 
 impl Deref for DefaultExcludePatterns {
-    type Target = DefaultFilePatterns;
+    type Target = UnrootedFilePatterns;
 
     fn deref(&self) -> &Self::Target {
         self.0

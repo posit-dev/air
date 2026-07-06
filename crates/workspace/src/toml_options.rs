@@ -235,7 +235,7 @@ pub struct FormatTomlOptions {
 }
 
 impl TomlOptions {
-    pub fn into_settings(self, root: &Path) -> anyhow::Result<Settings> {
+    pub fn into_settings(self, root: Option<&Path>) -> anyhow::Result<Settings> {
         let format = self.format.unwrap_or_default();
 
         let table = if format.default_table.unwrap_or(true) {

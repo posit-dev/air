@@ -1,0 +1,7 @@
+---
+source: crates/workspace/src/file_patterns.rs
+expression: error
+---
+Pattern `foo/bar.R` must meet one of the following conditions:
+- Start with `**/`, i.e. `**/foo.R`
+- Contain no `/` characters unless it is at the very end, i.e. `foo.R` or `folder/`

@@ -6,42 +6,40 @@ use ignore::gitignore::Gitignore;
 use ignore::gitignore::GitignoreBuilder;
 use ignore::gitignore::Glob;
 
-/// Matcher for globs that follow a `.gitignore` style
+/// Matcher for globs rooted at a directory
 ///
-/// When constructing the matcher, you supply a `root` path along with the `patterns`
-/// to be included in the matcher. When [FilePatterns::matched] is called, the `root`
+/// When constructing the matcher, you supply a `root` path along with the `patterns` to
+/// be included in the matcher. When [RootedFilePatterns::matched] is called, the `root`
 /// path is always stripped from `path` before matching is done. This ensures that users
-/// can specify `"/special.R"` in their `air.toml` to match only `{root}/special.R`, and
-/// not also `{root}/subdir/special.R`.
+/// can specify `/special.R` in their `air.toml` to match only `{root}/special.R`, and not
+/// also `{root}/subdir/special.R`.
 #[derive(Clone, Debug)]
-pub struct FilePatterns {
+pub struct RootedFilePatterns {
     matcher: Gitignore,
 }
 
-/// Matcher for a default set of globs
+/// Matcher for globs with no `root`, matching at any depth
 ///
-/// Compared to [FilePatterns], [DefaultFilePatterns] is special because it does not
-/// allow specification of a `root` path. When constructing [crate::settings::Settings]
-/// for a "virtual" `air.toml`, there is no `root` path, but we still want to respect
-/// default includes and excludes. To ensure this works correctly, we have to make two
-/// main changes:
+/// Compared to [RootedFilePatterns], [UnrootedFilePatterns] is special because it does
+/// not allow specification of a `root` path. This is what backs default includes and
+/// excludes, which apply with or without a physical `air.toml`, as well as user level
+/// `air.toml` `exclude` patterns, which have no project directory to root against. To
+/// ensure this works correctly, we have to make two main changes:
 ///
-/// - All `patterns` must start with `**/` so they don't depend on the `root`, this is
-///   enforced by [DefaultFilePatterns::try_from_iter] at creation time.
+/// - Every `pattern` must match at any depth rather than relative to a `root`, which is
+///   enforced by [is_unrooted] in [UnrootedFilePatterns::try_from_iter] at creation time.
 ///
-/// - [DefaultFilePatterns::matched_path_or_any_parents] is custom, rather than relying
-///   on [Gitignore] directly. The reason we do this is because [Gitignore]'s version
-///   will panic if the `path` we provide contains a root component after `root` stripping
-///   has occurred (like a leading `/` on Unix, or leading `C:/` on Windows). We don't
-///   have a `root` to strip, and our globs don't depend on `root`, so we don't need this
-///   restriction.
+/// - [UnrootedFilePatterns::matched_path_or_any_parents] is custom rather than deferring
+///   to [Gitignore]. [Gitignore]'s version panics if `path` still has a root component
+///   after `root` stripping (a leading `/` on Unix, or `C:/` on Windows). We never strip
+///   a `root` and our globs don't depend on one, so that restriction doesn't apply.
 #[derive(Clone, Debug)]
-pub struct DefaultFilePatterns {
+pub struct UnrootedFilePatterns {
     matcher: Gitignore,
 }
 
-impl FilePatterns {
-    /// Construct [FilePatterns] from an iterator of patterns
+impl RootedFilePatterns {
+    /// Construct [RootedFilePatterns] from an iterator of patterns
     pub(crate) fn try_from_iter<'str, P, I>(root: P, patterns: I) -> anyhow::Result<Self>
     where
         P: AsRef<Path>,
@@ -77,7 +75,7 @@ impl FilePatterns {
     /// Returns the glob that matches this `path` or any parent, or `None` if no glob
     /// matches
     ///
-    /// More expensive than [FilePatterns::matched], but is required in the LSP where you
+    /// More expensive than [RootedFilePatterns::matched], but is required in the LSP where you
     /// don't recursively search a directory, but are instead handed a single file at a
     /// time.
     pub fn matched_path_or_any_parents<P>(&self, path: P, is_directory: bool) -> Option<&Glob>
@@ -92,23 +90,24 @@ impl FilePatterns {
     }
 }
 
-impl DefaultFilePatterns {
-    /// Construct [DefaultFilePatterns] from an iterator of patterns
+impl UnrootedFilePatterns {
+    /// Construct [UnrootedFilePatterns] from an iterator of patterns
     ///
-    /// Note:
-    /// - Uses an empty string for the `root`.
-    /// - Enforces that all patterns start with `**/`, since we don't have a `root`.
+    /// Every pattern must be unrooted, as verified by [is_unrooted]. A rooted pattern is
+    /// a hard error, since there is no `root` for it to resolve against.
     pub(crate) fn try_from_iter<'str, I>(patterns: I) -> anyhow::Result<Self>
     where
         I: IntoIterator<Item = &'str str>,
     {
-        // For the *default* case, the `root` path is always the empty string
+        // Use an empty `root` so that nothing is stripped from a `path` before matching
         let root = PathBuf::new();
 
         let mut builder = GitignoreBuilder::new(root);
 
         for pattern in patterns {
-            debug_assert!(pattern.starts_with("**/"));
+            if !is_unrooted(pattern) {
+                return Err(err_rooted(pattern));
+            }
             builder.add_line(None, pattern)?;
         }
 
@@ -133,7 +132,7 @@ impl DefaultFilePatterns {
     /// matches
     ///
     /// Implementation is based on [ignore::gitignore::Gitignore::matched_path_or_any_parents],
-    /// excluding the `assert!(!path.has_root())` check since default patterns don't
+    /// excluding the `assert!(!path.has_root())` check since unrooted patterns don't
     /// depend on the `root`.
     pub fn matched_path_or_any_parents<P>(&self, path: P, is_directory: bool) -> Option<&Glob>
     where
@@ -156,15 +155,53 @@ impl DefaultFilePatterns {
     }
 }
 
+/// Check if a `pattern` is unrooted
+///
+/// Constructed by carefully analyzing [GitignoreBuilder]'s `add_line()`, which itself
+/// is derived from git's man page. It should be very stable.
+///
+/// Ideally we'd somehow analyze the fields in the [GitignoreBuilder] output rather than
+/// recreating the rules here, but there is no public API for determining if a supplied
+/// pattern was rooted or not (it's admittedly a slightly odd use case from a git
+/// perspective).
+fn is_unrooted(pattern: &str) -> bool {
+    // Strip leading `!`
+    let pattern = pattern.strip_prefix('!').unwrap_or(pattern);
+
+    // Explicit `**/`
+    if pattern.starts_with("**/") {
+        return true;
+    }
+
+    // Implicit `**/`, i.e.:
+    // - `foo.R`
+    // - `folder/`
+    // but not:
+    // - `foo/bar.R`
+    // - `/foo.R`
+    // - `foo/**/bar.R`
+    let pattern = pattern.strip_suffix('/').unwrap_or(pattern);
+    !pattern.contains('/')
+}
+
+fn err_rooted(pattern: &str) -> anyhow::Error {
+    anyhow::anyhow!(
+        "Pattern `{pattern}` must meet one of the following conditions:
+- Start with `**/`, i.e. `**/foo.R`
+- Contain no `/` characters unless it is at the very end, i.e. `foo.R` or `folder/`"
+    )
+}
+
 #[cfg(test)]
 mod test {
-    use crate::file_patterns::DefaultFilePatterns;
-    use crate::file_patterns::FilePatterns;
+    use crate::file_patterns::RootedFilePatterns;
+    use crate::file_patterns::UnrootedFilePatterns;
+    use crate::file_patterns::is_unrooted;
     use std::path::Path;
 
-    fn from_str<P: AsRef<Path>>(root: P, pattern: &str) -> FilePatterns {
+    fn from_str<P: AsRef<Path>>(root: P, pattern: &str) -> RootedFilePatterns {
         let patterns = vec![pattern];
-        FilePatterns::try_from_iter(root, patterns).unwrap()
+        RootedFilePatterns::try_from_iter(root, patterns).unwrap()
     }
 
     macro_rules! ignored {
@@ -292,12 +329,12 @@ mod test {
     }
 
     #[test]
-    fn test_default_file_pattern_works_with_rooted_paths() -> anyhow::Result<()> {
-        let patterns = DefaultFilePatterns::try_from_iter(vec!["**/cpp11.R"])?;
+    fn test_unrooted_file_pattern_works_with_rooted_paths() -> anyhow::Result<()> {
+        let patterns = UnrootedFilePatterns::try_from_iter(vec!["**/cpp11.R"])?;
 
         // These look like they have a `root`, which `Gitignore::matched_path_or_any_parents()`
-        // would typically panic on, so we have our own version to avoid this, since all
-        // of our default patterns include `**/` and are root agnostic.
+        // would typically panic on, so we have our own version to avoid this, since
+        // unrooted patterns match at any depth and don't depend on the `root`.
         assert!(
             patterns
                 .matched_path_or_any_parents("/etc/cpp11.R", false)
@@ -310,6 +347,48 @@ mod test {
                 .is_some()
         );
 
+        // The `folder/` shorthand also floats to any depth, even though the user didn't
+        // write `**/`, because `add_line()` supplies the `**/` prefix for us
+        let patterns = UnrootedFilePatterns::try_from_iter(vec!["renv/"])?;
+        assert!(
+            patterns
+                .matched_path_or_any_parents("/etc/renv", true)
+                .is_some()
+        );
+
         Ok(())
+    }
+
+    #[test]
+    fn test_unrooted_file_pattern_rejects_rooted_patterns() {
+        // A rooted pattern is a hard error, since there is no `root` for it to resolve against
+        let error = UnrootedFilePatterns::try_from_iter(vec!["foo/bar.R"]).unwrap_err();
+        insta::assert_snapshot!(error);
+    }
+
+    #[test]
+    fn test_is_unrooted() {
+        // An explicit `**/` prefix floats to any depth
+        assert!(is_unrooted("**/foo.R"));
+        assert!(is_unrooted("**/customfolder/"));
+        assert!(is_unrooted("**/renv/**/*.R"));
+
+        // No leading or interior `/` means `add_line()` supplies the `**/` prefix,
+        // so these float to any depth. A trailing `/` (directory-only) is still fine.
+        assert!(is_unrooted("foo.R"));
+        assert!(is_unrooted("customfolder/"));
+        assert!(is_unrooted("import-standalone-*.R"));
+
+        // A leading `!` (whitelist) doesn't affect whether the pattern is rooted
+        assert!(is_unrooted("!foo.R"));
+        assert!(is_unrooted("!**/foo.R"));
+
+        // A leading or interior `/` roots the pattern at a `root` we don't have
+        assert!(!is_unrooted("/foo.R"));
+        assert!(!is_unrooted("foo/bar.R"));
+        assert!(!is_unrooted("foo/**/bar.R"));
+        assert!(!is_unrooted("/customfolder/"));
+        assert!(!is_unrooted("!foo/bar.R"));
+        assert!(!is_unrooted("/**/foo"));
     }
 }

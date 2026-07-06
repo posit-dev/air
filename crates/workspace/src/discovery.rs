@@ -79,7 +79,7 @@ pub fn discover_settings<P: AsRef<Path>>(paths: &[P]) -> anyhow::Result<Vec<Disc
 // way of "inheriting" most top level configuration while slightly tweaking it in a nested directory.
 fn parse_settings(toml: &Path, root_directory: &Path) -> anyhow::Result<Settings> {
     let options = parse_air_toml(toml)?;
-    let settings = options.into_settings(root_directory)?;
+    let settings = options.into_settings(Some(root_directory))?;
     Ok(settings)
 }
 

@@ -2782,6 +2782,7 @@ dependencies = [
  "biome_formatter",
  "fs",
  "ignore",
+ "insta",
  "line_ending",
  "rustc-hash",
  "schemars",

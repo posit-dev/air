@@ -1,7 +1,7 @@
 use std::ops::Deref;
 use std::sync::LazyLock;
 
-use crate::file_patterns::DefaultFilePatterns;
+use crate::file_patterns::UnrootedFilePatterns;
 
 /// The set of default include patterns
 ///
@@ -12,8 +12,8 @@ static DEFAULT_INCLUDE_PATTERN_NAMES: &[&str] = &[
     "**/*.[R,r]",
 ];
 
-static DEFAULT_INCLUDE_PATTERNS: LazyLock<DefaultFilePatterns> = LazyLock::new(|| {
-    DefaultFilePatterns::try_from_iter(DEFAULT_INCLUDE_PATTERN_NAMES.iter().copied())
+static DEFAULT_INCLUDE_PATTERNS: LazyLock<UnrootedFilePatterns> = LazyLock::new(|| {
+    UnrootedFilePatterns::try_from_iter(DEFAULT_INCLUDE_PATTERN_NAMES.iter().copied())
         .expect("Can create default include patterns")
 });
 
@@ -22,7 +22,7 @@ static DEFAULT_INCLUDE_PATTERNS: LazyLock<DefaultFilePatterns> = LazyLock::new(|
 /// Allows for free creation of [DefaultIncludePatterns] structs without needing to clone
 /// the global [DEFAULT_INCLUDE_PATTERNS] object.
 #[derive(Debug)]
-pub struct DefaultIncludePatterns(&'static DefaultFilePatterns);
+pub struct DefaultIncludePatterns(&'static UnrootedFilePatterns);
 
 impl Default for DefaultIncludePatterns {
     /// Default include patterns
@@ -35,7 +35,7 @@ impl Default for DefaultIncludePatterns {
 }
 
 impl Deref for DefaultIncludePatterns {
-    type Target = DefaultFilePatterns;
+    type Target = UnrootedFilePatterns;
 
     fn deref(&self) -> &Self::Target {
         self.0

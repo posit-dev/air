@@ -55,7 +55,7 @@ fn format_options_for_test(code: &str) -> RFormatOptions {
 
     // Root directory isn't important here as long as we don't supply `exclude`,
     // which would not make sense anyways
-    let root = Path::new("");
+    let root = None;
 
     let settings = workspace::toml::parse_air_inline_toml(&contents)
         .expect("Can parse inline TOML")
