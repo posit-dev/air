@@ -54,6 +54,15 @@ impl Output {
             arguments: String::from("<removed>"),
         }
     }
+
+    pub fn replace_stderr(self, from: &str, to: &str) -> Self {
+        Self {
+            status: self.status,
+            stdout: self.stdout,
+            stderr: self.stderr.replace(from, to),
+            arguments: self.arguments,
+        }
+    }
 }
 
 impl CommandExt for Command {

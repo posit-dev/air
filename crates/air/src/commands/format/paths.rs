@@ -15,6 +15,7 @@ use workspace::discovery;
 use workspace::discovery::DiscoveredSettings;
 use workspace::discovery::discover_r_file_paths;
 use workspace::discovery::discover_settings;
+use workspace::discovery::discover_user_settings;
 use workspace::format::FormatSourceError;
 use workspace::format::FormattedSource;
 use workspace::resolve::PathResolver;
@@ -38,7 +39,7 @@ pub(crate) fn format(
     exclude: discovery::Exclude,
     include: discovery::Include,
 ) -> anyhow::Result<ExitStatus> {
-    let mut resolver = PathResolver::new(Settings::default());
+    let mut resolver = PathResolver::new();
 
     for DiscoveredSettings {
         directory,
@@ -48,9 +49,11 @@ pub(crate) fn format(
         resolver.add(&directory, settings);
     }
 
+    let default_settings = discover_user_settings()?.unwrap_or_default();
+
     match mode {
         FormatMode::Write => {
-            let errors = format_paths_write(&paths, &resolver, exclude, include);
+            let errors = format_paths_write(&paths, &resolver, &default_settings, exclude, include);
 
             for error in &errors {
                 tracing::error!("{error}");
@@ -63,7 +66,8 @@ pub(crate) fn format(
             }
         }
         FormatMode::Check => {
-            let (paths, errors) = format_paths_check(&paths, &resolver, exclude, include);
+            let (paths, errors) =
+                format_paths_check(&paths, &resolver, &default_settings, exclude, include);
 
             for error in &errors {
                 tracing::error!("{error}");
@@ -98,16 +102,27 @@ fn inform_changed(paths: &[PathBuf], f: &mut impl Write) -> io::Result<()> {
 fn format_paths_write<P: AsRef<Path>>(
     paths: &[P],
     resolver: &PathResolver<Settings>,
+    default_settings: &Settings,
     exclude: discovery::Exclude,
     include: discovery::Include,
 ) -> Vec<FormatPathError> {
-    let paths = discover_r_file_paths(paths, resolver, discovery::Mode::Format, exclude, include);
+    let paths = discover_r_file_paths(
+        paths,
+        resolver,
+        default_settings,
+        discovery::Mode::Format,
+        exclude,
+        include,
+    );
 
     paths
         .into_iter()
         .filter_map(|path| match path {
             Ok(path) => {
-                let settings = resolver.resolve_or_fallback(&path);
+                let settings = resolver
+                    .resolve(&path)
+                    .map_or(default_settings, |item| item.value());
+
                 match format_path(&path, &settings.format) {
                     Ok(formatted) => match write_path(&path, formatted) {
                         Ok(()) => None,
@@ -124,16 +139,27 @@ fn format_paths_write<P: AsRef<Path>>(
 fn format_paths_check<P: AsRef<Path>>(
     paths: &[P],
     resolver: &PathResolver<Settings>,
+    default_settings: &Settings,
     exclude: discovery::Exclude,
     include: discovery::Include,
 ) -> (Vec<PathBuf>, Vec<FormatPathError>) {
-    let paths = discover_r_file_paths(paths, resolver, discovery::Mode::Format, exclude, include);
+    let paths = discover_r_file_paths(
+        paths,
+        resolver,
+        default_settings,
+        discovery::Mode::Format,
+        exclude,
+        include,
+    );
 
     paths
         .into_iter()
         .filter_map(|path| match path {
             Ok(path) => {
-                let settings = resolver.resolve_or_fallback(&path);
+                let settings = resolver
+                    .resolve(&path)
+                    .map_or(default_settings, |item| item.value());
+
                 match format_path(&path, &settings.format) {
                     Ok(file) => check_path(&path, file).map(Ok),
                     Err(err) => Some(Err(err)),

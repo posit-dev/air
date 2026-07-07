@@ -1,0 +1,18 @@
+---
+source: crates/air/tests/integration/config.rs
+assertion_line: 168
+expression: "Command::new(binary_path()).env(user_config_directory_env_var(),\nuser_config_directory).current_dir(directory).arg(\"format\").arg(\".\").arg(\"--no-color\").run().remove_arguments().replace_stderr(&user_air_toml(user_config_directory).display().to_string(),\n\"[AIR_TOML]\")"
+---
+success: false
+exit_code: 255
+----- stdout -----
+
+----- stderr -----
+air failed
+  Cause: Failed to parse [AIR_TOML]:
+Pattern `src/foo.R` must meet one of the following conditions:
+- Start with `**/`, i.e. `**/foo.R`
+- Contain no `/` characters unless it is at the very end, i.e. `foo.R` or `folder/`
+
+----- args -----
+<removed>

@@ -1,0 +1,20 @@
+---
+source: crates/air/tests/integration/config.rs
+expression: "Command::new(binary_path()).env(user_config_directory_env_var(),\nuser_config_directory).current_dir(directory).arg(\"format\").arg(\".\").arg(\"--no-color\").run().replace_stderr(&user_air_toml(user_config_directory).display().to_string(),\n\"[AIR_TOML]\")"
+---
+success: false
+exit_code: 255
+----- stdout -----
+
+----- stderr -----
+air failed
+  Cause: Failed to parse [AIR_TOML]:
+TOML parse error at line 1, column 5
+  |
+1 | not valid toml
+  |     ^
+expected `.`, `=`
+
+
+----- args -----
+format . --no-color

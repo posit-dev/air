@@ -11,6 +11,7 @@ use rustc_hash::FxHashSet;
 use std::path::Path;
 use std::path::PathBuf;
 
+use crate::config::user_config_directory;
 use crate::resolve::PathResolver;
 use crate::settings::DefaultExcludePatterns;
 use crate::settings::DefaultIncludePatterns;
@@ -50,7 +51,7 @@ pub fn discover_settings<P: AsRef<Path>>(paths: &[P]) -> anyhow::Result<Vec<Disc
             }
 
             if let Some(toml) = find_air_toml_in_directory(ancestor) {
-                let settings = parse_settings(&toml, ancestor)?;
+                let settings = parse_settings(&toml, Some(ancestor))?;
                 discovered_settings.push(DiscoveredSettings {
                     directory: ancestor.to_path_buf(),
                     settings,
@@ -73,13 +74,46 @@ pub fn discover_settings<P: AsRef<Path>>(paths: &[P]) -> anyhow::Result<Vec<Disc
     Ok(discovered_settings)
 }
 
+/// Discover the user level `air.toml`, if one exists
+///
+/// Searches [user_config_directory()] for an `air.toml`. Returns `Err` on parse
+/// failure, like [discover_settings()].
+///
+/// The user level config has no project directory to root against, so its `exclude`
+/// patterns are parsed as unrooted (a `root` of `None`), and a rooted pattern is a
+/// propagated error.
+pub fn discover_user_settings() -> anyhow::Result<Option<Settings>> {
+    let Some(directory) = user_config_directory() else {
+        return Ok(None);
+    };
+
+    let Some(toml) = find_air_toml_in_directory(&directory) else {
+        return Ok(None);
+    };
+
+    let settings = parse_settings(&toml, None)?;
+
+    tracing::trace!(
+        "Discovered user settings at '{directory}'",
+        directory = directory.display()
+    );
+
+    Ok(Some(settings))
+}
+
 /// Parse [Settings] from a given `air.toml`
 // TODO(hierarchical): Allow for an `extends` option in `air.toml`, which will make things
 // more complex, but will be very useful once we support hierarchical configuration as a
 // way of "inheriting" most top level configuration while slightly tweaking it in a nested directory.
-fn parse_settings(toml: &Path, root_directory: &Path) -> anyhow::Result<Settings> {
+fn parse_settings(toml: &Path, root: Option<&Path>) -> anyhow::Result<Settings> {
+    // TOML parsing errors nicely report the `toml` path in the error for context
     let options = parse_air_toml(toml)?;
-    let settings = options.into_settings(Some(root_directory))?;
+
+    // We add the `toml` path as context if conversion to `Settings` fails
+    let settings = options.into_settings(root).map_err(|error| {
+        anyhow::anyhow!("Failed to parse {toml}:\n{error}", toml = toml.display())
+    })?;
+
     Ok(settings)
 }
 
@@ -121,6 +155,7 @@ pub enum Include {
 pub fn discover_r_file_paths<P: AsRef<Path>>(
     paths: &[P],
     resolver: &PathResolver<Settings>,
+    default_settings: &Settings,
     mode: Mode,
     exclude: Exclude,
     include: Include,
@@ -161,7 +196,7 @@ pub fn discover_r_file_paths<P: AsRef<Path>>(
     let walker = builder.build_parallel();
 
     // Run the `WalkParallel` to collect all R files.
-    let state = FilesState::new(resolver, mode, exclude, include);
+    let state = FilesState::new(resolver, default_settings, mode, exclude, include);
     let mut visitor_builder = FilesVisitorBuilder::new(&state);
     walker.visit(&mut visitor_builder);
 
@@ -169,17 +204,19 @@ pub fn discover_r_file_paths<P: AsRef<Path>>(
 }
 
 /// Shared state across the threads of the walker
-struct FilesState<'resolver> {
+struct FilesState<'settings> {
     files: std::sync::Mutex<DiscoveredFiles>,
-    resolver: &'resolver PathResolver<Settings>,
+    resolver: &'settings PathResolver<Settings>,
+    default_settings: &'settings Settings,
     mode: Mode,
     exclude: Exclude,
     include: Include,
 }
 
-impl<'resolver> FilesState<'resolver> {
+impl<'settings> FilesState<'settings> {
     fn new(
-        resolver: &'resolver PathResolver<Settings>,
+        resolver: &'settings PathResolver<Settings>,
+        default_settings: &'settings Settings,
         mode: Mode,
         exclude: Exclude,
         include: Include,
@@ -187,6 +224,7 @@ impl<'resolver> FilesState<'resolver> {
         Self {
             files: std::sync::Mutex::new(Vec::new()),
             resolver,
+            default_settings,
             mode,
             exclude,
             include,
@@ -202,19 +240,19 @@ impl<'resolver> FilesState<'resolver> {
 ///
 /// Implements the `build()` method of [ignore::ParallelVisitorBuilder], which
 /// [ignore::WalkParallel] utilizes to create one [FilesVisitor] per thread.
-struct FilesVisitorBuilder<'state, 'resolver> {
-    state: &'state FilesState<'resolver>,
+struct FilesVisitorBuilder<'settings> {
+    state: &'settings FilesState<'settings>,
 }
 
-impl<'state, 'resolver> FilesVisitorBuilder<'state, 'resolver> {
-    fn new(state: &'state FilesState<'resolver>) -> Self {
+impl<'settings> FilesVisitorBuilder<'settings> {
+    fn new(state: &'settings FilesState<'settings>) -> Self {
         Self { state }
     }
 }
 
-impl<'state> ignore::ParallelVisitorBuilder<'state> for FilesVisitorBuilder<'state, '_> {
+impl<'settings> ignore::ParallelVisitorBuilder<'settings> for FilesVisitorBuilder<'settings> {
     /// Constructs the per-thread [FilesVisitor], called for us by `ignore`
-    fn build(&mut self) -> Box<dyn ignore::ParallelVisitor + 'state> {
+    fn build(&mut self) -> Box<dyn ignore::ParallelVisitor + 'settings> {
         Box::new(FilesVisitor {
             files: vec![],
             state: self.state,
@@ -227,12 +265,12 @@ impl<'state> ignore::ParallelVisitorBuilder<'state> for FilesVisitorBuilder<'sta
 /// A files visitor has its `visit()` method repeatedly called. It modifies its own
 /// synchronous state by pushing to its thread specific `files` while visiting. On `Drop`,
 /// the collected `files` are appended to the global set of `state.files`.
-struct FilesVisitor<'state, 'resolver> {
+struct FilesVisitor<'settings> {
     files: DiscoveredFiles,
-    state: &'state FilesState<'resolver>,
+    state: &'settings FilesState<'settings>,
 }
 
-impl ignore::ParallelVisitor for FilesVisitor<'_, '_> {
+impl ignore::ParallelVisitor for FilesVisitor<'_> {
     /// Visit a file in the tree
     ///
     /// Visiting a file requires two actions:
@@ -267,7 +305,7 @@ impl ignore::ParallelVisitor for FilesVisitor<'_, '_> {
     }
 }
 
-impl FilesVisitor<'_, '_> {
+impl FilesVisitor<'_> {
     /// Visit each entry using formatter specific `exclude` and `include` rules
     fn visit_format(&mut self, entry: DirEntry) -> ignore::WalkState {
         let path = entry.path();
@@ -279,7 +317,11 @@ impl FilesVisitor<'_, '_> {
         let is_directory = entry.file_type().is_none_or(|ft| ft.is_dir());
 
         // Retrieve the settings for this `path`
-        let settings = self.state.resolver.resolve_or_fallback(path);
+        let settings = self
+            .state
+            .resolver
+            .resolve(path)
+            .map_or(self.state.default_settings, |item| item.value());
 
         match self.state.exclude {
             Exclude::Matched => {
@@ -369,7 +411,7 @@ impl FilesVisitor<'_, '_> {
     }
 }
 
-impl Drop for FilesVisitor<'_, '_> {
+impl Drop for FilesVisitor<'_> {
     fn drop(&mut self) {
         // Lock the global shared set of `files`
         // Unwrap: If we can't lock the mutex then something is very wrong
@@ -456,11 +498,13 @@ mod test {
     use anyhow::Context;
     use tempfile::TempDir;
 
+    use crate::config::set_user_config_directory_env_var;
     use crate::discovery::Exclude;
     use crate::discovery::Include;
     use crate::discovery::Mode;
     use crate::discovery::discover_r_file_paths;
     use crate::discovery::discover_settings;
+    use crate::discovery::discover_user_settings;
     use crate::resolve::PathResolver;
     use crate::settings::Settings;
 
@@ -479,11 +523,13 @@ mod test {
         let test2_path = tempdir.join("tests").join("testthat").join("test2.R");
         std::fs::write(&test2_path, b"")?;
 
-        let resolver = PathResolver::new(Settings::default());
+        let resolver = PathResolver::new();
+        let default_settings = Settings::default();
 
         let mut paths = discover_r_file_paths(
             &[tempdir],
             &resolver,
+            &default_settings,
             Mode::Format,
             Exclude::Matched,
             Include::Matched,
@@ -512,11 +558,13 @@ mod test {
         std::fs::write(&test_r, b"")?;
         std::fs::write(&test_py, b"")?;
 
-        let resolver = PathResolver::new(Settings::default());
+        let resolver = PathResolver::new();
+        let default_settings = Settings::default();
 
         let mut paths = discover_r_file_paths(
             &[tempdir],
             &resolver,
+            &default_settings,
             Mode::Format,
             Exclude::Matched,
             Include::Matched,
@@ -547,10 +595,12 @@ mod test {
             // `{tempdir}/test1.R`
             // Part of default includes, so accepted
             let start = &[&test_big_r];
-            let resolver = PathResolver::new(Settings::default());
+            let resolver = PathResolver::new();
+            let default_settings = Settings::default();
             let mut paths = discover_r_file_paths(
                 start,
                 &resolver,
+                &default_settings,
                 Mode::Format,
                 Exclude::Matched,
                 Include::Matched,
@@ -563,10 +613,12 @@ mod test {
             // `{tempdir}/test2.r`
             // Part of default includes, so accepted
             let start = &[&test_little_r];
-            let resolver = PathResolver::new(Settings::default());
+            let resolver = PathResolver::new();
+            let default_settings = Settings::default();
             let mut paths = discover_r_file_paths(
                 start,
                 &resolver,
+                &default_settings,
                 Mode::Format,
                 Exclude::Matched,
                 Include::Matched,
@@ -582,10 +634,12 @@ mod test {
             // do `air format my.qmd` and be surprised if by chance it parses then happens
             // to bork their qmd.
             let start = &[&test_qmd];
-            let resolver = PathResolver::new(Settings::default());
+            let resolver = PathResolver::new();
+            let default_settings = Settings::default();
             let paths = discover_r_file_paths(
                 start,
                 &resolver,
+                &default_settings,
                 Mode::Format,
                 Exclude::Matched,
                 Include::Matched,
@@ -623,10 +677,12 @@ mod test {
             // `{tempdir}`
             // Folder containing folders and files that match default excludes
             let start = &[tempdir];
-            let resolver = PathResolver::new(Settings::default());
+            let resolver = PathResolver::new();
+            let default_settings = Settings::default();
             let mut paths = discover_r_file_paths(
                 start,
                 &resolver,
+                &default_settings,
                 Mode::Format,
                 Exclude::Matched,
                 Include::Matched,
@@ -640,10 +696,12 @@ mod test {
             // Directly supplied file matching default excludes is excluded
             // https://github.com/posit-dev/air/issues/472
             let start = &[tempdir.join("R").join("cpp11.R")];
-            let resolver = PathResolver::new(Settings::default());
+            let resolver = PathResolver::new();
+            let default_settings = Settings::default();
             let paths = discover_r_file_paths(
                 start,
                 &resolver,
+                &default_settings,
                 Mode::Format,
                 Exclude::Matched,
                 Include::Matched,
@@ -656,10 +714,12 @@ mod test {
             // Directly supplied directory matching default excludes is excluded
             // https://github.com/posit-dev/air/issues/472
             let start = &[tempdir.join("renv")];
-            let resolver = PathResolver::new(Settings::default());
+            let resolver = PathResolver::new();
+            let default_settings = Settings::default();
             let paths = discover_r_file_paths(
                 start,
                 &resolver,
+                &default_settings,
                 Mode::Format,
                 Exclude::Matched,
                 Include::Matched,
@@ -672,10 +732,12 @@ mod test {
             // Directly supplied file with parent matching default excludes is excluded
             // https://github.com/posit-dev/air/issues/472
             let start = &[tempdir.join("renv").join("activate.R")];
-            let resolver = PathResolver::new(Settings::default());
+            let resolver = PathResolver::new();
+            let default_settings = Settings::default();
             let paths = discover_r_file_paths(
                 start,
                 &resolver,
+                &default_settings,
                 Mode::Format,
                 Exclude::Matched,
                 Include::Matched,
@@ -688,10 +750,12 @@ mod test {
             // Directly supplied directory with parent matching default excludes is excluded
             // https://github.com/posit-dev/air/issues/472
             let start = &[tempdir.join("renv").join("subdir")];
-            let resolver = PathResolver::new(Settings::default());
+            let resolver = PathResolver::new();
+            let default_settings = Settings::default();
             let paths = discover_r_file_paths(
                 start,
                 &resolver,
+                &default_settings,
                 Mode::Format,
                 Exclude::Matched,
                 Include::Matched,
@@ -728,12 +792,14 @@ exclude = ["exclude/"]
             let mut settings = discover_settings(start)?;
             let settings = settings.pop().context("Should find air.toml")?;
 
-            let mut resolver = PathResolver::new(Settings::default());
+            let mut resolver = PathResolver::new();
             resolver.add(&settings.directory, settings.settings);
+            let default_settings = Settings::default();
 
             let paths = discover_r_file_paths(
                 start,
                 &resolver,
+                &default_settings,
                 Mode::Format,
                 Exclude::Matched,
                 Include::Matched,
@@ -750,12 +816,14 @@ exclude = ["exclude/"]
             let mut settings = discover_settings(start)?;
             let settings = settings.pop().context("Should find air.toml")?;
 
-            let mut resolver = PathResolver::new(Settings::default());
+            let mut resolver = PathResolver::new();
             resolver.add(&settings.directory, settings.settings);
+            let default_settings = Settings::default();
 
             let paths = discover_r_file_paths(
                 start,
                 &resolver,
+                &default_settings,
                 Mode::Format,
                 Exclude::Matched,
                 Include::Matched,
@@ -772,12 +840,14 @@ exclude = ["exclude/"]
             let mut settings = discover_settings(start)?;
             let settings = settings.pop().context("Should find air.toml")?;
 
-            let mut resolver = PathResolver::new(Settings::default());
+            let mut resolver = PathResolver::new();
             resolver.add(&settings.directory, settings.settings);
+            let default_settings = Settings::default();
 
             let paths = discover_r_file_paths(
                 start,
                 &resolver,
+                &default_settings,
                 Mode::Format,
                 Exclude::Matched,
                 Include::Matched,
@@ -794,12 +864,14 @@ exclude = ["exclude/"]
             let mut settings = discover_settings(start)?;
             let settings = settings.pop().context("Should find air.toml")?;
 
-            let mut resolver = PathResolver::new(Settings::default());
+            let mut resolver = PathResolver::new();
             resolver.add(&settings.directory, settings.settings);
+            let default_settings = Settings::default();
 
             let paths = discover_r_file_paths(
                 start,
                 &resolver,
+                &default_settings,
                 Mode::Format,
                 Exclude::Matched,
                 Include::Matched,
@@ -822,10 +894,12 @@ exclude = ["exclude/"]
 
         // `cpp11.R` is a default exclude, but `Exclude::Nothing` bypasses it
         let start = &[&cpp11_path];
-        let resolver = PathResolver::new(Settings::default());
+        let resolver = PathResolver::new();
+        let default_settings = Settings::default();
         let mut paths = discover_r_file_paths(
             start,
             &resolver,
+            &default_settings,
             Mode::Format,
             Exclude::Nothing,
             Include::Matched,
@@ -856,10 +930,12 @@ exclude = ["exclude/"]
         // Recursing into `tempdir` with `Exclude::Nothing` discovers `test.R` and
         // `cpp11.R`, but not `test.qmd`
         let start = &[tempdir];
-        let resolver = PathResolver::new(Settings::default());
+        let resolver = PathResolver::new();
+        let default_settings = Settings::default();
         let mut paths = discover_r_file_paths(
             start,
             &resolver,
+            &default_settings,
             Mode::Format,
             Exclude::Nothing,
             Include::Matched,
@@ -885,10 +961,12 @@ exclude = ["exclude/"]
 
         // `.qmd` is not part of default includes, but `Include::Everything` bypasses that
         let start = &[&test_qmd];
-        let resolver = PathResolver::new(Settings::default());
+        let resolver = PathResolver::new();
+        let default_settings = Settings::default();
         let mut paths = discover_r_file_paths(
             start,
             &resolver,
+            &default_settings,
             Mode::Format,
             Exclude::Matched,
             Include::Everything,
@@ -919,10 +997,12 @@ exclude = ["exclude/"]
         // Recursing into `tempdir` with `Include::Everything` discovers `test.R` and
         // `test.qmd`, but not `cpp11.R`
         let start = &[tempdir];
-        let resolver = PathResolver::new(Settings::default());
+        let resolver = PathResolver::new();
+        let default_settings = Settings::default();
         let mut paths = discover_r_file_paths(
             start,
             &resolver,
+            &default_settings,
             Mode::Format,
             Exclude::Matched,
             Include::Everything,
@@ -962,10 +1042,12 @@ ignore/
             // `{tempdir}/`
             // When `ignore/` is "discovered" via recursive search, the `.gitignore` is respected
             let start = &[tempdir];
-            let resolver = PathResolver::new(Settings::default());
+            let resolver = PathResolver::new();
+            let default_settings = Settings::default();
             let paths = discover_r_file_paths(
                 start,
                 &resolver,
+                &default_settings,
                 Mode::Format,
                 Exclude::Matched,
                 Include::Matched,
@@ -982,16 +1064,105 @@ ignore/
             // it's unlikely that a user (or pre-commit or RStudio) will call `air format
             // <folder-that-has-been-gitignored>` directly.
             let start = &[tempdir.join("ignore")];
-            let resolver = PathResolver::new(Settings::default());
+            let resolver = PathResolver::new();
+            let default_settings = Settings::default();
             let paths = discover_r_file_paths(
                 start,
                 &resolver,
+                &default_settings,
                 Mode::Format,
                 Exclude::Matched,
                 Include::Matched,
             );
             assert_eq!(paths.len(), 2);
         }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_discover_user_settings_present() -> anyhow::Result<()> {
+        let tempdir = TempDir::new()?;
+        let tempdir = tempdir.path();
+
+        // `user_config_directory()` appends `air` to the config directory
+        let directory = tempdir.join("air");
+        std::fs::create_dir(&directory)?;
+        std::fs::write(directory.join("air.toml"), "[format]\nindent-width = 3\n")?;
+
+        unsafe { set_user_config_directory_env_var(tempdir) };
+
+        let settings = discover_user_settings()?.context("Should find user air.toml")?;
+        assert_eq!(
+            settings.format.indent_width,
+            settings::IndentWidth::try_from(3u8)?
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_discover_user_settings_prefers_visible_air_toml() -> anyhow::Result<()> {
+        let tempdir = TempDir::new()?;
+        let tempdir = tempdir.path();
+
+        let directory = tempdir.join("air");
+        std::fs::create_dir(&directory)?;
+        std::fs::write(directory.join("air.toml"), "[format]\nindent-width = 3\n")?;
+        std::fs::write(directory.join(".air.toml"), "[format]\nindent-width = 4\n")?;
+
+        unsafe { set_user_config_directory_env_var(tempdir) };
+
+        // `air.toml` wins over `.air.toml`
+        let settings = discover_user_settings()?.context("Should find user air.toml")?;
+        assert_eq!(
+            settings.format.indent_width,
+            settings::IndentWidth::try_from(3u8)?
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_discover_user_settings_unparseable() -> anyhow::Result<()> {
+        let tempdir = TempDir::new()?;
+        let tempdir = tempdir.path();
+
+        let directory = tempdir.join("air");
+        std::fs::create_dir(&directory)?;
+
+        let air_toml = directory.join("air.toml");
+        std::fs::write(&air_toml, "this is not valid toml")?;
+
+        unsafe { set_user_config_directory_env_var(tempdir) };
+
+        // Scrub the tempdir path so the snapshot is stable across machines
+        let error = discover_user_settings().unwrap_err().to_string();
+        let error = error.replace(air_toml.to_str().unwrap(), "[AIR_TOML]");
+        insta::assert_snapshot!(error);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_discover_user_settings_rejects_rooted_exclude() -> anyhow::Result<()> {
+        let tempdir = TempDir::new()?;
+        let tempdir = tempdir.path();
+
+        let directory = tempdir.join("air");
+        std::fs::create_dir(&directory)?;
+
+        // A rooted `exclude` pattern (interior `/`) has no meaning without a project
+        // directory to root against, so it is an error in a user level config
+        let air_toml = directory.join("air.toml");
+        std::fs::write(&air_toml, "[format]\nexclude = [\"src/foo.R\"]\n")?;
+
+        unsafe { set_user_config_directory_env_var(tempdir) };
+
+        // Scrub the tempdir path so the snapshot is stable across machines
+        let error = discover_user_settings().unwrap_err().to_string();
+        let error = error.replace(air_toml.to_str().unwrap(), "[AIR_TOML]");
+        insta::assert_snapshot!(error);
 
         Ok(())
     }

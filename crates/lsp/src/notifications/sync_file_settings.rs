@@ -55,7 +55,7 @@ impl LspState {
                         format: FileFormatSettings::from_format_settings(&settings.format),
                     }),
                     // There is no TOML. Let the IDE use its own settings.
-                    WorkspaceSettings::Fallback(_) => None,
+                    WorkspaceSettings::Default(_) => None,
                 },
             )
             .collect();

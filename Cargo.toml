@@ -38,6 +38,7 @@ colored = "3.0.0"
 comments = { path = "./crates/comments" }
 crates = { path = "./crates/crates" }
 dissimilar = "1.0.9"
+etcetera = "0.11.0"
 fs = { path = "./crates/fs" }
 futures = "0.3.31"
 futures-util = "0.3.31"

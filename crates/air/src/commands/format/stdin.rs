@@ -10,6 +10,7 @@ use thiserror::Error;
 use workspace::discovery;
 use workspace::discovery::DiscoveredSettings;
 use workspace::discovery::discover_settings;
+use workspace::discovery::discover_user_settings;
 use workspace::format::FormatSourceError;
 use workspace::format::FormattedSource;
 use workspace::resolve::PathResolver;
@@ -43,7 +44,7 @@ pub(crate) fn format(
     // Normalize up front, relative to current working directory
     let path = fs::normalize_path(path);
 
-    let mut resolver = PathResolver::new(Settings::default());
+    let mut resolver = PathResolver::new();
 
     for DiscoveredSettings {
         directory,
@@ -53,37 +54,46 @@ pub(crate) fn format(
         resolver.add(&directory, settings);
     }
 
+    let default_settings = discover_user_settings()?.unwrap_or_default();
+
     match mode {
-        FormatMode::Write => match format_stdin_write(&path, &resolver, exclude, include) {
-            Ok(()) => Ok(ExitStatus::Success),
-            Err(error) => {
-                tracing::error!("{error}");
-                Ok(ExitStatus::Error)
-            }
-        },
-        FormatMode::Check => match format_stdin_check(&path, &resolver, exclude, include) {
-            Ok(changed) => {
-                if changed {
-                    Ok(ExitStatus::Failure)
-                } else {
-                    Ok(ExitStatus::Success)
+        FormatMode::Write => {
+            match format_stdin_write(&path, &resolver, &default_settings, exclude, include) {
+                Ok(()) => Ok(ExitStatus::Success),
+                Err(error) => {
+                    tracing::error!("{error}");
+                    Ok(ExitStatus::Error)
                 }
             }
-            Err(error) => {
-                tracing::error!("{error}");
-                Ok(ExitStatus::Error)
+        }
+        FormatMode::Check => {
+            match format_stdin_check(&path, &resolver, &default_settings, exclude, include) {
+                Ok(changed) => {
+                    if changed {
+                        Ok(ExitStatus::Failure)
+                    } else {
+                        Ok(ExitStatus::Success)
+                    }
+                }
+                Err(error) => {
+                    tracing::error!("{error}");
+                    Ok(ExitStatus::Error)
+                }
             }
-        },
+        }
     }
 }
 
 fn format_stdin_write<P: AsRef<Path>>(
     path: P,
     resolver: &PathResolver<Settings>,
+    default_settings: &Settings,
     exclude: discovery::Exclude,
     include: discovery::Include,
 ) -> Result<(), FormatStdinError> {
-    let settings = resolver.resolve_or_fallback(&path);
+    let settings = resolver
+        .resolve(&path)
+        .map_or(default_settings, |item| item.value());
 
     let formatted = if is_stdin_formattable(path, settings, exclude, include) {
         format_stdin(&settings.format)?
@@ -105,10 +115,13 @@ fn format_stdin_write<P: AsRef<Path>>(
 fn format_stdin_check<P: AsRef<Path>>(
     path: P,
     resolver: &PathResolver<Settings>,
+    default_settings: &Settings,
     exclude: discovery::Exclude,
     include: discovery::Include,
 ) -> Result<bool, FormatStdinError> {
-    let settings = resolver.resolve_or_fallback(&path);
+    let settings = resolver
+        .resolve(&path)
+        .map_or(default_settings, |item| item.value());
 
     if !is_stdin_formattable(path, settings, exclude, include) {
         // Don't even attempt to read from stdin, we know nothing will change

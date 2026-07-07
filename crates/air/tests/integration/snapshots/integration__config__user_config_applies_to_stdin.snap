@@ -1,0 +1,15 @@
+---
+source: crates/air/tests/integration/config.rs
+expression: "Command::new(binary_path()).env(user_config_directory_env_var(),\nuser_config_directory).current_dir(directory).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped()).arg(\"format\").arg(\"--stdin-file-path\").arg(\"test.R\").run_with_stdin(\"if (TRUE) {\\n1\\n}\\n\".to_string()).remove_arguments()"
+---
+success: true
+exit_code: 0
+----- stdout -----
+if (TRUE) {
+        1
+}
+
+----- stderr -----
+
+----- args -----
+<removed>

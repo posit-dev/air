@@ -16,9 +16,6 @@ use std::path::{Path, PathBuf};
 /// See [`PathResolver::resolve()`] for more details on the implementation.
 #[derive(Debug, Default)]
 pub struct PathResolver<T> {
-    /// Fallback value to be used when a `path` isn't associated with any `items`
-    fallback: T,
-
     /// A sorted vector of `PathItem`. Sorted on the `PathBuf` in increasing order.
     items: Vec<PathItem<T>>,
 }
@@ -48,15 +45,8 @@ impl<T> PathItem<T> {
 
 impl<T> PathResolver<T> {
     /// Create a new empty [`PathResolver`]
-    pub fn new(fallback: T) -> Self {
-        Self {
-            fallback,
-            items: Vec::new(),
-        }
-    }
-
-    pub fn fallback(&self) -> &T {
-        &self.fallback
+    pub fn new() -> Self {
+        Self { items: Vec::new() }
     }
 
     /// Add a `path` and its `value` into the resolver
@@ -154,13 +144,6 @@ impl<T> PathResolver<T> {
             .find(|item| path.starts_with(item.path()))
     }
 
-    /// Convenience method when you don't care about manually handling the fallback
-    /// case and don't need the matched path in the tree
-    pub fn resolve_or_fallback<P: AsRef<Path>>(&self, path: P) -> &T {
-        self.resolve(path)
-            .map_or_else(|| self.fallback(), |item| item.value())
-    }
-
     /// Returns all matches matched by the `path` rather than just the closest one
     ///
     /// See [PathResolver::resolve()] for implementation details.
@@ -201,7 +184,7 @@ mod tests {
 
     #[test]
     fn test_items_are_added_and_removed_in_sorted_order() {
-        let mut resolver = PathResolver::new(String::from("fallback"));
+        let mut resolver = PathResolver::new();
 
         resolver.add("/user/c", String::from("c"));
         resolver.add("/user/a", String::from("a"));
@@ -221,7 +204,7 @@ mod tests {
 
     #[test]
     fn test_matches_must_be_strict_prefixes() {
-        let mut resolver = PathResolver::new(String::from("fallback"));
+        let mut resolver = PathResolver::new();
         resolver.add("/user/a", String::from("a"));
         resolver.add("/user/b", String::from("b"));
         resolver.add("/user/b/c", String::from("c"));
@@ -241,7 +224,7 @@ mod tests {
 
     #[test]
     fn test_starts_with_strategy_only_matches_full_components() {
-        let mut resolver = PathResolver::new(0);
+        let mut resolver = PathResolver::new();
         resolver.add("/user/a", 1);
 
         // Technically `/user/a.R` "starts with" `/user/a`, but `path.starts_with()`
@@ -251,7 +234,7 @@ mod tests {
 
     #[test]
     fn test_can_resolve_in_simple_cases() {
-        let mut resolver = PathResolver::new(0);
+        let mut resolver = PathResolver::new();
         resolver.add("/user/a", 1);
         resolver.add("/user/b", 2);
 
@@ -266,7 +249,7 @@ mod tests {
 
     #[test]
     fn test_resolves_to_closest_path() {
-        let mut resolver = PathResolver::new(0);
+        let mut resolver = PathResolver::new();
         resolver.add("/user/b", 1);
         resolver.add("/user/b/a", 2);
 

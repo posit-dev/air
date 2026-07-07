@@ -1,0 +1,8 @@
+---
+source: crates/workspace/src/discovery.rs
+expression: error
+---
+Failed to parse [AIR_TOML]:
+Pattern `src/foo.R` must meet one of the following conditions:
+- Start with `**/`, i.e. `**/foo.R`
+- Contain no `/` characters unless it is at the very end, i.e. `foo.R` or `folder/`

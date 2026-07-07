@@ -15,6 +15,7 @@ pub(crate) struct AirClientCapabilities {
     pub(crate) position_encodings: Vec<PositionEncodingKind>,
     pub(crate) dynamic_registration_for_did_change_configuration: bool,
     pub(crate) dynamic_registration_for_did_change_watched_files: bool,
+    pub(crate) relative_pattern_support_for_did_change_watched_files: bool,
     pub(crate) request_configuration: bool,
 }
 
@@ -32,11 +33,17 @@ impl AirClientCapabilities {
             .and_then(|did_change_configuration| did_change_configuration.dynamic_registration)
             .unwrap_or(false);
 
-        let dynamic_registration_for_did_change_watched_files = capabilities
+        let did_change_watched_files = capabilities
             .workspace
             .as_ref()
-            .and_then(|workspace| workspace.did_change_watched_files)
+            .and_then(|workspace| workspace.did_change_watched_files);
+
+        let dynamic_registration_for_did_change_watched_files = did_change_watched_files
             .and_then(|watched_files| watched_files.dynamic_registration)
+            .unwrap_or_default();
+
+        let relative_pattern_support_for_did_change_watched_files = did_change_watched_files
+            .and_then(|watched_files| watched_files.relative_pattern_support)
             .unwrap_or_default();
 
         let configuration = capabilities
@@ -49,6 +56,7 @@ impl AirClientCapabilities {
             position_encodings,
             dynamic_registration_for_did_change_configuration,
             dynamic_registration_for_did_change_watched_files,
+            relative_pattern_support_for_did_change_watched_files,
             request_configuration: configuration,
         }
     }

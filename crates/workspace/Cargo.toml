@@ -16,6 +16,7 @@ air_r_formatter = { workspace = true }
 air_r_parser = { workspace = true }
 anyhow = { workspace = true }
 biome_formatter = { workspace = true, features = ["serde"] }
+etcetera = { workspace = true }
 fs = { workspace = true }
 ignore = { workspace = true }
 line_ending = { workspace = true }

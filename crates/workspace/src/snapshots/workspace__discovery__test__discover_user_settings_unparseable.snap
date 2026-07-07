@@ -1,0 +1,10 @@
+---
+source: crates/workspace/src/discovery.rs
+expression: error
+---
+Failed to parse [AIR_TOML]:
+TOML parse error at line 1, column 6
+  |
+1 | this is not valid toml
+  |      ^
+expected `.`, `=`

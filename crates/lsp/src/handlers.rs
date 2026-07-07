@@ -9,6 +9,10 @@ use struct_field_names_as_array::FieldNamesAsArray;
 use tower_lsp::lsp_types;
 use tower_lsp::lsp_types::DidChangeWatchedFilesRegistrationOptions;
 use tower_lsp::lsp_types::FileSystemWatcher;
+use tower_lsp::lsp_types::GlobPattern;
+use tower_lsp::lsp_types::OneOf;
+use tower_lsp::lsp_types::RelativePattern;
+use tower_lsp::lsp_types::Url;
 use tracing::Instrument;
 
 use crate::main_loop::LspState;
@@ -57,28 +61,11 @@ pub(crate) async fn handle_initialized(lsp_state: &LspState) -> anyhow::Result<(
         .capabilities
         .dynamic_registration_for_did_change_watched_files
     {
-        // Watch for changes in configuration files so we can react dynamically
-        let watch_air_toml_registration = lsp_types::Registration {
-            id: String::from("air-toml-watcher"),
-            method: "workspace/didChangeWatchedFiles".into(),
-            register_options: Some(
-                serde_json::to_value(DidChangeWatchedFilesRegistrationOptions {
-                    watchers: vec![
-                        FileSystemWatcher {
-                            glob_pattern: lsp_types::GlobPattern::String("**/air.toml".into()),
-                            kind: None,
-                        },
-                        FileSystemWatcher {
-                            glob_pattern: lsp_types::GlobPattern::String("**/.air.toml".into()),
-                            kind: None,
-                        },
-                    ],
-                })
-                .unwrap(),
-            ),
-        };
-
-        registrations.push(watch_air_toml_registration);
+        registrations.push(air_toml_watched_file_registration(
+            lsp_state
+                .capabilities
+                .relative_pattern_support_for_did_change_watched_files,
+        ));
     }
 
     if !registrations.is_empty() {
@@ -104,4 +91,50 @@ fn collect_regs(
             register_options: Some(serde_json::json!({ "section": into_section(field) })),
         })
         .collect()
+}
+
+// Watch for changes in configuration files so we can react dynamically
+fn air_toml_watched_file_registration(relative_pattern_support: bool) -> lsp_types::Registration {
+    let mut watchers = Vec::new();
+
+    // Project level `air.toml`s. `GlobPattern::String` is relative to the workspace.
+    watchers.push(FileSystemWatcher {
+        glob_pattern: GlobPattern::String("**/air.toml".into()),
+        kind: None,
+    });
+    watchers.push(FileSystemWatcher {
+        glob_pattern: GlobPattern::String("**/.air.toml".into()),
+        kind: None,
+    });
+
+    // User configuration level `air.toml` lives outside any workspace folder, so we
+    // need `GlobPattern::Relative` if the IDE supports it
+    if relative_pattern_support
+        && let Some(directory) = workspace::config::user_config_directory()
+        && let Ok(directory) = Url::from_directory_path(&directory)
+    {
+        watchers.push(FileSystemWatcher {
+            glob_pattern: GlobPattern::Relative(RelativePattern {
+                base_uri: OneOf::Right(directory.clone()),
+                pattern: String::from("air.toml"),
+            }),
+            kind: None,
+        });
+        watchers.push(FileSystemWatcher {
+            glob_pattern: GlobPattern::Relative(RelativePattern {
+                base_uri: OneOf::Right(directory.clone()),
+                pattern: String::from(".air.toml"),
+            }),
+            kind: None,
+        });
+    }
+
+    let register_options =
+        Some(serde_json::to_value(DidChangeWatchedFilesRegistrationOptions { watchers }).unwrap());
+
+    lsp_types::Registration {
+        id: String::from("air-toml-watcher"),
+        method: String::from("workspace/didChangeWatchedFiles"),
+        register_options,
+    }
 }
