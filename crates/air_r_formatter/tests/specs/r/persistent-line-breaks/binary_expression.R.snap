@@ -5,8 +5,8 @@ info: r/persistent-line-breaks/binary_expression.R
 # Input
 
 ```R
-#' [format]
-#' persistent-line-breaks = false
+#| [format]
+#| persistent-line-breaks = false
 
 # Fits on one line, flatten
 x |>
@@ -37,8 +37,8 @@ Table: fcase, tribble
 -----
 
 ```R
-#' [format]
-#' persistent-line-breaks = false
+#| [format]
+#| persistent-line-breaks = false
 
 # Fits on one line, flatten
 x |> foo() |> bar()

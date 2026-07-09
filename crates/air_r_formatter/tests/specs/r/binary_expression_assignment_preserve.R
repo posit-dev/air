@@ -1,5 +1,5 @@
-#' [format]
-#' assignment-style = "preserve"
+#| [format]
+#| assignment-style = "preserve"
 
 # Both `<-` and `=` are left exactly as written, in every position
 

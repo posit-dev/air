@@ -1,5 +1,5 @@
-#' [format]
-#' assignment-style = "equal"
+#| [format]
+#| assignment-style = "equal"
 
 # `<-` becomes `=` in all the positions where `=` is a valid assignment operator
 

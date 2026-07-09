@@ -1,5 +1,5 @@
-#' [format]
-#' table = ["foo"]
+#| [format]
+#| table = ["foo"]
 
 foo(
 ~x,~y,

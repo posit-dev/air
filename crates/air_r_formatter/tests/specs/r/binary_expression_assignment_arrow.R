@@ -1,5 +1,5 @@
-#' [format]
-#' assignment-style = "arrow"
+#| [format]
+#| assignment-style = "arrow"
 
 # Top level
 x = 1

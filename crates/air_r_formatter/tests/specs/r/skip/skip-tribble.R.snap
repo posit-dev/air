@@ -5,8 +5,8 @@ info: r/skip/skip-tribble.R
 # Input
 
 ```R
-#' [format]
-#' skip = ["tribble"]
+#| [format]
+#| skip = ["tribble"]
 
 # Should skip formatting even without a skip comment
 tribble(
@@ -60,8 +60,8 @@ Table: fcase, tribble
 -----
 
 ```R
-#' [format]
-#' skip = ["tribble"]
+#| [format]
+#| skip = ["tribble"]
 
 # Should skip formatting even without a skip comment
 tribble(

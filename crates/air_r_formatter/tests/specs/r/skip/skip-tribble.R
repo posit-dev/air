@@ -1,5 +1,5 @@
-#' [format]
-#' skip = ["tribble"]
+#| [format]
+#| skip = ["tribble"]
 
 # Should skip formatting even without a skip comment
 tribble(

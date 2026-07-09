@@ -26,9 +26,9 @@ pub fn run(spec_input_file: &str, _expected_file: &str, _test_directory: &str, _
 /// the backticks):
 ///
 /// ```r
-/// #' [format]
-/// #' indent-width = 4
-/// #' persistent-line-breaks = false
+/// #| [format]
+/// #| indent-width = 4
+/// #| persistent-line-breaks = false
 /// ```
 ///
 /// Regardless of whether or not format options are provided in the test, we need to
@@ -39,16 +39,16 @@ pub fn run(spec_input_file: &str, _expected_file: &str, _test_directory: &str, _
 fn format_options_for_test(code: &str) -> RFormatOptions {
     let lines = code.lines();
 
-    // Skip blank lines, then collect all leading lines that start with `#'`
+    // Skip blank lines, then collect all leading lines that start with `#|`
     let lines: Vec<&str> = lines
         .skip_while(|line| line.is_empty())
-        .take_while(|line| line.starts_with("#'"))
+        .take_while(|line| line.starts_with("#|"))
         .collect();
 
-    // Strip off the `#'` and any leading whitespace, that leaves a TOML file left
+    // Strip off the `#|` and any leading whitespace, that leaves a TOML file left
     let lines: Vec<&str> = lines
         .into_iter()
-        .map(|line| line.strip_prefix("#'").unwrap().trim_start())
+        .map(|line| line.strip_prefix("#|").unwrap().trim_start())
         .collect();
 
     let contents = lines.join("\n");

@@ -1,5 +1,5 @@
-#' [format]
-#' assignment-style = "preserve"
+#| [format]
+#| assignment-style = "preserve"
 
 1 + 2 + 3 + 4
 

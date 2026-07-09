@@ -1,5 +1,5 @@
-#' [format]
-#' skip = ["graph_from_literal"]
+#| [format]
+#| skip = ["graph_from_literal"]
 
 # Skips formatting
 graph_from_literal(A +-+ B +---+ C ++ D + E)

@@ -5,8 +5,8 @@ info: r/table/table-explicit.R
 # Input
 
 ```R
-#' [format]
-#' table = ["foo"]
+#| [format]
+#| table = ["foo"]
 
 foo(
 ~x,~y,
@@ -60,8 +60,8 @@ Table: fcase, foo, tribble
 -----
 
 ```R
-#' [format]
-#' table = ["foo"]
+#| [format]
+#| table = ["foo"]
 
 foo(
   ~x , ~y ,

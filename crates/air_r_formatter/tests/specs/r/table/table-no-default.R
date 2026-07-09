@@ -1,6 +1,6 @@
-#' [format]
-#' table = ["foo"]
-#' default-table = false
+#| [format]
+#| table = ["foo"]
+#| default-table = false
 
 # Should not format as table
 tribble(

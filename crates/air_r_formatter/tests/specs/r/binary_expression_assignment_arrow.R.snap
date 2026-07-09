@@ -5,8 +5,8 @@ info: r/binary_expression_assignment_arrow.R
 # Input
 
 ```R
-#' [format]
-#' assignment-style = "arrow"
+#| [format]
+#| assignment-style = "arrow"
 
 # Top level
 x = 1
@@ -84,8 +84,8 @@ Table: fcase, tribble
 -----
 
 ```R
-#' [format]
-#' assignment-style = "arrow"
+#| [format]
+#| assignment-style = "arrow"
 
 # Top level
 x <- 1

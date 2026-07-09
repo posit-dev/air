@@ -5,8 +5,8 @@ info: r/binary_expression.R
 # Input
 
 ```R
-#' [format]
-#' assignment-style = "preserve"
+#| [format]
+#| assignment-style = "preserve"
 
 1 + 2 + 3 + 4
 
@@ -704,8 +704,8 @@ Table: fcase, tribble
 -----
 
 ```R
-#' [format]
-#' assignment-style = "preserve"
+#| [format]
+#| assignment-style = "preserve"
 
 1 + 2 + 3 + 4
 

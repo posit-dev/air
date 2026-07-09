@@ -1,5 +1,5 @@
-#' [format]
-#' persistent-line-breaks = false
+#| [format]
+#| persistent-line-breaks = false
 
 # Fits on one line, flatten
 fn <- function(
