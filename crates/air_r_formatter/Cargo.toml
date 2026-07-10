@@ -13,6 +13,7 @@ categories.workspace = true
 publish = false
 
 [dependencies]
+air_r_parser = { workspace = true }
 air_r_syntax = { workspace = true }
 biome_formatter = { workspace = true }
 biome_rowan = { workspace = true }
@@ -24,8 +25,8 @@ tracing = { workspace = true }
 
 [dev-dependencies]
 air_formatter_test = { workspace = true }
-air_r_parser = { workspace = true }
 biome_parser = { workspace = true }
+insta = { workspace = true }
 tests_macros = { workspace = true }
 workspace = { workspace = true }
 

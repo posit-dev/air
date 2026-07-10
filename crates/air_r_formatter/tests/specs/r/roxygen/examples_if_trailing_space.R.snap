@@ -1,0 +1,48 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/roxygen/examples_if_trailing_space.R
+---
+# Input
+
+```R
+#| [format]
+#| roxygen-examples = true
+
+# There is a trailing space after `interactive()` that must be removed
+#' @examplesIf interactive() 
+#' 1 + 1
+foo <- function() {
+  1
+}
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Space
+Indent width: 2
+Line ending: LF
+Line width: 80
+Persistent line breaks: Respect
+Roxygen examples: Enabled
+Assignment style: Arrow
+Table: fcase, tribble
+-----
+
+```R
+#| [format]
+#| roxygen-examples = true
+
+# There is a trailing space after `interactive()` that must be removed
+#' @examplesIf interactive()
+#' 1 + 1
+foo <- function() {
+  1
+}
+```

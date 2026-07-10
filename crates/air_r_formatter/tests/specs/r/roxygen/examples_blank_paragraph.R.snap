@@ -1,0 +1,50 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/roxygen/examples_blank_paragraph.R
+---
+# Input
+
+```R
+#| [format]
+#| roxygen-examples = true
+
+#' @examples
+#' 1 + 1
+#'
+#' 2 + 2
+foo <- function() {
+  1
+}
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Space
+Indent width: 2
+Line ending: LF
+Line width: 80
+Persistent line breaks: Respect
+Roxygen examples: Enabled
+Assignment style: Arrow
+Table: fcase, tribble
+-----
+
+```R
+#| [format]
+#| roxygen-examples = true
+
+#' @examples
+#' 1 + 1
+#'
+#' 2 + 2
+foo <- function() {
+  1
+}
+```

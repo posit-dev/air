@@ -93,6 +93,7 @@ dependencies = [
  "biome_parser",
  "biome_rowan",
  "comments",
+ "insta",
  "itertools",
  "line_ending",
  "settings",

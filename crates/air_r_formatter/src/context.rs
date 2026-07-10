@@ -13,6 +13,7 @@ use settings::IndentWidth;
 use settings::LineEnding;
 use settings::LineWidth;
 use settings::PersistentLineBreaks;
+use settings::RoxygenExamples;
 use settings::Skip;
 use settings::Table;
 
@@ -84,6 +85,9 @@ pub struct RFormatOptions {
     /// The behavior of persistent line breaks.
     persistent_line_breaks: PersistentLineBreaks,
 
+    /// Whether or not to format roxygen2 examples.
+    roxygen_examples: RoxygenExamples,
+
     /// The assignment style to use.
     assignment_style: AssignmentStyle,
 
@@ -129,6 +133,11 @@ impl RFormatOptions {
         self
     }
 
+    pub fn with_roxygen_examples(mut self, roxygen_examples: RoxygenExamples) -> Self {
+        self.roxygen_examples = roxygen_examples;
+        self
+    }
+
     pub fn with_assignment_style(mut self, assignment_style: AssignmentStyle) -> Self {
         self.assignment_style = assignment_style;
         self
@@ -164,6 +173,10 @@ impl RFormatOptions {
         self.persistent_line_breaks = persistent_line_breaks;
     }
 
+    pub fn set_roxygen_examples(&mut self, roxygen_examples: RoxygenExamples) {
+        self.roxygen_examples = roxygen_examples;
+    }
+
     pub fn set_assignment_style(&mut self, assignment_style: AssignmentStyle) {
         self.assignment_style = assignment_style;
     }
@@ -178,6 +191,10 @@ impl RFormatOptions {
 
     pub fn persistent_line_breaks(&self) -> PersistentLineBreaks {
         self.persistent_line_breaks
+    }
+
+    pub fn roxygen_examples(&self) -> RoxygenExamples {
+        self.roxygen_examples
     }
 
     pub fn assignment_style(&self) -> AssignmentStyle {
@@ -222,6 +239,9 @@ impl fmt::Display for RFormatOptions {
         writeln!(f, "Line ending: {}", self.line_ending)?;
         writeln!(f, "Line width: {}", self.line_width.value())?;
         writeln!(f, "Persistent line breaks: {}", self.persistent_line_breaks)?;
+        if self.roxygen_examples != RoxygenExamples::default() {
+            writeln!(f, "Roxygen examples: {}", self.roxygen_examples)?;
+        }
         writeln!(f, "Assignment style: {}", self.assignment_style)?;
         if let Some(skip) = &self.skip {
             writeln!(f, "Skip: {skip}")?;

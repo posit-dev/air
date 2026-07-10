@@ -2,6 +2,8 @@
 
 # Development version
 
+- New `roxygen-examples` option to format the R code within roxygen2 `@examples` and `@examplesIf` blocks. This is currently opt-in.
+
 - New support for a user level `air.toml`. This is used as a fallback instead of Air's default settings whenever there isn't a project level `air.toml` available (#309):
 
   - On Linux and macOS, place it at `~/.config/air/air.toml`.

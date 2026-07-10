@@ -1,0 +1,94 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/roxygen/examples_leading_indent_tab.R
+---
+# Input
+
+```R
+#| [format]
+#| roxygen-examples = true
+#| indent-style = "tab"
+
+# Call sits at the boundary and is left untouched. Each tab is measured as
+# `indent-width` (2) columns, which stays under the line length.
+Widget <- R6::R6Class(
+	"Widget",
+	public = list(
+		#' @examples
+		#' some_function(argument_one, argument_two, argument_three, argument_fours)
+		initialize = function() {
+			NULL
+		}
+	)
+)
+
+# Call wraps. Each tab is measured as `indent-width` (2) columns, which pushes
+# us over the line length.
+Widget <- R6::R6Class(
+	"Widget",
+	public = list(
+		#' @examples
+		#' some_function(argument_one, argument_two, argument_three, argument_four, a)
+		initialize = function() {
+			NULL
+		}
+	)
+)
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Tab
+Indent width: 2
+Line ending: LF
+Line width: 80
+Persistent line breaks: Respect
+Roxygen examples: Enabled
+Assignment style: Arrow
+Table: fcase, tribble
+-----
+
+```R
+#| [format]
+#| roxygen-examples = true
+#| indent-style = "tab"
+
+# Call sits at the boundary and is left untouched. Each tab is measured as
+# `indent-width` (2) columns, which stays under the line length.
+Widget <- R6::R6Class(
+	"Widget",
+	public = list(
+		#' @examples
+		#' some_function(argument_one, argument_two, argument_three, argument_fours)
+		initialize = function() {
+			NULL
+		}
+	)
+)
+
+# Call wraps. Each tab is measured as `indent-width` (2) columns, which pushes
+# us over the line length.
+Widget <- R6::R6Class(
+	"Widget",
+	public = list(
+		#' @examples
+		#' some_function(
+		#'   argument_one,
+		#'   argument_two,
+		#'   argument_three,
+		#'   argument_four,
+		#'   a
+		#' )
+		initialize = function() {
+			NULL
+		}
+	)
+)
+```

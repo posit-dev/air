@@ -20,6 +20,7 @@ indent-width = 2
 indent-style = "space"
 line-ending = "auto"
 persistent-line-breaks = true
+roxygen-examples = false
 assignment-style = "arrow"
 exclude = []
 default-exclude = true
@@ -224,6 +225,38 @@ dictionary <- list(apple = 0.75, banana = 0.25, cherry = 0.50)
 Alternatively, use a tool such as [codegrip](https://github.com/lionel-/codegrip) bound to a keyboard shortcut to flatten the code, and Air will keep it flattened as long as it fits within the `line-width`.
 
 It may be preferable to ignore persistent line breaks if you prefer that `line-width` should be the only value that influences line breaks.
+
+### roxygen-examples
+
+Whether or not to format roxygen2 examples.
+
+Either `true` to format example code, or `false` to leave it untouched, with a default of `false`.
+
+Air can format the R code inside roxygen2's `@examples` and `@examplesIf` blocks.
+
+``` r
+#' @examples
+#' x<-1
+#' y<-2
+#' fn(x,y)
+f <- function() x
+```
+
+becomes:
+
+``` r
+#' @examples
+#' x <- 1
+#' y <- 2
+#' fn(x, y)
+f <- function() x
+```
+
+The overall `line-width` is respected, meaning that the code is formatted with an adjusted line width equal to `line-width` minus the leading indentation of the roxygen2 block and the leading `#'` comment characters.
+
+Parse failures within an example section are silent and do not affect the parse status of the containing file.
+
+Rd markup, like `\dontrun{}` and `\donttest{}`, is not supported and will result in the entire `@examples` or `@examplesIf` section being left unformatted.
 
 ### assignment-style
 

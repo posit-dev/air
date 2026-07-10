@@ -1,0 +1,88 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/roxygen/examples_leading_indent.R
+---
+# Input
+
+```R
+#| [format]
+#| roxygen-examples = true
+
+# Call sits at the boundary and is left untouched
+Widget <- R6::R6Class(
+  "Widget",
+  public = list(
+    #' @examples
+    #' some_function(argument_one, argument_two, argument_three, argument_fours)
+    initialize = function() {
+      NULL
+    }
+  )
+)
+
+# Call wraps
+Widget <- R6::R6Class(
+  "Widget",
+  public = list(
+    #' @examples
+    #' some_function(argument_one, argument_two, argument_three, argument_four, a)
+    initialize = function() {
+      NULL
+    }
+  )
+)
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Space
+Indent width: 2
+Line ending: LF
+Line width: 80
+Persistent line breaks: Respect
+Roxygen examples: Enabled
+Assignment style: Arrow
+Table: fcase, tribble
+-----
+
+```R
+#| [format]
+#| roxygen-examples = true
+
+# Call sits at the boundary and is left untouched
+Widget <- R6::R6Class(
+  "Widget",
+  public = list(
+    #' @examples
+    #' some_function(argument_one, argument_two, argument_three, argument_fours)
+    initialize = function() {
+      NULL
+    }
+  )
+)
+
+# Call wraps
+Widget <- R6::R6Class(
+  "Widget",
+  public = list(
+    #' @examples
+    #' some_function(
+    #'   argument_one,
+    #'   argument_two,
+    #'   argument_three,
+    #'   argument_four,
+    #'   a
+    #' )
+    initialize = function() {
+      NULL
+    }
+  )
+)
+```

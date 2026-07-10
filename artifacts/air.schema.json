@@ -136,6 +136,14 @@
             "null"
           ]
         },
+        "roxygen-examples": {
+          "title": "Whether or not to format roxygen2 examples",
+          "description": "Air can format the R code inside roxygen2's `@examples` and `@examplesIf` blocks.\n\n The overall `line-width` is respected, meaning that the code is formatted with an\n adjusted line width equal to `line-width` minus the leading indentation of the\n roxygen2 block and the leading `#'` comment characters.\n\n Parse failures within an example section are silent and do not affect the parse\n status of the containing file.\n\n Rd markup, like `\\dontrun{}` and `\\donttest{}`, are not supported and will result\n in the entire `@examples` or `@examplesIf` section being left unformatted.\n\n This option is disabled by default.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
         "skip": {
           "title": "Function calls to skip formatting for",
           "description": "Air typically formats every function call it comes across. To skip formatting of\n a single one-off function call, you can use a `# fmt: skip` comment. However, if\n you know of particular functions that you use a lot that are part of a custom\n domain specific language that doesn't follow conventional formatting rules, you\n can entirely opt out of formatting for those functions by providing them here.\n\n For example, using `skip = [\"graph_from_literal\"]` would automatically skip\n formatting of:\n\n ```r\n igraph::graph_from_literal(Alice +--+ Bob)\n ```",

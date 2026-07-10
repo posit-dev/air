@@ -1,0 +1,58 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/roxygen/examples_indent_style.R
+---
+# Input
+
+```R
+#| [format]
+#| roxygen-examples = true
+#| indent-style = "tab"
+
+# The wrapped `@examples` code is always indented with spaces, even though the
+# user requests tabs for the surrounding file
+#' @examples
+#' some_function(argument_one, argument_two, argument_three, argument_four, arg5)
+foo <- function() {
+  1
+}
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Tab
+Indent width: 2
+Line ending: LF
+Line width: 80
+Persistent line breaks: Respect
+Roxygen examples: Enabled
+Assignment style: Arrow
+Table: fcase, tribble
+-----
+
+```R
+#| [format]
+#| roxygen-examples = true
+#| indent-style = "tab"
+
+# The wrapped `@examples` code is always indented with spaces, even though the
+# user requests tabs for the surrounding file
+#' @examples
+#' some_function(
+#'   argument_one,
+#'   argument_two,
+#'   argument_three,
+#'   argument_four,
+#'   arg5
+#' )
+foo <- function() {
+	1
+}
+```
