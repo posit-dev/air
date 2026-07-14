@@ -259,7 +259,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#example-configuration" id="toc-example-configuration" class="nav-link active" data-scroll-target="#example-configuration">Example configuration</a></li>
   <li><a href="#configuration-recommendations" id="toc-configuration-recommendations" class="nav-link" data-scroll-target="#configuration-recommendations">Configuration recommendations</a></li>
-  <li><a href="#configuration-discovery" id="toc-configuration-discovery" class="nav-link" data-scroll-target="#configuration-discovery">Configuration discovery</a></li>
+  <li><a href="#configuration-discovery" id="toc-configuration-discovery" class="nav-link" data-scroll-target="#configuration-discovery">Configuration discovery</a>
+  <ul class="collapse">
+  <li><a href="#user-level-configuration" id="toc-user-level-configuration" class="nav-link" data-scroll-target="#user-level-configuration">User level configuration</a></li>
+  </ul></li>
   <li><a href="#configuration-settings-synchronization" id="toc-configuration-settings-synchronization" class="nav-link" data-scroll-target="#configuration-settings-synchronization">Settings synchronization</a></li>
   <li><a href="#dotfiles" id="toc-dotfiles" class="nav-link" data-scroll-target="#dotfiles">Dotfiles</a></li>
   <li><a href="#format-options" id="toc-format-options" class="nav-link" data-scroll-target="#format-options">Format options</a>
@@ -343,6 +346,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ex">└──</span> vignettes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>If you run <code>air format</code> with a working directory of <code>~/packages/dplyr</code> or open your IDE in the dplyr project, then Air will find and use that TOML file.</p>
 <p>Air also supports walking up the directory tree from the project root. For example, if you ran <code>air format</code> from within <code>~/packages/dplyr/R</code>, then Air would look “up” one directory and would find and use <code>~/packages/dplyr/air.toml</code>.</p>
+<section id="user-level-configuration" class="level3">
+<h3 class="anchored" data-anchor-id="user-level-configuration">User level configuration</h3>
+<p>We highly recommend that you use a project level <code>air.toml</code> file to ensure that all collaborators share the same settings, however Air also supports a user level <code>air.toml</code>. This is a convenient place to set your personal defaults for any project that doesn’t specify its own configuration.</p>
+<p>Air looks for a user level configuration file at:</p>
+<ul>
+<li><p><code>~/.config/air/air.toml</code> on Linux and macOS. The environment variable <code>XDG_CONFIG_HOME</code> can be set as an alternative to <code>~/.config</code>, i.e.&nbsp;if set, Air will look in <code>{XDG_CONFIG_HOME}/air/air.toml</code>.</p></li>
+<li><p><code>%APPDATA%\air\air.toml</code> on Windows. The environment variable <code>APPDATA</code> can be set as an alternative to <code>%APPDATA%</code>, i.e.&nbsp;if set, Air will look in <code>{APPDATA}\air\air.toml</code>.</p></li>
+</ul>
+<p>A project level <code>air.toml</code> takes precedence over a user level <code>air.toml</code>. A user level <code>air.toml</code> takes precedence over IDE settings when <a href="#configuration-settings-synchronization">IDE settings synchronization</a> is supported.</p>
+<section id="configuration-unrooted-patterns" class="level4">
+<h4 class="anchored" data-anchor-id="configuration-unrooted-patterns">Unrooted patterns</h4>
+<p>Because user level <code>air.toml</code>s exist in a directory outside of your project’s tree, any <code>exclude</code> patterns you provide must be <em>unrooted</em>:</p>
+<ul>
+<li><p>An <em>unrooted</em> pattern is one that begins with <code>**/</code>, which matches the pattern at any depth. Additionally, for convenience, simple patterns such as <code>file.R</code> and <code>folder/</code> are internally treated as their explicitly unrooted equivalents of <code>**/file.R</code> and <code>**/folder/</code>.</p></li>
+<li><p>A <em>rooted</em> pattern is one that contains a leading or interior <code>/</code>, such as <code>/foo.R</code> or <code>R/foo.R</code>. These imply <code>{root}/foo.R</code> and <code>{root}/R/foo.R</code>, which can’t be resolved by a user level <code>air.toml</code>.</p></li>
+</ul>
+<p>This distinction between rooted and unrooted patterns was chosen for consistency with Git.</p>
+</section>
+</section>
 </section>
 <section id="configuration-settings-synchronization" class="level2">
 <h2 class="anchored" data-anchor-id="configuration-settings-synchronization">Settings synchronization</h2>
