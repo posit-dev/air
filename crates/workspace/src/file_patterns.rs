@@ -157,6 +157,13 @@ impl UnrootedFilePatterns {
 
 /// Check if a `pattern` is unrooted
 ///
+/// Unrooted patterns start with `**/` and match at any depth. Additionally, for
+/// convenience, simple patterns such as `foo.R` and `folder/` are internally treated as
+/// their explicitly unrooted equivalents of `**/foo.R` and `**/folder`.
+///
+/// Rooted patterns are ones with a leading or interior `/`, such as `/foo.R` and
+/// `R/foo.R`, and imply `{root}/foo.R` and `{root}/R/foo.R`.
+///
 /// Constructed by carefully analyzing [GitignoreBuilder]'s `add_line()`, which itself
 /// is derived from git's man page. It should be very stable.
 ///
@@ -168,27 +175,33 @@ fn is_unrooted(pattern: &str) -> bool {
     // Strip leading `!`
     let pattern = pattern.strip_prefix('!').unwrap_or(pattern);
 
-    // Explicit `**/`
+    // Explicitly unrooted
     if pattern.starts_with("**/") {
         return true;
     }
 
-    // Implicit `**/`, i.e.:
+    // Implicitly unrooted
     // - `foo.R`
     // - `folder/`
     // but not:
-    // - `foo/bar.R`
     // - `/foo.R`
-    // - `foo/**/bar.R`
+    // - `R/foo.R`
+    // - `R/**/foo.R`
     let pattern = pattern.strip_suffix('/').unwrap_or(pattern);
     !pattern.contains('/')
 }
 
 fn err_rooted(pattern: &str) -> anyhow::Error {
+    let rooted_pattern = if pattern.starts_with('/') {
+        format!("{{root}}{pattern}")
+    } else {
+        format!("{{root}}/{pattern}")
+    };
+
     anyhow::anyhow!(
-        "Pattern `{pattern}` must meet one of the following conditions:
-- Start with `**/`, i.e. `**/foo.R`
-- Contain no `/` characters unless it is at the very end, i.e. `foo.R` or `folder/`"
+        "Pattern `{pattern}` must be unrooted. It is currently a rooted pattern implying `{rooted_pattern}`.
+- Unrooted patterns start with `**/` and match at any depth. For convenience, simple patterns like `foo.R` and `folder/` are also considered to be unrooted.
+- Rooted patterns contain a leading or interior `/`, like `/foo.R` or `R/foo.R`, and imply `{{root}}/foo.R` or `{{root}}/R/foo.R`, which can't be resolved by a user level `air.toml`."
     )
 }
 
@@ -362,6 +375,8 @@ mod test {
     #[test]
     fn test_unrooted_file_pattern_rejects_rooted_patterns() {
         // A rooted pattern is a hard error, since there is no `root` for it to resolve against
+        let error = UnrootedFilePatterns::try_from_iter(vec!["/foo.R"]).unwrap_err();
+        insta::assert_snapshot!(error);
         let error = UnrootedFilePatterns::try_from_iter(vec!["foo/bar.R"]).unwrap_err();
         insta::assert_snapshot!(error);
     }

@@ -85,11 +85,20 @@ Air looks for a user level configuration file at:
 -   `%APPDATA%\air\air.toml` on Windows.
     The environment variable `APPDATA` can be set as an alternative to `%APPDATA%`, i.e. if set, Air will look in `{APPDATA}\air\air.toml`.
 
+A project level `air.toml` takes precedence over a user level `air.toml`.
 A user level `air.toml` takes precedence over IDE settings when [IDE settings synchronization](#configuration-settings-synchronization) is supported.
 
-Because user level `air.toml`s exist in a directory outside of your project's tree, any `exclude` patterns you provide must match at any depth.
-Any pattern that begins with `**/` is allowed, as well as simple patterns such as `file.R` and `folder/`, which are internally treated as `**/file.R` and `**/folder/`.
-Patterns with a leading or interior `/` are not allowed, such as `/foo.R` and `R/foo.R`, as these imply `{root}/foo.R` and `{root}/R/foo.R`, which isn't applicable with a user level `air.toml`.
+#### Unrooted patterns {#configuration-unrooted-patterns}
+
+Because user level `air.toml`s exist in a directory outside of your project's tree, any `exclude` patterns you provide must be *unrooted*:
+
+-   An *unrooted* pattern is one that begins with `**/`, which matches the pattern at any depth.
+    Additionally, for convenience, simple patterns such as `file.R` and `folder/` are internally treated as their explicitly unrooted equivalents of `**/file.R` and `**/folder/`.
+
+-   A *rooted* pattern is one that contains a leading or interior `/`, such as `/foo.R` or `R/foo.R`.
+    These imply `{root}/foo.R` and `{root}/R/foo.R`, which can't be resolved by a user level `air.toml`.
+
+This distinction between rooted and unrooted patterns was chosen for consistency with Git.
 
 ## Settings synchronization {#configuration-settings-synchronization}
 

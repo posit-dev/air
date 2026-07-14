@@ -2,6 +2,6 @@
 source: crates/workspace/src/file_patterns.rs
 expression: error
 ---
-Pattern `/foo.R` must be unrooted. It is currently a rooted pattern implying `{root}/foo.R`.
+Pattern `foo/bar.R` must be unrooted. It is currently a rooted pattern implying `{root}/foo/bar.R`.
 - Unrooted patterns start with `**/` and match at any depth. For convenience, simple patterns like `foo.R` and `folder/` are also considered to be unrooted.
 - Rooted patterns contain a leading or interior `/`, like `/foo.R` or `R/foo.R`, and imply `{root}/foo.R` or `{root}/R/foo.R`, which can't be resolved by a user level `air.toml`.
