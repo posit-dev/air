@@ -81,7 +81,10 @@ fn test_user_config_applies_to_stdin() -> anyhow::Result<()> {
 fn test_project_air_toml_wins_over_user_config() -> anyhow::Result<()> {
     let user_config_directory = TempDir::new()?;
     let user_config_directory = user_config_directory.path();
-    write_user_air_toml(user_config_directory, "[format]\nindent-width = 8\n")?;
+    write_user_air_toml(
+        user_config_directory,
+        "[format]\nindent-width = 8\nindent-style = \"tab\"\n",
+    )?;
 
     let directory = TempDir::new()?;
     let directory = directory.path();
@@ -101,7 +104,8 @@ fn test_project_air_toml_wins_over_user_config() -> anyhow::Result<()> {
 
     assert!(output.status.success());
 
-    // Formatted with the project's `indent-width = 4`, not the user level `8`
+    // Formatted with the project's `indent-width = 4`, not the user level `8`, and with
+    // the project implied default of spaces, not the user level tabs.
     assert_eq!(
         std::fs::read_to_string(directory.join(test_path))?,
         "if (TRUE) {\n    1\n}\n"
