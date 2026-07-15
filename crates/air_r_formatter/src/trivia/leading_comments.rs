@@ -20,13 +20,13 @@ pub(crate) struct FormatLeadingComments<'a> {
 
 impl Format<RFormatContext> for FormatLeadingComments<'_> {
     fn fmt(&self, f: &mut RFormatter) -> FormatResult<()> {
-        let comments = f.context().comments().clone();
-        let mut comments = comments.leading_comments(self.node);
-
         // User hasn't opted in to roxygen2 formatting
         if f.context().options().roxygen_examples().is_disabled() {
-            return biome_formatter::trivia::FormatLeadingComments::Comments(comments).fmt(f);
+            return biome_formatter::trivia::format_leading_comments(self.node).fmt(f);
         }
+
+        let comments = f.context().comments().clone();
+        let mut comments = comments.leading_comments(self.node);
 
         // Continually split leading comments into runs of standard comments and roxygen2
         // comments until we run out of leading comments
