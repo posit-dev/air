@@ -26,6 +26,7 @@ use settings::IndentStyle;
 use settings::IndentWidth;
 use settings::LineWidth;
 use settings::PersistentLineBreaks;
+use settings::RoxygenExamples;
 use settings::Skip;
 use settings::Table;
 
@@ -122,6 +123,23 @@ pub struct FormatTomlOptions {
     /// It may be preferable to ignore persistent line breaks if you prefer that `line-width`
     /// should be the only value that influences line breaks.
     pub persistent_line_breaks: Option<bool>,
+
+    /// # Whether or not to format roxygen2 examples
+    ///
+    /// Air can format the R code inside roxygen2's `@examples` and `@examplesIf` blocks.
+    ///
+    /// The overall `line-width` is respected, meaning that the code is formatted with an
+    /// adjusted line width equal to `line-width` minus the leading indentation of the
+    /// roxygen2 block and the leading `#'` comment characters.
+    ///
+    /// Parse failures within an example section are silent and do not affect the parse
+    /// status of the containing file.
+    ///
+    /// Rd markup, like `\dontrun{}` and `\donttest{}`, are not supported and will result
+    /// in the entire `@examples` or `@examplesIf` section being left unformatted.
+    ///
+    /// This option is disabled by default.
+    pub roxygen_examples: Option<bool>,
 
     /// # The preferred assignment style
     ///
@@ -262,6 +280,16 @@ impl TomlOptions {
                 }
                 None => PersistentLineBreaks::Respect,
             },
+            roxygen_examples: match format.roxygen_examples {
+                Some(roxygen_examples) => {
+                    if roxygen_examples {
+                        RoxygenExamples::Enabled
+                    } else {
+                        RoxygenExamples::Disabled
+                    }
+                }
+                None => RoxygenExamples::Disabled,
+            },
             assignment_style: format.assignment_style.unwrap_or_default(),
             exclude: match format.exclude {
                 Some(exclude) => {
@@ -283,5 +311,65 @@ impl TomlOptions {
         };
 
         Ok(Settings { format })
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use anyhow::Context;
+    use anyhow::Result;
+
+    use super::*;
+
+    #[test]
+    fn parse_roxygen_examples() -> Result<()> {
+        let options: TomlOptions = toml::from_str(
+            r#"
+[format]
+roxygen-examples = true
+"#,
+        )?;
+
+        let roxygen_examples = options
+            .format
+            .as_ref()
+            .context("Expected to find [format] table")?
+            .roxygen_examples
+            .context("Expected to find `roxygen-examples` field")?;
+
+        assert!(roxygen_examples);
+
+        Ok(())
+    }
+
+    #[test]
+    fn roxygen_examples_defaults_to_disabled() -> Result<()> {
+        let options: TomlOptions = toml::from_str(r"")?;
+        let settings = options.into_settings(None)?;
+        assert!(settings.format.roxygen_examples.is_disabled());
+        Ok(())
+    }
+
+    #[test]
+    fn roxygen_examples_maps_correctly() -> Result<()> {
+        let options: TomlOptions = toml::from_str(
+            r#"
+[format]
+roxygen-examples = true
+"#,
+        )?;
+        let settings = options.into_settings(None)?;
+        assert!(settings.format.roxygen_examples.is_enabled());
+
+        let options: TomlOptions = toml::from_str(
+            r#"
+[format]
+roxygen-examples = false
+"#,
+        )?;
+        let settings = options.into_settings(None)?;
+        assert!(settings.format.roxygen_examples.is_disabled());
+
+        Ok(())
     }
 }

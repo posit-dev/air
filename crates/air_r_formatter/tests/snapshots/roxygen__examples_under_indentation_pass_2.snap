@@ -1,0 +1,15 @@
+---
+source: crates/air_r_formatter/tests/roxygen.rs
+expression: second
+---
+outer(inner(deep(
+  #' @examples
+  #' some_call(
+  #'   argument_one,
+  #'   argument_two,
+  #'   argument_three,
+  #'   argument_four,
+  #'   arg5678
+  #' )
+  foo <- function() {}
+)))

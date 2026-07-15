@@ -31,6 +31,7 @@ mod prelude;
 mod r;
 pub(crate) mod separated;
 mod string_content;
+mod trivia;
 
 #[rustfmt::skip]
 mod generated;
@@ -230,10 +231,13 @@ where
 
     /// Formats the [leading comments](biome_formatter::comments#leading-comments) of the node.
     ///
-    /// You may want to override this method if you want to manually handle the formatting of comments
-    /// inside of the `fmt_fields` method or customize the formatting of the leading comments.
+    /// You may want to override this method if you want to manually handle the formatting
+    /// of comments inside of the `fmt_fields` method or customize the formatting of the
+    /// leading comments, but note that in Air we have special handling of leading
+    /// roxygen2 comments, so keep that in mind if you plan to override this.
     fn fmt_leading_comments(&self, node: &N, f: &mut RFormatter) -> FormatResult<()> {
-        format_leading_comments(node.syntax()).fmt(f)
+        // Our method, not `biome_formatter::trivia::format_leading_comments()`!
+        crate::trivia::format_leading_comments(node.syntax()).fmt(f)
     }
 
     /// Formats the [dangling comments](biome_formatter::comments#dangling-comments) of the node.

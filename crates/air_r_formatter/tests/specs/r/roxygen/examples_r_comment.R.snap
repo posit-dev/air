@@ -1,0 +1,48 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/roxygen/examples_r_comment.R
+---
+# Input
+
+```R
+#| [format]
+#| roxygen-examples = true
+
+#' @examples
+#' # A comment inside an example
+#' 1+1
+foo <- function() {
+  1
+}
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Space
+Indent width: 2
+Line ending: LF
+Line width: 80
+Persistent line breaks: Respect
+Roxygen examples: Enabled
+Assignment style: Arrow
+Table: fcase, tribble
+-----
+
+```R
+#| [format]
+#| roxygen-examples = true
+
+#' @examples
+#' # A comment inside an example
+#' 1 + 1
+foo <- function() {
+  1
+}
+```

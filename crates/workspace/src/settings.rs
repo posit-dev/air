@@ -16,6 +16,7 @@ use settings::IndentStyle;
 use settings::IndentWidth;
 use settings::LineWidth;
 use settings::PersistentLineBreaks;
+use settings::RoxygenExamples;
 use settings::Skip;
 use settings::Table;
 
@@ -36,6 +37,7 @@ pub struct FormatSettings {
     pub line_ending: LineEnding,
     pub line_width: LineWidth,
     pub persistent_line_breaks: PersistentLineBreaks,
+    pub roxygen_examples: RoxygenExamples,
     pub assignment_style: AssignmentStyle,
     pub exclude: Option<ExcludePatterns>,
     pub default_exclude: Option<DefaultExcludePatterns>,
@@ -56,6 +58,7 @@ impl Default for FormatSettings {
             line_ending: Default::default(),
             line_width: Default::default(),
             persistent_line_breaks: Default::default(),
+            roxygen_examples: Default::default(),
             assignment_style: Default::default(),
             exclude: Default::default(),
             default_exclude: Some(Default::default()),
@@ -75,6 +78,7 @@ impl FormatSettings {
             .with_line_ending(self.line_ending.finalize(source))
             .with_line_width(self.line_width)
             .with_persistent_line_breaks(self.persistent_line_breaks)
+            .with_roxygen_examples(self.roxygen_examples)
             .with_assignment_style(self.assignment_style)
             // Note that `clone()` on these options is ultimately on an `Arc`
             .with_skip(self.skip.clone())
