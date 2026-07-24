@@ -2,6 +2,8 @@
 
 # Development version
 
+- New `--no-configuration` flag to format with Air's built-in defaults without loading a project or user configuration file (#479).
+
 # 0.11.0
 
 - New support for a user level `air.toml`. This is used as a fallback instead of Air's default settings whenever there isn't a project level `air.toml` available (#309):

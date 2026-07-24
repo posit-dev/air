@@ -12,10 +12,7 @@ use itertools::Either;
 use itertools::Itertools;
 use thiserror::Error;
 use workspace::discovery;
-use workspace::discovery::DiscoveredSettings;
 use workspace::discovery::discover_r_file_paths;
-use workspace::discovery::discover_settings;
-use workspace::discovery::discover_user_settings;
 use workspace::format::FormatSourceError;
 use workspace::format::FormattedSource;
 use workspace::resolve::PathResolver;
@@ -23,7 +20,9 @@ use workspace::settings::FormatSettings;
 use workspace::settings::Settings;
 
 use crate::ExitStatus;
+use crate::commands::format::ConfigurationMode;
 use crate::commands::format::FormatMode;
+use crate::commands::format::resolve_settings;
 
 #[derive(Error, Debug)]
 enum FormatPathError {
@@ -36,20 +35,11 @@ enum FormatPathError {
 pub(crate) fn format(
     paths: Vec<PathBuf>,
     mode: FormatMode,
+    configuration: ConfigurationMode,
     exclude: discovery::Exclude,
     include: discovery::Include,
 ) -> anyhow::Result<ExitStatus> {
-    let mut resolver = PathResolver::new();
-
-    for DiscoveredSettings {
-        directory,
-        settings,
-    } in discover_settings(&paths)?
-    {
-        resolver.add(&directory, settings);
-    }
-
-    let default_settings = discover_user_settings()?.unwrap_or_default();
+    let (resolver, default_settings) = resolve_settings(&paths, configuration)?;
 
     match mode {
         FormatMode::Write => {

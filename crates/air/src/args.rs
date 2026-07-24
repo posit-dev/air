@@ -61,6 +61,11 @@ pub(crate) struct FormatCommand {
     #[arg(long)]
     pub force: bool,
 
+    /// Format with Air's default settings without discovering a project or user
+    /// configuration file.
+    #[arg(long)]
+    pub no_configuration: bool,
+
     /// Use this option to enable reading from stdin and writing to stdout. This specifies
     /// a file path to associate the standard input with, which is used as the location to
     /// begin searching for configuration files from. The file does not have to exist and

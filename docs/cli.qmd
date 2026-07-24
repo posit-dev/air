@@ -98,6 +98,18 @@ Air's conda-forge package is community-maintained.
 
 # Features
 
+## Configuration
+
+By default, Air discovers the nearest project `air.toml` and falls back to a user-level configuration file when no project configuration exists.
+Use `--no-configuration` to skip both configuration sources and format with Air's built-in defaults:
+
+``` bash
+air format --no-configuration path/to/file.R
+```
+
+This flag does not disable Air's built-in include and exclude rules.
+Combine it with `--force` only when you also need to bypass those rules.
+
 ## Stdin
 
 Air supports reading from stdin at the command line via `--stdin-file-path`.
