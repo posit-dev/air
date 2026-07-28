@@ -267,3 +267,56 @@ fn test_user_config_broken_toml_is_a_hard_error() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn test_no_configuration_ignores_project_and_user_config() -> anyhow::Result<()> {
+    let user_config_directory = TempDir::new()?;
+    let user_config_directory = user_config_directory.path();
+    write_user_air_toml(user_config_directory, "not valid toml")?;
+
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+    std::fs::write(directory.join("air.toml"), "also not valid toml")?;
+
+    let test_path = "test.R";
+    std::fs::write(directory.join(test_path), "if (TRUE) {\n1\n}\n")?;
+
+    let output = Command::new(binary_path())
+        .env(user_config_directory_env_var(), user_config_directory)
+        .current_dir(directory)
+        .arg("format")
+        .arg(test_path)
+        .arg("--no-configuration")
+        .run();
+
+    assert!(output.status.success());
+    assert_eq!(
+        std::fs::read_to_string(directory.join(test_path))?,
+        "if (TRUE) {\n  1\n}\n"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_no_configuration_applies_to_stdin() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+    std::fs::write(directory.join("air.toml"), "[format]\nindent-width = 8\n")?;
+
+    let output = Command::new(binary_path())
+        .current_dir(directory)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .arg("format")
+        .arg("--stdin-file-path")
+        .arg("test.R")
+        .arg("--no-configuration")
+        .run_with_stdin("if (TRUE) {\n1\n}\n".to_string());
+
+    assert!(output.status.success());
+    assert_eq!(output.stdout, "if (TRUE) {\n  1\n}\n");
+
+    Ok(())
+}

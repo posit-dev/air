@@ -41,6 +41,7 @@ set edit:completion:arg-completer[air] = {|@words|
             cand --log-level 'The log level [default: warn]'
             cand --check 'If enabled, format results are not written back to the file. Instead, exit with a non-zero status code if any files would have been modified, and zero otherwise'
             cand --force 'Force formatting to occur regardless of exclusion patterns. This applies recursively to directories. This serves as an escape hatch for cases like `air format r-code.txt --force`, but is very rarely needed'
+            cand --no-configuration 'Format with Air''s default settings without discovering a project or user configuration file'
             cand --no-color 'Disable colored output. To turn colored output off, either set this option or set the environment variable `NO_COLOR` to any non-zero value'
             cand -h 'Print help'
             cand --help 'Print help'
