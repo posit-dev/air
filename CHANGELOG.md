@@ -2,7 +2,7 @@
 
 # Development version
 
-- New `--no-configuration` flag to format with Air's built-in defaults without loading a project or user configuration file (#479).
+- New `--no-configuration` flag to format with Air's built-in defaults without loading a project or user configuration file (#479, @LeonidasZhak).
 
 # 0.11.0
 
