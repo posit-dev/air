@@ -6,6 +6,7 @@ website:
   repo-url: https://github.com/posit-dev/air/
   repo-subdir: docs
   repo-actions: [source, issue]
+  favicon: images/favicon.png
   navbar:
     background: primary
     search: true
