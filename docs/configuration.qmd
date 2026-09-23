@@ -326,3 +326,4 @@ The default set currently includes:
 
 -   `tribble()` from tibble
 -   `fcase()` from data.table
+-   `rowwiseDT()` from data.table

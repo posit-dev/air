@@ -32,3 +32,10 @@ x<5L,1L,
 x>5L,3L,
 default=5L
 )
+
+# Should format as table by default
+rowwiseDT(
+x=,y=,
+1,2,
+3,4
+)

@@ -16,6 +16,13 @@ x>5L,3L,
 default=5L
 )
 
+# Should not format as table
+rowwiseDT(
+x=,y=,
+1,2,
+3,4
+)
+
 foo(
 ~x,~y,
 1,2,
