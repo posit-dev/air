@@ -1,5 +1,6 @@
 ---
 source: xtask/json_schema/src/main.rs
+assertion_line: 39
 expression: schema
 ---
 {
@@ -67,7 +68,7 @@ expression: schema
         },
         "default-table": {
           "title": "Whether or not to use defaults for `table`",
-          "description": "Air automatically formats a default set of calls as tables. You can\n disable these defaults by setting this option to `false`. The default\n set currently includes:\n\n - `tribble()` from tibble\n - `fcase()` from data.table",
+          "description": "Air automatically formats a default set of calls as tables. You can\n disable these defaults by setting this option to `false`. The default\n set currently includes:\n\n - `tribble()` from tibble\n - `fcase()` from data.table\n - `rowwiseDT()` from data.table",
           "type": [
             "boolean",
             "null"

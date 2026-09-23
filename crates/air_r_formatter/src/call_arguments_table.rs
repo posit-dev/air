@@ -223,18 +223,19 @@ fn build_table_impl(args: &RArgumentList, f: &mut RFormatter) -> FormatResult<Op
         let arg_node = arg.node()?;
         let arg_separator = arg.trailing_separator()?;
 
-        // If we see a named argument, start collecting remaining args. These
-        // will be formatted in fully expanded layout. The main idea is that
-        // table formatting is for unnamed arguments, and we allow trailing
+        // If we see a named argument with a value, start collecting remaining args.
+        // These will be formatted in fully expanded layout. The main idea is that
+        // table formatting is for unnamed arguments (or empty named header arguments
+        // like `data.table::rowwiseDT(x =, y =, ...)`), and we allow trailing
         // named arguments to parameterise the table function. See for instance
         // `data.table::fcase(default = )` argument.
-        if arg_node.name_clause().is_some() {
+        if arg_node.name_clause().is_some() && arg_node.value().is_some() {
             remaining.push(arg);
             continue;
         }
 
         // Detect leading line breaks because they indicate a new row
-        let lines_before = if arg_node.value().is_some() {
+        let lines_before = if arg_node.name_clause().is_some() || arg_node.value().is_some() {
             get_lines_before(arg_node.syntax())
         } else {
             arg_separator.map_or(0, get_lines_before_token)

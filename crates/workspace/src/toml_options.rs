@@ -231,6 +231,7 @@ pub struct FormatTomlOptions {
     ///
     /// - `tribble()` from tibble
     /// - `fcase()` from data.table
+    /// - `rowwiseDT()` from data.table
     pub default_table: Option<bool>,
 }
 

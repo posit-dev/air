@@ -1,5 +1,6 @@
 ---
 source: crates/air_formatter_test/src/snapshot_builder.rs
+assertion_line: 177
 info: r/dot_dot_i.R
 ---
 # Input
@@ -29,7 +30,7 @@ Line ending: LF
 Line width: 80
 Persistent line breaks: Respect
 Assignment style: Arrow
-Table: fcase, tribble
+Table: fcase, rowwiseDT, tribble
 -----
 
 ```R
