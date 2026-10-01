@@ -44,7 +44,7 @@ jobs:
     needs: build
     secrets: inherit
 
-    uses: posit-dev/posit-gh-actions/.github/workflows/sign-windows.yml@main
+    uses: posit-dev/posit-gh-actions/.github/workflows/sign-windows-digicert.yml@main
     with:
       unsigned_artifact_name: unsigned-${{ matrix.this.target }}
       signed_artifact_name: signed-${{ matrix.this.target }}
