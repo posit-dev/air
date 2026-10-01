@@ -420,3 +420,41 @@ tribble(
   "C §", 10,
   "ascii", 10,
 )
+
+# ------------------------------------------------------------------------
+# `data.table::rowwiseDT()`
+
+# Formatted as a table by default, no directive needed. Empty named arguments
+# are column headers.
+rowwiseDT(
+  x =, y =, z =,
+  1, "a", TRUE,
+  100, "bbb", FALSE
+)
+
+# Namespaced call
+data.table::rowwiseDT(
+  x=,y=,
+  1,2,
+  10,200
+)
+
+# Headers on separate lines are kept as separate rows
+rowwiseDT(
+  x =,
+  y =,
+  1, 2,
+  30, 4
+)
+
+# Named argument with a value ends the table
+rowwiseDT(
+  x =, y =,
+  1, 2,
+  3, 4,
+  check.names = TRUE,
+  100, 20000
+)
+
+# Only headers
+rowwiseDT(x =, y =)
