@@ -2,6 +2,8 @@
 
 # Development version
 
+# 0.12.0
+
 - New `--no-configuration` flag to format with Air's built-in defaults without loading a project or user configuration file (#479, @LeonidasZhak).
 
 - `data.table::rowwiseDT()` calls are now formatted as tables by default (#525, @MichaelChirico). Empty named arguments like `x =` are treated as column headers of the table.
