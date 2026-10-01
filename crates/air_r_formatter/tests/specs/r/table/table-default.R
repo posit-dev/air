@@ -23,6 +23,18 @@ x>5L,3L,
 default=5L
 )
 
+rowwiseDT(
+x=,y=,
+1,2,
+3,4
+)
+
+a <- rowwiseDT(
+x=,y=,
+1,2,
+3,4
+)
+
 # "Sees through" namespaces and looks at the function name
 tibble::tribble(
 ~x,~y,

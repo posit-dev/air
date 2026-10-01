@@ -32,7 +32,7 @@ Line ending: LF
 Line width: 80
 Persistent line breaks: Ignore
 Assignment style: Arrow
-Table: fcase, tribble
+Table: fcase, rowwiseDT, tribble
 -----
 
 ```R

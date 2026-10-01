@@ -40,6 +40,13 @@ x>5L,3L,
 default=5L
 )
 
+# Should format as table by default
+rowwiseDT(
+x=,y=,
+1,2,
+3,4
+)
+
 ```
 
 
@@ -56,7 +63,7 @@ Line ending: LF
 Line width: 80
 Persistent line breaks: Respect
 Assignment style: Arrow
-Table: fcase, foo, tribble
+Table: fcase, foo, rowwiseDT, tribble
 -----
 
 ```R
@@ -96,5 +103,12 @@ fcase(
   x < 5L , 1L ,
   x > 5L , 3L ,
   default = 5L
+)
+
+# Should format as table by default
+rowwiseDT(
+  x = , y = ,
+    1 ,   2 ,
+    3 ,   4
 )
 ```

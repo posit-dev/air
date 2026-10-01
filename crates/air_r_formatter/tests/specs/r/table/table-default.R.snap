@@ -30,6 +30,18 @@ x>5L,3L,
 default=5L
 )
 
+rowwiseDT(
+x=,y=,
+1,2,
+3,4
+)
+
+a <- rowwiseDT(
+x=,y=,
+1,2,
+3,4
+)
+
 # "Sees through" namespaces and looks at the function name
 tibble::tribble(
 ~x,~y,
@@ -53,7 +65,7 @@ Line ending: LF
 Line width: 80
 Persistent line breaks: Respect
 Assignment style: Arrow
-Table: fcase, tribble
+Table: fcase, rowwiseDT, tribble
 -----
 
 ```R
@@ -80,6 +92,18 @@ a <- fcase(
   x < 5L , 1L ,
   x > 5L , 3L ,
   default = 5L
+)
+
+rowwiseDT(
+  x = , y = ,
+    1 ,   2 ,
+    3 ,   4
+)
+
+a <- rowwiseDT(
+  x = , y = ,
+    1 ,   2 ,
+    3 ,   4
 )
 
 # "Sees through" namespaces and looks at the function name
