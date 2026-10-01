@@ -73,7 +73,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-018089954d508eae8a473f0b7f0491f0.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-cfb4a3d43a46ce80fd978b59e481ae84.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-d9a0f20308945cdca9cd03d0f22939e3.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -742,7 +742,7 @@ Note: This feature is experimental. We’d be grateful for any feedback!
 
 </div>
 </div>
-<p>This directive is particularly useful with calls like tibble’s <code>tribble()</code> or data.table’s <code>fcase()</code>. It formats calls taking unnamed arguments via <code>...</code> in a tabular way.</p>
+<p>This directive is particularly useful with calls like tibble’s <code>tribble()</code> or data.table’s <code>fcase()</code> and <code>rowwiseDT()</code>. It formats calls taking unnamed arguments via <code>...</code> in a tabular way.</p>
 <ul>
 <li>Commas are aligned, creating column guides</li>
 <li>Numeric values are right-aligned, making them easier to read and compare</li>
@@ -763,10 +763,10 @@ Note: This feature is experimental. We’d be grateful for any feedback!
 <li>Tables are allowed to be jagged with different numbers of columns per rows. This allows formatting partial tables as you write them.</li>
 </ul>
 <p>Note that if a complex expression contains a line break that Air can’t flatten out, tabular formatting is disabled. You’ll have to find the offending argument and make it flat to turn table formatting back on.</p>
-<p>By default, all calls to <code>tribble()</code> and <code>fcase()</code> are formatted as tables, even without a <code># fmt: table</code> directive. Two <a href="./configuration.html#configuration-table">configuration options</a> help you tweak this default behavior:</p>
+<p>By default, all calls to <code>tribble()</code>, <code>fcase()</code>, and <code>rowwiseDT()</code> are formatted as tables, even without a <code># fmt: table</code> directive. Two <a href="./configuration.html#configuration-table">configuration options</a> help you tweak this default behavior:</p>
 <ul>
 <li><p><code>table</code>: Extend the default table calls (e.g.&nbsp;<code>tribble()</code>) with custom function names that should be formatted as tables across your whole project without requiring a <code># fmt: table</code> directive.</p></li>
-<li><p><code>default-table</code>: Whether to turn off Air’s default for <code>tribble()</code> and <code>fcase()</code>.</p></li>
+<li><p><code>default-table</code>: Whether to turn off Air’s default for <code>tribble()</code>, <code>fcase()</code>, and <code>rowwiseDT()</code>.</p></li>
 </ul>
 
 
