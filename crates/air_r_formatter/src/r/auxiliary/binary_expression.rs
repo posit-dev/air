@@ -161,7 +161,9 @@ fn fmt_binary_sticky(
 /// Walrus assignment is not considered when looking for persistent line breaks because we
 /// don't want the `:=` case below to look like a request for expansion. While `:=` is
 /// technically parsed as a binary operator, we format it more like a named argument with
-/// a simple `space()` between the operator and the right hand side.
+/// a simple `space()` between the operator and the right hand side. An own-line comment
+/// between `:=` and the RHS is the exception: it must keep the expression expanded so the
+/// comment does not change position on a second formatting pass.
 ///
 /// ```r
 /// # `:=` here is technically a binary operator, `x := y` is technically an unnamed argument
@@ -455,6 +457,15 @@ fn binary_assignment_has_persistent_line_break(
     right: &AnyRExpression,
     options: &RFormatOptions,
 ) -> bool {
+    if operator.kind() == RSyntaxKind::WALRUS {
+        let right_has_leading_comment = right
+            .syntax()
+            .first_token()
+            .is_some_and(|token| token.has_leading_comments());
+
+        return right_has_leading_comment && !operator.has_trailing_comments();
+    }
+
     if options.persistent_line_breaks().is_ignore() {
         return false;
     }
