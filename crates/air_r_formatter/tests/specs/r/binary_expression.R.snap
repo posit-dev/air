@@ -635,7 +635,7 @@ tobacco ~
 # Should
 # - Expand all arguments
 # - Keep `AGE` on the line with the `~`
-# - Left-align `SEX` and the remainder of the chain
+# - Fill `SEX` and the remainder of the chain across lines
 # https://github.com/posit-dev/positron/discussions/6095#discussioncomment-13112983
 foo <- cph(Surv(dm_py, diabetes) ~ AGE + SEX + SEX + SEX + SEX + SEX + SEX + SEX  + SEX  + SEX  + SEX  + SEX  + SEX  + SEX ,
   data = dt,
@@ -684,6 +684,27 @@ y ~ x1 + x2 +
 y ~ x1 + x2 + # comment1
   x3 # comment2
 
+# -----------------------------------------------------------------------------
+# Arithmetic fill chains and logical chain separation
+
+# Arithmetic chains fill lines up to line width
+1 / 60 * as.numeric(difftime(end_time_for_calculation, start_time_for_calculation, units = "secs"))
+
+(1 / 2 * log(1 / 2) + 1 / 6 * log(1 / 6) + 1 / 3 * log(1 / 3)) / log(3)
+
+# When the first operand is long, subsequent short operands still fill on line 2
+a_very_long_first_operand_that_takes_up_most_of_the_line_width_here + short1 + short2
+a_very_long_first_operand_that_takes_up_almost_the_entire_80_char_line_width + short1 + short2
+
+foo(
+  a_very_long_argument_that_forces_this_function_call_to_expand_across_lines
+) + short1 + short2
+
+# Logical operators do not chain with `%in%` or arithmetic operators on the LHS
+a_really_long_lhs_variable %in% c("A", "B", "C") & a_really_long_rhs_variable %in% c("D", "E", "F")
+a_really_long_lhs_variable1 + a_really_long_lhs_variable2 & a_really_long_rhs_variable1 + a_really_long_rhs_variable2
+
+
 ```
 
 
@@ -709,10 +730,8 @@ Table: fcase, rowwiseDT, tribble
 
 1 + 2 + 3 + 4
 
-argument_that_is_quite_long +
-  argument_that_is_quite_long +
-  argument_that_is_quite_long +
-  argument_that_is_quite_long
+argument_that_is_quite_long + argument_that_is_quite_long +
+  argument_that_is_quite_long + argument_that_is_quite_long
 
 1 + 2^3 + 4
 
@@ -804,11 +823,9 @@ a_really_really_long_thing_here1 >
 
 # Mixing with a chaining operator
 a_really_really_long_thing_here1 >
-  a_really_really_long_thing_here2 +
-    a_really_really_long_thing_here3 +
+  a_really_really_long_thing_here2 + a_really_really_long_thing_here3 +
     a_really_really_long_thing_here4
-a_really_really_long_thing_here1 +
-  a_really_really_long_thing_here2 +
+a_really_really_long_thing_here1 + a_really_really_long_thing_here2 +
   a_really_really_long_thing_here3 >
   a_really_really_long_thing_here4
 
@@ -858,17 +875,13 @@ a == b
 # Chaining
 
 # Chaining same operator
-a_really_really_long_thing_here1 +
-  a_really_really_long_thing_here2 +
+a_really_really_long_thing_here1 + a_really_really_long_thing_here2 +
   a_really_really_long_thing_here3
-a_really_really_long_thing_here1 -
-  a_really_really_long_thing_here2 -
+a_really_really_long_thing_here1 - a_really_really_long_thing_here2 -
   a_really_really_long_thing_here3
-a_really_really_long_thing_here1 *
-  a_really_really_long_thing_here2 *
+a_really_really_long_thing_here1 * a_really_really_long_thing_here2 *
   a_really_really_long_thing_here3
-a_really_really_long_thing_here1 /
-  a_really_really_long_thing_here2 /
+a_really_really_long_thing_here1 / a_really_really_long_thing_here2 /
   a_really_really_long_thing_here3
 a_really_really_long_thing_here1 &
   a_really_really_long_thing_here2 &
@@ -890,17 +903,13 @@ a_really_really_long_thing_here1 %>%
   a_really_really_long_thing_here3
 
 # Chaining mixed operator, same precedence group
-a_really_really_long_thing_here1 +
-  a_really_really_long_thing_here2 -
+a_really_really_long_thing_here1 + a_really_really_long_thing_here2 -
   a_really_really_long_thing_here3
-a_really_really_long_thing_here1 -
-  a_really_really_long_thing_here2 +
+a_really_really_long_thing_here1 - a_really_really_long_thing_here2 +
   a_really_really_long_thing_here3
-a_really_really_long_thing_here1 *
-  a_really_really_long_thing_here2 /
+a_really_really_long_thing_here1 * a_really_really_long_thing_here2 /
   a_really_really_long_thing_here3
-a_really_really_long_thing_here1 /
-  a_really_really_long_thing_here2 *
+a_really_really_long_thing_here1 / a_really_really_long_thing_here2 *
   a_really_really_long_thing_here3
 a_really_really_long_thing_here1 |>
   a_really_really_long_thing_here2 %>%
@@ -919,8 +928,7 @@ a_really_really_long_thing_here1 |
 
 # Continuous chaining as long as precedence is high -> low from left -> right
 # (e.g. `*` > `+` in terms of precedence, so keep chaining)
-a_really_really_long_thing_here1 *
-  a_really_really_long_thing_here2 +
+a_really_really_long_thing_here1 * a_really_really_long_thing_here2 +
   a_really_really_long_thing_here3
 a_really_really_long_thing_here1 &
   a_really_really_long_thing_here2 |
@@ -1388,11 +1396,7 @@ y ~ this +
 y ~ this + that + this_other_thing
 
 # `this` is never automatically forced onto a new line, just like how `<-` works
-y ~ this +
-  that +
-  this_other_thing +
-  this_other_thing +
-  this_other_thing +
+y ~ this + that + this_other_thing + this_other_thing + this_other_thing +
   this_other_thing
 
 # Model formulas use left-aligned chaining if you introduce a persistent line
@@ -1458,23 +1462,11 @@ tobacco ~
 # Should
 # - Expand all arguments
 # - Keep `AGE` on the line with the `~`
-# - Left-align `SEX` and the remainder of the chain
+# - Fill `SEX` and the remainder of the chain across lines
 # https://github.com/posit-dev/positron/discussions/6095#discussioncomment-13112983
 foo <- cph(
-  Surv(dm_py, diabetes) ~ AGE +
-    SEX +
-    SEX +
-    SEX +
-    SEX +
-    SEX +
-    SEX +
-    SEX +
-    SEX +
-    SEX +
-    SEX +
-    SEX +
-    SEX +
-    SEX,
+  Surv(dm_py, diabetes) ~ AGE + SEX + SEX + SEX + SEX + SEX + SEX + SEX + SEX +
+    SEX + SEX + SEX + SEX + SEX,
   data = dt,
   x = TRUE,
   y = TRUE
@@ -1520,21 +1512,51 @@ y ~ x1 + x2 + x3 # comment
 y ~ x1 +
   x2 + # comment1
   x3 # comment2
+
+# -----------------------------------------------------------------------------
+# Arithmetic fill chains and logical chain separation
+
+# Arithmetic chains fill lines up to line width
+1 / 60 *
+  as.numeric(difftime(
+    end_time_for_calculation,
+    start_time_for_calculation,
+    units = "secs"
+  ))
+
+(1 / 2 * log(1 / 2) + 1 / 6 * log(1 / 6) + 1 / 3 * log(1 / 3)) / log(3)
+
+# When the first operand is long, subsequent short operands still fill on line 2
+a_very_long_first_operand_that_takes_up_most_of_the_line_width_here + short1 +
+  short2
+a_very_long_first_operand_that_takes_up_almost_the_entire_80_char_line_width +
+  short1 + short2
+
+foo(
+  a_very_long_argument_that_forces_this_function_call_to_expand_across_lines
+) +
+  short1 + short2
+
+# Logical operators do not chain with `%in%` or arithmetic operators on the LHS
+a_really_long_lhs_variable %in% c("A", "B", "C") &
+  a_really_long_rhs_variable %in% c("D", "E", "F")
+a_really_long_lhs_variable1 + a_really_long_lhs_variable2 &
+  a_really_long_rhs_variable1 + a_really_long_rhs_variable2
 ```
 
 # Lines exceeding max width of 80 characters
 ```
-  206: # TODO: Do we really want these chained? It seems like no good can come of that even though they have same precedence
-  582: a_really_really_really_really_really_really_long_thing_here ~ a_really_really_really_really_really_really_long_thing_here2
-  583: a_really_really_really_really_really_really_long_thing_here = a_really_really_really_really_really_really_long_thing_here2
-  584: a_really_really_really_really_really_really_long_thing_here := a_really_really_really_really_really_really_long_thing_here2
-  585: a_really_really_really_really_really_really_long_thing_here <- a_really_really_really_really_really_really_long_thing_here2
-  586: a_really_really_really_really_really_really_long_thing_here -> a_really_really_really_really_really_really_long_thing_here2
-  587: a_really_really_really_really_really_really_long_thing_here <<- a_really_really_really_really_really_really_long_thing_here2
-  588: a_really_really_really_really_really_really_long_thing_here ->> a_really_really_really_really_really_really_long_thing_here2
-  700: a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2 ~ a_really_really_long_thing_here3
-  701: a_really_really_long_thing_here1 ~ a_really_really_really_really_really_really_long_thing_here2 ~ a_really_really_long_thing_here3
-  702: (a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2) ~ a_really_really_long_thing_here3
-  703: a_really_really_long_thing_here1 ~ (a_really_really_long_thing_here2 ~ a_really_really_long_thing_here3)
-  756: # https://github.com/posit-dev/positron/discussions/6095#discussioncomment-13112983
+  194: # TODO: Do we really want these chained? It seems like no good can come of that even though they have same precedence
+  569: a_really_really_really_really_really_really_long_thing_here ~ a_really_really_really_really_really_really_long_thing_here2
+  570: a_really_really_really_really_really_really_long_thing_here = a_really_really_really_really_really_really_long_thing_here2
+  571: a_really_really_really_really_really_really_long_thing_here := a_really_really_really_really_really_really_long_thing_here2
+  572: a_really_really_really_really_really_really_long_thing_here <- a_really_really_really_really_really_really_long_thing_here2
+  573: a_really_really_really_really_really_really_long_thing_here -> a_really_really_really_really_really_really_long_thing_here2
+  574: a_really_really_really_really_really_really_long_thing_here <<- a_really_really_really_really_really_really_long_thing_here2
+  575: a_really_really_really_really_really_really_long_thing_here ->> a_really_really_really_really_really_really_long_thing_here2
+  683: a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2 ~ a_really_really_long_thing_here3
+  684: a_really_really_long_thing_here1 ~ a_really_really_really_really_really_really_long_thing_here2 ~ a_really_really_long_thing_here3
+  685: (a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2) ~ a_really_really_long_thing_here3
+  686: a_really_really_long_thing_here1 ~ (a_really_really_long_thing_here2 ~ a_really_really_long_thing_here3)
+  739: # https://github.com/posit-dev/positron/discussions/6095#discussioncomment-13112983
 ```
