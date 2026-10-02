@@ -628,7 +628,7 @@ tobacco ~
 # Should
 # - Expand all arguments
 # - Keep `AGE` on the line with the `~`
-# - Left-align `SEX` and the remainder of the chain
+# - Fill `SEX` and the remainder of the chain across lines
 # https://github.com/posit-dev/positron/discussions/6095#discussioncomment-13112983
 foo <- cph(Surv(dm_py, diabetes) ~ AGE + SEX + SEX + SEX + SEX + SEX + SEX + SEX  + SEX  + SEX  + SEX  + SEX  + SEX  + SEX ,
   data = dt,
@@ -676,3 +676,24 @@ y ~ x1 + x2 +
 # The comment actually forces expansion
 y ~ x1 + x2 + # comment1
   x3 # comment2
+
+# -----------------------------------------------------------------------------
+# Arithmetic fill chains and logical chain separation
+
+# Arithmetic chains fill lines up to line width
+1 / 60 * as.numeric(difftime(end_time_for_calculation, start_time_for_calculation, units = "secs"))
+
+(1 / 2 * log(1 / 2) + 1 / 6 * log(1 / 6) + 1 / 3 * log(1 / 3)) / log(3)
+
+# When the first operand is long, subsequent short operands still fill on line 2
+a_very_long_first_operand_that_takes_up_most_of_the_line_width_here + short1 + short2
+a_very_long_first_operand_that_takes_up_almost_the_entire_80_char_line_width + short1 + short2
+
+foo(
+  a_very_long_argument_that_forces_this_function_call_to_expand_across_lines
+) + short1 + short2
+
+# Logical operators do not chain with `%in%` or arithmetic operators on the LHS
+a_really_long_lhs_variable %in% c("A", "B", "C") & a_really_long_rhs_variable %in% c("D", "E", "F")
+a_really_long_lhs_variable1 + a_really_long_lhs_variable2 & a_really_long_rhs_variable1 + a_really_long_rhs_variable2
+

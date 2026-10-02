@@ -1,3 +1,4 @@
+use crate::comments::RComments;
 use crate::comments_ext::CommentsExt;
 use crate::context::RFormatOptions;
 use crate::either::Either;
@@ -17,6 +18,7 @@ use air_r_syntax::RRepeatStatement;
 use air_r_syntax::RSyntaxKind;
 use air_r_syntax::RUnaryExpression;
 use air_r_syntax::RWhileStatement;
+use biome_formatter::FormatOptions;
 use biome_formatter::FormatRuleWithOptions;
 use biome_formatter::format_args;
 use biome_formatter::prelude::dynamic_text;
@@ -710,6 +712,8 @@ fn fmt_binary_chain(
     alignment: ChainAlignment,
     f: &mut Formatter<RFormatContext>,
 ) -> FormatResult<()> {
+    let is_logical = is_logical_binary_operator(operator.kind());
+
     // For the lead node in a binary chain, comments are handled by the standard
     // formatting of `FormatRBinaryExpression`, so no `encosing` node is tracked.
     let mut tail = vec![TailPiece {
@@ -723,7 +727,7 @@ fn fmt_binary_chain(
     // As long as the LHS is another chainable binary expression, continue collecting
     // `operator` and `right` to make one big tail that gets formatted all at once
     // within a single `indent()`, respecting a singular group expansion request.
-    while let Some(node) = as_chainable_binary_expression(&left)? {
+    while let Some(node) = as_chainable_binary_expression(&left, is_logical)? {
         // It's only possible to suppress the formatting of the whole binary expression
         // formatting OR the formatting of the right hand side value but not of a nested
         // binary expression, so we aren't going to respect any skip directives here, but
@@ -745,93 +749,159 @@ fn fmt_binary_chain(
     // Reverse the collected `tail` pieces to generate the correct ordering
     tail.reverse();
 
-    let chain = format_with(|f| {
-        // Each `(operator, right)` pair is joined with a single space. Non-breaking!
-        // The `operator` must be on the same line as the previous `right` for R to parse
-        // it correctly.
-        for TailPiece {
-            operator,
-            right,
-            enclosing,
-        } in tail.iter()
-        {
-            if let Some(enclosing) = enclosing {
-                // Safety: Non-root nodes in a binary chain can only have trailing comments
-                let comments = f.comments();
-                let enclosing = enclosing.syntax();
+    let has_empty_line = tail
+        .iter()
+        .any(|piece| get_lines_before(piece.right.syntax()) > 1);
+    let has_pipe = tail
+        .iter()
+        .any(|piece| is_pipe_binary_operator(piece.operator.kind()));
+    let is_arithmetic_chain = !has_empty_line && !has_pipe && !is_logical && tail.len() > 1;
+    let should_expand =
+        has_persistent_line_break(&left, &tail, is_arithmetic_chain, comments, f.options());
+    let has_fill_chain = is_arithmetic_chain && !should_expand;
 
-                if comments.has_leading_comments(enclosing) {
-                    unreachable!("Non-root nodes in a binary chain can't have leading comments.");
-                }
-                if comments.has_dangling_comments(enclosing) {
-                    unreachable!("Non-root nodes in a binary chain can't have dangling comments.");
-                }
+    for TailPiece { enclosing, .. } in tail.iter() {
+        if let Some(enclosing) = enclosing {
+            // Safety: Non-root nodes in a binary chain can only have trailing comments
+            let enclosing = enclosing.syntax();
+
+            if comments.has_leading_comments(enclosing) {
+                unreachable!("Non-root nodes in a binary chain can't have leading comments.");
             }
-
-            // Respect when the user requests empty lines between the `operator` and
-            // `right`. This is common in pipe chains and is usually accompanied by a
-            // comment providing details about the upcoming call.
-            //
-            // ```r
-            // df |>
-            //
-            //   # Some important notes about this call
-            //   foo() |>
-            //
-            //   # Some more important notes
-            //   bar()
-            // ```
-            let user_requested_empty_line = get_lines_before(right.syntax()) > 1;
-
-            write!(
-                f,
-                [
-                    space(),
-                    operator.format(),
-                    if user_requested_empty_line {
-                        empty_line()
-                    } else {
-                        soft_line_break_or_space()
-                    },
-                    right.format()
-                ]
-            )?;
-
-            // Because we take over formatting of nested binary expressions, we also must
-            // take over formatting of comments that are directly assigned to those binary
-            // expression nodes. Practically the only possible comments are trailing ones
-            // like below, and they are inserted after the `right` expression is written.
-            // Technically, we write `foo()[comment][space]|>` but because we only allow
-            // a space between `foo()` and `|>` with no soft line break, the comment is
-            // nicely bumped outside the `|>` as well.
-            //
-            // ```r
-            // df |>
-            //   foo() |> # Trailing on the `df |> foo()` binary expression
-            //   bar()
-            // ```
-            if let Some(enclosing) = enclosing {
-                write!(f, [format_trailing_comments(enclosing.syntax())])?;
+            if comments.has_dangling_comments(enclosing) {
+                unreachable!("Non-root nodes in a binary chain can't have dangling comments.");
             }
         }
+    }
 
-        Ok(())
-    });
+    if has_fill_chain {
+        let first_operator = &tail[0].operator;
+        let first_item = format_with(|f| {
+            write!(
+                f,
+                [group(&format_args![
+                    left.format(),
+                    space(),
+                    first_operator.format()
+                ])]
+            )
+        });
 
-    let chain = match alignment {
-        ChainAlignment::Indented => Either::Left(indent(&chain)),
-        ChainAlignment::LeftAligned => Either::Right(chain),
-    };
+        let format_tail_item = |index: usize, f: &mut Formatter<RFormatContext>| {
+            let piece = &tail[index];
+            let next_operator = tail.get(index + 1).map(|next| &next.operator);
 
-    write!(
-        f,
-        [group(&format_args![left.format(), &chain])
-            .should_expand(has_persistent_line_break(&tail, f.options()))]
-    )
+            let item = format_with(|f| {
+                write!(f, [piece.right.format()])?;
+                if let Some(enclosing) = piece.enclosing.as_ref() {
+                    write!(f, [format_trailing_comments(enclosing.syntax())])?;
+                }
+                if let Some(next_operator) = next_operator {
+                    write!(f, [space(), next_operator.format()])?;
+                }
+                Ok(())
+            });
+
+            match alignment {
+                ChainAlignment::Indented => write!(f, [group(&indent(&item))]),
+                ChainAlignment::LeftAligned => write!(f, [group(&item)]),
+            }
+        };
+
+        let separator = format_with(|f| match alignment {
+            ChainAlignment::Indented => write!(f, [indent(&soft_line_break_or_space())]),
+            ChainAlignment::LeftAligned => write!(f, [soft_line_break_or_space()]),
+        });
+
+        let content = format_with(|f| {
+            let mut fill = f.fill();
+            fill.entry(&separator, &first_item);
+
+            for index in 0..tail.len() {
+                let item = format_with(|f| format_tail_item(index, f));
+                fill.entry(&separator, &item);
+            }
+
+            fill.finish()
+        });
+
+        write!(f, [group(&content)])
+    } else {
+        let chain = format_with(|f| {
+            // Each `(operator, right)` pair is joined with a single space. Non-breaking!
+            // The `operator` must be on the same line as the previous `right` for R to parse
+            // it correctly.
+            for TailPiece {
+                operator,
+                right,
+                enclosing,
+            } in tail.iter()
+            {
+                // Respect when the user requests empty lines between the `operator` and
+                // `right`. This is common in pipe chains and is usually accompanied by a
+                // comment providing details about the upcoming call.
+                //
+                // ```r
+                // df |>
+                //
+                //   # Some important notes about this call
+                //   foo() |>
+                //
+                //   # Some more important notes
+                //   bar()
+                // ```
+                let user_requested_empty_line = get_lines_before(right.syntax()) > 1;
+
+                write!(
+                    f,
+                    [
+                        space(),
+                        operator.format(),
+                        if user_requested_empty_line {
+                            empty_line()
+                        } else {
+                            soft_line_break_or_space()
+                        },
+                        right.format()
+                    ]
+                )?;
+
+                // Because we take over formatting of nested binary expressions, we also must
+                // take over formatting of comments that are directly assigned to those binary
+                // expression nodes. Practically the only possible comments are trailing ones
+                // like below, and they are inserted after the `right` expression is written.
+                // Technically, we write `foo()[comment][space]|>` but because we only allow
+                // a space between `foo()` and `|>` with no soft line break, the comment is
+                // nicely bumped outside the `|>` as well.
+                //
+                // ```r
+                // df |>
+                //   foo() |> # Trailing on the `df |> foo()` binary expression
+                //   bar()
+                // ```
+                if let Some(enclosing) = enclosing {
+                    write!(f, [format_trailing_comments(enclosing.syntax())])?;
+                }
+            }
+
+            Ok(())
+        });
+
+        let chain = match alignment {
+            ChainAlignment::Indented => Either::Left(indent(&chain)),
+            ChainAlignment::LeftAligned => Either::Right(chain),
+        };
+
+        write!(
+            f,
+            [group(&format_args![left.format(), &chain]).should_expand(should_expand)]
+        )
+    }
 }
 
 fn as_chainable_binary_expression(
     node: &AnyRExpression,
+    is_logical: bool,
 ) -> SyntaxResult<Option<&RBinaryExpression>> {
     let Some(node) = node.as_r_binary_expression() else {
         return Ok(None);
@@ -843,7 +913,22 @@ fn as_chainable_binary_expression(
         return Ok(None);
     }
 
+    if is_logical_binary_operator(operator.kind()) != is_logical {
+        return Ok(None);
+    }
+
     Ok(Some(node))
+}
+
+fn is_pipe_binary_operator(kind: RSyntaxKind) -> bool {
+    matches!(kind, RSyntaxKind::PIPE | RSyntaxKind::SPECIAL)
+}
+
+fn is_logical_binary_operator(kind: RSyntaxKind) -> bool {
+    matches!(
+        kind,
+        RSyntaxKind::OR | RSyntaxKind::OR2 | RSyntaxKind::AND | RSyntaxKind::AND2
+    )
 }
 
 fn is_chainable_binary_operator(kind: RSyntaxKind) -> bool {
@@ -918,11 +1003,80 @@ fn is_chainable_binary_operator(kind: RSyntaxKind) -> bool {
 /// # Output
 /// (df %>% mutate(x = 1) %>% filter(x == y))
 /// ```
-fn has_persistent_line_break(tail: &[TailPiece], options: &RFormatOptions) -> bool {
+fn has_persistent_line_break(
+    left: &AnyRExpression,
+    tail: &[TailPiece],
+    has_fill_chain: bool,
+    comments: &RComments,
+    options: &RFormatOptions,
+) -> bool {
     if options.persistent_line_breaks().is_ignore() {
         return false;
     }
 
-    tail.first()
-        .is_some_and(|piece| piece.right.syntax().has_leading_newline())
+    let Some(first) = tail.first() else {
+        return false;
+    };
+
+    if !first.right.syntax().has_leading_newline() {
+        return false;
+    }
+
+    if !has_fill_chain {
+        return true;
+    }
+
+    if tail
+        .iter()
+        .all(|piece| piece.right.syntax().has_leading_newline())
+    {
+        return true;
+    }
+
+    // In a fill chain where the first piece has a leading newline but some
+    // subsequent piece does not, distinguish a user-requested break on a short
+    // line from a line break forced by `f.fill()`.
+    if left.syntax().text_trimmed().contains_char('\n')
+        || first.right.syntax().text_trimmed().contains_char('\n')
+        || first
+            .operator
+            .trailing_trivia()
+            .pieces()
+            .any(|piece| piece.is_comments())
+        || first
+            .enclosing
+            .as_ref()
+            .is_some_and(|enclosing| comments.has_comments(enclosing.syntax()))
+        || comments.has_comments(first.right.syntax())
+    {
+        return false;
+    }
+
+    let first_col = line_column_after_token(&first.operator);
+    let first_right_len = first.right.syntax().text_trimmed().chars().count();
+    let second_op_len = tail[1].operator.text_trimmed().chars().count();
+
+    first_col + 1 + first_right_len + 1 + second_op_len <= options.line_width().value() as usize
+}
+
+fn line_column_after_token(token: &SyntaxToken<RLanguage>) -> usize {
+    let leading_and_trimmed_len =
+        usize::from(token.text_trimmed_range().end() - token.text_range().start());
+    let prefix = &token.text()[..leading_and_trimmed_len];
+    if let Some(pos) = prefix.rfind('\n') {
+        return prefix[pos + 1..].chars().count();
+    }
+
+    let mut col = prefix.chars().count();
+    let mut current = token.prev_token();
+    while let Some(prev) = current {
+        let text = prev.text();
+        if let Some(pos) = text.rfind('\n') {
+            return col + text[pos + 1..].chars().count();
+        }
+        col += text.chars().count();
+        current = prev.prev_token();
+    }
+
+    col
 }
