@@ -47,22 +47,26 @@ fn resolve_settings<P: AsRef<Path>>(
     paths: &[P],
     configuration: ConfigurationMode,
 ) -> anyhow::Result<(PathResolver<Settings>, Settings)> {
-    let mut resolver = PathResolver::new();
-
-    if let ConfigurationMode::Discover = configuration {
-        for DiscoveredSettings {
-            directory,
-            settings,
-        } in discovery::discover_settings(paths)?
-        {
-            resolver.add(&directory, settings);
+    match configuration {
+        ConfigurationMode::Discover => {
+            let mut resolver = PathResolver::new();
+            for DiscoveredSettings {
+                directory,
+                settings,
+            } in discovery::discover_settings(paths)?
+            {
+                resolver.add(&directory, settings);
+            }
+            let default_settings = discovery::discover_user_settings()?.unwrap_or_default();
+            Ok((resolver, default_settings))
         }
-
-        let default_settings = discovery::discover_user_settings()?.unwrap_or_default();
-        return Ok((resolver, default_settings));
+        ConfigurationMode::Disabled => {
+            // Force Air's factory fresh defaults!
+            let resolver = PathResolver::new();
+            let default_settings = Settings::default();
+            Ok((resolver, default_settings))
+        }
     }
-
-    Ok((resolver, Settings::default()))
 }
 
 fn check_argument_consistency(command: &FormatCommand) -> Option<ExitStatus> {
