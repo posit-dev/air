@@ -100,6 +100,14 @@ Because user level `air.toml`s exist in a directory outside of your project's tr
 
 This distinction between rooted and unrooted patterns was chosen for consistency with Git.
 
+### Disabling configuration discovery
+
+At the command line, you can use `--no-configuration` to skip configuration discovery entirely and format with Air's default settings:
+
+``` bash
+air format --no-configuration path/to/file.R
+```
+
 ## Settings synchronization {#configuration-settings-synchronization}
 
 In IDEs that support synchronization (VS Code and Positron currently), Air does its best to ensure that the formatter and the IDE are in agreement.
