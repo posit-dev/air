@@ -263,6 +263,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#configuration-discovery" id="toc-configuration-discovery" class="nav-link" data-scroll-target="#configuration-discovery">Configuration discovery</a>
   <ul class="collapse">
   <li><a href="#user-level-configuration" id="toc-user-level-configuration" class="nav-link" data-scroll-target="#user-level-configuration">User level configuration</a></li>
+  <li><a href="#disabling-configuration-discovery" id="toc-disabling-configuration-discovery" class="nav-link" data-scroll-target="#disabling-configuration-discovery">Disabling configuration discovery</a></li>
   </ul></li>
   <li><a href="#configuration-settings-synchronization" id="toc-configuration-settings-synchronization" class="nav-link" data-scroll-target="#configuration-settings-synchronization">Settings synchronization</a></li>
   <li><a href="#dotfiles" id="toc-dotfiles" class="nav-link" data-scroll-target="#dotfiles">Dotfiles</a></li>
@@ -366,6 +367,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This distinction between rooted and unrooted patterns was chosen for consistency with Git.</p>
 </section>
 </section>
+<section id="disabling-configuration-discovery" class="level3">
+<h3 class="anchored" data-anchor-id="disabling-configuration-discovery">Disabling configuration discovery</h3>
+<p>At the command line, you can use <code>--no-configuration</code> to skip configuration discovery entirely and format with Air’s default settings:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">air</span> format <span class="at">--no-configuration</span> path/to/file.R</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
 </section>
 <section id="configuration-settings-synchronization" class="level2">
 <h2 class="anchored" data-anchor-id="configuration-settings-synchronization">Settings synchronization</h2>
@@ -421,36 +427,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Whether or not persistent line breaks are allowed.</p>
 <p>Either <code>true</code> to respect persistent line breaks, or <code>false</code> to ignore them, with a default of <code>true</code>.</p>
 <p>Air respects a small set of persistent line breaks as an indication that certain function calls or function signatures should be left expanded. For example, the following list could be flattened to one line and would still fit within a <code>line-width</code> of 80, however, it remains expanded due to the persistent line break between the opening <code>(</code> and the first argument, <code>apple</code>.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>dictionary <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">apple =</span> <span class="fl">0.75</span>,</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">banana =</span> <span class="fl">0.25</span>,</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">cherry =</span> <span class="fl">0.50</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dictionary <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">apple =</span> <span class="fl">0.75</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">banana =</span> <span class="fl">0.25</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">cherry =</span> <span class="fl">0.50</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Similarly, this function signature could also be flattened, but is not, due to the persistent line break between the opening <code>(</code> and the first parameter, <code>...</code>.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>case_when <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  ...,</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">.default =</span> <span class="cn">NULL</span>,</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">.ptype =</span> <span class="cn">NULL</span>,</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">.size =</span> <span class="cn">NULL</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>) {</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  body</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>case_when <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  ...,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">.default =</span> <span class="cn">NULL</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">.ptype =</span> <span class="cn">NULL</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">.size =</span> <span class="cn">NULL</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>) {</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  body</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>To request flattening in these cases, just remove the persistent line break. For example:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># If you started here,</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>dictionary <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">apple =</span> <span class="fl">0.75</span>,</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">banana =</span> <span class="fl">0.25</span>,</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">cherry =</span> <span class="fl">0.50</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># then do this, and run air,</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>dictionary <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">apple =</span> <span class="fl">0.75</span>,</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">banana =</span> <span class="fl">0.25</span>,</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">cherry =</span> <span class="fl">0.50</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co"># to get this.</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>dictionary <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">apple =</span> <span class="fl">0.75</span>, <span class="at">banana =</span> <span class="fl">0.25</span>, <span class="at">cherry =</span> <span class="fl">0.50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># If you started here,</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>dictionary <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">apple =</span> <span class="fl">0.75</span>,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">banana =</span> <span class="fl">0.25</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">cherry =</span> <span class="fl">0.50</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># then do this, and run air,</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>dictionary <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">apple =</span> <span class="fl">0.75</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">banana =</span> <span class="fl">0.25</span>,</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">cherry =</span> <span class="fl">0.50</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co"># to get this.</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>dictionary <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">apple =</span> <span class="fl">0.75</span>, <span class="at">banana =</span> <span class="fl">0.25</span>, <span class="at">cherry =</span> <span class="fl">0.50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Alternatively, use a tool such as <a href="https://github.com/lionel-/codegrip">codegrip</a> bound to a keyboard shortcut to flatten the code, and Air will keep it flattened as long as it fits within the <code>line-width</code>.</p>
 <p>It may be preferable to ignore persistent line breaks if you prefer that <code>line-width</code> should be the only value that influences line breaks.</p>
 </section>
@@ -504,7 +510,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>A list of strings, i.e.&nbsp;<code>skip = ["my_dsl_function", "graph_from_literal"]</code>.</p>
 <p>Air typically formats every function call it comes across. To skip formatting of a single function call, you can use a <code># fmt: skip</code> comment. However, if you know of particular functions that you use a lot that are part of a custom domain specific language that doesn’t follow conventional formatting rules, you can entirely opt out of formatting for those functions by providing them here.</p>
 <p>For example, using <code>skip = ["graph_from_literal"]</code> would automatically skip formatting of:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>igraph<span class="sc">::</span><span class="fu">graph_from_literal</span>(A <span class="sc">+-+</span> B <span class="sc">+---+</span> C <span class="sc">++</span> D <span class="sc">+</span> E)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>igraph<span class="sc">::</span><span class="fu">graph_from_literal</span>(A <span class="sc">+-+</span> B <span class="sc">+---+</span> C <span class="sc">++</span> D <span class="sc">+</span> E)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="configuration-table" class="level3">
 <h3 class="anchored" data-anchor-id="configuration-table">table</h3>
