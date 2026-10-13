@@ -1,0 +1,45 @@
+version: 2
+
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    ignore:
+      # Pinned to forks on purpose, updated by hand
+      - dependency-name: "biome_*"
+      - dependency-name: "tower-lsp"
+    groups:
+      cargo-major:
+        update-types:
+          - "major"
+      cargo-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "npm"
+    directory: "/editors/code"
+    schedule:
+      interval: "weekly"
+    groups:
+      npm-major:
+        update-types:
+          - "major"
+      npm-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      github-actions-major:
+        update-types:
+          - "major"
+      github-actions-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
