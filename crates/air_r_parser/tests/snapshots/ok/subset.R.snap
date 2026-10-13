@@ -89,11 +89,11 @@ RRoot {
                             name_token: IDENT@12..13 "a" [] [],
                         },
                     },
-                    COMMA@13..14 "," [] [],
+                    COMMA@13..15 "," [] [Whitespace(" ")],
                     RArgument {
                         name_clause: missing (optional),
                         value: RIdentifier {
-                            name_token: IDENT@14..16 "b" [Whitespace(" ")] [],
+                            name_token: IDENT@15..16 "b" [] [],
                         },
                     },
                 ],
@@ -130,18 +130,18 @@ RRoot {
                             name_token: IDENT@29..30 "a" [] [],
                         },
                     },
-                    COMMA@30..31 "," [] [],
+                    COMMA@30..32 "," [] [Whitespace(" ")],
                     RArgument {
                         name_clause: missing (optional),
                         value: RDots {
-                            value_token: DOTS@31..35 "..." [Whitespace(" ")] [],
+                            value_token: DOTS@32..35 "..." [] [],
                         },
                     },
-                    COMMA@35..36 "," [] [],
+                    COMMA@35..37 "," [] [Whitespace(" ")],
                     RArgument {
                         name_clause: missing (optional),
                         value: RIdentifier {
-                            name_token: IDENT@36..38 "b" [Whitespace(" ")] [],
+                            name_token: IDENT@37..38 "b" [] [],
                         },
                     },
                 ],
@@ -158,12 +158,12 @@ RRoot {
                     RArgument {
                         name_clause: RArgumentNameClause {
                             name: RIdentifier {
-                                name_token: IDENT@44..45 "a" [] [],
+                                name_token: IDENT@44..46 "a" [] [Whitespace(" ")],
                             },
-                            eq_token: EQUAL@45..47 "=" [Whitespace(" ")] [],
+                            eq_token: EQUAL@46..48 "=" [] [Whitespace(" ")],
                         },
                         value: RDoubleValue {
-                            value_token: R_DOUBLE_LITERAL@47..49 "1" [Whitespace(" ")] [],
+                            value_token: R_DOUBLE_LITERAL@48..49 "1" [] [],
                         },
                     },
                 ],
@@ -180,14 +180,14 @@ RRoot {
                     RArgument {
                         name_clause: RArgumentNameClause {
                             name: RIdentifier {
-                                name_token: IDENT@54..55 "a" [] [],
+                                name_token: IDENT@54..56 "a" [] [Whitespace(" ")],
                             },
-                            eq_token: EQUAL@55..57 "=" [Whitespace(" ")] [],
+                            eq_token: EQUAL@56..58 "=" [] [Whitespace(" ")],
                         },
                         value: missing (optional),
                     },
                 ],
-                r_brack_token: R_BRACK@57..59 "]" [Whitespace(" ")] [],
+                r_brack_token: R_BRACK@58..59 "]" [] [],
             },
         },
         RSubset {
@@ -200,24 +200,24 @@ RRoot {
                     RArgument {
                         name_clause: RArgumentNameClause {
                             name: RIdentifier {
-                                name_token: IDENT@64..65 "a" [] [],
+                                name_token: IDENT@64..66 "a" [] [Whitespace(" ")],
                             },
-                            eq_token: EQUAL@65..67 "=" [Whitespace(" ")] [],
+                            eq_token: EQUAL@66..68 "=" [] [Whitespace(" ")],
                         },
                         value: RDoubleValue {
-                            value_token: R_DOUBLE_LITERAL@67..69 "1" [Whitespace(" ")] [],
+                            value_token: R_DOUBLE_LITERAL@68..69 "1" [] [],
                         },
                     },
-                    COMMA@69..70 "," [] [],
+                    COMMA@69..71 "," [] [Whitespace(" ")],
                     RArgument {
                         name_clause: RArgumentNameClause {
                             name: RIdentifier {
-                                name_token: IDENT@70..72 "b" [Whitespace(" ")] [],
+                                name_token: IDENT@71..73 "b" [] [Whitespace(" ")],
                             },
-                            eq_token: EQUAL@72..74 "=" [Whitespace(" ")] [],
+                            eq_token: EQUAL@73..75 "=" [] [Whitespace(" ")],
                         },
                         value: RDoubleValue {
-                            value_token: R_DOUBLE_LITERAL@74..76 "2" [Whitespace(" ")] [],
+                            value_token: R_DOUBLE_LITERAL@75..76 "2" [] [],
                         },
                     },
                 ],
@@ -234,22 +234,22 @@ RRoot {
                     RArgument {
                         name_clause: RArgumentNameClause {
                             name: RIdentifier {
-                                name_token: IDENT@81..82 "a" [] [],
+                                name_token: IDENT@81..83 "a" [] [Whitespace(" ")],
                             },
-                            eq_token: EQUAL@82..84 "=" [Whitespace(" ")] [],
+                            eq_token: EQUAL@83..85 "=" [] [Whitespace(" ")],
                         },
                         value: missing (optional),
                     },
-                    COMMA@84..86 "," [Whitespace(" ")] [],
+                    COMMA@85..87 "," [] [Whitespace(" ")],
                     RArgument {
                         name_clause: RArgumentNameClause {
                             name: RIdentifier {
-                                name_token: IDENT@86..88 "b" [Whitespace(" ")] [],
+                                name_token: IDENT@87..89 "b" [] [Whitespace(" ")],
                             },
-                            eq_token: EQUAL@88..90 "=" [Whitespace(" ")] [],
+                            eq_token: EQUAL@89..91 "=" [] [Whitespace(" ")],
                         },
                         value: RDoubleValue {
-                            value_token: R_DOUBLE_LITERAL@90..92 "2" [Whitespace(" ")] [],
+                            value_token: R_DOUBLE_LITERAL@91..92 "2" [] [],
                         },
                     },
                 ],
@@ -266,12 +266,12 @@ RRoot {
                     RArgument {
                         name_clause: RArgumentNameClause {
                             name: RDots {
-                                value_token: DOTS@98..101 "..." [] [],
+                                value_token: DOTS@98..102 "..." [] [Whitespace(" ")],
                             },
-                            eq_token: EQUAL@101..103 "=" [Whitespace(" ")] [],
+                            eq_token: EQUAL@102..104 "=" [] [Whitespace(" ")],
                         },
                         value: RDoubleValue {
-                            value_token: R_DOUBLE_LITERAL@103..105 "1" [Whitespace(" ")] [],
+                            value_token: R_DOUBLE_LITERAL@104..105 "1" [] [],
                         },
                     },
                 ],
@@ -288,9 +288,9 @@ RRoot {
                     RArgument {
                         name_clause: RArgumentNameClause {
                             name: RDots {
-                                value_token: DOTS@110..113 "..." [] [],
+                                value_token: DOTS@110..114 "..." [] [Whitespace(" ")],
                             },
-                            eq_token: EQUAL@113..115 "=" [Whitespace(" ")] [],
+                            eq_token: EQUAL@114..115 "=" [] [],
                         },
                         value: missing (optional),
                     },
@@ -310,12 +310,12 @@ RRoot {
                             name: RStringValue {
                                 open_token: STRING_OPEN@121..122 "\"" [] [],
                                 content_token: STRING_CONTENT@122..125 "arg" [] [],
-                                close_token: STRING_CLOSE@125..126 "\"" [] [],
+                                close_token: STRING_CLOSE@125..127 "\"" [] [Whitespace(" ")],
                             },
-                            eq_token: EQUAL@126..128 "=" [Whitespace(" ")] [],
+                            eq_token: EQUAL@127..129 "=" [] [Whitespace(" ")],
                         },
                         value: RDoubleValue {
-                            value_token: R_DOUBLE_LITERAL@128..130 "1" [Whitespace(" ")] [],
+                            value_token: R_DOUBLE_LITERAL@129..130 "1" [] [],
                         },
                     },
                 ],
@@ -334,9 +334,9 @@ RRoot {
                             name: RStringValue {
                                 open_token: STRING_OPEN@135..136 "\"" [] [],
                                 content_token: STRING_CONTENT@136..139 "arg" [] [],
-                                close_token: STRING_CLOSE@139..140 "\"" [] [],
+                                close_token: STRING_CLOSE@139..141 "\"" [] [Whitespace(" ")],
                             },
-                            eq_token: EQUAL@140..142 "=" [Whitespace(" ")] [],
+                            eq_token: EQUAL@141..142 "=" [] [],
                         },
                         value: missing (optional),
                     },
@@ -540,12 +540,12 @@ RRoot {
                     RArgument {
                         name_clause: RArgumentNameClause {
                             name: RIdentifier {
-                                name_token: IDENT@337..338 "a" [] [],
+                                name_token: IDENT@337..339 "a" [] [Whitespace(" ")],
                             },
-                            eq_token: EQUAL@338..340 "=" [Whitespace(" ")] [],
+                            eq_token: EQUAL@339..341 "=" [] [Whitespace(" ")],
                         },
                         value: RDoubleValue {
-                            value_token: R_DOUBLE_LITERAL@340..342 "1" [Whitespace(" ")] [],
+                            value_token: R_DOUBLE_LITERAL@341..342 "1" [] [],
                         },
                     },
                 ],
@@ -586,11 +586,11 @@ RRoot {
             0: (empty)
             1: R_IDENTIFIER@12..13
               0: IDENT@12..13 "a" [] []
-          1: COMMA@13..14 "," [] []
-          2: R_ARGUMENT@14..16
+          1: COMMA@13..15 "," [] [Whitespace(" ")]
+          2: R_ARGUMENT@15..16
             0: (empty)
-            1: R_IDENTIFIER@14..16
-              0: IDENT@14..16 "b" [Whitespace(" ")] []
+            1: R_IDENTIFIER@15..16
+              0: IDENT@15..16 "b" [] []
         2: R_BRACK@16..17 "]" [] []
     3: R_SUBSET@17..25
       0: R_IDENTIFIER@17..20
@@ -613,16 +613,16 @@ RRoot {
             0: (empty)
             1: R_IDENTIFIER@29..30
               0: IDENT@29..30 "a" [] []
-          1: COMMA@30..31 "," [] []
-          2: R_ARGUMENT@31..35
+          1: COMMA@30..32 "," [] [Whitespace(" ")]
+          2: R_ARGUMENT@32..35
             0: (empty)
-            1: R_DOTS@31..35
-              0: DOTS@31..35 "..." [Whitespace(" ")] []
-          3: COMMA@35..36 "," [] []
-          4: R_ARGUMENT@36..38
+            1: R_DOTS@32..35
+              0: DOTS@32..35 "..." [] []
+          3: COMMA@35..37 "," [] [Whitespace(" ")]
+          4: R_ARGUMENT@37..38
             0: (empty)
-            1: R_IDENTIFIER@36..38
-              0: IDENT@36..38 "b" [Whitespace(" ")] []
+            1: R_IDENTIFIER@37..38
+              0: IDENT@37..38 "b" [] []
         2: R_BRACK@38..39 "]" [] []
     5: R_SUBSET@39..50
       0: R_IDENTIFIER@39..43
@@ -631,26 +631,26 @@ RRoot {
         0: L_BRACK@43..44 "[" [] []
         1: R_ARGUMENT_LIST@44..49
           0: R_ARGUMENT@44..49
-            0: R_ARGUMENT_NAME_CLAUSE@44..47
-              0: R_IDENTIFIER@44..45
-                0: IDENT@44..45 "a" [] []
-              1: EQUAL@45..47 "=" [Whitespace(" ")] []
-            1: R_DOUBLE_VALUE@47..49
-              0: R_DOUBLE_LITERAL@47..49 "1" [Whitespace(" ")] []
+            0: R_ARGUMENT_NAME_CLAUSE@44..48
+              0: R_IDENTIFIER@44..46
+                0: IDENT@44..46 "a" [] [Whitespace(" ")]
+              1: EQUAL@46..48 "=" [] [Whitespace(" ")]
+            1: R_DOUBLE_VALUE@48..49
+              0: R_DOUBLE_LITERAL@48..49 "1" [] []
         2: R_BRACK@49..50 "]" [] []
     6: R_SUBSET@50..59
       0: R_IDENTIFIER@50..53
         0: IDENT@50..53 "fn" [Newline("\n")] []
       1: R_SUBSET_ARGUMENTS@53..59
         0: L_BRACK@53..54 "[" [] []
-        1: R_ARGUMENT_LIST@54..57
-          0: R_ARGUMENT@54..57
-            0: R_ARGUMENT_NAME_CLAUSE@54..57
-              0: R_IDENTIFIER@54..55
-                0: IDENT@54..55 "a" [] []
-              1: EQUAL@55..57 "=" [Whitespace(" ")] []
+        1: R_ARGUMENT_LIST@54..58
+          0: R_ARGUMENT@54..58
+            0: R_ARGUMENT_NAME_CLAUSE@54..58
+              0: R_IDENTIFIER@54..56
+                0: IDENT@54..56 "a" [] [Whitespace(" ")]
+              1: EQUAL@56..58 "=" [] [Whitespace(" ")]
             1: (empty)
-        2: R_BRACK@57..59 "]" [Whitespace(" ")] []
+        2: R_BRACK@58..59 "]" [] []
     7: R_SUBSET@59..77
       0: R_IDENTIFIER@59..63
         0: IDENT@59..63 "fn" [Newline("\n"), Newline("\n")] []
@@ -658,20 +658,20 @@ RRoot {
         0: L_BRACK@63..64 "[" [] []
         1: R_ARGUMENT_LIST@64..76
           0: R_ARGUMENT@64..69
-            0: R_ARGUMENT_NAME_CLAUSE@64..67
-              0: R_IDENTIFIER@64..65
-                0: IDENT@64..65 "a" [] []
-              1: EQUAL@65..67 "=" [Whitespace(" ")] []
-            1: R_DOUBLE_VALUE@67..69
-              0: R_DOUBLE_LITERAL@67..69 "1" [Whitespace(" ")] []
-          1: COMMA@69..70 "," [] []
-          2: R_ARGUMENT@70..76
-            0: R_ARGUMENT_NAME_CLAUSE@70..74
-              0: R_IDENTIFIER@70..72
-                0: IDENT@70..72 "b" [Whitespace(" ")] []
-              1: EQUAL@72..74 "=" [Whitespace(" ")] []
-            1: R_DOUBLE_VALUE@74..76
-              0: R_DOUBLE_LITERAL@74..76 "2" [Whitespace(" ")] []
+            0: R_ARGUMENT_NAME_CLAUSE@64..68
+              0: R_IDENTIFIER@64..66
+                0: IDENT@64..66 "a" [] [Whitespace(" ")]
+              1: EQUAL@66..68 "=" [] [Whitespace(" ")]
+            1: R_DOUBLE_VALUE@68..69
+              0: R_DOUBLE_LITERAL@68..69 "1" [] []
+          1: COMMA@69..71 "," [] [Whitespace(" ")]
+          2: R_ARGUMENT@71..76
+            0: R_ARGUMENT_NAME_CLAUSE@71..75
+              0: R_IDENTIFIER@71..73
+                0: IDENT@71..73 "b" [] [Whitespace(" ")]
+              1: EQUAL@73..75 "=" [] [Whitespace(" ")]
+            1: R_DOUBLE_VALUE@75..76
+              0: R_DOUBLE_LITERAL@75..76 "2" [] []
         2: R_BRACK@76..77 "]" [] []
     8: R_SUBSET@77..93
       0: R_IDENTIFIER@77..80
@@ -679,20 +679,20 @@ RRoot {
       1: R_SUBSET_ARGUMENTS@80..93
         0: L_BRACK@80..81 "[" [] []
         1: R_ARGUMENT_LIST@81..92
-          0: R_ARGUMENT@81..84
-            0: R_ARGUMENT_NAME_CLAUSE@81..84
-              0: R_IDENTIFIER@81..82
-                0: IDENT@81..82 "a" [] []
-              1: EQUAL@82..84 "=" [Whitespace(" ")] []
+          0: R_ARGUMENT@81..85
+            0: R_ARGUMENT_NAME_CLAUSE@81..85
+              0: R_IDENTIFIER@81..83
+                0: IDENT@81..83 "a" [] [Whitespace(" ")]
+              1: EQUAL@83..85 "=" [] [Whitespace(" ")]
             1: (empty)
-          1: COMMA@84..86 "," [Whitespace(" ")] []
-          2: R_ARGUMENT@86..92
-            0: R_ARGUMENT_NAME_CLAUSE@86..90
-              0: R_IDENTIFIER@86..88
-                0: IDENT@86..88 "b" [Whitespace(" ")] []
-              1: EQUAL@88..90 "=" [Whitespace(" ")] []
-            1: R_DOUBLE_VALUE@90..92
-              0: R_DOUBLE_LITERAL@90..92 "2" [Whitespace(" ")] []
+          1: COMMA@85..87 "," [] [Whitespace(" ")]
+          2: R_ARGUMENT@87..92
+            0: R_ARGUMENT_NAME_CLAUSE@87..91
+              0: R_IDENTIFIER@87..89
+                0: IDENT@87..89 "b" [] [Whitespace(" ")]
+              1: EQUAL@89..91 "=" [] [Whitespace(" ")]
+            1: R_DOUBLE_VALUE@91..92
+              0: R_DOUBLE_LITERAL@91..92 "2" [] []
         2: R_BRACK@92..93 "]" [] []
     9: R_SUBSET@93..106
       0: R_IDENTIFIER@93..97
@@ -701,12 +701,12 @@ RRoot {
         0: L_BRACK@97..98 "[" [] []
         1: R_ARGUMENT_LIST@98..105
           0: R_ARGUMENT@98..105
-            0: R_ARGUMENT_NAME_CLAUSE@98..103
-              0: R_DOTS@98..101
-                0: DOTS@98..101 "..." [] []
-              1: EQUAL@101..103 "=" [Whitespace(" ")] []
-            1: R_DOUBLE_VALUE@103..105
-              0: R_DOUBLE_LITERAL@103..105 "1" [Whitespace(" ")] []
+            0: R_ARGUMENT_NAME_CLAUSE@98..104
+              0: R_DOTS@98..102
+                0: DOTS@98..102 "..." [] [Whitespace(" ")]
+              1: EQUAL@102..104 "=" [] [Whitespace(" ")]
+            1: R_DOUBLE_VALUE@104..105
+              0: R_DOUBLE_LITERAL@104..105 "1" [] []
         2: R_BRACK@105..106 "]" [] []
     10: R_SUBSET@106..116
       0: R_IDENTIFIER@106..109
@@ -716,9 +716,9 @@ RRoot {
         1: R_ARGUMENT_LIST@110..115
           0: R_ARGUMENT@110..115
             0: R_ARGUMENT_NAME_CLAUSE@110..115
-              0: R_DOTS@110..113
-                0: DOTS@110..113 "..." [] []
-              1: EQUAL@113..115 "=" [Whitespace(" ")] []
+              0: R_DOTS@110..114
+                0: DOTS@110..114 "..." [] [Whitespace(" ")]
+              1: EQUAL@114..115 "=" [] []
             1: (empty)
         2: R_BRACK@115..116 "]" [] []
     11: R_SUBSET@116..131
@@ -728,14 +728,14 @@ RRoot {
         0: L_BRACK@120..121 "[" [] []
         1: R_ARGUMENT_LIST@121..130
           0: R_ARGUMENT@121..130
-            0: R_ARGUMENT_NAME_CLAUSE@121..128
-              0: R_STRING_VALUE@121..126
+            0: R_ARGUMENT_NAME_CLAUSE@121..129
+              0: R_STRING_VALUE@121..127
                 0: STRING_OPEN@121..122 "\"" [] []
                 1: STRING_CONTENT@122..125 "arg" [] []
-                2: STRING_CLOSE@125..126 "\"" [] []
-              1: EQUAL@126..128 "=" [Whitespace(" ")] []
-            1: R_DOUBLE_VALUE@128..130
-              0: R_DOUBLE_LITERAL@128..130 "1" [Whitespace(" ")] []
+                2: STRING_CLOSE@125..127 "\"" [] [Whitespace(" ")]
+              1: EQUAL@127..129 "=" [] [Whitespace(" ")]
+            1: R_DOUBLE_VALUE@129..130
+              0: R_DOUBLE_LITERAL@129..130 "1" [] []
         2: R_BRACK@130..131 "]" [] []
     12: R_SUBSET@131..143
       0: R_IDENTIFIER@131..134
@@ -745,11 +745,11 @@ RRoot {
         1: R_ARGUMENT_LIST@135..142
           0: R_ARGUMENT@135..142
             0: R_ARGUMENT_NAME_CLAUSE@135..142
-              0: R_STRING_VALUE@135..140
+              0: R_STRING_VALUE@135..141
                 0: STRING_OPEN@135..136 "\"" [] []
                 1: STRING_CONTENT@136..139 "arg" [] []
-                2: STRING_CLOSE@139..140 "\"" [] []
-              1: EQUAL@140..142 "=" [Whitespace(" ")] []
+                2: STRING_CLOSE@139..141 "\"" [] [Whitespace(" ")]
+              1: EQUAL@141..142 "=" [] []
             1: (empty)
         2: R_BRACK@142..143 "]" [] []
     13: R_SUBSET@143..164
@@ -890,12 +890,12 @@ RRoot {
         0: L_BRACK@336..337 "[" [] []
         1: R_ARGUMENT_LIST@337..342
           0: R_ARGUMENT@337..342
-            0: R_ARGUMENT_NAME_CLAUSE@337..340
-              0: R_IDENTIFIER@337..338
-                0: IDENT@337..338 "a" [] []
-              1: EQUAL@338..340 "=" [Whitespace(" ")] []
-            1: R_DOUBLE_VALUE@340..342
-              0: R_DOUBLE_LITERAL@340..342 "1" [Whitespace(" ")] []
+            0: R_ARGUMENT_NAME_CLAUSE@337..341
+              0: R_IDENTIFIER@337..339
+                0: IDENT@337..339 "a" [] [Whitespace(" ")]
+              1: EQUAL@339..341 "=" [] [Whitespace(" ")]
+            1: R_DOUBLE_VALUE@341..342
+              0: R_DOUBLE_LITERAL@341..342 "1" [] []
         2: R_BRACK@342..343 "]" [] []
   2: EOF@343..344 "" [Newline("\n")] []
 

@@ -202,7 +202,6 @@ struct RWalk<'src> {
     text: &'src str,
     parse: RParse,
     last_end: TextSize,
-    between_two_tokens: bool,
 }
 
 impl<'src> RWalk<'src> {
@@ -211,8 +210,6 @@ impl<'src> RWalk<'src> {
             text,
             parse: RParse::new(),
             last_end: TextSize::from(0),
-            // Starts between the start of file and the first token
-            between_two_tokens: false,
         }
     }
 
@@ -604,20 +601,14 @@ impl<'src> RWalk<'src> {
         // Finish expression list
         self.handle_node_leave(RSyntaxKind::R_EXPRESSION_LIST);
 
-        // No longer between two tokens.
-        // Now between last token and EOF.
-        self.between_two_tokens = false;
-
         // Safety: tree-sitter uses `u32` internally and upcasts to `usize` in
         // `end_byte()`. `TextSize` also uses `u32` internally, so we are safe.
         let this_end = TextSize::try_from(node.end_byte()).unwrap();
         let gap = &self.text[usize::from(self.last_end)..usize::from(this_end)];
 
-        // Derive trivia between last token and end of document.
-        // It is always leading trivia of the `EOF` token,
-        // which `TreeSink` adds for us.
-        self.parse
-            .derive_trivia(gap, self.last_end, self.between_two_tokens);
+        // Derive trivia between last token and end of document. Leading
+        // trivia here belongs to the `EOF` token, which `TreeSink` adds for us.
+        self.parse.derive_trivia(gap, self.last_end);
 
         self.handle_node_leave(RSyntaxKind::R_ROOT);
     }
@@ -629,13 +620,11 @@ impl<'src> RWalk<'src> {
         let this_end = TextSize::try_from(node.end_byte()).unwrap();
         let gap = &self.text[usize::from(self.last_end)..usize::from(this_start)];
 
-        self.parse
-            .derive_trivia(gap, self.last_end, self.between_two_tokens);
+        self.parse.derive_trivia(gap, self.last_end);
 
         self.parse.token(kind, this_end);
 
         self.last_end = this_end;
-        self.between_two_tokens = true;
     }
 
     fn handle_comment_enter(&mut self) {
@@ -647,34 +636,9 @@ impl<'src> RWalk<'src> {
         let this_end = TextSize::try_from(node.end_byte()).unwrap();
         let gap = &self.text[usize::from(self.last_end)..usize::from(this_start)];
 
-        let mut trailing = self.between_two_tokens;
+        self.parse.derive_trivia(gap, self.last_end);
 
-        if gap.contains('\n') {
-            // If the gap has a newline this is a leading comment
-            trailing = false;
-            self.parse
-                .derive_trivia(gap, self.last_end, self.between_two_tokens);
-        } else {
-            // Otherwise we're just after a token and this is a trailing comment,
-            // unless we are at the beginning of the document, in which case
-            // the whitespace and comment are leading.
-            //
-            // We also make sure we don't add an empty whitespace trivia.
-            if this_start != self.last_end {
-                self.parse.trivia.push(Trivia::new(
-                    TriviaPieceKind::Whitespace,
-                    TextRange::new(self.last_end, this_start),
-                    trailing,
-                ));
-            }
-        }
-
-        // Comments are "single line" even if they are consecutive
-        self.parse.trivia.push(Trivia::new(
-            TriviaPieceKind::SingleLineComment,
-            TextRange::new(this_start, this_end),
-            trailing,
-        ));
+        self.parse.comment(TextRange::new(this_start, this_end));
 
         self.last_end = this_end;
     }
@@ -1076,6 +1040,12 @@ impl<'src> RWalk<'src> {
 struct RParse {
     events: Vec<Event<RSyntaxKind>>,
     trivia: Vec<Trivia>,
+
+    /// Whether trivia trails the last token. Set by a token, cleared by a
+    /// newline.
+    ///
+    /// TODO(aether): Temporary field that is removed on the swap to aether
+    trailing: bool,
 }
 
 impl RParse {
@@ -1083,6 +1053,7 @@ impl RParse {
         Self {
             events: Vec::new(),
             trivia: Vec::new(),
+            trailing: false,
         }
     }
 
@@ -1095,18 +1066,27 @@ impl RParse {
 
     fn token(&mut self, kind: RSyntaxKind, end: TextSize) {
         self.push_event(Event::Token { kind, end });
+        self.trailing = true;
     }
 
     fn finish(&mut self) {
         self.push_event(Event::Finish);
     }
 
+    fn comment(&mut self, range: TextRange) {
+        // Comments are "single line" even if they are consecutive
+        self.push_trivia(TriviaPieceKind::SingleLineComment, range);
+    }
+
     fn push_event(&mut self, event: Event<RSyntaxKind>) {
         self.events.push(event);
     }
 
-    fn push_trivia(&mut self, trivia: Trivia) {
-        self.trivia.push(trivia);
+    fn push_trivia(&mut self, kind: TriviaPieceKind, range: TextRange) {
+        if kind.is_newline() {
+            self.trailing = false;
+        }
+        self.trivia.push(Trivia::new(kind, range, self.trailing));
     }
 
     fn drain(self) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>) {
@@ -1120,6 +1100,11 @@ impl RParse {
     ///
     /// Derive the implied stream of trivia that exists in that gap
     ///
+    /// TODO(aether): Trivia trails the token before it until a newline is seen,
+    /// and leads the token after it from the newline onward. Before the first
+    /// token of the file, everything leads. This matches Biome's parsers, and the
+    /// new aether parser.
+    ///
     /// TODO(semicolon): tree-sitter-r does not emit semicolons in the parse tree, so they
     /// technically also appear here in `text`. We hackily patch over this for now by
     /// consuming semicolons as whitespace, which ends up getting ignored by the
@@ -1128,54 +1113,9 @@ impl RParse {
     ///
     /// SAFETY: `last_end <= next_start`
     /// SAFETY: `last_end` and `next_start` must define a range within `text`
-    fn derive_trivia(&mut self, text: &str, mut start: TextSize, between_two_tokens: bool) {
+    fn derive_trivia(&mut self, text: &str, mut start: TextSize) {
         let mut iter = text.as_bytes().iter().peekable();
         let mut end = start;
-
-        // - Between the start of file and the first token, all trivia is leading
-        //   (it leads the first token), so we skip this.
-        // - Between the last token and the end of file, all trivia is leading
-        //   (it leads the EOF token that `TreeSink` adds), so we skip this.
-        // - Between two tokens, all trivia is leading unless we see a newline,
-        //   which this branch handles specially.
-        if between_two_tokens {
-            let mut trailing = false;
-
-            // All whitespace between two tokens is leading until we hit the
-            // first `\r`, `\r\n`, or `\n`, at which point the whitespace is
-            // considered trailing of the last token, and the newline and
-            // everything after it is considered leading of the next token.
-            // A lone `\r` not attached to an `\n` should not happen in a
-            // well-formed file (unless inside a string token), so we just
-            // treat it as a `\r\n` line ending.
-            while let Some(byte) = iter.peek() {
-                if let b'\r' | b'\n' = byte {
-                    // We found a newline, so all trivia up to this point is
-                    // trailing to the last token. Don't advance the iterator so
-                    // that this newline may be processed as leading trivia.
-                    trailing = true;
-
-                    // Break and fallthrough
-                    break;
-                }
-                end += TextSize::from(1);
-                let _ = iter.next();
-            }
-
-            // Push the range of whitespace
-            // TODO(semicolon): This currently includes semicolons as whitespace
-            if start != end {
-                let range = TextRange::new(start, end);
-                self.push_trivia(Trivia::new(TriviaPieceKind::Whitespace, range, trailing));
-                start = end;
-            }
-
-            // Fallthrough so that our current byte can be processed as leading
-            // trivia
-        }
-
-        // Now push all leading trivia
-        let trailing = false;
 
         while let Some(byte) = iter.next() {
             end += TextSize::from(1);
@@ -1186,24 +1126,27 @@ impl RParse {
                     end += TextSize::from(1);
                 }
                 let range = TextRange::new(start, end);
-                self.push_trivia(Trivia::new(TriviaPieceKind::Whitespace, range, trailing));
+                self.push_trivia(TriviaPieceKind::Whitespace, range);
                 start = end;
                 continue;
             }
 
+            // A lone `\r` not attached to an `\n` should not happen in a
+            // well-formed file (unless inside a string token), so we just
+            // treat it as a `\r\n` line ending.
             if let b'\r' = byte {
                 match iter.next_if(|byte| **byte == b'\n') {
                     Some(_) => {
                         // Finish out `\r\n`
                         end += TextSize::from(1);
                         let range = TextRange::new(start, end);
-                        self.push_trivia(Trivia::new(TriviaPieceKind::Newline, range, trailing));
+                        self.push_trivia(TriviaPieceKind::Newline, range);
                         start = end;
                     }
                     None => {
                         // Finish out `\r`
                         let range = TextRange::new(start, end);
-                        self.push_trivia(Trivia::new(TriviaPieceKind::Newline, range, trailing));
+                        self.push_trivia(TriviaPieceKind::Newline, range);
                         start = end;
                     }
                 }
@@ -1213,7 +1156,7 @@ impl RParse {
             if let b'\n' = byte {
                 // Finish out `\n`
                 let range = TextRange::new(start, end);
-                self.push_trivia(Trivia::new(TriviaPieceKind::Newline, range, trailing));
+                self.push_trivia(TriviaPieceKind::Newline, range);
                 start = end;
                 continue;
             }
@@ -1334,7 +1277,7 @@ mod tests {
     fn test_parse_trivia_smoke_test() {
         assert_eq_trivia(
             trivia("1 + 1"),
-            vec![ws(1, 2, Pos::Leading), ws(3, 4, Pos::Leading)],
+            vec![ws(1, 2, Pos::Trailing), ws(3, 4, Pos::Trailing)],
         );
     }
 
@@ -1343,7 +1286,7 @@ mod tests {
         assert_eq_trivia(
             trivia("1\t+\t\n\t1"),
             vec![
-                ws(1, 2, Pos::Leading),
+                ws(1, 2, Pos::Trailing),
                 ws(3, 4, Pos::Trailing),
                 nl(4, 5),
                 ws(5, 6, Pos::Leading),
@@ -1355,17 +1298,16 @@ mod tests {
     fn test_parse_trivia_trailing_test() {
         assert_eq_trivia(
             trivia("1 + \n1"),
-            vec![ws(1, 2, Pos::Leading), ws(3, 4, Pos::Trailing), nl(4, 5)],
+            vec![ws(1, 2, Pos::Trailing), ws(3, 4, Pos::Trailing), nl(4, 5)],
         );
     }
 
     #[test]
     fn test_parse_trivia_trailing_trivia_test() {
-        // Note that trivia between the last token and `EOF` is always
-        // leading and will be attached to an `EOF` token by `TreeSink`.
+        // Trivia after the newline leads the `EOF` token that `TreeSink` adds
         assert_eq_trivia(
             trivia("1  \n "),
-            vec![ws(1, 3, Pos::Leading), nl(3, 4), ws(4, 5, Pos::Leading)],
+            vec![ws(1, 3, Pos::Trailing), nl(3, 4), ws(4, 5, Pos::Leading)],
         );
     }
 
@@ -1373,7 +1315,7 @@ mod tests {
     fn test_parse_trivia_trailing_crlf_test() {
         assert_eq_trivia(
             trivia("1 + \r\n1"),
-            vec![ws(1, 2, Pos::Leading), ws(3, 4, Pos::Trailing), nl(4, 6)],
+            vec![ws(1, 2, Pos::Trailing), ws(3, 4, Pos::Trailing), nl(4, 6)],
         );
     }
 
@@ -1400,6 +1342,24 @@ mod tests {
 
         // Own-line comment: `# hi\r\n1`
         assert_eq_trivia(trivia("# hi\r\n1"), vec![cmt(0, 4, Pos::Leading), nl(4, 6)]);
+    }
+
+    #[test]
+    fn test_parse_trivia_crlf_leading_and_trailing_comments() {
+        assert_eq_trivia(
+            trivia("# Leading\r\n1 + 1 # Trailing\r\n# Leading\r\n"),
+            vec![
+                cmt(0, 9, Pos::Leading),
+                nl(9, 11),
+                ws(12, 13, Pos::Trailing),
+                ws(14, 15, Pos::Trailing),
+                ws(16, 17, Pos::Trailing),
+                cmt(17, 27, Pos::Trailing),
+                nl(27, 29),
+                cmt(29, 38, Pos::Leading),
+                nl(38, 40),
+            ],
+        );
     }
 
     #[test]
@@ -1553,7 +1513,7 @@ mod tests {
         ];
         assert_eq_events(events, expect);
 
-        let expect = vec![ws(10, 11, Pos::Leading)];
+        let expect = vec![ws(10, 11, Pos::Trailing)];
         assert_eq_trivia(trivia, expect);
     }
 

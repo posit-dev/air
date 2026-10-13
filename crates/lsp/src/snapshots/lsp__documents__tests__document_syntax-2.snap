@@ -14,10 +14,10 @@ expression: updated_syntax
           0: R_ARGUMENT@4..9
             0: (empty)
             1: R_BINARY_EXPRESSION@4..9
-              0: R_DOUBLE_VALUE@4..5
-                0: R_DOUBLE_LITERAL@4..5 "1" [] []
-              1: PLUS@5..7 "+" [Whitespace(" ")] []
-              2: R_DOUBLE_VALUE@7..9
-                0: R_DOUBLE_LITERAL@7..9 "2" [Whitespace(" ")] []
+              0: R_DOUBLE_VALUE@4..6
+                0: R_DOUBLE_LITERAL@4..6 "1" [] [Whitespace(" ")]
+              1: PLUS@6..8 "+" [] [Whitespace(" ")]
+              2: R_DOUBLE_VALUE@8..9
+                0: R_DOUBLE_LITERAL@8..9 "2" [] []
         2: R_PAREN@9..10 ")" [] []
   2: EOF@10..10 "" [] []

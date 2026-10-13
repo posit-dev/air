@@ -231,7 +231,7 @@ value. Order is by risk, smallest first.
 - P2. Done. Delete the dead `OperatorPrecedence`. Move `is_test_call()` into
   `air_r_formatter`.
 
-- P3. Switch the tree-sitter walker's whitespace attachment to Biome's JS rule
+- P3. Done. Switch the tree-sitter walker's whitespace attachment to Biome's JS rule
   (trailing on the token before). `deviations.md` asks for exactly this
   experiment: run the formatter suite before any formatter change, so a
   whitespace regression can't hide in the semicolon churn. Expected result: zero

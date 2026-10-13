@@ -113,13 +113,13 @@ RRoot {
             right: missing (required),
         },
         RBracedExpressions {
-            l_curly_token: L_CURLY@605..606 "{" [] [],
+            l_curly_token: L_CURLY@605..607 "{" [] [Whitespace(" ")],
             expressions: RExpressionList [
                 RIdentifier {
-                    name_token: IDENT@606..608 "b" [Whitespace(" ")] [],
+                    name_token: IDENT@607..609 "b" [] [Whitespace(" ")],
                 },
             ],
-            r_curly_token: R_CURLY@608..610 "}" [Whitespace(" ")] [],
+            r_curly_token: R_CURLY@609..610 "}" [] [],
         },
         RExtractExpression {
             left: RIdentifier {
@@ -190,13 +190,13 @@ RRoot {
             right: missing (required),
         },
         RBracedExpressions {
-            l_curly_token: L_CURLY@643..644 "{" [] [],
+            l_curly_token: L_CURLY@643..645 "{" [] [Whitespace(" ")],
             expressions: RExpressionList [
                 RIdentifier {
-                    name_token: IDENT@644..646 "b" [Whitespace(" ")] [],
+                    name_token: IDENT@645..647 "b" [] [Whitespace(" ")],
                 },
             ],
-            r_curly_token: R_CURLY@646..648 "}" [Whitespace(" ")] [],
+            r_curly_token: R_CURLY@647..648 "}" [] [],
         },
     ],
     eof_token: EOF@648..649 "" [Newline("\n")] [],
@@ -257,11 +257,11 @@ RRoot {
       1: DOLLAR@604..605 "$" [] []
       2: (empty)
     10: R_BRACED_EXPRESSIONS@605..610
-      0: L_CURLY@605..606 "{" [] []
-      1: R_EXPRESSION_LIST@606..608
-        0: R_IDENTIFIER@606..608
-          0: IDENT@606..608 "b" [Whitespace(" ")] []
-      2: R_CURLY@608..610 "}" [Whitespace(" ")] []
+      0: L_CURLY@605..607 "{" [] [Whitespace(" ")]
+      1: R_EXPRESSION_LIST@607..609
+        0: R_IDENTIFIER@607..609
+          0: IDENT@607..609 "b" [] [Whitespace(" ")]
+      2: R_CURLY@609..610 "}" [] []
     11: R_EXTRACT_EXPRESSION@610..614
       0: R_IDENTIFIER@610..613
         0: IDENT@610..613 "a" [Newline("\n"), Newline("\n")] []
@@ -310,11 +310,11 @@ RRoot {
       1: AT@642..643 "@" [] []
       2: (empty)
     21: R_BRACED_EXPRESSIONS@643..648
-      0: L_CURLY@643..644 "{" [] []
-      1: R_EXPRESSION_LIST@644..646
-        0: R_IDENTIFIER@644..646
-          0: IDENT@644..646 "b" [Whitespace(" ")] []
-      2: R_CURLY@646..648 "}" [Whitespace(" ")] []
+      0: L_CURLY@643..645 "{" [] [Whitespace(" ")]
+      1: R_EXPRESSION_LIST@645..647
+        0: R_IDENTIFIER@645..647
+          0: IDENT@645..647 "b" [] [Whitespace(" ")]
+      2: R_CURLY@647..648 "}" [] []
   2: EOF@648..649 "" [Newline("\n")] []
 
 ```
