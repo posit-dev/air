@@ -477,6 +477,73 @@ mod tests {
         assert_eq!(output, output_wide);
     }
 
+    // Whitespace after a token on the same line is that token's trailing
+    // trivia, so a range starting there selects the token's logical line
+    #[tokio::test]
+    async fn test_format_range_mid_line() {
+        let mut client = new_test_client().await;
+
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"a;<< b>>
+",
+        );
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
+        insta::assert_snapshot!(output);
+
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"{<< a>> }
+",
+        );
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
+        insta::assert_snapshot!(output);
+
+        // FIXME: `b` should be indented or we should format the whole `{`?
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"{ a;<< b>> }
+",
+        );
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
+        insta::assert_snapshot!(output);
+    }
+
+    // The separator before a mid-line logical line doesn't count as indentation
+    #[tokio::test]
+    async fn test_format_range_mid_line_indent() {
+        let mut client = new_test_client().await;
+
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"a; <<{
+1
+}>>
+",
+        );
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
+        insta::assert_snapshot!(output);
+
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"{ x;  <<f(
+1)>>  }
+",
+        );
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
+        insta::assert_snapshot!(output);
+    }
+
     #[tokio::test]
     async fn test_format_range_multiple_lines() {
         let mut client = new_test_client().await;
