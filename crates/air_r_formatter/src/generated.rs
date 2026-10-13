@@ -1492,6 +1492,118 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RBogusExpression {
         )
     }
 }
+impl FormatRule<air_r_syntax::RBogusForVariable>
+    for crate::r::bogus::bogus_for_variable::FormatRBogusForVariable
+{
+    type Context = RFormatContext;
+    #[inline(always)]
+    fn fmt(&self, node: &air_r_syntax::RBogusForVariable, f: &mut RFormatter) -> FormatResult<()> {
+        FormatBogusNodeRule::<air_r_syntax::RBogusForVariable>::fmt(self, node, f)
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::RBogusForVariable {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::RBogusForVariable,
+        crate::r::bogus::bogus_for_variable::FormatRBogusForVariable,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::bogus::bogus_for_variable::FormatRBogusForVariable::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::RBogusForVariable {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::RBogusForVariable,
+        crate::r::bogus::bogus_for_variable::FormatRBogusForVariable,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::bogus::bogus_for_variable::FormatRBogusForVariable::default(),
+        )
+    }
+}
+impl FormatRule<air_r_syntax::RBogusParameterName>
+    for crate::r::bogus::bogus_parameter_name::FormatRBogusParameterName
+{
+    type Context = RFormatContext;
+    #[inline(always)]
+    fn fmt(
+        &self,
+        node: &air_r_syntax::RBogusParameterName,
+        f: &mut RFormatter,
+    ) -> FormatResult<()> {
+        FormatBogusNodeRule::<air_r_syntax::RBogusParameterName>::fmt(self, node, f)
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::RBogusParameterName {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::RBogusParameterName,
+        crate::r::bogus::bogus_parameter_name::FormatRBogusParameterName,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::bogus::bogus_parameter_name::FormatRBogusParameterName::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::RBogusParameterName {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::RBogusParameterName,
+        crate::r::bogus::bogus_parameter_name::FormatRBogusParameterName,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::bogus::bogus_parameter_name::FormatRBogusParameterName::default(),
+        )
+    }
+}
+impl FormatRule<air_r_syntax::RBogusSelector>
+    for crate::r::bogus::bogus_selector::FormatRBogusSelector
+{
+    type Context = RFormatContext;
+    #[inline(always)]
+    fn fmt(&self, node: &air_r_syntax::RBogusSelector, f: &mut RFormatter) -> FormatResult<()> {
+        FormatBogusNodeRule::<air_r_syntax::RBogusSelector>::fmt(self, node, f)
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::RBogusSelector {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::RBogusSelector,
+        crate::r::bogus::bogus_selector::FormatRBogusSelector,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::bogus::bogus_selector::FormatRBogusSelector::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::RBogusSelector {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::RBogusSelector,
+        crate::r::bogus::bogus_selector::FormatRBogusSelector,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::bogus::bogus_selector::FormatRBogusSelector::default(),
+        )
+    }
+}
 impl FormatRule<air_r_syntax::RBogusValue> for crate::r::bogus::bogus_value::FormatRBogusValue {
     type Context = RFormatContext;
     #[inline(always)]
@@ -1577,6 +1689,33 @@ impl IntoFormat<RFormatContext> for air_r_syntax::AnyRExpression {
         FormatOwnedWithRule::new(
             self,
             crate::r::any::expression::FormatAnyRExpression::default(),
+        )
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::AnyRForVariable {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::AnyRForVariable,
+        crate::r::any::for_variable::FormatAnyRForVariable,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::any::for_variable::FormatAnyRForVariable::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::AnyRForVariable {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::AnyRForVariable,
+        crate::r::any::for_variable::FormatAnyRForVariable,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::any::for_variable::FormatAnyRForVariable::default(),
         )
     }
 }

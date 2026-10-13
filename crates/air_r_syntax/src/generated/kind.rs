@@ -87,6 +87,7 @@ pub enum RSyntaxKind {
     STRING_OPEN,
     STRING_CONTENT,
     STRING_CLOSE,
+    ERROR_TOKEN,
     R_ROOT,
     R_IDENTIFIER,
     R_DOTS,
@@ -132,6 +133,9 @@ pub enum RSyntaxKind {
     R_BOGUS,
     R_BOGUS_VALUE,
     R_BOGUS_EXPRESSION,
+    R_BOGUS_SELECTOR,
+    R_BOGUS_PARAMETER_NAME,
+    R_BOGUS_FOR_VARIABLE,
     #[doc(hidden)]
     __LAST,
 }

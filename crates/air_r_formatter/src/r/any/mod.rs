@@ -2,6 +2,7 @@
 
 pub(crate) mod argument_name;
 pub(crate) mod expression;
+pub(crate) mod for_variable;
 pub(crate) mod parameter_name;
 pub(crate) mod selector;
 pub(crate) mod value;

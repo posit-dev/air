@@ -14,9 +14,12 @@ impl SyntaxFactory for RSyntaxFactory {
         children: ParsedChildren<Self::Kind>,
     ) -> RawSyntaxNode<Self::Kind> {
         match kind {
-            R_BOGUS | R_BOGUS_EXPRESSION | R_BOGUS_VALUE => {
-                RawSyntaxNode::new(kind, children.into_iter().map(Some))
-            }
+            R_BOGUS
+            | R_BOGUS_EXPRESSION
+            | R_BOGUS_FOR_VARIABLE
+            | R_BOGUS_PARAMETER_NAME
+            | R_BOGUS_SELECTOR
+            | R_BOGUS_VALUE => RawSyntaxNode::new(kind, children.into_iter().map(Some)),
             R_ARGUMENT => {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
@@ -409,7 +412,7 @@ impl SyntaxFactory for RSyntaxFactory {
                 }
                 slots.next_slot();
                 if let Some(element) = &current_element
-                    && RIdentifier::can_cast(element.kind())
+                    && AnyRForVariable::can_cast(element.kind())
                 {
                     slots.mark_present();
                     current_element = elements.next();

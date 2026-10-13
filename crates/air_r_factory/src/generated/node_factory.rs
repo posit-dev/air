@@ -162,7 +162,7 @@ pub fn r_false_expression(false_token: SyntaxToken) -> RFalseExpression {
 pub fn r_for_statement(
     for_token: SyntaxToken,
     l_paren_token: SyntaxToken,
-    variable: RIdentifier,
+    variable: AnyRForVariable,
     in_token: SyntaxToken,
     sequence: AnyRExpression,
     r_paren_token: SyntaxToken,
@@ -573,6 +573,36 @@ where
 {
     RBogusExpression::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_BOGUS_EXPRESSION,
+        slots,
+    ))
+}
+pub fn r_bogus_for_variable<I>(slots: I) -> RBogusForVariable
+where
+    I: IntoIterator<Item = Option<SyntaxElement>>,
+    I::IntoIter: ExactSizeIterator,
+{
+    RBogusForVariable::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_BOGUS_FOR_VARIABLE,
+        slots,
+    ))
+}
+pub fn r_bogus_parameter_name<I>(slots: I) -> RBogusParameterName
+where
+    I: IntoIterator<Item = Option<SyntaxElement>>,
+    I::IntoIter: ExactSizeIterator,
+{
+    RBogusParameterName::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_BOGUS_PARAMETER_NAME,
+        slots,
+    ))
+}
+pub fn r_bogus_selector<I>(slots: I) -> RBogusSelector
+where
+    I: IntoIterator<Item = Option<SyntaxElement>>,
+    I::IntoIter: ExactSizeIterator,
+{
+    RBogusSelector::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_BOGUS_SELECTOR,
         slots,
     ))
 }

@@ -8,6 +8,7 @@ impl FormatRule<AnyRSelector> for FormatAnyRSelector {
     type Context = RFormatContext;
     fn fmt(&self, node: &AnyRSelector, f: &mut RFormatter) -> FormatResult<()> {
         match node {
+            AnyRSelector::RBogusSelector(node) => node.format().fmt(f),
             AnyRSelector::RDotDotI(node) => node.format().fmt(f),
             AnyRSelector::RDots(node) => node.format().fmt(f),
             AnyRSelector::RIdentifier(node) => node.format().fmt(f),
