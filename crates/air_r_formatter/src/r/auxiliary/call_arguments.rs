@@ -1,5 +1,6 @@
 use std::cell::Cell;
 
+use crate::call_ext::RCallExt;
 use crate::comments::RComments;
 use crate::context::RFormatOptions;
 use crate::either::Either;
