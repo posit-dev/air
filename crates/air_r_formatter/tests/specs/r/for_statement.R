@@ -7,6 +7,20 @@ for(a_really_long_argument_name in but_we_dont_ever_break_inside_for_conditions_
 }
 
 # ------------------------------------------------------------------------------
+# Variables
+
+# Oddly these are allowed by R, so we have to specially allow `RDots` and
+# `RDotDotI` as for loop variables
+
+for(... in xs) {
+  print(get("..."))
+}
+
+for(..1 in xs) {
+  print(get("..1"))
+}
+
+# ------------------------------------------------------------------------------
 # Autobracing
 
 for(x in xs) {}
