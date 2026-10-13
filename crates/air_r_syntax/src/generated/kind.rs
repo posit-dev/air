@@ -78,15 +78,15 @@ pub enum RSyntaxKind {
     R_INTEGER_LITERAL,
     R_DOUBLE_LITERAL,
     R_COMPLEX_LITERAL,
+    R_SINGLE_QUOTED_STRING_LITERAL,
+    R_DOUBLE_QUOTED_STRING_LITERAL,
+    R_RAW_STRING_LITERAL,
     NEWLINE,
     WHITESPACE,
     IDENT,
     COMMENT,
     DOTDOTI,
     SPECIAL,
-    STRING_OPEN,
-    STRING_CONTENT,
-    STRING_CLOSE,
     ERROR_TOKEN,
     R_ROOT,
     R_IDENTIFIER,
@@ -191,7 +191,12 @@ impl RSyntaxKind {
     }
     pub const fn is_literal(self) -> bool {
         match self {
-            R_INTEGER_LITERAL | R_DOUBLE_LITERAL | R_COMPLEX_LITERAL => true,
+            R_INTEGER_LITERAL
+            | R_DOUBLE_LITERAL
+            | R_COMPLEX_LITERAL
+            | R_SINGLE_QUOTED_STRING_LITERAL
+            | R_DOUBLE_QUOTED_STRING_LITERAL
+            | R_RAW_STRING_LITERAL => true,
             _ => false,
         }
     }

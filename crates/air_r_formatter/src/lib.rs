@@ -31,7 +31,7 @@ pub mod loop_body;
 mod prelude;
 mod r;
 pub(crate) mod separated;
-mod string_content;
+mod string_literal;
 
 #[rustfmt::skip]
 mod generated;

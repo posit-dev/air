@@ -4,10 +4,16 @@ pub mod argument_ext;
 mod syntax_node;
 
 pub use self::generated::*;
-pub use biome_rowan::{TextLen, TextRange, TextSize, TokenAtOffset, TriviaPieceKind, WalkEvent};
+pub use biome_rowan::TextLen;
+pub use biome_rowan::TextRange;
+pub use biome_rowan::TextSize;
+pub use biome_rowan::TokenAtOffset;
+pub use biome_rowan::TriviaPieceKind;
+pub use biome_rowan::WalkEvent;
 pub use syntax_node::*;
 
-use biome_rowan::{RawSyntaxKind, SyntaxKind};
+use biome_rowan::RawSyntaxKind;
+use biome_rowan::SyntaxKind;
 
 impl From<u16> for RSyntaxKind {
     fn from(d: u16) -> RSyntaxKind {
@@ -72,14 +78,14 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_INTEGER_LITERAL
             | RSyntaxKind::R_DOUBLE_LITERAL
             | RSyntaxKind::R_COMPLEX_LITERAL
+            | RSyntaxKind::R_SINGLE_QUOTED_STRING_LITERAL
+            | RSyntaxKind::R_DOUBLE_QUOTED_STRING_LITERAL
+            | RSyntaxKind::R_RAW_STRING_LITERAL
             | RSyntaxKind::NEWLINE
             | RSyntaxKind::WHITESPACE
             | RSyntaxKind::IDENT
             | RSyntaxKind::COMMENT
             | RSyntaxKind::BACKSLASH
-            | RSyntaxKind::STRING_OPEN
-            | RSyntaxKind::STRING_CONTENT
-            | RSyntaxKind::STRING_CLOSE
             | RSyntaxKind::ERROR_TOKEN
             | RSyntaxKind::R_ROOT
             | RSyntaxKind::R_DOTS
@@ -222,6 +228,9 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_INTEGER_LITERAL
             | RSyntaxKind::R_DOUBLE_LITERAL
             | RSyntaxKind::R_COMPLEX_LITERAL
+            | RSyntaxKind::R_SINGLE_QUOTED_STRING_LITERAL
+            | RSyntaxKind::R_DOUBLE_QUOTED_STRING_LITERAL
+            | RSyntaxKind::R_RAW_STRING_LITERAL
             | RSyntaxKind::R_NEXT_EXPRESSION
             | RSyntaxKind::R_BREAK_EXPRESSION
             | RSyntaxKind::R_TRUE_EXPRESSION
@@ -235,9 +244,6 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::IDENT
             | RSyntaxKind::COMMENT
             | RSyntaxKind::BACKSLASH
-            | RSyntaxKind::STRING_OPEN
-            | RSyntaxKind::STRING_CONTENT
-            | RSyntaxKind::STRING_CLOSE
             | RSyntaxKind::ERROR_TOKEN
             | RSyntaxKind::R_ROOT
             | RSyntaxKind::R_IDENTIFIER

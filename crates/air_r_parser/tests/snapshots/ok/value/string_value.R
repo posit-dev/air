@@ -23,3 +23,11 @@ string
 )"
 r"("some raw string
 business")"
+R"(upper)"
+r'(single)'
+R'(upper single)'
+r"[brackets]"
+r"{braces}"
+""
+''
+r"()"

@@ -100,8 +100,8 @@ impl FormatNodeRule<RRoot> for FormatRRoot {
         // as part of the `dynamic_text()` token. The formatter's printer requires that
         // all tokens have `\n` newlines, so we must normalize here, and then the printer
         // will rewrite any `\n` it sees using the user's chosen `LineEnding`. This is
-        // very similar to how `FormatStringContentToken` works, where the newlines are
-        // part of the string content token, so we take responsibility for normalization.
+        // very similar to how `FormatStringLiteralToken` works, where the newlines are
+        // part of the string literal token, so we take responsibility for normalization.
         // This is also identical to how `fmt_suppressed()`'s default works via
         // `format_suppressed_node()` and `FormatVerbatimNode`. It normalizes line endings
         // right before calling `dynamic_text()` (#507).
