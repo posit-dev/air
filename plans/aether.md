@@ -228,7 +228,7 @@ value. Order is by risk, smallest first.
 
 - P1. Done. Fix the `binary_expression_sticky.R` fixture typo. Snapshot change only.
 
-- P2. Delete the dead `OperatorPrecedence`. Move `is_test_call()` into
+- P2. Done. Delete the dead `OperatorPrecedence`. Move `is_test_call()` into
   `air_r_formatter`.
 
 - P3. Switch the tree-sitter walker's whitespace attachment to Biome's JS rule
