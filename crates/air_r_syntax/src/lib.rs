@@ -1,7 +1,6 @@
 #[macro_use]
 mod generated;
 pub mod argument_ext;
-pub mod call_ext;
 mod syntax_node;
 
 pub use self::generated::*;
