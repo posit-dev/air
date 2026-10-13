@@ -28,9 +28,12 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
 
     fn is_bogus(&self) -> bool {
         match self {
-            RSyntaxKind::R_BOGUS | RSyntaxKind::R_BOGUS_VALUE | RSyntaxKind::R_BOGUS_EXPRESSION => {
-                true
-            }
+            RSyntaxKind::R_BOGUS
+            | RSyntaxKind::R_BOGUS_VALUE
+            | RSyntaxKind::R_BOGUS_EXPRESSION
+            | RSyntaxKind::R_BOGUS_SELECTOR
+            | RSyntaxKind::R_BOGUS_PARAMETER_NAME
+            | RSyntaxKind::R_BOGUS_FOR_VARIABLE => true,
 
             RSyntaxKind::TOMBSTONE
             | RSyntaxKind::EOF
@@ -77,6 +80,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::STRING_OPEN
             | RSyntaxKind::STRING_CONTENT
             | RSyntaxKind::STRING_CLOSE
+            | RSyntaxKind::ERROR_TOKEN
             | RSyntaxKind::R_ROOT
             | RSyntaxKind::R_DOTS
             | RSyntaxKind::R_DOT_DOT_I
@@ -171,6 +175,15 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_NAMESPACE_EXPRESSION
             | RSyntaxKind::R_BOGUS_EXPRESSION => RSyntaxKind::R_BOGUS_EXPRESSION,
 
+            // Bogus selector
+            RSyntaxKind::R_BOGUS_SELECTOR => RSyntaxKind::R_BOGUS_SELECTOR,
+
+            // Bogus parameter name
+            RSyntaxKind::R_BOGUS_PARAMETER_NAME => RSyntaxKind::R_BOGUS_PARAMETER_NAME,
+
+            // Bogus for variable
+            RSyntaxKind::R_BOGUS_FOR_VARIABLE => RSyntaxKind::R_BOGUS_FOR_VARIABLE,
+
             // Bogus
             RSyntaxKind::TOMBSTONE
             | RSyntaxKind::EOF
@@ -225,6 +238,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::STRING_OPEN
             | RSyntaxKind::STRING_CONTENT
             | RSyntaxKind::STRING_CLOSE
+            | RSyntaxKind::ERROR_TOKEN
             | RSyntaxKind::R_ROOT
             | RSyntaxKind::R_IDENTIFIER
             | RSyntaxKind::R_DOTS

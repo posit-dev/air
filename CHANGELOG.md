@@ -2,6 +2,8 @@
 
 # Development version
 
+- `for` loops with `...` or `..1` as the loop variable, like `for (... in x)`, are now supported.
+
 # 0.12.0
 
 - New `--no-configuration` flag to format with Air's built-in defaults without loading a project or user configuration file (#479, @LeonidasZhak).

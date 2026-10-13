@@ -78,6 +78,7 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
         "STRING_OPEN",
         "STRING_CONTENT",
         "STRING_CLOSE",
+        "ERROR_TOKEN",
     ],
     nodes: &[
         "R_ROOT",
@@ -126,5 +127,8 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
         "R_BOGUS",
         "R_BOGUS_VALUE",
         "R_BOGUS_EXPRESSION",
+        "R_BOGUS_SELECTOR",
+        "R_BOGUS_PARAMETER_NAME",
+        "R_BOGUS_FOR_VARIABLE",
     ],
 };

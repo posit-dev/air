@@ -390,6 +390,7 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::WHITESPACE
             | RSyntaxKind::IDENT
             | RSyntaxKind::DOTDOTI
+            | RSyntaxKind::ERROR_TOKEN
             | RSyntaxKind::NEXT_KW
             | RSyntaxKind::BREAK_KW
             | RSyntaxKind::TRUE_KW
@@ -400,6 +401,9 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_BOGUS
             | RSyntaxKind::R_BOGUS_VALUE
             | RSyntaxKind::R_BOGUS_EXPRESSION
+            | RSyntaxKind::R_BOGUS_SELECTOR
+            | RSyntaxKind::R_BOGUS_PARAMETER_NAME
+            | RSyntaxKind::R_BOGUS_FOR_VARIABLE
             | RSyntaxKind::TOMBSTONE
             | RSyntaxKind::__LAST => unreachable!("{kind:?}"),
         }
@@ -546,6 +550,7 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::NEWLINE
             | RSyntaxKind::WHITESPACE
             | RSyntaxKind::IDENT
+            | RSyntaxKind::ERROR_TOKEN
             | RSyntaxKind::NEXT_KW
             | RSyntaxKind::BREAK_KW
             | RSyntaxKind::TRUE_KW
@@ -556,6 +561,9 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_BOGUS
             | RSyntaxKind::R_BOGUS_VALUE
             | RSyntaxKind::R_BOGUS_EXPRESSION
+            | RSyntaxKind::R_BOGUS_SELECTOR
+            | RSyntaxKind::R_BOGUS_PARAMETER_NAME
+            | RSyntaxKind::R_BOGUS_FOR_VARIABLE
             | RSyntaxKind::TOMBSTONE
             | RSyntaxKind::__LAST => unreachable!("{kind:?}"),
         }
