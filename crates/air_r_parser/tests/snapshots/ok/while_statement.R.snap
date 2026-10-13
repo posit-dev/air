@@ -32,9 +32,9 @@ RRoot {
             condition: RTrueExpression {
                 true_token: TRUE_KW@6..10 "TRUE" [] [],
             },
-            r_paren_token: R_PAREN@10..11 ")" [] [],
+            r_paren_token: R_PAREN@10..12 ")" [] [Whitespace(" ")],
             body: RFalseExpression {
-                false_token: FALSE_KW@11..17 "FALSE" [Whitespace(" ")] [],
+                false_token: FALSE_KW@12..17 "FALSE" [] [],
             },
         },
         RWhileStatement {
@@ -43,9 +43,9 @@ RRoot {
             condition: RTrueExpression {
                 true_token: TRUE_KW@25..29 "TRUE" [] [],
             },
-            r_paren_token: R_PAREN@29..30 ")" [] [],
+            r_paren_token: R_PAREN@29..31 ")" [] [Whitespace(" ")],
             body: RBracedExpressions {
-                l_curly_token: L_CURLY@30..32 "{" [Whitespace(" ")] [],
+                l_curly_token: L_CURLY@31..32 "{" [] [],
                 expressions: RExpressionList [],
                 r_curly_token: R_CURLY@32..33 "}" [] [],
             },
@@ -56,9 +56,9 @@ RRoot {
             condition: RIdentifier {
                 name_token: IDENT@41..42 "a" [] [],
             },
-            r_paren_token: R_PAREN@42..43 ")" [] [],
+            r_paren_token: R_PAREN@42..44 ")" [] [Whitespace(" ")],
             body: RBracedExpressions {
-                l_curly_token: L_CURLY@43..45 "{" [Whitespace(" ")] [],
+                l_curly_token: L_CURLY@44..45 "{" [] [],
                 expressions: RExpressionList [],
                 r_curly_token: R_CURLY@45..48 "}" [Newline("\n"), Newline("\n")] [],
             },
@@ -76,9 +76,9 @@ RRoot {
                     r_paren_token: R_PAREN@59..60 ")" [] [],
                 },
             },
-            r_paren_token: R_PAREN@60..61 ")" [] [],
+            r_paren_token: R_PAREN@60..62 ")" [] [Whitespace(" ")],
             body: RBracedExpressions {
-                l_curly_token: L_CURLY@61..63 "{" [Whitespace(" ")] [],
+                l_curly_token: L_CURLY@62..63 "{" [] [],
                 expressions: RExpressionList [],
                 r_curly_token: R_CURLY@63..66 "}" [Newline("\n"), Newline("\n")] [],
             },
@@ -99,17 +99,17 @@ RRoot {
       1: L_PAREN@5..6 "(" [] []
       2: R_TRUE_EXPRESSION@6..10
         0: TRUE_KW@6..10 "TRUE" [] []
-      3: R_PAREN@10..11 ")" [] []
-      4: R_FALSE_EXPRESSION@11..17
-        0: FALSE_KW@11..17 "FALSE" [Whitespace(" ")] []
+      3: R_PAREN@10..12 ")" [] [Whitespace(" ")]
+      4: R_FALSE_EXPRESSION@12..17
+        0: FALSE_KW@12..17 "FALSE" [] []
     1: R_WHILE_STATEMENT@17..33
       0: WHILE_KW@17..24 "while" [Newline("\n"), Newline("\n")] []
       1: L_PAREN@24..25 "(" [] []
       2: R_TRUE_EXPRESSION@25..29
         0: TRUE_KW@25..29 "TRUE" [] []
-      3: R_PAREN@29..30 ")" [] []
-      4: R_BRACED_EXPRESSIONS@30..33
-        0: L_CURLY@30..32 "{" [Whitespace(" ")] []
+      3: R_PAREN@29..31 ")" [] [Whitespace(" ")]
+      4: R_BRACED_EXPRESSIONS@31..33
+        0: L_CURLY@31..32 "{" [] []
         1: R_EXPRESSION_LIST@32..32
         2: R_CURLY@32..33 "}" [] []
     2: R_WHILE_STATEMENT@33..48
@@ -117,9 +117,9 @@ RRoot {
       1: L_PAREN@40..41 "(" [] []
       2: R_IDENTIFIER@41..42
         0: IDENT@41..42 "a" [] []
-      3: R_PAREN@42..43 ")" [] []
-      4: R_BRACED_EXPRESSIONS@43..48
-        0: L_CURLY@43..45 "{" [Whitespace(" ")] []
+      3: R_PAREN@42..44 ")" [] [Whitespace(" ")]
+      4: R_BRACED_EXPRESSIONS@44..48
+        0: L_CURLY@44..45 "{" [] []
         1: R_EXPRESSION_LIST@45..45
         2: R_CURLY@45..48 "}" [Newline("\n"), Newline("\n")] []
     3: R_WHILE_STATEMENT@48..66
@@ -132,9 +132,9 @@ RRoot {
           0: L_PAREN@58..59 "(" [] []
           1: R_ARGUMENT_LIST@59..59
           2: R_PAREN@59..60 ")" [] []
-      3: R_PAREN@60..61 ")" [] []
-      4: R_BRACED_EXPRESSIONS@61..66
-        0: L_CURLY@61..63 "{" [Whitespace(" ")] []
+      3: R_PAREN@60..62 ")" [] [Whitespace(" ")]
+      4: R_BRACED_EXPRESSIONS@62..66
+        0: L_CURLY@62..63 "{" [] []
         1: R_EXPRESSION_LIST@63..63
         2: R_CURLY@63..66 "}" [Newline("\n"), Newline("\n")] []
   2: EOF@66..67 "" [Newline("\n")] []

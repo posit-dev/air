@@ -86,11 +86,11 @@ RRoot {
         },
         RBinaryExpression {
             left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@61..64 "1" [Newline("\n"), Newline("\n")] [],
+                value_token: R_DOUBLE_LITERAL@61..65 "1" [Newline("\n"), Newline("\n")] [Whitespace(" ")],
             },
-            operator: PLUS@64..66 "+" [Whitespace(" ")] [],
+            operator: PLUS@65..67 "+" [] [Whitespace(" ")],
             right: RUnaryExpression {
-                operator: PLUS@66..68 "+" [Whitespace(" ")] [],
+                operator: PLUS@67..68 "+" [] [],
                 argument: RUnaryExpression {
                     operator: PLUS@68..69 "+" [] [],
                     argument: RDoubleValue {
@@ -145,11 +145,11 @@ RRoot {
         1: R_DOUBLE_VALUE@59..61
           0: R_DOUBLE_LITERAL@59..61 "1" [Newline("\n")] []
     8: R_BINARY_EXPRESSION@61..70
-      0: R_DOUBLE_VALUE@61..64
-        0: R_DOUBLE_LITERAL@61..64 "1" [Newline("\n"), Newline("\n")] []
-      1: PLUS@64..66 "+" [Whitespace(" ")] []
-      2: R_UNARY_EXPRESSION@66..70
-        0: PLUS@66..68 "+" [Whitespace(" ")] []
+      0: R_DOUBLE_VALUE@61..65
+        0: R_DOUBLE_LITERAL@61..65 "1" [Newline("\n"), Newline("\n")] [Whitespace(" ")]
+      1: PLUS@65..67 "+" [] [Whitespace(" ")]
+      2: R_UNARY_EXPRESSION@67..70
+        0: PLUS@67..68 "+" [] []
         1: R_UNARY_EXPRESSION@68..70
           0: PLUS@68..69 "+" [] []
           1: R_DOUBLE_VALUE@69..70

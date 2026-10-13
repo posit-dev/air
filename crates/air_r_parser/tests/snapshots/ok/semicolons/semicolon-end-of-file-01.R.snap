@@ -18,10 +18,10 @@ RRoot {
     bom_token: missing (optional),
     expressions: RExpressionList [
         RDoubleValue {
-            value_token: R_DOUBLE_LITERAL@0..47 "1" [Comments("# https://github.com/ ..."), Newline("\n")] [],
+            value_token: R_DOUBLE_LITERAL@0..48 "1" [Comments("# https://github.com/ ..."), Newline("\n")] [Whitespace(";")],
         },
     ],
-    eof_token: EOF@47..49 "" [Whitespace(";"), Newline("\n")] [],
+    eof_token: EOF@48..49 "" [Newline("\n")] [],
 }
 ```
 
@@ -30,9 +30,9 @@ RRoot {
 ```
 0: R_ROOT@0..49
   0: (empty)
-  1: R_EXPRESSION_LIST@0..47
-    0: R_DOUBLE_VALUE@0..47
-      0: R_DOUBLE_LITERAL@0..47 "1" [Comments("# https://github.com/ ..."), Newline("\n")] []
-  2: EOF@47..49 "" [Whitespace(";"), Newline("\n")] []
+  1: R_EXPRESSION_LIST@0..48
+    0: R_DOUBLE_VALUE@0..48
+      0: R_DOUBLE_LITERAL@0..48 "1" [Comments("# https://github.com/ ..."), Newline("\n")] [Whitespace(";")]
+  2: EOF@48..49 "" [Newline("\n")] []
 
 ```
