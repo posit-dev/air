@@ -245,13 +245,13 @@ value. Order is by risk, smallest first.
   in air today: the walker already emits `R_DOTS` there. Add a spec test and a
   changelog bullet.
 
-- P5. Strings as one token. Walker emits
+- P5. Done. Strings as one token. Walker emits
   `R_{SINGLE,DOUBLE}_QUOTED_STRING_LITERAL` / `R_RAW_STRING_LITERAL` instead of
   open/content/close (this reverts #497's shape). Rewrite `string_value.rs`.
   Follow the warning in `deviations.md` about `string_content.rs`: remove the
   trivia assert and switch `normalize_string_content_token()` to
-  `text_trimmed()` in the same commit. Carry `inner_string_text()` over.
-  Expected result: zero formatter snapshot diff, CRLF tests included.
+  `text_trimmed()` in the same commit. `inner_string_text()` is not carried
+  over, since nothing in air uses it. It arrives with the swap. Expected result: zero formatter snapshot diff, CRLF tests included.
 
 - P6. Statement layer without semicolons. Grammar gains
   `RStatement { expression?, ';'? }`, `RStatementList`, and `RBracedStatements`.

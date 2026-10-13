@@ -67,7 +67,14 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
         "na_complex",
         "na_character",
     ],
-    literals: &["R_INTEGER_LITERAL", "R_DOUBLE_LITERAL", "R_COMPLEX_LITERAL"],
+    literals: &[
+        "R_INTEGER_LITERAL",
+        "R_DOUBLE_LITERAL",
+        "R_COMPLEX_LITERAL",
+        "R_SINGLE_QUOTED_STRING_LITERAL",
+        "R_DOUBLE_QUOTED_STRING_LITERAL",
+        "R_RAW_STRING_LITERAL",
+    ],
     tokens: &[
         "NEWLINE",
         "WHITESPACE",
@@ -75,9 +82,6 @@ pub const R_KINDS_SRC: KindsSrc = KindsSrc {
         "COMMENT",
         "DOTDOTI",
         "SPECIAL",
-        "STRING_OPEN",
-        "STRING_CONTENT",
-        "STRING_CLOSE",
         "ERROR_TOKEN",
     ],
     nodes: &[

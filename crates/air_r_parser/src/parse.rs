@@ -303,7 +303,7 @@ impl<'src> RWalk<'src> {
 
             RSyntaxKind::R_INTEGER_VALUE => self.handle_integer_value_enter(iter),
             RSyntaxKind::R_COMPLEX_VALUE => self.handle_complex_value_enter(iter),
-            RSyntaxKind::R_STRING_VALUE => self.handle_string_value_enter(),
+            RSyntaxKind::R_STRING_VALUE => self.handle_string_value_enter(iter),
 
             // Tokens are no-ops on `Enter`, handled on `Leave`
             RSyntaxKind::SEMICOLON
@@ -341,8 +341,6 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::BANG
             | RSyntaxKind::WAT
             | RSyntaxKind::BACKSLASH
-            | RSyntaxKind::STRING_OPEN
-            | RSyntaxKind::STRING_CLOSE
             | RSyntaxKind::FUNCTION_KW
             | RSyntaxKind::FOR_KW
             | RSyntaxKind::IN_KW
@@ -364,9 +362,6 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::L_CURLY
             | RSyntaxKind::R_CURLY => (),
 
-            // Token-like
-            RSyntaxKind::STRING_CONTENT => self.handle_string_content_enter(iter),
-
             // Comments
             RSyntaxKind::COMMENT => self.handle_comment_enter(),
 
@@ -386,6 +381,9 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_INTEGER_LITERAL
             | RSyntaxKind::R_DOUBLE_LITERAL
             | RSyntaxKind::R_COMPLEX_LITERAL
+            | RSyntaxKind::R_SINGLE_QUOTED_STRING_LITERAL
+            | RSyntaxKind::R_DOUBLE_QUOTED_STRING_LITERAL
+            | RSyntaxKind::R_RAW_STRING_LITERAL
             | RSyntaxKind::NEWLINE
             | RSyntaxKind::WHITESPACE
             | RSyntaxKind::IDENT
@@ -463,7 +461,7 @@ impl<'src> RWalk<'src> {
             }
             RSyntaxKind::R_INTEGER_VALUE => self.handle_integer_value_leave(node),
             RSyntaxKind::R_COMPLEX_VALUE => self.handle_complex_value_leave(node),
-            RSyntaxKind::R_STRING_VALUE => self.handle_string_value_leave(),
+            RSyntaxKind::R_STRING_VALUE => self.handle_string_value_leave(node),
 
             // Tokens
             RSyntaxKind::SEMICOLON
@@ -501,8 +499,6 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::BANG
             | RSyntaxKind::WAT
             | RSyntaxKind::BACKSLASH
-            | RSyntaxKind::STRING_OPEN
-            | RSyntaxKind::STRING_CLOSE
             | RSyntaxKind::FUNCTION_KW
             | RSyntaxKind::FOR_KW
             | RSyntaxKind::IN_KW
@@ -524,9 +520,6 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::L_CURLY
             | RSyntaxKind::R_CURLY => self.handle_token(node, kind),
 
-            // Token-like
-            RSyntaxKind::STRING_CONTENT => self.handle_string_content_leave(node),
-
             // Comments
             RSyntaxKind::COMMENT => self.handle_comment_leave(node),
 
@@ -547,6 +540,9 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_INTEGER_LITERAL
             | RSyntaxKind::R_DOUBLE_LITERAL
             | RSyntaxKind::R_COMPLEX_LITERAL
+            | RSyntaxKind::R_SINGLE_QUOTED_STRING_LITERAL
+            | RSyntaxKind::R_DOUBLE_QUOTED_STRING_LITERAL
+            | RSyntaxKind::R_RAW_STRING_LITERAL
             | RSyntaxKind::NEWLINE
             | RSyntaxKind::WHITESPACE
             | RSyntaxKind::IDENT
@@ -754,25 +750,21 @@ impl<'src> RWalk<'src> {
         );
     }
 
-    fn handle_string_value_enter(&mut self) {
-        // We walk subtrees of strings to collect open, optional content, and close tokens
-        // separately
-        self.handle_node_enter(RSyntaxKind::R_STRING_VALUE);
-    }
-
-    fn handle_string_value_leave(&mut self) {
-        self.handle_node_leave(RSyntaxKind::R_STRING_VALUE);
-    }
-
-    fn handle_string_content_enter(&mut self, iter: &mut Preorder) {
-        // `STRING_CONTENT` is treated like a token (generally a no-op on `Enter` and
-        // fully handled on `Leave`), but we have to skip its subtree to avoid traversing
-        // any `escape_sequence` nodes tree-sitter-r may emit, which we don't represent
+    fn handle_string_value_enter(&mut self, iter: &mut Preorder) {
+        // Skip subtree, the delimiters and content are one token.
+        // Can't have comments in a string subtree.
         iter.skip_subtree();
+        self.handle_value_enter(RSyntaxKind::R_STRING_VALUE);
     }
 
-    fn handle_string_content_leave(&mut self, node: tree_sitter::Node) {
-        self.handle_token(node, RSyntaxKind::STRING_CONTENT);
+    fn handle_string_value_leave(&mut self, node: tree_sitter::Node) {
+        let literal_kind = match self.text.as_bytes()[node.start_byte()] {
+            b'"' => RSyntaxKind::R_DOUBLE_QUOTED_STRING_LITERAL,
+            b'\'' => RSyntaxKind::R_SINGLE_QUOTED_STRING_LITERAL,
+            b'r' | b'R' => RSyntaxKind::R_RAW_STRING_LITERAL,
+            byte => unreachable!("Unexpected string start {:?}", char::from(byte)),
+        };
+        self.handle_value_leave(node, RSyntaxKind::R_STRING_VALUE, literal_kind);
     }
 
     fn handle_if_statement_enter(&mut self, node: tree_sitter::Node, iter: &mut Preorder) {

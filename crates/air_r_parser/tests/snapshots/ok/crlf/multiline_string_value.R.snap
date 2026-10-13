@@ -18,9 +18,7 @@ RRoot {
     bom_token: missing (optional),
     expressions: RExpressionList [
         RStringValue {
-            open_token: STRING_OPEN@0..1 "\"" [] [],
-            content_token: STRING_CONTENT@1..18 "multiline\r\nstring" [] [],
-            close_token: STRING_CLOSE@18..19 "\"" [] [],
+            value: R_DOUBLE_QUOTED_STRING_LITERAL@0..19 "\"multiline\r\nstring\"" [] [],
         },
     ],
     eof_token: EOF@19..21 "" [Newline("\r\n")] [],
@@ -34,9 +32,7 @@ RRoot {
   0: (empty)
   1: R_EXPRESSION_LIST@0..19
     0: R_STRING_VALUE@0..19
-      0: STRING_OPEN@0..1 "\"" [] []
-      1: STRING_CONTENT@1..18 "multiline\r\nstring" [] []
-      2: STRING_CLOSE@18..19 "\"" [] []
+      0: R_DOUBLE_QUOTED_STRING_LITERAL@0..19 "\"multiline\r\nstring\"" [] []
   2: EOF@19..21 "" [Newline("\r\n")] []
 
 ```
