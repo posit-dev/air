@@ -226,7 +226,7 @@ Two repos. The aether PRs come first because air's swap depends on them.
 Each one is green on its own, keeps the tree-sitter parser, and has independent
 value. Order is by risk, smallest first.
 
-- P1. Fix the `binary_expression_sticky.R` fixture typo. Snapshot change only.
+- P1. Done. Fix the `binary_expression_sticky.R` fixture typo. Snapshot change only.
 
 - P2. Delete the dead `OperatorPrecedence`. Move `is_test_call()` into
   `air_r_formatter`.
