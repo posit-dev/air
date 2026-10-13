@@ -238,7 +238,7 @@ value. Order is by risk, smallest first.
   formatter snapshot diff. Parser snapshots and the LSP syntax snapshots will
   move. If a formatter snapshot moves, stop and fix aether first.
 
-- P4. Grammar additions that need no walker work: `AnyRForVariable`
+- P4. Done. Grammar additions that need no walker work: `AnyRForVariable`
   (`RIdentifier | RDots | RDotDotI | RBogusForVariable`), `RBogusSelector`,
   `RBogusParameterName`, `RBogusForVariable`, `ERROR_TOKEN`, plus `is_bogus()` /
   `to_bogus()` arms and generated formatter stubs. This fixes `for (... in x)`
