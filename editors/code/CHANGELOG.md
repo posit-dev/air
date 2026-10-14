@@ -7,6 +7,8 @@
 
 ## Development version
 
+- The command "Air: View Syntax Tree" now works on unsaved files (#532).
+
 
 ## 0.30.0
 
