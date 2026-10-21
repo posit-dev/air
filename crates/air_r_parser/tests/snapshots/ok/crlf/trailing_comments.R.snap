@@ -17,15 +17,18 @@ expression: snapshot
 ```
 RRoot {
     bom_token: missing (optional),
-    expressions: RExpressionList [
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@0..13 "1" [Comments("# Leading"), Newline("\r\n")] [Whitespace(" ")],
+    statements: RStatementList [
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@0..13 "1" [Comments("# Leading"), Newline("\r\n")] [Whitespace(" ")],
+                },
+                operator: PLUS@13..15 "+" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@15..27 "1" [] [Whitespace(" "), Comments("# Trailing")],
+                },
             },
-            operator: PLUS@13..15 "+" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@15..27 "1" [] [Whitespace(" "), Comments("# Trailing")],
-            },
+            semicolon_token: missing (optional),
         },
     ],
     eof_token: EOF@27..40 "" [Newline("\r\n"), Comments("# Leading"), Newline("\r\n")] [],
@@ -37,13 +40,15 @@ RRoot {
 ```
 0: R_ROOT@0..40
   0: (empty)
-  1: R_EXPRESSION_LIST@0..27
-    0: R_BINARY_EXPRESSION@0..27
-      0: R_DOUBLE_VALUE@0..13
-        0: R_DOUBLE_LITERAL@0..13 "1" [Comments("# Leading"), Newline("\r\n")] [Whitespace(" ")]
-      1: PLUS@13..15 "+" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@15..27
-        0: R_DOUBLE_LITERAL@15..27 "1" [] [Whitespace(" "), Comments("# Trailing")]
+  1: R_STATEMENT_LIST@0..27
+    0: R_STATEMENT@0..27
+      0: R_BINARY_EXPRESSION@0..27
+        0: R_DOUBLE_VALUE@0..13
+          0: R_DOUBLE_LITERAL@0..13 "1" [Comments("# Leading"), Newline("\r\n")] [Whitespace(" ")]
+        1: PLUS@13..15 "+" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@15..27
+          0: R_DOUBLE_LITERAL@15..27 "1" [] [Whitespace(" "), Comments("# Trailing")]
+      1: (empty)
   2: EOF@27..40 "" [Newline("\r\n"), Comments("# Leading"), Newline("\r\n")] []
 
 ```

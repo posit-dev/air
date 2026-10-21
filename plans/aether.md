@@ -202,7 +202,8 @@ Smaller cleanups worth making while in there:
 One hazard for the swap: the generator deletes files it doesn't recognize.
 `RBracedExpressions` -> `RBracedStatements` and `RExpressionList` ->
 `RStatementList` must be `git mv`'d to their new paths *before* codegen runs, or
-the hand-written bodies get deleted.
+the hand-written bodies get deleted. P6 did both renames, so the swap doesn't
+hit this.
 
 ## The stack
 
@@ -253,7 +254,7 @@ value. Order is by risk, smallest first.
   `text_trimmed()` in the same commit. `inner_string_text()` is not carried
   over, since nothing in air uses it. It arrives with the swap. Expected result: zero formatter snapshot diff, CRLF tests included.
 
-- P6. Statement layer without semicolons. Grammar gains
+- P6. Done. Statement layer without semicolons. Grammar gains
   `RStatement { expression?, ';'? }`, `RStatementList`, and `RBracedStatements`.
   `RRoot.statements` replaces `expressions`. The walker wraps each child of the
   program and of `{}` in an `R_STATEMENT` and never fills the `;` slot. The
@@ -297,16 +298,28 @@ Scoped to what can't move earlier. Checklist:
 
 - [ ] `xtask`: delete grammar codegen and point `formatter.rs` at
   `aether_r_grammar::ast()`. Syntax crate ident becomes `aether_r_syntax`.
-  Remove `just gen-grammar`. `git mv` renamed rule files before running
-  `just gen-formatter`.
+  Remove `just gen-grammar`.
 
-- [ ] Semicolons: `FormatRStatement` drops the token with `format_removed()`.
-  Expression-less statements emit nothing and don't produce blank lines.
+- [ ] Semicolons: `FormatRStatement` already drops the token with
+  `format_removed()` (P6). Expression-less statements emit nothing and don't
+  produce blank lines. `SyntaxPosition` treats the last statement of `{}` as
+  the value, so it must skip trailing expression-less statements, like in
+  `{ if (a) 1;; }`.
   Comments on empty statements get placement rules. New spec file
   `statements/semicolons.R` covering `1;2`, `1;`, `1;;2` in braces, `{;}`,
   `{;1}`, `1; # c`, `1 ; # c`, blank lines around a lone `;` in braces,
-  `# fmt: skip` on a statement ending in `;`, and range formatting across
-  `;`.
+  `# fmt: skip` on a statement ending in `;`, range formatting across `;`,
+  and curly-curly with a `;` (`fn({{ x }; })`, `fn({{ x; }})`).
+  Also a comment between the expression and its `;` (`1 # c` then `;` on the
+  next line). The comment is inside the `RStatement`, so it trails the
+  expression, not the statement. The curly-curly form is `fn({{ x } # c` then
+  `;})`. There, the comment trails the inner `{`, which panics in
+  `fmt_curly_curly()` unless the `;` disqualifies curly-curly.
+
+- [ ] Curly-curly with a `;` in either statement, like `fn({{ x }; })` or
+  `fn({{ x; }})`, is not curly-curly. `as_curly_curly()` must return `None`
+  when either `RStatement` has a `semicolon_token()`. Then `fmt_curly_curly()`
+  never sees a `;`. P6 deliberately left the `;` out of it.
 
 - [ ] New spec tests for things only aether can parse: `r"-|a|-"` raw strings
   and `%a\b%`.

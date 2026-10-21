@@ -16,9 +16,12 @@ expression: snapshot
 ```
 RRoot {
     bom_token: missing (optional),
-    expressions: RExpressionList [
-        RDoubleValue {
-            value_token: R_DOUBLE_LITERAL@0..3 "1" [Whitespace(";"), Newline("\n")] [],
+    statements: RStatementList [
+        RStatement {
+            expression: RDoubleValue {
+                value_token: R_DOUBLE_LITERAL@0..3 "1" [Whitespace(";"), Newline("\n")] [],
+            },
+            semicolon_token: missing (optional),
         },
     ],
     eof_token: EOF@3..4 "" [Newline("\n")] [],
@@ -30,9 +33,11 @@ RRoot {
 ```
 0: R_ROOT@0..4
   0: (empty)
-  1: R_EXPRESSION_LIST@0..3
-    0: R_DOUBLE_VALUE@0..3
-      0: R_DOUBLE_LITERAL@0..3 "1" [Whitespace(";"), Newline("\n")] []
+  1: R_STATEMENT_LIST@0..3
+    0: R_STATEMENT@0..3
+      0: R_DOUBLE_VALUE@0..3
+        0: R_DOUBLE_LITERAL@0..3 "1" [Whitespace(";"), Newline("\n")] []
+      1: (empty)
   2: EOF@3..4 "" [Newline("\n")] []
 
 ```

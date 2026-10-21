@@ -162,16 +162,20 @@ fn parse_failure(text: &str) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Option<Pa
         TextSize::try_from(text.len()).expect("`text` can't be longer than `TextSize` allows.");
 
     // Must provide a valid root node on failures, otherwise `tree_sink.finish()` fails.
-    // An `R_ROOT` must have an `R_EXPRESSION_LIST`, and we force that to hold 1 bogus
-    // expression that spans the whole file. This allows the AST printer to work correctly
-    // in error tests, and during debugging.
+    // An `R_ROOT` must have an `R_STATEMENT_LIST`, and we force that to hold 1 statement
+    // with a bogus expression that spans the whole file. This allows the AST printer to
+    // work correctly in error tests, and during debugging.
     let events = vec![
         Event::Start {
             kind: RSyntaxKind::R_ROOT,
             forward_parent: None,
         },
         Event::Start {
-            kind: RSyntaxKind::R_EXPRESSION_LIST,
+            kind: RSyntaxKind::R_STATEMENT_LIST,
+            forward_parent: None,
+        },
+        Event::Start {
+            kind: RSyntaxKind::R_STATEMENT,
             forward_parent: None,
         },
         Event::Start {
@@ -182,6 +186,7 @@ fn parse_failure(text: &str) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Option<Pa
             kind: RSyntaxKind::R_BOGUS,
             end,
         },
+        Event::Finish,
         Event::Finish,
         Event::Finish,
         Event::Finish,
@@ -251,7 +256,7 @@ impl<'src> RWalk<'src> {
 
     fn handle_enter(&mut self, node: tree_sitter::Node, kind: RSyntaxKind, iter: &mut Preorder) {
         match kind {
-            RSyntaxKind::R_ROOT => self.handle_root_enter(),
+            RSyntaxKind::R_ROOT => self.handle_root_enter(node, iter),
 
             RSyntaxKind::R_UNARY_EXPRESSION
             | RSyntaxKind::R_BINARY_EXPRESSION
@@ -286,7 +291,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_PARAMETER => self.handle_parameter_enter(node, iter),
             RSyntaxKind::R_IF_STATEMENT => self.handle_if_statement_enter(node, iter),
             RSyntaxKind::R_ARGUMENT => self.handle_argument_enter(node, iter),
-            RSyntaxKind::R_BRACED_EXPRESSIONS => self.handle_braced_expressions_enter(node, iter),
+            RSyntaxKind::R_BRACED_STATEMENTS => self.handle_braced_statements_enter(node, iter),
 
             // Literals / wrapped keywords
             RSyntaxKind::R_DOUBLE_VALUE
@@ -373,7 +378,8 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_ARGUMENT_NAME_CLAUSE
             | RSyntaxKind::R_PARAMETER_LIST
             | RSyntaxKind::R_ARGUMENT_LIST
-            | RSyntaxKind::R_EXPRESSION_LIST
+            | RSyntaxKind::R_STATEMENT_LIST
+            | RSyntaxKind::R_STATEMENT
             | RSyntaxKind::R_PARAMETER_DEFAULT
             | RSyntaxKind::EOF
             | RSyntaxKind::UNICODE_BOM
@@ -429,7 +435,7 @@ impl<'src> RWalk<'src> {
             RSyntaxKind::R_PARAMETER => self.handle_parameter_leave(),
             RSyntaxKind::R_IF_STATEMENT => self.handle_if_statement_leave(),
             RSyntaxKind::R_ARGUMENT => self.handle_argument_leave(),
-            RSyntaxKind::R_BRACED_EXPRESSIONS => self.handle_braced_expressions_leave(),
+            RSyntaxKind::R_BRACED_STATEMENTS => self.handle_braced_statements_leave(),
 
             // Literals / wrapped keywords
             RSyntaxKind::R_DOUBLE_VALUE => {
@@ -531,7 +537,8 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_ARGUMENT_NAME_CLAUSE
             | RSyntaxKind::R_PARAMETER_LIST
             | RSyntaxKind::R_ARGUMENT_LIST
-            | RSyntaxKind::R_EXPRESSION_LIST
+            | RSyntaxKind::R_STATEMENT_LIST
+            | RSyntaxKind::R_STATEMENT
             | RSyntaxKind::R_PARAMETER_DEFAULT
             | RSyntaxKind::EOF
             | RSyntaxKind::UNICODE_BOM
@@ -591,19 +598,35 @@ impl<'src> RWalk<'src> {
         self.handle_node_leave(kind);
     }
 
-    fn handle_root_enter(&mut self) {
+    fn handle_root_enter(&mut self, node: tree_sitter::Node, iter: &mut Preorder) {
         // Start the overarching root
         self.handle_node_enter(RSyntaxKind::R_ROOT);
 
         // TODO: Handle optional BOM?
 
-        // Root contains a list of `expressions`
-        self.handle_node_enter(RSyntaxKind::R_EXPRESSION_LIST);
+        self.handle_node_enter(RSyntaxKind::R_STATEMENT_LIST);
+
+        // Root contains a list of `statements`, so uses the same
+        // style loop as `handle_braced_statements_enter()`
+        while let Some(event) = iter.peek() {
+            match event {
+                WalkEvent::Enter(next) => match next.syntax_kind() {
+                    RSyntaxKind::COMMENT => self.walk_next(iter),
+                    _ => self.handle_statement(iter),
+                },
+                WalkEvent::Leave(next) => {
+                    if node != *next {
+                        panic!("Expected next `Leave` event to be for `node`.");
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     fn handle_root_leave(&mut self, node: tree_sitter::Node) {
-        // Finish expression list
-        self.handle_node_leave(RSyntaxKind::R_EXPRESSION_LIST);
+        // Finish statement list
+        self.handle_node_leave(RSyntaxKind::R_STATEMENT_LIST);
 
         // Safety: tree-sitter uses `u32` internally and upcasts to `usize` in
         // `end_byte()`. `TextSize` also uses `u32` internally, so we are safe.
@@ -809,22 +832,22 @@ impl<'src> RWalk<'src> {
         self.handle_node_leave(RSyntaxKind::R_IF_STATEMENT);
     }
 
-    fn handle_braced_expressions_enter(&mut self, node: tree_sitter::Node, iter: &mut Preorder) {
-        self.handle_node_enter(RSyntaxKind::R_BRACED_EXPRESSIONS);
+    fn handle_braced_statements_enter(&mut self, node: tree_sitter::Node, iter: &mut Preorder) {
+        self.handle_node_enter(RSyntaxKind::R_BRACED_STATEMENTS);
 
         while let Some(event) = iter.peek() {
             match event {
                 WalkEvent::Enter(next) => match next.syntax_kind() {
                     RSyntaxKind::L_CURLY => {
                         self.walk_next(iter);
-                        self.handle_node_enter(RSyntaxKind::R_EXPRESSION_LIST);
+                        self.handle_node_enter(RSyntaxKind::R_STATEMENT_LIST);
                     }
                     RSyntaxKind::R_CURLY => {
-                        self.handle_node_leave(RSyntaxKind::R_EXPRESSION_LIST);
+                        self.handle_node_leave(RSyntaxKind::R_STATEMENT_LIST);
                         self.walk_next(iter);
                     }
                     RSyntaxKind::COMMENT => self.walk_next(iter),
-                    _ => self.walk_next(iter),
+                    _ => self.handle_statement(iter),
                 },
                 WalkEvent::Leave(next) => {
                     if node != *next {
@@ -836,8 +859,16 @@ impl<'src> RWalk<'src> {
         }
     }
 
-    fn handle_braced_expressions_leave(&mut self) {
-        self.handle_node_leave(RSyntaxKind::R_BRACED_EXPRESSIONS);
+    fn handle_braced_statements_leave(&mut self) {
+        self.handle_node_leave(RSyntaxKind::R_BRACED_STATEMENTS);
+    }
+
+    /// tree-sitter-r hides `;`, so the optional `;` slot of the statement is
+    /// never filled
+    fn handle_statement(&mut self, iter: &mut Preorder) {
+        self.handle_node_enter(RSyntaxKind::R_STATEMENT);
+        self.walk_next(iter);
+        self.handle_node_leave(RSyntaxKind::R_STATEMENT);
     }
 
     fn handle_call_like_enter(
@@ -1421,7 +1452,11 @@ mod tests {
                 forward_parent: None,
             },
             Event::Start {
-                kind: RSyntaxKind::R_EXPRESSION_LIST,
+                kind: RSyntaxKind::R_STATEMENT_LIST,
+                forward_parent: None,
+            },
+            Event::Start {
+                kind: RSyntaxKind::R_STATEMENT,
                 forward_parent: None,
             },
             Event::Start {
@@ -1453,6 +1488,7 @@ mod tests {
             Event::Finish,
             Event::Finish,
             Event::Finish,
+            Event::Finish,
         ];
 
         assert_eq_events(events, expect);
@@ -1469,7 +1505,11 @@ mod tests {
                 forward_parent: None,
             },
             Event::Start {
-                kind: RSyntaxKind::R_EXPRESSION_LIST,
+                kind: RSyntaxKind::R_STATEMENT_LIST,
+                forward_parent: None,
+            },
+            Event::Start {
+                kind: RSyntaxKind::R_STATEMENT,
                 forward_parent: None,
             },
             Event::Start {
@@ -1508,7 +1548,8 @@ mod tests {
             },
             Event::Finish, // R_DOUBLE_VALUE
             Event::Finish, // R_FUNCTION_DEFINITION
-            Event::Finish, // R_EXPRESSION_LIST
+            Event::Finish, // R_STATEMENT
+            Event::Finish, // R_STATEMENT_LIST
             Event::Finish, // R_ROOT
         ];
         assert_eq_events(events, expect);
@@ -1527,7 +1568,11 @@ mod tests {
                 forward_parent: None,
             },
             Event::Start {
-                kind: RSyntaxKind::R_EXPRESSION_LIST,
+                kind: RSyntaxKind::R_STATEMENT_LIST,
+                forward_parent: None,
+            },
+            Event::Start {
+                kind: RSyntaxKind::R_STATEMENT,
                 forward_parent: None,
             },
             Event::Start {
@@ -1562,7 +1607,8 @@ mod tests {
             },
             Event::Finish, // R_CALL_ARGUMENTS
             Event::Finish, // R_CALL
-            Event::Finish, // R_EXPRESSION_LIST
+            Event::Finish, // R_STATEMENT
+            Event::Finish, // R_STATEMENT_LIST
             Event::Finish, // R_ROOT
         ];
         assert_eq_events(events, expect);

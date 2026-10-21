@@ -1,26 +1,29 @@
+use core::panic;
+
 use crate::comments::RComments;
 use crate::prelude::*;
 use air_r_syntax::AnyRExpression;
 use air_r_syntax::RArgument;
-use air_r_syntax::RBracedExpressions;
-use air_r_syntax::RBracedExpressionsFields;
-use air_r_syntax::RExpressionList;
+use air_r_syntax::RBracedStatements;
+use air_r_syntax::RBracedStatementsFields;
+use air_r_syntax::RStatement;
+use air_r_syntax::RStatementList;
 use air_r_syntax::RSyntaxToken;
 use biome_formatter::format_args;
 use biome_formatter::write;
 use biome_rowan::SyntaxResult;
 
 #[derive(Debug, Clone, Default)]
-pub(crate) struct FormatRBracedExpressions;
-impl FormatNodeRule<RBracedExpressions> for FormatRBracedExpressions {
-    fn fmt_fields(&self, node: &RBracedExpressions, f: &mut RFormatter) -> FormatResult<()> {
-        let RBracedExpressionsFields {
+pub(crate) struct FormatRBracedStatements;
+impl FormatNodeRule<RBracedStatements> for FormatRBracedStatements {
+    fn fmt_fields(&self, node: &RBracedStatements, f: &mut RFormatter) -> FormatResult<()> {
+        let RBracedStatementsFields {
             l_curly_token,
-            expressions,
+            statements,
             r_curly_token,
         } = node.as_fields();
 
-        match braced_expressions_variant(node, f.comments()) {
+        match braced_statements_variant(node, f.comments()) {
             // Examples:
             //
             // ```r
@@ -30,7 +33,7 @@ impl FormatNodeRule<RBracedExpressions> for FormatRBracedExpressions {
             // for (x in xs) {}
             // switch(on, a = {}, b = 2)
             // ```
-            BracedExpressionsVariant::Empty => {
+            BracedStatementsVariant::Empty => {
                 write!(f, [l_curly_token.format(), r_curly_token.format()])
             }
             // Examples:
@@ -40,7 +43,7 @@ impl FormatNodeRule<RBracedExpressions> for FormatRBracedExpressions {
             //   # comment
             // }
             // ```
-            BracedExpressionsVariant::EmptyWithDanglingComments => {
+            BracedStatementsVariant::EmptyWithDanglingComments => {
                 write!(
                     f,
                     [
@@ -55,7 +58,7 @@ impl FormatNodeRule<RBracedExpressions> for FormatRBracedExpressions {
             // ```r
             // fn({{ expr }})
             // ```
-            BracedExpressionsVariant::CurlyCurly(node) => fmt_curly_curly(&node, f),
+            BracedStatementsVariant::CurlyCurly(node) => fmt_curly_curly(&node, f),
             // Examples:
             //
             // ```r
@@ -64,12 +67,12 @@ impl FormatNodeRule<RBracedExpressions> for FormatRBracedExpressions {
             //   expr
             // }
             // ```
-            BracedExpressionsVariant::NotEmpty => {
+            BracedStatementsVariant::NotEmpty => {
                 write!(
                     f,
                     [
                         l_curly_token.format(),
-                        block_indent(&expressions.format()),
+                        block_indent(&statements.format()),
                         r_curly_token.format()
                     ]
                 )
@@ -77,68 +80,66 @@ impl FormatNodeRule<RBracedExpressions> for FormatRBracedExpressions {
         }
     }
 
-    fn fmt_dangling_comments(
-        &self,
-        _: &RBracedExpressions,
-        _: &mut RFormatter,
-    ) -> FormatResult<()> {
+    fn fmt_dangling_comments(&self, _: &RBracedStatements, _: &mut RFormatter) -> FormatResult<()> {
         // Formatted inside of `fmt_fields`
-        // Only possible with `BracedExpressionsVariant::EmptyWithDanglingComments`
+        // Only possible with `BracedStatementsVariant::EmptyWithDanglingComments`
         Ok(())
     }
 }
 
-pub(crate) enum BracedExpressionsVariant {
+pub(crate) enum BracedStatementsVariant {
     Empty,
     EmptyWithDanglingComments,
     CurlyCurly(RCurlyCurly),
     NotEmpty,
 }
 
-/// Categorize [RBracedExpressions] into its appropriate variant
+/// Categorize [RBracedStatements] into its appropriate variant
 ///
-/// Used when formatting a [RBracedExpressions], and in `call_arguments.rs` when
-/// determining if a [RBracedExpressions] is groupable or not.
-pub(crate) fn braced_expressions_variant(
-    node: &RBracedExpressions,
+/// Used when formatting a [RBracedStatements], and in `call_arguments.rs` when
+/// determining if a [RBracedStatements] is groupable or not.
+pub(crate) fn braced_statements_variant(
+    node: &RBracedStatements,
     comments: &RComments,
-) -> BracedExpressionsVariant {
-    if node.expressions().is_empty() {
+) -> BracedStatementsVariant {
+    if node.statements().is_empty() {
         if comments.has_dangling_comments(node.syntax()) {
-            return BracedExpressionsVariant::EmptyWithDanglingComments;
+            return BracedStatementsVariant::EmptyWithDanglingComments;
         } else {
-            return BracedExpressionsVariant::Empty;
+            return BracedStatementsVariant::Empty;
         }
     }
 
     if let Some(node) = as_curly_curly(node) {
-        return BracedExpressionsVariant::CurlyCurly(node);
+        return BracedStatementsVariant::CurlyCurly(node);
     }
 
-    BracedExpressionsVariant::NotEmpty
+    BracedStatementsVariant::NotEmpty
 }
 
 pub(crate) struct RCurlyCurly {
     outer_l_curly_token: SyntaxResult<RSyntaxToken>,
     inner_l_curly_token: SyntaxResult<RSyntaxToken>,
 
-    /// Interior expression list of the curly-curly expression
+    /// Interior statement list of the curly-curly expression
     ///
-    /// Note that this always contains a single expression, but to simplify comment
-    /// formatting we return the entire `RExpressionList` to call `.format()` on.
-    expression: RExpressionList,
+    /// Note that this always contains a single statement, but to simplify comment
+    /// formatting we return the entire `RStatementList` to call `.format()` on.
+    statements: RStatementList,
 
     inner_r_curly_token: SyntaxResult<RSyntaxToken>,
     outer_r_curly_token: SyntaxResult<RSyntaxToken>,
 
-    /// Interior `{` node of the curly-curly
+    /// Statement wrapping the interior `{` node of the curly-curly,
+    /// and the interior `{` node itself
     ///
-    /// Needed for marking the node as suppression-checked and for manually
-    /// formatting leading and trailing comments
-    node_inner: RBracedExpressions,
+    /// Needed for marking both of the nodes as suppression-checked and for manually
+    /// formatting leading and trailing comments of `statement_inner`
+    statement_inner: RStatement,
+    braced_statements_inner: RBracedStatements,
 }
 
-/// Convert `RBracedExpressions` into `RCurlyCurly`
+/// Convert `RBracedStatements` into `RCurlyCurly`
 ///
 /// Returns:
 /// - `Some(RCurlyCurly)` if this braced expression looks like a curly-curly
@@ -148,39 +149,39 @@ pub(crate) struct RCurlyCurly {
 /// - An outer `{` expression with exactly 1 child, an inner `{`.
 /// - An inner `{` expression with exactly 1 child, a symbol.
 /// - An ancestor of the outer `{` must be an argument node.
-fn as_curly_curly(node: &RBracedExpressions) -> Option<RCurlyCurly> {
-    let RBracedExpressionsFields {
+fn as_curly_curly(node: &RBracedStatements) -> Option<RCurlyCurly> {
+    let RBracedStatementsFields {
         l_curly_token: outer_l_curly_token,
-        expressions: outer_expressions,
+        statements: outer_statements,
         r_curly_token: outer_r_curly_token,
     } = node.as_fields();
 
-    if outer_expressions.len() != 1 {
+    if outer_statements.len() != 1 {
         return None;
     }
 
     // Unwrap: Length check ensures there is exactly 1 child
-    let node_inner = outer_expressions.first().unwrap();
+    let statement_inner = outer_statements.first().unwrap();
 
     // Check that the child of the outer `{` is another `{`
-    let node_inner = match node_inner {
-        AnyRExpression::RBracedExpressions(node_inner) => node_inner,
+    let braced_statements_inner = match statement_inner.expression()? {
+        AnyRExpression::RBracedStatements(braced_statements_inner) => braced_statements_inner,
         _ => return None,
     };
 
-    let RBracedExpressionsFields {
+    let RBracedStatementsFields {
         l_curly_token: inner_l_curly_token,
-        expressions: expression,
+        statements,
         r_curly_token: inner_r_curly_token,
-    } = node_inner.as_fields();
+    } = braced_statements_inner.as_fields();
 
     // Check that inner child `{` itself only has 1 child, i.e. the `expr` in `{{ expr }}`
-    if expression.len() != 1 {
+    if statements.len() != 1 {
         return None;
     }
 
     // Unwrap: Length check ensures there is exactly 1 child
-    let symbol = expression.first().unwrap();
+    let symbol = statements.first().unwrap().expression()?;
 
     // Check that the actual expression inside the `{{` is a simple identifier
     if !matches!(symbol, AnyRExpression::RIdentifier(_)) {
@@ -214,10 +215,11 @@ fn as_curly_curly(node: &RBracedExpressions) -> Option<RCurlyCurly> {
     Some(RCurlyCurly {
         outer_l_curly_token,
         inner_l_curly_token,
-        expression,
+        statements,
         inner_r_curly_token,
         outer_r_curly_token,
-        node_inner,
+        statement_inner,
+        braced_statements_inner,
     })
 }
 
@@ -236,25 +238,38 @@ fn fmt_curly_curly(node: &RCurlyCurly, f: &mut RFormatter) -> FormatResult<()> {
     let RCurlyCurly {
         outer_l_curly_token,
         inner_l_curly_token,
-        expression,
+        statements,
         inner_r_curly_token,
         outer_r_curly_token,
-        node_inner,
+        statement_inner,
+        braced_statements_inner,
     } = node;
 
     let comments = f.comments();
-    let node_inner = node_inner.syntax();
+
+    let statement_inner = statement_inner.syntax();
+    let braced_statements_inner = braced_statements_inner.syntax();
 
     // It's only possible to suppress the formatting of the outer curlies of curly-curly,
     // so we don't need to branch based on `comments.has_skip_directive()`, but we do need
-    // to mark the node as suppression checked
-    comments.mark_suppression_checked(node_inner);
+    // to mark the nodes as suppression checked
+    comments.mark_suppression_checked(statement_inner);
+    comments.mark_suppression_checked(braced_statements_inner);
 
-    // It's impossible to have dangling comments on `node_inner`. That's only possible
-    // when `node_inner` is an empty braced expression, and we would have bailed earlier
-    // if that was the case, because it doesn't "look" like curly-curly then.
-    if comments.has_dangling_comments(node_inner) {
-        panic!("Inner `{{` of curly-curly can't have dangling comments.");
+    // It's impossible to have ANY comments on the inner `{` node.
+    // - Leading and trailing comments attach to the outermost node,
+    //   `statement_inner`.
+    // - Dangling comments are only possible when `braced_statements_inner` is
+    //   empty, and we would have bailed earlier because it doesn't "look" like
+    //   curly-curly then.
+    if comments.has_comments(braced_statements_inner) {
+        panic!("Inner `{{` node of curly-curly can't have comments.");
+    }
+
+    // It's impossible to have dangling comments on the inner `RStatement` node. That
+    // could only happen if it was empty, and we've already determined it isn't.
+    if comments.has_dangling_comments(statement_inner) {
+        panic!("Inner statement of curly-curly can't have dangling comments.");
     }
 
     // We are sure we have curly-curly!
@@ -262,20 +277,20 @@ fn fmt_curly_curly(node: &RCurlyCurly, f: &mut RFormatter) -> FormatResult<()> {
     // We are going to format it all in one go, keeping in mind:
     // - We must `group()` it so the `soft_space_or_block_indent()` stays soft when possible
     // - Remember that comments can only be attached to nodes (not tokens), so we just
-    //   have to worry about manually handling comments on the `node_inner` `RBracedExpressions`,
-    //   since that is the only node we skip calling `format()` on.
+    //   have to worry about manually handling comments on `statement_inner`, since
+    //   it is the only node with comments that we skip calling `format()` on.
     // - We push comments between the `{ {` as leading on the first `{`
     // - We push comments between the `} }` as trailing on the second `}`
     write!(
         f,
         [group(&format_args![
-            format_leading_comments(node_inner),
+            format_leading_comments(statement_inner),
             outer_l_curly_token.format(),
             inner_l_curly_token.format(),
-            soft_space_or_block_indent(&expression.format()),
+            soft_space_or_block_indent(&statements.format()),
             inner_r_curly_token.format(),
             outer_r_curly_token.format(),
-            format_trailing_comments(node_inner),
+            format_trailing_comments(statement_inner),
         ])]
     )
 }

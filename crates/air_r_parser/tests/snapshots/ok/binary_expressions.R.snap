@@ -54,309 +54,402 @@ expression: snapshot
 ```
 RRoot {
     bom_token: missing (optional),
-    expressions: RExpressionList [
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@0..2 "1" [] [Whitespace(" ")],
+    statements: RStatementList [
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@0..2 "1" [] [Whitespace(" ")],
+                },
+                operator: WAT@2..4 "?" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@4..5 "2" [] [],
+                },
             },
-            operator: WAT@2..4 "?" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@4..5 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@5..8 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@5..8 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: TILDE@8..10 "~" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@10..11 "2" [] [],
+                },
             },
-            operator: TILDE@8..10 "~" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@10..11 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@11..14 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@11..14 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: ASSIGN@14..17 "<-" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@17..18 "2" [] [],
+                },
             },
-            operator: ASSIGN@14..17 "<-" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@17..18 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@18..21 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@18..21 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: SUPER_ASSIGN@21..25 "<<-" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@25..26 "2" [] [],
+                },
             },
-            operator: SUPER_ASSIGN@21..25 "<<-" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@25..26 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@26..29 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@26..29 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: WALRUS@29..32 ":=" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@32..33 "2" [] [],
+                },
             },
-            operator: WALRUS@29..32 ":=" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@32..33 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@33..36 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@33..36 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: ASSIGN_RIGHT@36..39 "->" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@39..40 "2" [] [],
+                },
             },
-            operator: ASSIGN_RIGHT@36..39 "->" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@39..40 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@40..43 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@40..43 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: SUPER_ASSIGN_RIGHT@43..47 "->>" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@47..48 "2" [] [],
+                },
             },
-            operator: SUPER_ASSIGN_RIGHT@43..47 "->>" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@47..48 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@48..51 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@48..51 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: EQUAL@51..53 "=" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@53..54 "2" [] [],
+                },
             },
-            operator: EQUAL@51..53 "=" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@53..54 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@54..57 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@54..57 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: OR@57..59 "|" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@59..60 "2" [] [],
+                },
             },
-            operator: OR@57..59 "|" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@59..60 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@60..63 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@60..63 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: AND@63..65 "&" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@65..66 "2" [] [],
+                },
             },
-            operator: AND@63..65 "&" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@65..66 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@66..69 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@66..69 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: OR2@69..72 "||" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@72..73 "2" [] [],
+                },
             },
-            operator: OR2@69..72 "||" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@72..73 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@73..76 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@73..76 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: AND2@76..79 "&&" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@79..80 "2" [] [],
+                },
             },
-            operator: AND2@76..79 "&&" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@79..80 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@80..83 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@80..83 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: LESS_THAN@83..85 "<" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@85..86 "2" [] [],
+                },
             },
-            operator: LESS_THAN@83..85 "<" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@85..86 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@86..89 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@86..89 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: LESS_THAN_OR_EQUAL_TO@89..92 "<=" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@92..93 "2" [] [],
+                },
             },
-            operator: LESS_THAN_OR_EQUAL_TO@89..92 "<=" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@92..93 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@93..96 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@93..96 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: GREATER_THAN@96..98 ">" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@98..99 "2" [] [],
+                },
             },
-            operator: GREATER_THAN@96..98 ">" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@98..99 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@99..102 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@99..102 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: GREATER_THAN_OR_EQUAL_TO@102..105 ">=" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@105..106 "2" [] [],
+                },
             },
-            operator: GREATER_THAN_OR_EQUAL_TO@102..105 ">=" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@105..106 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@106..109 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@106..109 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: EQUAL2@109..112 "==" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@112..113 "2" [] [],
+                },
             },
-            operator: EQUAL2@109..112 "==" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@112..113 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@113..116 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@113..116 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: NOT_EQUAL@116..119 "!=" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@119..120 "2" [] [],
+                },
             },
-            operator: NOT_EQUAL@116..119 "!=" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@119..120 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@120..123 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@120..123 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: PLUS@123..125 "+" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@125..126 "2" [] [],
+                },
             },
-            operator: PLUS@123..125 "+" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@125..126 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@126..129 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@126..129 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: MINUS@129..131 "-" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@131..132 "2" [] [],
+                },
             },
-            operator: MINUS@129..131 "-" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@131..132 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@132..135 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@132..135 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: MULTIPLY@135..137 "*" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@137..138 "2" [] [],
+                },
             },
-            operator: MULTIPLY@135..137 "*" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@137..138 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@138..141 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@138..141 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: DIVIDE@141..143 "/" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@143..144 "2" [] [],
+                },
             },
-            operator: DIVIDE@141..143 "/" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@143..144 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@144..147 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@144..147 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: EXPONENTIATE2@147..150 "**" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@150..151 "2" [] [],
+                },
             },
-            operator: EXPONENTIATE2@147..150 "**" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@150..151 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@151..154 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@151..154 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: EXPONENTIATE@154..156 "^" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@156..157 "2" [] [],
+                },
             },
-            operator: EXPONENTIATE@154..156 "^" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@156..157 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@157..160 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@157..160 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: PIPE@160..163 "|>" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@163..164 "2" [] [],
+                },
             },
-            operator: PIPE@160..163 "|>" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@163..164 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@164..167 "1" [Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@164..167 "1" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: SPECIAL@167..171 "%>%" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@171..172 "2" [] [],
+                },
             },
-            operator: SPECIAL@167..171 "%>%" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@171..172 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@172..174 "1" [Newline("\n")] [],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@172..174 "1" [Newline("\n")] [],
+                },
+                operator: COLON@174..175 ":" [] [],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@175..176 "2" [] [],
+                },
             },
-            operator: COLON@174..175 ":" [] [],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@175..176 "2" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RBinaryExpression {
+        RStatement {
+            expression: RBinaryExpression {
+                left: RBinaryExpression {
+                    left: RBinaryExpression {
+                        left: RDoubleValue {
+                            value_token: R_DOUBLE_LITERAL@176..180 "1" [Newline("\n"), Newline("\n")] [Whitespace(" ")],
+                        },
+                        operator: PLUS@180..182 "+" [] [Whitespace(" ")],
+                        right: RDoubleValue {
+                            value_token: R_DOUBLE_LITERAL@182..184 "2" [] [Whitespace(" ")],
+                        },
+                    },
+                    operator: PLUS@184..186 "+" [] [Whitespace(" ")],
+                    right: RDoubleValue {
+                        value_token: R_DOUBLE_LITERAL@186..188 "3" [] [Whitespace(" ")],
+                    },
+                },
+                operator: PLUS@188..190 "+" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@190..191 "4" [] [],
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+        RStatement {
+            expression: RBinaryExpression {
                 left: RBinaryExpression {
                     left: RDoubleValue {
-                        value_token: R_DOUBLE_LITERAL@176..180 "1" [Newline("\n"), Newline("\n")] [Whitespace(" ")],
+                        value_token: R_DOUBLE_LITERAL@191..195 "1" [Newline("\n"), Newline("\n")] [Whitespace(" ")],
                     },
-                    operator: PLUS@180..182 "+" [] [Whitespace(" ")],
-                    right: RDoubleValue {
-                        value_token: R_DOUBLE_LITERAL@182..184 "2" [] [Whitespace(" ")],
+                    operator: PLUS@195..197 "+" [] [Whitespace(" ")],
+                    right: RBinaryExpression {
+                        left: RDoubleValue {
+                            value_token: R_DOUBLE_LITERAL@197..198 "2" [] [],
+                        },
+                        operator: EXPONENTIATE@198..199 "^" [] [],
+                        right: RDoubleValue {
+                            value_token: R_DOUBLE_LITERAL@199..201 "3" [] [Whitespace(" ")],
+                        },
                     },
                 },
-                operator: PLUS@184..186 "+" [] [Whitespace(" ")],
+                operator: PLUS@201..203 "+" [] [Whitespace(" ")],
                 right: RDoubleValue {
-                    value_token: R_DOUBLE_LITERAL@186..188 "3" [] [Whitespace(" ")],
+                    value_token: R_DOUBLE_LITERAL@203..204 "4" [] [],
                 },
             },
-            operator: PLUS@188..190 "+" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@190..191 "4" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RBinaryExpression {
+        RStatement {
+            expression: RBinaryExpression {
                 left: RDoubleValue {
-                    value_token: R_DOUBLE_LITERAL@191..195 "1" [Newline("\n"), Newline("\n")] [Whitespace(" ")],
+                    value_token: R_DOUBLE_LITERAL@204..208 "1" [Newline("\n"), Newline("\n")] [Whitespace(" ")],
                 },
-                operator: PLUS@195..197 "+" [] [Whitespace(" ")],
-                right: RBinaryExpression {
-                    left: RDoubleValue {
-                        value_token: R_DOUBLE_LITERAL@197..198 "2" [] [],
-                    },
-                    operator: EXPONENTIATE@198..199 "^" [] [],
-                    right: RDoubleValue {
-                        value_token: R_DOUBLE_LITERAL@199..201 "3" [] [Whitespace(" ")],
-                    },
+                operator: PLUS@208..219 "+" [] [Whitespace(" "), Comments("# comment")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@219..223 "2" [Newline("\n"), Whitespace("  ")] [],
                 },
             },
-            operator: PLUS@201..203 "+" [] [Whitespace(" ")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@203..204 "4" [] [],
-            },
+            semicolon_token: missing (optional),
         },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@204..208 "1" [Newline("\n"), Newline("\n")] [Whitespace(" ")],
+        RStatement {
+            expression: RBinaryExpression {
+                left: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@223..227 "1" [Newline("\n"), Newline("\n")] [Whitespace(" ")],
+                },
+                operator: PLUS@227..228 "+" [] [],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@228..258 "2" [Newline("\n"), Newline("\n"), Whitespace("  "), Comments("# comment1"), Newline("\n"), Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")],
+                },
             },
-            operator: PLUS@208..219 "+" [] [Whitespace(" "), Comments("# comment")],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@219..223 "2" [Newline("\n"), Whitespace("  ")] [],
-            },
-        },
-        RBinaryExpression {
-            left: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@223..227 "1" [Newline("\n"), Newline("\n")] [Whitespace(" ")],
-            },
-            operator: PLUS@227..228 "+" [] [],
-            right: RDoubleValue {
-                value_token: R_DOUBLE_LITERAL@228..258 "2" [Newline("\n"), Newline("\n"), Whitespace("  "), Comments("# comment1"), Newline("\n"), Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")],
-            },
+            semicolon_token: missing (optional),
         },
     ],
     eof_token: EOF@258..259 "" [Newline("\n")] [],
@@ -368,209 +461,271 @@ RRoot {
 ```
 0: R_ROOT@0..259
   0: (empty)
-  1: R_EXPRESSION_LIST@0..258
-    0: R_BINARY_EXPRESSION@0..5
-      0: R_DOUBLE_VALUE@0..2
-        0: R_DOUBLE_LITERAL@0..2 "1" [] [Whitespace(" ")]
-      1: WAT@2..4 "?" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@4..5
-        0: R_DOUBLE_LITERAL@4..5 "2" [] []
-    1: R_BINARY_EXPRESSION@5..11
-      0: R_DOUBLE_VALUE@5..8
-        0: R_DOUBLE_LITERAL@5..8 "1" [Newline("\n")] [Whitespace(" ")]
-      1: TILDE@8..10 "~" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@10..11
-        0: R_DOUBLE_LITERAL@10..11 "2" [] []
-    2: R_BINARY_EXPRESSION@11..18
-      0: R_DOUBLE_VALUE@11..14
-        0: R_DOUBLE_LITERAL@11..14 "1" [Newline("\n")] [Whitespace(" ")]
-      1: ASSIGN@14..17 "<-" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@17..18
-        0: R_DOUBLE_LITERAL@17..18 "2" [] []
-    3: R_BINARY_EXPRESSION@18..26
-      0: R_DOUBLE_VALUE@18..21
-        0: R_DOUBLE_LITERAL@18..21 "1" [Newline("\n")] [Whitespace(" ")]
-      1: SUPER_ASSIGN@21..25 "<<-" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@25..26
-        0: R_DOUBLE_LITERAL@25..26 "2" [] []
-    4: R_BINARY_EXPRESSION@26..33
-      0: R_DOUBLE_VALUE@26..29
-        0: R_DOUBLE_LITERAL@26..29 "1" [Newline("\n")] [Whitespace(" ")]
-      1: WALRUS@29..32 ":=" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@32..33
-        0: R_DOUBLE_LITERAL@32..33 "2" [] []
-    5: R_BINARY_EXPRESSION@33..40
-      0: R_DOUBLE_VALUE@33..36
-        0: R_DOUBLE_LITERAL@33..36 "1" [Newline("\n")] [Whitespace(" ")]
-      1: ASSIGN_RIGHT@36..39 "->" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@39..40
-        0: R_DOUBLE_LITERAL@39..40 "2" [] []
-    6: R_BINARY_EXPRESSION@40..48
-      0: R_DOUBLE_VALUE@40..43
-        0: R_DOUBLE_LITERAL@40..43 "1" [Newline("\n")] [Whitespace(" ")]
-      1: SUPER_ASSIGN_RIGHT@43..47 "->>" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@47..48
-        0: R_DOUBLE_LITERAL@47..48 "2" [] []
-    7: R_BINARY_EXPRESSION@48..54
-      0: R_DOUBLE_VALUE@48..51
-        0: R_DOUBLE_LITERAL@48..51 "1" [Newline("\n")] [Whitespace(" ")]
-      1: EQUAL@51..53 "=" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@53..54
-        0: R_DOUBLE_LITERAL@53..54 "2" [] []
-    8: R_BINARY_EXPRESSION@54..60
-      0: R_DOUBLE_VALUE@54..57
-        0: R_DOUBLE_LITERAL@54..57 "1" [Newline("\n")] [Whitespace(" ")]
-      1: OR@57..59 "|" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@59..60
-        0: R_DOUBLE_LITERAL@59..60 "2" [] []
-    9: R_BINARY_EXPRESSION@60..66
-      0: R_DOUBLE_VALUE@60..63
-        0: R_DOUBLE_LITERAL@60..63 "1" [Newline("\n")] [Whitespace(" ")]
-      1: AND@63..65 "&" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@65..66
-        0: R_DOUBLE_LITERAL@65..66 "2" [] []
-    10: R_BINARY_EXPRESSION@66..73
-      0: R_DOUBLE_VALUE@66..69
-        0: R_DOUBLE_LITERAL@66..69 "1" [Newline("\n")] [Whitespace(" ")]
-      1: OR2@69..72 "||" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@72..73
-        0: R_DOUBLE_LITERAL@72..73 "2" [] []
-    11: R_BINARY_EXPRESSION@73..80
-      0: R_DOUBLE_VALUE@73..76
-        0: R_DOUBLE_LITERAL@73..76 "1" [Newline("\n")] [Whitespace(" ")]
-      1: AND2@76..79 "&&" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@79..80
-        0: R_DOUBLE_LITERAL@79..80 "2" [] []
-    12: R_BINARY_EXPRESSION@80..86
-      0: R_DOUBLE_VALUE@80..83
-        0: R_DOUBLE_LITERAL@80..83 "1" [Newline("\n")] [Whitespace(" ")]
-      1: LESS_THAN@83..85 "<" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@85..86
-        0: R_DOUBLE_LITERAL@85..86 "2" [] []
-    13: R_BINARY_EXPRESSION@86..93
-      0: R_DOUBLE_VALUE@86..89
-        0: R_DOUBLE_LITERAL@86..89 "1" [Newline("\n")] [Whitespace(" ")]
-      1: LESS_THAN_OR_EQUAL_TO@89..92 "<=" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@92..93
-        0: R_DOUBLE_LITERAL@92..93 "2" [] []
-    14: R_BINARY_EXPRESSION@93..99
-      0: R_DOUBLE_VALUE@93..96
-        0: R_DOUBLE_LITERAL@93..96 "1" [Newline("\n")] [Whitespace(" ")]
-      1: GREATER_THAN@96..98 ">" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@98..99
-        0: R_DOUBLE_LITERAL@98..99 "2" [] []
-    15: R_BINARY_EXPRESSION@99..106
-      0: R_DOUBLE_VALUE@99..102
-        0: R_DOUBLE_LITERAL@99..102 "1" [Newline("\n")] [Whitespace(" ")]
-      1: GREATER_THAN_OR_EQUAL_TO@102..105 ">=" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@105..106
-        0: R_DOUBLE_LITERAL@105..106 "2" [] []
-    16: R_BINARY_EXPRESSION@106..113
-      0: R_DOUBLE_VALUE@106..109
-        0: R_DOUBLE_LITERAL@106..109 "1" [Newline("\n")] [Whitespace(" ")]
-      1: EQUAL2@109..112 "==" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@112..113
-        0: R_DOUBLE_LITERAL@112..113 "2" [] []
-    17: R_BINARY_EXPRESSION@113..120
-      0: R_DOUBLE_VALUE@113..116
-        0: R_DOUBLE_LITERAL@113..116 "1" [Newline("\n")] [Whitespace(" ")]
-      1: NOT_EQUAL@116..119 "!=" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@119..120
-        0: R_DOUBLE_LITERAL@119..120 "2" [] []
-    18: R_BINARY_EXPRESSION@120..126
-      0: R_DOUBLE_VALUE@120..123
-        0: R_DOUBLE_LITERAL@120..123 "1" [Newline("\n")] [Whitespace(" ")]
-      1: PLUS@123..125 "+" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@125..126
-        0: R_DOUBLE_LITERAL@125..126 "2" [] []
-    19: R_BINARY_EXPRESSION@126..132
-      0: R_DOUBLE_VALUE@126..129
-        0: R_DOUBLE_LITERAL@126..129 "1" [Newline("\n")] [Whitespace(" ")]
-      1: MINUS@129..131 "-" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@131..132
-        0: R_DOUBLE_LITERAL@131..132 "2" [] []
-    20: R_BINARY_EXPRESSION@132..138
-      0: R_DOUBLE_VALUE@132..135
-        0: R_DOUBLE_LITERAL@132..135 "1" [Newline("\n")] [Whitespace(" ")]
-      1: MULTIPLY@135..137 "*" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@137..138
-        0: R_DOUBLE_LITERAL@137..138 "2" [] []
-    21: R_BINARY_EXPRESSION@138..144
-      0: R_DOUBLE_VALUE@138..141
-        0: R_DOUBLE_LITERAL@138..141 "1" [Newline("\n")] [Whitespace(" ")]
-      1: DIVIDE@141..143 "/" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@143..144
-        0: R_DOUBLE_LITERAL@143..144 "2" [] []
-    22: R_BINARY_EXPRESSION@144..151
-      0: R_DOUBLE_VALUE@144..147
-        0: R_DOUBLE_LITERAL@144..147 "1" [Newline("\n")] [Whitespace(" ")]
-      1: EXPONENTIATE2@147..150 "**" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@150..151
-        0: R_DOUBLE_LITERAL@150..151 "2" [] []
-    23: R_BINARY_EXPRESSION@151..157
-      0: R_DOUBLE_VALUE@151..154
-        0: R_DOUBLE_LITERAL@151..154 "1" [Newline("\n")] [Whitespace(" ")]
-      1: EXPONENTIATE@154..156 "^" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@156..157
-        0: R_DOUBLE_LITERAL@156..157 "2" [] []
-    24: R_BINARY_EXPRESSION@157..164
-      0: R_DOUBLE_VALUE@157..160
-        0: R_DOUBLE_LITERAL@157..160 "1" [Newline("\n")] [Whitespace(" ")]
-      1: PIPE@160..163 "|>" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@163..164
-        0: R_DOUBLE_LITERAL@163..164 "2" [] []
-    25: R_BINARY_EXPRESSION@164..172
-      0: R_DOUBLE_VALUE@164..167
-        0: R_DOUBLE_LITERAL@164..167 "1" [Newline("\n")] [Whitespace(" ")]
-      1: SPECIAL@167..171 "%>%" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@171..172
-        0: R_DOUBLE_LITERAL@171..172 "2" [] []
-    26: R_BINARY_EXPRESSION@172..176
-      0: R_DOUBLE_VALUE@172..174
-        0: R_DOUBLE_LITERAL@172..174 "1" [Newline("\n")] []
-      1: COLON@174..175 ":" [] []
-      2: R_DOUBLE_VALUE@175..176
-        0: R_DOUBLE_LITERAL@175..176 "2" [] []
-    27: R_BINARY_EXPRESSION@176..191
-      0: R_BINARY_EXPRESSION@176..188
-        0: R_BINARY_EXPRESSION@176..184
-          0: R_DOUBLE_VALUE@176..180
-            0: R_DOUBLE_LITERAL@176..180 "1" [Newline("\n"), Newline("\n")] [Whitespace(" ")]
-          1: PLUS@180..182 "+" [] [Whitespace(" ")]
-          2: R_DOUBLE_VALUE@182..184
-            0: R_DOUBLE_LITERAL@182..184 "2" [] [Whitespace(" ")]
-        1: PLUS@184..186 "+" [] [Whitespace(" ")]
-        2: R_DOUBLE_VALUE@186..188
-          0: R_DOUBLE_LITERAL@186..188 "3" [] [Whitespace(" ")]
-      1: PLUS@188..190 "+" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@190..191
-        0: R_DOUBLE_LITERAL@190..191 "4" [] []
-    28: R_BINARY_EXPRESSION@191..204
-      0: R_BINARY_EXPRESSION@191..201
-        0: R_DOUBLE_VALUE@191..195
-          0: R_DOUBLE_LITERAL@191..195 "1" [Newline("\n"), Newline("\n")] [Whitespace(" ")]
-        1: PLUS@195..197 "+" [] [Whitespace(" ")]
-        2: R_BINARY_EXPRESSION@197..201
-          0: R_DOUBLE_VALUE@197..198
-            0: R_DOUBLE_LITERAL@197..198 "2" [] []
-          1: EXPONENTIATE@198..199 "^" [] []
-          2: R_DOUBLE_VALUE@199..201
-            0: R_DOUBLE_LITERAL@199..201 "3" [] [Whitespace(" ")]
-      1: PLUS@201..203 "+" [] [Whitespace(" ")]
-      2: R_DOUBLE_VALUE@203..204
-        0: R_DOUBLE_LITERAL@203..204 "4" [] []
-    29: R_BINARY_EXPRESSION@204..223
-      0: R_DOUBLE_VALUE@204..208
-        0: R_DOUBLE_LITERAL@204..208 "1" [Newline("\n"), Newline("\n")] [Whitespace(" ")]
-      1: PLUS@208..219 "+" [] [Whitespace(" "), Comments("# comment")]
-      2: R_DOUBLE_VALUE@219..223
-        0: R_DOUBLE_LITERAL@219..223 "2" [Newline("\n"), Whitespace("  ")] []
-    30: R_BINARY_EXPRESSION@223..258
-      0: R_DOUBLE_VALUE@223..227
-        0: R_DOUBLE_LITERAL@223..227 "1" [Newline("\n"), Newline("\n")] [Whitespace(" ")]
-      1: PLUS@227..228 "+" [] []
-      2: R_DOUBLE_VALUE@228..258
-        0: R_DOUBLE_LITERAL@228..258 "2" [Newline("\n"), Newline("\n"), Whitespace("  "), Comments("# comment1"), Newline("\n"), Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")]
+  1: R_STATEMENT_LIST@0..258
+    0: R_STATEMENT@0..5
+      0: R_BINARY_EXPRESSION@0..5
+        0: R_DOUBLE_VALUE@0..2
+          0: R_DOUBLE_LITERAL@0..2 "1" [] [Whitespace(" ")]
+        1: WAT@2..4 "?" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@4..5
+          0: R_DOUBLE_LITERAL@4..5 "2" [] []
+      1: (empty)
+    1: R_STATEMENT@5..11
+      0: R_BINARY_EXPRESSION@5..11
+        0: R_DOUBLE_VALUE@5..8
+          0: R_DOUBLE_LITERAL@5..8 "1" [Newline("\n")] [Whitespace(" ")]
+        1: TILDE@8..10 "~" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@10..11
+          0: R_DOUBLE_LITERAL@10..11 "2" [] []
+      1: (empty)
+    2: R_STATEMENT@11..18
+      0: R_BINARY_EXPRESSION@11..18
+        0: R_DOUBLE_VALUE@11..14
+          0: R_DOUBLE_LITERAL@11..14 "1" [Newline("\n")] [Whitespace(" ")]
+        1: ASSIGN@14..17 "<-" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@17..18
+          0: R_DOUBLE_LITERAL@17..18 "2" [] []
+      1: (empty)
+    3: R_STATEMENT@18..26
+      0: R_BINARY_EXPRESSION@18..26
+        0: R_DOUBLE_VALUE@18..21
+          0: R_DOUBLE_LITERAL@18..21 "1" [Newline("\n")] [Whitespace(" ")]
+        1: SUPER_ASSIGN@21..25 "<<-" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@25..26
+          0: R_DOUBLE_LITERAL@25..26 "2" [] []
+      1: (empty)
+    4: R_STATEMENT@26..33
+      0: R_BINARY_EXPRESSION@26..33
+        0: R_DOUBLE_VALUE@26..29
+          0: R_DOUBLE_LITERAL@26..29 "1" [Newline("\n")] [Whitespace(" ")]
+        1: WALRUS@29..32 ":=" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@32..33
+          0: R_DOUBLE_LITERAL@32..33 "2" [] []
+      1: (empty)
+    5: R_STATEMENT@33..40
+      0: R_BINARY_EXPRESSION@33..40
+        0: R_DOUBLE_VALUE@33..36
+          0: R_DOUBLE_LITERAL@33..36 "1" [Newline("\n")] [Whitespace(" ")]
+        1: ASSIGN_RIGHT@36..39 "->" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@39..40
+          0: R_DOUBLE_LITERAL@39..40 "2" [] []
+      1: (empty)
+    6: R_STATEMENT@40..48
+      0: R_BINARY_EXPRESSION@40..48
+        0: R_DOUBLE_VALUE@40..43
+          0: R_DOUBLE_LITERAL@40..43 "1" [Newline("\n")] [Whitespace(" ")]
+        1: SUPER_ASSIGN_RIGHT@43..47 "->>" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@47..48
+          0: R_DOUBLE_LITERAL@47..48 "2" [] []
+      1: (empty)
+    7: R_STATEMENT@48..54
+      0: R_BINARY_EXPRESSION@48..54
+        0: R_DOUBLE_VALUE@48..51
+          0: R_DOUBLE_LITERAL@48..51 "1" [Newline("\n")] [Whitespace(" ")]
+        1: EQUAL@51..53 "=" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@53..54
+          0: R_DOUBLE_LITERAL@53..54 "2" [] []
+      1: (empty)
+    8: R_STATEMENT@54..60
+      0: R_BINARY_EXPRESSION@54..60
+        0: R_DOUBLE_VALUE@54..57
+          0: R_DOUBLE_LITERAL@54..57 "1" [Newline("\n")] [Whitespace(" ")]
+        1: OR@57..59 "|" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@59..60
+          0: R_DOUBLE_LITERAL@59..60 "2" [] []
+      1: (empty)
+    9: R_STATEMENT@60..66
+      0: R_BINARY_EXPRESSION@60..66
+        0: R_DOUBLE_VALUE@60..63
+          0: R_DOUBLE_LITERAL@60..63 "1" [Newline("\n")] [Whitespace(" ")]
+        1: AND@63..65 "&" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@65..66
+          0: R_DOUBLE_LITERAL@65..66 "2" [] []
+      1: (empty)
+    10: R_STATEMENT@66..73
+      0: R_BINARY_EXPRESSION@66..73
+        0: R_DOUBLE_VALUE@66..69
+          0: R_DOUBLE_LITERAL@66..69 "1" [Newline("\n")] [Whitespace(" ")]
+        1: OR2@69..72 "||" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@72..73
+          0: R_DOUBLE_LITERAL@72..73 "2" [] []
+      1: (empty)
+    11: R_STATEMENT@73..80
+      0: R_BINARY_EXPRESSION@73..80
+        0: R_DOUBLE_VALUE@73..76
+          0: R_DOUBLE_LITERAL@73..76 "1" [Newline("\n")] [Whitespace(" ")]
+        1: AND2@76..79 "&&" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@79..80
+          0: R_DOUBLE_LITERAL@79..80 "2" [] []
+      1: (empty)
+    12: R_STATEMENT@80..86
+      0: R_BINARY_EXPRESSION@80..86
+        0: R_DOUBLE_VALUE@80..83
+          0: R_DOUBLE_LITERAL@80..83 "1" [Newline("\n")] [Whitespace(" ")]
+        1: LESS_THAN@83..85 "<" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@85..86
+          0: R_DOUBLE_LITERAL@85..86 "2" [] []
+      1: (empty)
+    13: R_STATEMENT@86..93
+      0: R_BINARY_EXPRESSION@86..93
+        0: R_DOUBLE_VALUE@86..89
+          0: R_DOUBLE_LITERAL@86..89 "1" [Newline("\n")] [Whitespace(" ")]
+        1: LESS_THAN_OR_EQUAL_TO@89..92 "<=" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@92..93
+          0: R_DOUBLE_LITERAL@92..93 "2" [] []
+      1: (empty)
+    14: R_STATEMENT@93..99
+      0: R_BINARY_EXPRESSION@93..99
+        0: R_DOUBLE_VALUE@93..96
+          0: R_DOUBLE_LITERAL@93..96 "1" [Newline("\n")] [Whitespace(" ")]
+        1: GREATER_THAN@96..98 ">" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@98..99
+          0: R_DOUBLE_LITERAL@98..99 "2" [] []
+      1: (empty)
+    15: R_STATEMENT@99..106
+      0: R_BINARY_EXPRESSION@99..106
+        0: R_DOUBLE_VALUE@99..102
+          0: R_DOUBLE_LITERAL@99..102 "1" [Newline("\n")] [Whitespace(" ")]
+        1: GREATER_THAN_OR_EQUAL_TO@102..105 ">=" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@105..106
+          0: R_DOUBLE_LITERAL@105..106 "2" [] []
+      1: (empty)
+    16: R_STATEMENT@106..113
+      0: R_BINARY_EXPRESSION@106..113
+        0: R_DOUBLE_VALUE@106..109
+          0: R_DOUBLE_LITERAL@106..109 "1" [Newline("\n")] [Whitespace(" ")]
+        1: EQUAL2@109..112 "==" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@112..113
+          0: R_DOUBLE_LITERAL@112..113 "2" [] []
+      1: (empty)
+    17: R_STATEMENT@113..120
+      0: R_BINARY_EXPRESSION@113..120
+        0: R_DOUBLE_VALUE@113..116
+          0: R_DOUBLE_LITERAL@113..116 "1" [Newline("\n")] [Whitespace(" ")]
+        1: NOT_EQUAL@116..119 "!=" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@119..120
+          0: R_DOUBLE_LITERAL@119..120 "2" [] []
+      1: (empty)
+    18: R_STATEMENT@120..126
+      0: R_BINARY_EXPRESSION@120..126
+        0: R_DOUBLE_VALUE@120..123
+          0: R_DOUBLE_LITERAL@120..123 "1" [Newline("\n")] [Whitespace(" ")]
+        1: PLUS@123..125 "+" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@125..126
+          0: R_DOUBLE_LITERAL@125..126 "2" [] []
+      1: (empty)
+    19: R_STATEMENT@126..132
+      0: R_BINARY_EXPRESSION@126..132
+        0: R_DOUBLE_VALUE@126..129
+          0: R_DOUBLE_LITERAL@126..129 "1" [Newline("\n")] [Whitespace(" ")]
+        1: MINUS@129..131 "-" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@131..132
+          0: R_DOUBLE_LITERAL@131..132 "2" [] []
+      1: (empty)
+    20: R_STATEMENT@132..138
+      0: R_BINARY_EXPRESSION@132..138
+        0: R_DOUBLE_VALUE@132..135
+          0: R_DOUBLE_LITERAL@132..135 "1" [Newline("\n")] [Whitespace(" ")]
+        1: MULTIPLY@135..137 "*" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@137..138
+          0: R_DOUBLE_LITERAL@137..138 "2" [] []
+      1: (empty)
+    21: R_STATEMENT@138..144
+      0: R_BINARY_EXPRESSION@138..144
+        0: R_DOUBLE_VALUE@138..141
+          0: R_DOUBLE_LITERAL@138..141 "1" [Newline("\n")] [Whitespace(" ")]
+        1: DIVIDE@141..143 "/" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@143..144
+          0: R_DOUBLE_LITERAL@143..144 "2" [] []
+      1: (empty)
+    22: R_STATEMENT@144..151
+      0: R_BINARY_EXPRESSION@144..151
+        0: R_DOUBLE_VALUE@144..147
+          0: R_DOUBLE_LITERAL@144..147 "1" [Newline("\n")] [Whitespace(" ")]
+        1: EXPONENTIATE2@147..150 "**" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@150..151
+          0: R_DOUBLE_LITERAL@150..151 "2" [] []
+      1: (empty)
+    23: R_STATEMENT@151..157
+      0: R_BINARY_EXPRESSION@151..157
+        0: R_DOUBLE_VALUE@151..154
+          0: R_DOUBLE_LITERAL@151..154 "1" [Newline("\n")] [Whitespace(" ")]
+        1: EXPONENTIATE@154..156 "^" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@156..157
+          0: R_DOUBLE_LITERAL@156..157 "2" [] []
+      1: (empty)
+    24: R_STATEMENT@157..164
+      0: R_BINARY_EXPRESSION@157..164
+        0: R_DOUBLE_VALUE@157..160
+          0: R_DOUBLE_LITERAL@157..160 "1" [Newline("\n")] [Whitespace(" ")]
+        1: PIPE@160..163 "|>" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@163..164
+          0: R_DOUBLE_LITERAL@163..164 "2" [] []
+      1: (empty)
+    25: R_STATEMENT@164..172
+      0: R_BINARY_EXPRESSION@164..172
+        0: R_DOUBLE_VALUE@164..167
+          0: R_DOUBLE_LITERAL@164..167 "1" [Newline("\n")] [Whitespace(" ")]
+        1: SPECIAL@167..171 "%>%" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@171..172
+          0: R_DOUBLE_LITERAL@171..172 "2" [] []
+      1: (empty)
+    26: R_STATEMENT@172..176
+      0: R_BINARY_EXPRESSION@172..176
+        0: R_DOUBLE_VALUE@172..174
+          0: R_DOUBLE_LITERAL@172..174 "1" [Newline("\n")] []
+        1: COLON@174..175 ":" [] []
+        2: R_DOUBLE_VALUE@175..176
+          0: R_DOUBLE_LITERAL@175..176 "2" [] []
+      1: (empty)
+    27: R_STATEMENT@176..191
+      0: R_BINARY_EXPRESSION@176..191
+        0: R_BINARY_EXPRESSION@176..188
+          0: R_BINARY_EXPRESSION@176..184
+            0: R_DOUBLE_VALUE@176..180
+              0: R_DOUBLE_LITERAL@176..180 "1" [Newline("\n"), Newline("\n")] [Whitespace(" ")]
+            1: PLUS@180..182 "+" [] [Whitespace(" ")]
+            2: R_DOUBLE_VALUE@182..184
+              0: R_DOUBLE_LITERAL@182..184 "2" [] [Whitespace(" ")]
+          1: PLUS@184..186 "+" [] [Whitespace(" ")]
+          2: R_DOUBLE_VALUE@186..188
+            0: R_DOUBLE_LITERAL@186..188 "3" [] [Whitespace(" ")]
+        1: PLUS@188..190 "+" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@190..191
+          0: R_DOUBLE_LITERAL@190..191 "4" [] []
+      1: (empty)
+    28: R_STATEMENT@191..204
+      0: R_BINARY_EXPRESSION@191..204
+        0: R_BINARY_EXPRESSION@191..201
+          0: R_DOUBLE_VALUE@191..195
+            0: R_DOUBLE_LITERAL@191..195 "1" [Newline("\n"), Newline("\n")] [Whitespace(" ")]
+          1: PLUS@195..197 "+" [] [Whitespace(" ")]
+          2: R_BINARY_EXPRESSION@197..201
+            0: R_DOUBLE_VALUE@197..198
+              0: R_DOUBLE_LITERAL@197..198 "2" [] []
+            1: EXPONENTIATE@198..199 "^" [] []
+            2: R_DOUBLE_VALUE@199..201
+              0: R_DOUBLE_LITERAL@199..201 "3" [] [Whitespace(" ")]
+        1: PLUS@201..203 "+" [] [Whitespace(" ")]
+        2: R_DOUBLE_VALUE@203..204
+          0: R_DOUBLE_LITERAL@203..204 "4" [] []
+      1: (empty)
+    29: R_STATEMENT@204..223
+      0: R_BINARY_EXPRESSION@204..223
+        0: R_DOUBLE_VALUE@204..208
+          0: R_DOUBLE_LITERAL@204..208 "1" [Newline("\n"), Newline("\n")] [Whitespace(" ")]
+        1: PLUS@208..219 "+" [] [Whitespace(" "), Comments("# comment")]
+        2: R_DOUBLE_VALUE@219..223
+          0: R_DOUBLE_LITERAL@219..223 "2" [Newline("\n"), Whitespace("  ")] []
+      1: (empty)
+    30: R_STATEMENT@223..258
+      0: R_BINARY_EXPRESSION@223..258
+        0: R_DOUBLE_VALUE@223..227
+          0: R_DOUBLE_LITERAL@223..227 "1" [Newline("\n"), Newline("\n")] [Whitespace(" ")]
+        1: PLUS@227..228 "+" [] []
+        2: R_DOUBLE_VALUE@228..258
+          0: R_DOUBLE_LITERAL@228..258 "2" [Newline("\n"), Newline("\n"), Whitespace("  "), Comments("# comment1"), Newline("\n"), Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")]
+      1: (empty)
   2: EOF@258..259 "" [Newline("\n")] []
 
 ```

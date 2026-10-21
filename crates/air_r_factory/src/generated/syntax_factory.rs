@@ -134,7 +134,7 @@ impl SyntaxFactory for RSyntaxFactory {
                 }
                 slots.into_node(R_BINARY_EXPRESSION, children)
             }
-            R_BRACED_EXPRESSIONS => {
+            R_BRACED_STATEMENTS => {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
                 let mut current_element = elements.next();
@@ -146,7 +146,7 @@ impl SyntaxFactory for RSyntaxFactory {
                 }
                 slots.next_slot();
                 if let Some(element) = &current_element
-                    && RExpressionList::can_cast(element.kind())
+                    && RStatementList::can_cast(element.kind())
                 {
                     slots.mark_present();
                     current_element = elements.next();
@@ -161,11 +161,11 @@ impl SyntaxFactory for RSyntaxFactory {
                 slots.next_slot();
                 if current_element.is_some() {
                     return RawSyntaxNode::new(
-                        R_BRACED_EXPRESSIONS.to_bogus(),
+                        R_BRACED_STATEMENTS.to_bogus(),
                         children.into_iter().map(Some),
                     );
                 }
-                slots.into_node(R_BRACED_EXPRESSIONS, children)
+                slots.into_node(R_BRACED_STATEMENTS, children)
             }
             R_BREAK_EXPRESSION => {
                 let mut elements = (&children).into_iter();
@@ -870,7 +870,7 @@ impl SyntaxFactory for RSyntaxFactory {
                 }
                 slots.next_slot();
                 if let Some(element) = &current_element
-                    && RExpressionList::can_cast(element.kind())
+                    && RStatementList::can_cast(element.kind())
                 {
                     slots.mark_present();
                     current_element = elements.next();
@@ -887,6 +887,32 @@ impl SyntaxFactory for RSyntaxFactory {
                     return RawSyntaxNode::new(R_ROOT.to_bogus(), children.into_iter().map(Some));
                 }
                 slots.into_node(R_ROOT, children)
+            }
+            R_STATEMENT => {
+                let mut elements = (&children).into_iter();
+                let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
+                let mut current_element = elements.next();
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
+                }
+                slots.next_slot();
+                if let Some(element) = &current_element
+                    && element.kind() == T ! [;]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
+                }
+                slots.next_slot();
+                if current_element.is_some() {
+                    return RawSyntaxNode::new(
+                        R_STATEMENT.to_bogus(),
+                        children.into_iter().map(Some),
+                    );
+                }
+                slots.into_node(R_STATEMENT, children)
             }
             R_STRING_VALUE => {
                 let mut elements = (&children).into_iter();
@@ -1129,9 +1155,6 @@ impl SyntaxFactory for RSyntaxFactory {
                 T ! [,],
                 false,
             ),
-            R_EXPRESSION_LIST => {
-                Self::make_node_list_syntax(kind, children, AnyRExpression::can_cast)
-            }
             R_PARAMETER_LIST => Self::make_separated_list_syntax(
                 kind,
                 children,
@@ -1139,6 +1162,7 @@ impl SyntaxFactory for RSyntaxFactory {
                 T ! [,],
                 false,
             ),
+            R_STATEMENT_LIST => Self::make_node_list_syntax(kind, children, RStatement::can_cast),
             _ => unreachable!("Is {:?} a token?", kind),
         }
     }

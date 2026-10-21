@@ -1010,7 +1010,7 @@ fn place_leading_or_dangling_body_comment(
     comment: DecoratedComment<RLanguage>,
 ) -> CommentPlacement<RLanguage> {
     match body {
-        AnyRExpression::RBracedExpressions(body) => match body.expressions().first() {
+        AnyRExpression::RBracedStatements(body) => match body.statements().first() {
             Some(first) => CommentPlacement::leading(first.into_syntax(), comment),
             None => CommentPlacement::dangling(body.into_syntax(), comment),
         },

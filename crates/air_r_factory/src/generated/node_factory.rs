@@ -63,16 +63,16 @@ pub fn r_binary_expression(
         ],
     ))
 }
-pub fn r_braced_expressions(
+pub fn r_braced_statements(
     l_curly_token: SyntaxToken,
-    expressions: RExpressionList,
+    statements: RStatementList,
     r_curly_token: SyntaxToken,
-) -> RBracedExpressions {
-    RBracedExpressions::unwrap_cast(SyntaxNode::new_detached(
-        RSyntaxKind::R_BRACED_EXPRESSIONS,
+) -> RBracedStatements {
+    RBracedStatements::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_BRACED_STATEMENTS,
         [
             Some(SyntaxElement::Token(l_curly_token)),
-            Some(SyntaxElement::Node(expressions.into_syntax())),
+            Some(SyntaxElement::Node(statements.into_syntax())),
             Some(SyntaxElement::Token(r_curly_token)),
         ],
     ))
@@ -367,15 +367,15 @@ pub fn r_repeat_statement(repeat_token: SyntaxToken, body: AnyRExpression) -> RR
         ],
     ))
 }
-pub fn r_root(expressions: RExpressionList, eof_token: SyntaxToken) -> RRootBuilder {
+pub fn r_root(statements: RStatementList, eof_token: SyntaxToken) -> RRootBuilder {
     RRootBuilder {
-        expressions,
+        statements,
         eof_token,
         bom_token: None,
     }
 }
 pub struct RRootBuilder {
-    expressions: RExpressionList,
+    statements: RStatementList,
     eof_token: SyntaxToken,
     bom_token: Option<SyntaxToken>,
 }
@@ -389,8 +389,39 @@ impl RRootBuilder {
             RSyntaxKind::R_ROOT,
             [
                 self.bom_token.map(|token| SyntaxElement::Token(token)),
-                Some(SyntaxElement::Node(self.expressions.into_syntax())),
+                Some(SyntaxElement::Node(self.statements.into_syntax())),
                 Some(SyntaxElement::Token(self.eof_token)),
+            ],
+        ))
+    }
+}
+pub fn r_statement() -> RStatementBuilder {
+    RStatementBuilder {
+        expression: None,
+        semicolon_token: None,
+    }
+}
+pub struct RStatementBuilder {
+    expression: Option<AnyRExpression>,
+    semicolon_token: Option<SyntaxToken>,
+}
+impl RStatementBuilder {
+    pub fn with_expression(mut self, expression: AnyRExpression) -> Self {
+        self.expression = Some(expression);
+        self
+    }
+    pub fn with_semicolon_token(mut self, semicolon_token: SyntaxToken) -> Self {
+        self.semicolon_token = Some(semicolon_token);
+        self
+    }
+    pub fn build(self) -> RStatement {
+        RStatement::unwrap_cast(SyntaxNode::new_detached(
+            RSyntaxKind::R_STATEMENT,
+            [
+                self.expression
+                    .map(|token| SyntaxElement::Node(token.into_syntax())),
+                self.semicolon_token
+                    .map(|token| SyntaxElement::Token(token)),
             ],
         ))
     }
@@ -504,18 +535,6 @@ where
         }),
     ))
 }
-pub fn r_expression_list<I>(items: I) -> RExpressionList
-where
-    I: IntoIterator<Item = AnyRExpression>,
-    I::IntoIter: ExactSizeIterator,
-{
-    RExpressionList::unwrap_cast(SyntaxNode::new_detached(
-        RSyntaxKind::R_EXPRESSION_LIST,
-        items
-            .into_iter()
-            .map(|item| Some(item.into_syntax().into())),
-    ))
-}
 pub fn r_parameter_list<I, S>(items: I, separators: S) -> RParameterList
 where
     I: IntoIterator<Item = RParameter>,
@@ -535,6 +554,18 @@ where
                 Some(separators.next()?.into())
             }
         }),
+    ))
+}
+pub fn r_statement_list<I>(items: I) -> RStatementList
+where
+    I: IntoIterator<Item = RStatement>,
+    I::IntoIter: ExactSizeIterator,
+{
+    RStatementList::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_STATEMENT_LIST,
+        items
+            .into_iter()
+            .map(|item| Some(item.into_syntax().into())),
     ))
 }
 pub fn r_bogus<I>(slots: I) -> RBogus

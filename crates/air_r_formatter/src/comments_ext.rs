@@ -30,18 +30,10 @@ impl CommentsExt for RComments {
     type Language = RLanguage;
 
     fn has_skip_directive(&self, node: &SyntaxNode<Self::Language>) -> bool {
-        if !can_have_directive(node) {
-            return false;
-        }
-
         directives(self, node).any(|d| matches!(d, Directive::Format(FormatDirective::Skip)))
     }
 
     fn has_table_directive(&self, node: &SyntaxNode<Self::Language>) -> bool {
-        if !can_have_directive(node) {
-            return false;
-        }
-
         directives(self, node).any(|d| matches!(d, Directive::Format(FormatDirective::Table)))
     }
 }
@@ -49,27 +41,34 @@ impl CommentsExt for RComments {
 fn directives(comments: &RComments, node: &RSyntaxNode) -> impl Iterator<Item = Directive> {
     // We intentionally only consider directives in leading comments. This is a
     // departure from Biome (and Ruff?).
-    comments
-        .leading_comments(node)
+    let leading = match directive_node(node) {
+        Some(node) => comments.leading_comments(&node),
+        None => &[],
+    };
+
+    leading
         .iter()
         .filter_map(|c| comments::parse_comment_directive(c.piece().text()))
 }
 
-fn can_have_directive(node: &RSyntaxNode) -> bool {
-    let Some(parent) = node.parent() else {
-        return false;
-    };
-
-    // Only expressions found within the following can take directives:
-    // - Expression lists (program and braced blocks)
-    // - Argument lists (like skipping an individual argument)
-    // - Binary expression sides (like the RHS of a pipe chain)
-    matches!(
-        parent.kind(),
-        RSyntaxKind::R_EXPRESSION_LIST
-            | RSyntaxKind::R_ARGUMENT_LIST
-            | RSyntaxKind::R_BINARY_EXPRESSION
-    )
+/// The node whose leading comments hold the directives for `node`, if any
+///
+/// Only nodes found within the following can take directives:
+/// - Statement lists (program and braced blocks)
+/// - Argument lists (like skipping an individual argument)
+/// - Binary expression sides (like the RHS of a pipe chain)
+///
+/// For statement lists, the `parent` of the `node` we are asking about is the
+/// intermediate `RStatement`, and that's also where the directive comments will
+/// actually be placed, so we look at the leading comments of that `RStatement`
+/// node directly.
+fn directive_node(node: &RSyntaxNode) -> Option<RSyntaxNode> {
+    let parent = node.parent()?;
+    match parent.kind() {
+        RSyntaxKind::R_STATEMENT => Some(parent),
+        RSyntaxKind::R_ARGUMENT_LIST | RSyntaxKind::R_BINARY_EXPRESSION => Some(node.clone()),
+        _ => None,
+    }
 }
 
 /// Is the name of this function call contained within the `skip` `air.toml` setting?

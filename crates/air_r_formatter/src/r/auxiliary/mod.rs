@@ -3,7 +3,7 @@
 pub(crate) mod argument;
 pub(crate) mod argument_name_clause;
 pub(crate) mod binary_expression;
-pub(crate) mod braced_expressions;
+pub(crate) mod braced_statements;
 pub(crate) mod break_expression;
 pub(crate) mod call;
 pub(crate) mod call_arguments;
@@ -31,6 +31,7 @@ pub(crate) mod parameters;
 pub(crate) mod parenthesized_expression;
 pub(crate) mod repeat_statement;
 pub(crate) mod root;
+pub(crate) mod statement;
 pub(crate) mod string_value;
 pub(crate) mod subset;
 pub(crate) mod subset_2;

@@ -1,20 +1,20 @@
 use crate::{formatter_ext::FormatterExt, joiner_ext::EmptyLines, prelude::*};
-use air_r_syntax::RExpressionList;
+use air_r_syntax::RStatementList;
 use biome_formatter::FormatRuleWithOptions;
 
 #[derive(Debug, Clone, Default)]
-pub(crate) struct FormatRExpressionList {
+pub(crate) struct FormatRStatementList {
     pub(crate) empty_lines: EmptyLines,
 }
 
 #[derive(Default, Debug, Clone)]
-pub(crate) struct FormatRExpressionListOptions {
+pub(crate) struct FormatRStatementListOptions {
     pub(crate) empty_lines: EmptyLines,
 }
 
-impl FormatRule<RExpressionList> for FormatRExpressionList {
+impl FormatRule<RStatementList> for FormatRStatementList {
     type Context = RFormatContext;
-    fn fmt(&self, node: &RExpressionList, f: &mut RFormatter) -> FormatResult<()> {
+    fn fmt(&self, node: &RStatementList, f: &mut RFormatter) -> FormatResult<()> {
         let mut join = f.join_nodes_with_hardline_ext(self.empty_lines);
 
         for rule in node {
@@ -25,8 +25,8 @@ impl FormatRule<RExpressionList> for FormatRExpressionList {
     }
 }
 
-impl FormatRuleWithOptions<RExpressionList> for FormatRExpressionList {
-    type Options = FormatRExpressionListOptions;
+impl FormatRuleWithOptions<RStatementList> for FormatRStatementList {
+    type Options = FormatRStatementListOptions;
 
     fn with_options(mut self, options: Self::Options) -> Self {
         self.empty_lines = options.empty_lines;

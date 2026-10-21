@@ -15,7 +15,7 @@ impl<'a> FormatLoopBody<'a> {
 
 impl Format<RFormatContext> for FormatLoopBody<'_> {
     fn fmt(&self, f: &mut Formatter<RFormatContext>) -> FormatResult<()> {
-        if matches!(&self.node, AnyRExpression::RBracedExpressions(_)) {
+        if matches!(&self.node, AnyRExpression::RBracedStatements(_)) {
             // If it's already braced, just write it
             write!(f, [self.node.format()])
         } else {

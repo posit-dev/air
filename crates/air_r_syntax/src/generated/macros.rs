@@ -28,8 +28,8 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RBinaryExpression::new_unchecked(node) };
                     $body
                 }
-                $crate::RSyntaxKind::R_BRACED_EXPRESSIONS => {
-                    let $pattern = unsafe { $crate::RBracedExpressions::new_unchecked(node) };
+                $crate::RSyntaxKind::R_BRACED_STATEMENTS => {
+                    let $pattern = unsafe { $crate::RBracedStatements::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_BREAK_EXPRESSION => {
@@ -140,6 +140,10 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RRoot::new_unchecked(node) };
                     $body
                 }
+                $crate::RSyntaxKind::R_STATEMENT => {
+                    let $pattern = unsafe { $crate::RStatement::new_unchecked(node) };
+                    $body
+                }
                 $crate::RSyntaxKind::R_STRING_VALUE => {
                     let $pattern = unsafe { $crate::RStringValue::new_unchecked(node) };
                     $body
@@ -200,12 +204,12 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RArgumentList::new_unchecked(node) };
                     $body
                 }
-                $crate::RSyntaxKind::R_EXPRESSION_LIST => {
-                    let $pattern = unsafe { $crate::RExpressionList::new_unchecked(node) };
-                    $body
-                }
                 $crate::RSyntaxKind::R_PARAMETER_LIST => {
                     let $pattern = unsafe { $crate::RParameterList::new_unchecked(node) };
+                    $body
+                }
+                $crate::RSyntaxKind::R_STATEMENT_LIST => {
+                    let $pattern = unsafe { $crate::RStatementList::new_unchecked(node) };
                     $body
                 }
                 _ => unreachable!(),
