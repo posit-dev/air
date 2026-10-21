@@ -1,5 +1,3 @@
-use core::panic;
-
 use crate::comments::RComments;
 use crate::prelude::*;
 use air_r_syntax::AnyRExpression;
