@@ -12,7 +12,6 @@ use air_r_syntax::RLanguage;
 use air_r_syntax::RParenthesizedExpression;
 use air_r_syntax::RRepeatStatement;
 use air_r_syntax::RSyntaxKind;
-use air_r_syntax::RSyntaxNode;
 use air_r_syntax::RSyntaxToken;
 use air_r_syntax::RWhileStatement;
 use biome_formatter::comments::CommentKind;
