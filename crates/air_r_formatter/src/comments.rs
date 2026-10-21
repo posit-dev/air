@@ -1,7 +1,10 @@
 use air_r_syntax::AnyRExpression;
+use air_r_syntax::AnyRStatement;
 use air_r_syntax::RArgument;
 use air_r_syntax::RArgumentNameClause;
 use air_r_syntax::RElseClause;
+use air_r_syntax::REmptyStatement;
+use air_r_syntax::RExpressionStatement;
 use air_r_syntax::RForStatement;
 use air_r_syntax::RFunctionDefinition;
 use air_r_syntax::RIfStatement;
@@ -9,6 +12,7 @@ use air_r_syntax::RLanguage;
 use air_r_syntax::RParenthesizedExpression;
 use air_r_syntax::RRepeatStatement;
 use air_r_syntax::RSyntaxKind;
+use air_r_syntax::RSyntaxNode;
 use air_r_syntax::RSyntaxToken;
 use air_r_syntax::RWhileStatement;
 use biome_formatter::comments::CommentKind;
@@ -20,6 +24,7 @@ use biome_formatter::comments::DecoratedComment;
 use biome_formatter::comments::SourceComment;
 use biome_formatter::write;
 use biome_rowan::AstNode;
+use biome_rowan::Direction;
 use biome_rowan::SyntaxTriviaPieceComments;
 
 use crate::prelude::*;
@@ -76,7 +81,8 @@ impl CommentStyle for RCommentStyle {
         comment: DecoratedComment<Self::Language>,
     ) -> CommentPlacement<Self::Language> {
         match comment.text_position() {
-            CommentTextPosition::EndOfLine => handle_for_comment(comment)
+            CommentTextPosition::EndOfLine => handle_empty_statement_comment(comment)
+                .or_else(handle_for_comment)
                 .or_else(handle_function_comment)
                 .or_else(handle_while_comment)
                 .or_else(handle_repeat_comment)
@@ -86,7 +92,8 @@ impl CommentStyle for RCommentStyle {
                 .or_else(handle_argument_name_clause_comment)
                 .or_else(handle_argument_comment)
                 .or_else(handle_hole_argument_comment),
-            CommentTextPosition::OwnLine => handle_for_comment(comment)
+            CommentTextPosition::OwnLine => handle_empty_statement_comment(comment)
+                .or_else(handle_for_comment)
                 .or_else(handle_function_comment)
                 .or_else(handle_while_comment)
                 .or_else(handle_repeat_comment)
@@ -100,6 +107,148 @@ impl CommentStyle for RCommentStyle {
                 // Not applicable for R, we don't have `/* */` comments
                 CommentPlacement::Default(comment)
             }
+        }
+    }
+}
+
+fn handle_empty_statement_comment(
+    comment: DecoratedComment<RLanguage>,
+) -> CommentPlacement<RLanguage> {
+    let preceding = comment.preceding_node();
+    let following = comment.following_node();
+
+    let preceding_is_empty_statement =
+        preceding.is_some_and(|preceding| REmptyStatement::can_cast(preceding.kind()));
+    let following_is_empty_statement =
+        following.is_some_and(|following| REmptyStatement::can_cast(following.kind()));
+
+    // If either the `preceding` or `following` nodes are empty statements, we
+    // take over placement to ensure that the comment is never attached to an
+    // empty statement. Downstream formatting code relies on this invariant!
+    if !preceding_is_empty_statement && !following_is_empty_statement {
+        return CommentPlacement::Default(comment);
+    }
+
+    // Find closest non-empty `preceding` node
+    let preceding = preceding.and_then(|preceding| {
+        if preceding_is_empty_statement {
+            preceding
+                .siblings(Direction::Prev)
+                .find(|sibling| RExpressionStatement::can_cast(sibling.kind()))
+        } else {
+            Some(preceding.clone())
+        }
+    });
+
+    // Find closest non-empty `following` node
+    let following = following.and_then(|following| {
+        if following_is_empty_statement {
+            following
+                .siblings(Direction::Next)
+                .find(|sibling| RExpressionStatement::can_cast(sibling.kind()))
+        } else {
+            Some(following.clone())
+        }
+    });
+
+    match comment.text_position() {
+        CommentTextPosition::EndOfLine => match (preceding, following) {
+            // ```r
+            // {
+            //   1
+            //   ; # Trails preceding
+            //   2
+            // }
+            // ```
+            (Some(preceding), Some(_)) => CommentPlacement::trailing(preceding, comment),
+
+            // ```r
+            // {
+            //   1
+            //   ; # Trails preceding
+            // }
+            // ```
+            (Some(preceding), None) => CommentPlacement::trailing(preceding, comment),
+
+            // ```r
+            // {
+            //   ; # Leads following
+            //   2
+            // }
+            // ```
+            (None, Some(following)) => CommentPlacement::leading(following, comment),
+
+            // ```r
+            // {
+            //   ; # Dangling on enclosing
+            // }
+            // ```
+            (None, None) => CommentPlacement::dangling(comment.enclosing_node().clone(), comment),
+        },
+        CommentTextPosition::OwnLine => match (preceding, following) {
+            // ```r
+            // {
+            //   1
+            //   # Leads following
+            //   ;
+            //   2
+            // }
+            //
+            // {
+            //   1
+            //   ;
+            //   # Leads following
+            //   2
+            // }
+            // ```
+            (Some(_), Some(following)) => CommentPlacement::leading(following, comment),
+
+            // ```r
+            // {
+            //   # Leads following
+            //   ;
+            //   2
+            // }
+            //
+            // {
+            //   ;
+            //   # Leads following
+            //   2
+            // }
+            // ```
+            (None, Some(following)) => CommentPlacement::leading(following, comment),
+
+            // ```r
+            // {
+            //   1
+            //   # Trails preceding
+            //   ;
+            // }
+            //
+            // {
+            //   1
+            //   ;
+            //   # Trails preceding
+            // }
+            // ```
+            (Some(preceding), None) => CommentPlacement::trailing(preceding, comment),
+
+            // ```r
+            // {
+            //   # Dangling on enclosing
+            //   ;
+            // }
+            //
+            // {
+            //   ;
+            //   # Dangling on enclosing
+            // }
+            // ```
+            (None, None) => CommentPlacement::dangling(comment.enclosing_node().clone(), comment),
+        },
+        CommentTextPosition::SameLine => {
+            // Not applicable for R
+            CommentPlacement::Default(comment)
         }
     }
 }
@@ -985,13 +1134,24 @@ fn handle_hole_argument_comment(
 /// ```r
 /// function() # becomes leading on `1 + 1`
 /// {
-///  1 + 1
+///   1 + 1
+/// }
+///
+/// function() # becomes leading on `1 + 1`
+/// {
+///   ;
+///   1 + 1
 /// }
 /// ```
 ///
 /// ```r
 /// function() # becomes dangling on the `{}`
 /// {
+/// }
+///
+/// function() # becomes dangling on the `{}`
+/// {
+///   ;
 /// }
 /// ```
 ///
@@ -1010,10 +1170,19 @@ fn place_leading_or_dangling_body_comment(
     comment: DecoratedComment<RLanguage>,
 ) -> CommentPlacement<RLanguage> {
     match body {
-        AnyRExpression::RBracedStatements(body) => match body.statements().first() {
-            Some(first) => CommentPlacement::leading(first.into_syntax(), comment),
-            None => CommentPlacement::dangling(body.into_syntax(), comment),
-        },
+        AnyRExpression::RBracedStatements(body) => {
+            // First `body` statement, skipping over `REmptyStatement`s holding
+            // lone `;`s, which will be removed by the formatter
+            let first = body.statements().iter().find(|statement| match statement {
+                AnyRStatement::REmptyStatement(_) => false,
+                AnyRStatement::RExpressionStatement(_) => true,
+            });
+
+            match first {
+                Some(first) => CommentPlacement::leading(first.into_syntax(), comment),
+                None => CommentPlacement::dangling(body.into_syntax(), comment),
+            }
+        }
         _ => CommentPlacement::leading(body.into_syntax(), comment),
     }
 }

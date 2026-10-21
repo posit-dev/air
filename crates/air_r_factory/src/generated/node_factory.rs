@@ -139,6 +139,38 @@ pub fn r_else_clause(else_token: SyntaxToken, alternative: AnyRExpression) -> RE
         ],
     ))
 }
+pub fn r_empty_statement(semicolon_token: SyntaxToken) -> REmptyStatement {
+    REmptyStatement::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_EMPTY_STATEMENT,
+        [Some(SyntaxElement::Token(semicolon_token))],
+    ))
+}
+pub fn r_expression_statement(expression: AnyRExpression) -> RExpressionStatementBuilder {
+    RExpressionStatementBuilder {
+        expression,
+        semicolon_token: None,
+    }
+}
+pub struct RExpressionStatementBuilder {
+    expression: AnyRExpression,
+    semicolon_token: Option<SyntaxToken>,
+}
+impl RExpressionStatementBuilder {
+    pub fn with_semicolon_token(mut self, semicolon_token: SyntaxToken) -> Self {
+        self.semicolon_token = Some(semicolon_token);
+        self
+    }
+    pub fn build(self) -> RExpressionStatement {
+        RExpressionStatement::unwrap_cast(SyntaxNode::new_detached(
+            RSyntaxKind::R_EXPRESSION_STATEMENT,
+            [
+                Some(SyntaxElement::Node(self.expression.into_syntax())),
+                self.semicolon_token
+                    .map(|token| SyntaxElement::Token(token)),
+            ],
+        ))
+    }
+}
 pub fn r_extract_expression(
     left: AnyRExpression,
     operator_token: SyntaxToken,
@@ -395,37 +427,6 @@ impl RRootBuilder {
         ))
     }
 }
-pub fn r_statement() -> RStatementBuilder {
-    RStatementBuilder {
-        expression: None,
-        semicolon_token: None,
-    }
-}
-pub struct RStatementBuilder {
-    expression: Option<AnyRExpression>,
-    semicolon_token: Option<SyntaxToken>,
-}
-impl RStatementBuilder {
-    pub fn with_expression(mut self, expression: AnyRExpression) -> Self {
-        self.expression = Some(expression);
-        self
-    }
-    pub fn with_semicolon_token(mut self, semicolon_token: SyntaxToken) -> Self {
-        self.semicolon_token = Some(semicolon_token);
-        self
-    }
-    pub fn build(self) -> RStatement {
-        RStatement::unwrap_cast(SyntaxNode::new_detached(
-            RSyntaxKind::R_STATEMENT,
-            [
-                self.expression
-                    .map(|token| SyntaxElement::Node(token.into_syntax())),
-                self.semicolon_token
-                    .map(|token| SyntaxElement::Token(token)),
-            ],
-        ))
-    }
-}
 pub fn r_string_value(value_token: SyntaxToken) -> RStringValue {
     RStringValue::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_STRING_VALUE,
@@ -558,7 +559,7 @@ where
 }
 pub fn r_statement_list<I>(items: I) -> RStatementList
 where
-    I: IntoIterator<Item = RStatement>,
+    I: IntoIterator<Item = AnyRStatement>,
     I::IntoIter: ExactSizeIterator,
 {
     RStatementList::unwrap_cast(SyntaxNode::new_detached(

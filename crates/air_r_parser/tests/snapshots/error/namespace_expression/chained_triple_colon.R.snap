@@ -15,7 +15,7 @@ a:::b:::c
 RRoot {
     bom_token: missing (optional),
     statements: RStatementList [
-        RStatement {
+        RExpressionStatement {
             expression: RBogusExpression {
                 items: [
                     R_BOGUS@0..9 "a:::b:::c" [] [],
@@ -34,7 +34,7 @@ RRoot {
 0: R_ROOT@0..9
   0: (empty)
   1: R_STATEMENT_LIST@0..9
-    0: R_STATEMENT@0..9
+    0: R_EXPRESSION_STATEMENT@0..9
       0: R_BOGUS_EXPRESSION@0..9
         0: R_BOGUS@0..9 "a:::b:::c" [] []
       1: (empty)

@@ -5,7 +5,7 @@ expression: original_syntax
 0: R_ROOT@0..8
   0: (empty)
   1: R_STATEMENT_LIST@0..8
-    0: R_STATEMENT@0..8
+    0: R_EXPRESSION_STATEMENT@0..8
       0: R_CALL@0..8
         0: R_IDENTIFIER@0..3
           0: IDENT@0..3 "foo" [] []

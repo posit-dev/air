@@ -162,8 +162,8 @@ fn parse_failure(text: &str) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Option<Pa
         TextSize::try_from(text.len()).expect("`text` can't be longer than `TextSize` allows.");
 
     // Must provide a valid root node on failures, otherwise `tree_sink.finish()` fails.
-    // An `R_ROOT` must have an `R_STATEMENT_LIST`, and we force that to hold 1 statement
-    // with a bogus expression that spans the whole file. This allows the AST printer to
+    // An `R_ROOT` must have an `R_STATEMENT_LIST`, and we force that to hold 1 expression
+    // statement with a bogus expression that spans the whole file. This allows the AST printer to
     // work correctly in error tests, and during debugging.
     let events = vec![
         Event::Start {
@@ -175,7 +175,7 @@ fn parse_failure(text: &str) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Option<Pa
             forward_parent: None,
         },
         Event::Start {
-            kind: RSyntaxKind::R_STATEMENT,
+            kind: RSyntaxKind::R_EXPRESSION_STATEMENT,
             forward_parent: None,
         },
         Event::Start {
@@ -379,7 +379,8 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_PARAMETER_LIST
             | RSyntaxKind::R_ARGUMENT_LIST
             | RSyntaxKind::R_STATEMENT_LIST
-            | RSyntaxKind::R_STATEMENT
+            | RSyntaxKind::R_EXPRESSION_STATEMENT
+            | RSyntaxKind::R_EMPTY_STATEMENT
             | RSyntaxKind::R_PARAMETER_DEFAULT
             | RSyntaxKind::EOF
             | RSyntaxKind::UNICODE_BOM
@@ -538,7 +539,8 @@ impl<'src> RWalk<'src> {
             | RSyntaxKind::R_PARAMETER_LIST
             | RSyntaxKind::R_ARGUMENT_LIST
             | RSyntaxKind::R_STATEMENT_LIST
-            | RSyntaxKind::R_STATEMENT
+            | RSyntaxKind::R_EXPRESSION_STATEMENT
+            | RSyntaxKind::R_EMPTY_STATEMENT
             | RSyntaxKind::R_PARAMETER_DEFAULT
             | RSyntaxKind::EOF
             | RSyntaxKind::UNICODE_BOM
@@ -864,11 +866,11 @@ impl<'src> RWalk<'src> {
     }
 
     /// tree-sitter-r hides `;`, so the optional `;` slot of the statement is
-    /// never filled
+    /// never filled, and we never produce an `R_EMPTY_STATEMENT`
     fn handle_statement(&mut self, iter: &mut Preorder) {
-        self.handle_node_enter(RSyntaxKind::R_STATEMENT);
+        self.handle_node_enter(RSyntaxKind::R_EXPRESSION_STATEMENT);
         self.walk_next(iter);
-        self.handle_node_leave(RSyntaxKind::R_STATEMENT);
+        self.handle_node_leave(RSyntaxKind::R_EXPRESSION_STATEMENT);
     }
 
     fn handle_call_like_enter(
@@ -1456,7 +1458,7 @@ mod tests {
                 forward_parent: None,
             },
             Event::Start {
-                kind: RSyntaxKind::R_STATEMENT,
+                kind: RSyntaxKind::R_EXPRESSION_STATEMENT,
                 forward_parent: None,
             },
             Event::Start {
@@ -1509,7 +1511,7 @@ mod tests {
                 forward_parent: None,
             },
             Event::Start {
-                kind: RSyntaxKind::R_STATEMENT,
+                kind: RSyntaxKind::R_EXPRESSION_STATEMENT,
                 forward_parent: None,
             },
             Event::Start {
@@ -1548,7 +1550,7 @@ mod tests {
             },
             Event::Finish, // R_DOUBLE_VALUE
             Event::Finish, // R_FUNCTION_DEFINITION
-            Event::Finish, // R_STATEMENT
+            Event::Finish, // R_EXPRESSION_STATEMENT
             Event::Finish, // R_STATEMENT_LIST
             Event::Finish, // R_ROOT
         ];
@@ -1572,7 +1574,7 @@ mod tests {
                 forward_parent: None,
             },
             Event::Start {
-                kind: RSyntaxKind::R_STATEMENT,
+                kind: RSyntaxKind::R_EXPRESSION_STATEMENT,
                 forward_parent: None,
             },
             Event::Start {
@@ -1607,7 +1609,7 @@ mod tests {
             },
             Event::Finish, // R_CALL_ARGUMENTS
             Event::Finish, // R_CALL
-            Event::Finish, // R_STATEMENT
+            Event::Finish, // R_EXPRESSION_STATEMENT
             Event::Finish, // R_STATEMENT_LIST
             Event::Finish, // R_ROOT
         ];

@@ -341,6 +341,51 @@ impl SyntaxFactory for RSyntaxFactory {
                 }
                 slots.into_node(R_ELSE_CLAUSE, children)
             }
+            R_EMPTY_STATEMENT => {
+                let mut elements = (&children).into_iter();
+                let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
+                let mut current_element = elements.next();
+                if let Some(element) = &current_element
+                    && element.kind() == T ! [;]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
+                }
+                slots.next_slot();
+                if current_element.is_some() {
+                    return RawSyntaxNode::new(
+                        R_EMPTY_STATEMENT.to_bogus(),
+                        children.into_iter().map(Some),
+                    );
+                }
+                slots.into_node(R_EMPTY_STATEMENT, children)
+            }
+            R_EXPRESSION_STATEMENT => {
+                let mut elements = (&children).into_iter();
+                let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
+                let mut current_element = elements.next();
+                if let Some(element) = &current_element
+                    && AnyRExpression::can_cast(element.kind())
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
+                }
+                slots.next_slot();
+                if let Some(element) = &current_element
+                    && element.kind() == T ! [;]
+                {
+                    slots.mark_present();
+                    current_element = elements.next();
+                }
+                slots.next_slot();
+                if current_element.is_some() {
+                    return RawSyntaxNode::new(
+                        R_EXPRESSION_STATEMENT.to_bogus(),
+                        children.into_iter().map(Some),
+                    );
+                }
+                slots.into_node(R_EXPRESSION_STATEMENT, children)
+            }
             R_EXTRACT_EXPRESSION => {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<3usize> = RawNodeSlots::default();
@@ -888,32 +933,6 @@ impl SyntaxFactory for RSyntaxFactory {
                 }
                 slots.into_node(R_ROOT, children)
             }
-            R_STATEMENT => {
-                let mut elements = (&children).into_iter();
-                let mut slots: RawNodeSlots<2usize> = RawNodeSlots::default();
-                let mut current_element = elements.next();
-                if let Some(element) = &current_element
-                    && AnyRExpression::can_cast(element.kind())
-                {
-                    slots.mark_present();
-                    current_element = elements.next();
-                }
-                slots.next_slot();
-                if let Some(element) = &current_element
-                    && element.kind() == T ! [;]
-                {
-                    slots.mark_present();
-                    current_element = elements.next();
-                }
-                slots.next_slot();
-                if current_element.is_some() {
-                    return RawSyntaxNode::new(
-                        R_STATEMENT.to_bogus(),
-                        children.into_iter().map(Some),
-                    );
-                }
-                slots.into_node(R_STATEMENT, children)
-            }
             R_STRING_VALUE => {
                 let mut elements = (&children).into_iter();
                 let mut slots: RawNodeSlots<1usize> = RawNodeSlots::default();
@@ -1162,7 +1181,9 @@ impl SyntaxFactory for RSyntaxFactory {
                 T ! [,],
                 false,
             ),
-            R_STATEMENT_LIST => Self::make_node_list_syntax(kind, children, RStatement::can_cast),
+            R_STATEMENT_LIST => {
+                Self::make_node_list_syntax(kind, children, AnyRStatement::can_cast)
+            }
             _ => unreachable!("Is {:?} a token?", kind),
         }
     }

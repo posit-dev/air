@@ -493,6 +493,81 @@ pub struct RElseClauseFields {
     pub alternative: SyntaxResult<AnyRExpression>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct REmptyStatement {
+    pub(crate) syntax: SyntaxNode,
+}
+impl REmptyStatement {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> REmptyStatementFields {
+        REmptyStatementFields {
+            semicolon_token: self.semicolon_token(),
+        }
+    }
+    pub fn semicolon_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+}
+impl Serialize for REmptyStatement {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct REmptyStatementFields {
+    pub semicolon_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct RExpressionStatement {
+    pub(crate) syntax: SyntaxNode,
+}
+impl RExpressionStatement {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> RExpressionStatementFields {
+        RExpressionStatementFields {
+            expression: self.expression(),
+            semicolon_token: self.semicolon_token(),
+        }
+    }
+    pub fn expression(&self) -> SyntaxResult<AnyRExpression> {
+        support::required_node(&self.syntax, 0usize)
+    }
+    pub fn semicolon_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, 1usize)
+    }
+}
+impl Serialize for RExpressionStatement {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct RExpressionStatementFields {
+    pub expression: SyntaxResult<AnyRExpression>,
+    pub semicolon_token: Option<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RExtractExpression {
     pub(crate) syntax: SyntaxNode,
 }
@@ -1288,46 +1363,6 @@ pub struct RRootFields {
     pub eof_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub struct RStatement {
-    pub(crate) syntax: SyntaxNode,
-}
-impl RStatement {
-    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
-    #[doc = r""]
-    #[doc = r" # Safety"]
-    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
-    #[doc = r" or a match on [SyntaxNode::kind]"]
-    #[inline]
-    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
-        Self { syntax }
-    }
-    pub fn as_fields(&self) -> RStatementFields {
-        RStatementFields {
-            expression: self.expression(),
-            semicolon_token: self.semicolon_token(),
-        }
-    }
-    pub fn expression(&self) -> Option<AnyRExpression> {
-        support::node(&self.syntax, 0usize)
-    }
-    pub fn semicolon_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, 1usize)
-    }
-}
-impl Serialize for RStatement {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        self.as_fields().serialize(serializer)
-    }
-}
-#[derive(Serialize)]
-pub struct RStatementFields {
-    pub expression: Option<AnyRExpression>,
-    pub semicolon_token: Option<SyntaxToken>,
-}
-#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct RStringValue {
     pub(crate) syntax: SyntaxNode,
 }
@@ -2003,6 +2038,25 @@ impl AnyRSelector {
     }
 }
 #[derive(Clone, PartialEq, Eq, Hash, Serialize)]
+pub enum AnyRStatement {
+    REmptyStatement(REmptyStatement),
+    RExpressionStatement(RExpressionStatement),
+}
+impl AnyRStatement {
+    pub fn as_r_empty_statement(&self) -> Option<&REmptyStatement> {
+        match &self {
+            AnyRStatement::REmptyStatement(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_r_expression_statement(&self) -> Option<&RExpressionStatement> {
+        match &self {
+            AnyRStatement::RExpressionStatement(item) => Some(item),
+            _ => None,
+        }
+    }
+}
+#[derive(Clone, PartialEq, Eq, Hash, Serialize)]
 pub enum AnyRValue {
     RBogusValue(RBogusValue),
     RComplexValue(RComplexValue),
@@ -2536,6 +2590,89 @@ impl From<RElseClause> for SyntaxNode {
 }
 impl From<RElseClause> for SyntaxElement {
     fn from(n: RElseClause) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
+impl AstNode for REmptyStatement {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_EMPTY_STATEMENT as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_EMPTY_STATEMENT
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for REmptyStatement {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("REmptyStatement")
+            .field(
+                "semicolon_token",
+                &support::DebugSyntaxResult(self.semicolon_token()),
+            )
+            .finish()
+    }
+}
+impl From<REmptyStatement> for SyntaxNode {
+    fn from(n: REmptyStatement) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<REmptyStatement> for SyntaxElement {
+    fn from(n: REmptyStatement) -> SyntaxElement {
+        n.syntax.into()
+    }
+}
+impl AstNode for RExpressionStatement {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(R_EXPRESSION_STATEMENT as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == R_EXPRESSION_STATEMENT
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for RExpressionStatement {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RExpressionStatement")
+            .field("expression", &support::DebugSyntaxResult(self.expression()))
+            .field(
+                "semicolon_token",
+                &support::DebugOptionalElement(self.semicolon_token()),
+            )
+            .finish()
+    }
+}
+impl From<RExpressionStatement> for SyntaxNode {
+    fn from(n: RExpressionStatement) -> SyntaxNode {
+        n.syntax
+    }
+}
+impl From<RExpressionStatement> for SyntaxElement {
+    fn from(n: RExpressionStatement) -> SyntaxElement {
         n.syntax.into()
     }
 }
@@ -3325,51 +3462,6 @@ impl From<RRoot> for SyntaxNode {
 }
 impl From<RRoot> for SyntaxElement {
     fn from(n: RRoot) -> SyntaxElement {
-        n.syntax.into()
-    }
-}
-impl AstNode for RStatement {
-    type Language = Language;
-    const KIND_SET: SyntaxKindSet<Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(R_STATEMENT as u16));
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == R_STATEMENT
-    }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        if Self::can_cast(syntax.kind()) {
-            Some(Self { syntax })
-        } else {
-            None
-        }
-    }
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode {
-        self.syntax
-    }
-}
-impl std::fmt::Debug for RStatement {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("RStatement")
-            .field(
-                "expression",
-                &support::DebugOptionalElement(self.expression()),
-            )
-            .field(
-                "semicolon_token",
-                &support::DebugOptionalElement(self.semicolon_token()),
-            )
-            .finish()
-    }
-}
-impl From<RStatement> for SyntaxNode {
-    fn from(n: RStatement) -> SyntaxNode {
-        n.syntax
-    }
-}
-impl From<RStatement> for SyntaxElement {
-    fn from(n: RStatement) -> SyntaxElement {
         n.syntax.into()
     }
 }
@@ -4446,6 +4538,68 @@ impl From<AnyRSelector> for SyntaxElement {
         node.into()
     }
 }
+impl From<REmptyStatement> for AnyRStatement {
+    fn from(node: REmptyStatement) -> AnyRStatement {
+        AnyRStatement::REmptyStatement(node)
+    }
+}
+impl From<RExpressionStatement> for AnyRStatement {
+    fn from(node: RExpressionStatement) -> AnyRStatement {
+        AnyRStatement::RExpressionStatement(node)
+    }
+}
+impl AstNode for AnyRStatement {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        REmptyStatement::KIND_SET.union(RExpressionStatement::KIND_SET);
+    fn can_cast(kind: SyntaxKind) -> bool {
+        matches!(kind, R_EMPTY_STATEMENT | R_EXPRESSION_STATEMENT)
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        let res = match syntax.kind() {
+            R_EMPTY_STATEMENT => AnyRStatement::REmptyStatement(REmptyStatement { syntax }),
+            R_EXPRESSION_STATEMENT => {
+                AnyRStatement::RExpressionStatement(RExpressionStatement { syntax })
+            }
+            _ => return None,
+        };
+        Some(res)
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        match self {
+            AnyRStatement::REmptyStatement(it) => &it.syntax,
+            AnyRStatement::RExpressionStatement(it) => &it.syntax,
+        }
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        match self {
+            AnyRStatement::REmptyStatement(it) => it.syntax,
+            AnyRStatement::RExpressionStatement(it) => it.syntax,
+        }
+    }
+}
+impl std::fmt::Debug for AnyRStatement {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            AnyRStatement::REmptyStatement(it) => std::fmt::Debug::fmt(it, f),
+            AnyRStatement::RExpressionStatement(it) => std::fmt::Debug::fmt(it, f),
+        }
+    }
+}
+impl From<AnyRStatement> for SyntaxNode {
+    fn from(n: AnyRStatement) -> SyntaxNode {
+        match n {
+            AnyRStatement::REmptyStatement(it) => it.into(),
+            AnyRStatement::RExpressionStatement(it) => it.into(),
+        }
+    }
+}
+impl From<AnyRStatement> for SyntaxElement {
+    fn from(n: AnyRStatement) -> SyntaxElement {
+        let node: SyntaxNode = n.into();
+        node.into()
+    }
+}
 impl From<RBogusValue> for AnyRValue {
     fn from(node: RBogusValue) -> AnyRValue {
         AnyRValue::RBogusValue(node)
@@ -4567,6 +4721,11 @@ impl std::fmt::Display for AnyRSelector {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
+impl std::fmt::Display for AnyRStatement {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
 impl std::fmt::Display for AnyRValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
@@ -4628,6 +4787,16 @@ impl std::fmt::Display for RDoubleValue {
     }
 }
 impl std::fmt::Display for RElseClause {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for REmptyStatement {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for RExpressionStatement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
@@ -4723,11 +4892,6 @@ impl std::fmt::Display for RRepeatStatement {
     }
 }
 impl std::fmt::Display for RRoot {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Display::fmt(self.syntax(), f)
-    }
-}
-impl std::fmt::Display for RStatement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
@@ -5326,7 +5490,7 @@ impl Serialize for RStatementList {
 }
 impl AstNodeList for RStatementList {
     type Language = Language;
-    type Node = RStatement;
+    type Node = AnyRStatement;
     fn syntax_list(&self) -> &SyntaxList {
         &self.syntax_list
     }
@@ -5341,15 +5505,15 @@ impl Debug for RStatementList {
     }
 }
 impl IntoIterator for &RStatementList {
-    type Item = RStatement;
-    type IntoIter = AstNodeListIterator<Language, RStatement>;
+    type Item = AnyRStatement;
+    type IntoIter = AstNodeListIterator<Language, AnyRStatement>;
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
     }
 }
 impl IntoIterator for RStatementList {
-    type Item = RStatement;
-    type IntoIter = AstNodeListIterator<Language, RStatement>;
+    type Item = AnyRStatement;
+    type IntoIter = AstNodeListIterator<Language, AnyRStatement>;
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
     }

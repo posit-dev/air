@@ -72,7 +72,7 @@ return()
 RRoot {
     bom_token: missing (optional),
     statements: RStatementList [
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@0..2 "fn" [] [],
@@ -85,7 +85,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@4..7 "fn" [Newline("\n")] [],
@@ -105,7 +105,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@10..13 "fn" [Newline("\n")] [],
@@ -132,7 +132,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@19..22 "fn" [Newline("\n")] [],
@@ -152,7 +152,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@27..30 "fn" [Newline("\n")] [],
@@ -186,7 +186,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@41..45 "fn" [Newline("\n"), Newline("\n")] [],
@@ -211,7 +211,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@52..55 "fn" [Newline("\n")] [],
@@ -234,7 +234,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@61..65 "fn" [Newline("\n"), Newline("\n")] [],
@@ -271,7 +271,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@79..82 "fn" [Newline("\n")] [],
@@ -306,7 +306,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@95..99 "fn" [Newline("\n"), Newline("\n")] [],
@@ -331,7 +331,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@108..111 "fn" [Newline("\n")] [],
@@ -354,7 +354,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@118..122 "fn" [Newline("\n"), Newline("\n")] [],
@@ -379,7 +379,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@131..134 "fn" [Newline("\n")] [],
@@ -402,7 +402,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@141..145 "fn" [Newline("\n"), Newline("\n")] [],
@@ -427,7 +427,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@156..159 "fn" [Newline("\n")] [],
@@ -450,7 +450,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@168..186 "fn" [Newline("\n"), Newline("\n"), Comments("# Comma tests"), Newline("\n")] [],
@@ -473,7 +473,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@189..192 "fn" [Newline("\n")] [],
@@ -506,7 +506,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@197..200 "fn" [Newline("\n")] [],
@@ -558,7 +558,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@210..230 "fn" [Newline("\n"), Newline("\n"), Comments("# Comment tests"), Newline("\n")] [],
@@ -571,7 +571,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@245..248 "fn" [Newline("\n")] [],
@@ -599,7 +599,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@265..268 "fn" [Newline("\n")] [],
@@ -626,7 +626,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@302..305 "fn" [Newline("\n")] [],
@@ -651,12 +651,12 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RBracedStatements {
                     l_curly_token: L_CURLY@353..356 "{" [Newline("\n"), Newline("\n")] [],
                     statements: RStatementList [
-                        RStatement {
+                        RExpressionStatement {
                             expression: RIdentifier {
                                 name_token: IDENT@356..360 "expr" [] [],
                             },
@@ -685,7 +685,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@368..421 "fn" [Newline("\n"), Newline("\n"), Comments("# `NULL` argument nam ..."), Newline("\n")] [],
@@ -710,7 +710,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@435..438 "fn" [Newline("\n")] [],
@@ -733,7 +733,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@451..454 "fn" [Newline("\n")] [],
@@ -761,7 +761,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
                     name_token: IDENT@468..546 "return" [Newline("\n"), Newline("\n"), Comments("# Standard call as of ..."), Newline("\n")] [],
@@ -785,7 +785,7 @@ RRoot {
 0: R_ROOT@0..548
   0: (empty)
   1: R_STATEMENT_LIST@0..548
-    0: R_STATEMENT@0..4
+    0: R_EXPRESSION_STATEMENT@0..4
       0: R_CALL@0..4
         0: R_IDENTIFIER@0..2
           0: IDENT@0..2 "fn" [] []
@@ -794,7 +794,7 @@ RRoot {
           1: R_ARGUMENT_LIST@3..3
           2: R_PAREN@3..4 ")" [] []
       1: (empty)
-    1: R_STATEMENT@4..10
+    1: R_EXPRESSION_STATEMENT@4..10
       0: R_CALL@4..10
         0: R_IDENTIFIER@4..7
           0: IDENT@4..7 "fn" [Newline("\n")] []
@@ -807,7 +807,7 @@ RRoot {
                 0: IDENT@8..9 "a" [] []
           2: R_PAREN@9..10 ")" [] []
       1: (empty)
-    2: R_STATEMENT@10..19
+    2: R_EXPRESSION_STATEMENT@10..19
       0: R_CALL@10..19
         0: R_IDENTIFIER@10..13
           0: IDENT@10..13 "fn" [Newline("\n")] []
@@ -825,7 +825,7 @@ RRoot {
                 0: IDENT@17..18 "b" [] []
           2: R_PAREN@18..19 ")" [] []
       1: (empty)
-    3: R_STATEMENT@19..27
+    3: R_EXPRESSION_STATEMENT@19..27
       0: R_CALL@19..27
         0: R_IDENTIFIER@19..22
           0: IDENT@19..22 "fn" [Newline("\n")] []
@@ -838,7 +838,7 @@ RRoot {
                 0: DOTS@23..26 "..." [] []
           2: R_PAREN@26..27 ")" [] []
       1: (empty)
-    4: R_STATEMENT@27..41
+    4: R_EXPRESSION_STATEMENT@27..41
       0: R_CALL@27..41
         0: R_IDENTIFIER@27..30
           0: IDENT@27..30 "fn" [Newline("\n")] []
@@ -861,7 +861,7 @@ RRoot {
                 0: IDENT@39..40 "b" [] []
           2: R_PAREN@40..41 ")" [] []
       1: (empty)
-    5: R_STATEMENT@41..52
+    5: R_EXPRESSION_STATEMENT@41..52
       0: R_CALL@41..52
         0: R_IDENTIFIER@41..45
           0: IDENT@41..45 "fn" [Newline("\n"), Newline("\n")] []
@@ -877,7 +877,7 @@ RRoot {
                 0: R_DOUBLE_LITERAL@50..51 "1" [] []
           2: R_PAREN@51..52 ")" [] []
       1: (empty)
-    6: R_STATEMENT@52..61
+    6: R_EXPRESSION_STATEMENT@52..61
       0: R_CALL@52..61
         0: R_IDENTIFIER@52..55
           0: IDENT@52..55 "fn" [Newline("\n")] []
@@ -892,7 +892,7 @@ RRoot {
               1: (empty)
           2: R_PAREN@60..61 ")" [] []
       1: (empty)
-    7: R_STATEMENT@61..79
+    7: R_EXPRESSION_STATEMENT@61..79
       0: R_CALL@61..79
         0: R_IDENTIFIER@61..65
           0: IDENT@61..65 "fn" [Newline("\n"), Newline("\n")] []
@@ -916,7 +916,7 @@ RRoot {
                 0: R_DOUBLE_LITERAL@77..78 "2" [] []
           2: R_PAREN@78..79 ")" [] []
       1: (empty)
-    8: R_STATEMENT@79..95
+    8: R_EXPRESSION_STATEMENT@79..95
       0: R_CALL@79..95
         0: R_IDENTIFIER@79..82
           0: IDENT@79..82 "fn" [Newline("\n")] []
@@ -939,7 +939,7 @@ RRoot {
                 0: R_DOUBLE_LITERAL@93..94 "2" [] []
           2: R_PAREN@94..95 ")" [] []
       1: (empty)
-    9: R_STATEMENT@95..108
+    9: R_EXPRESSION_STATEMENT@95..108
       0: R_CALL@95..108
         0: R_IDENTIFIER@95..99
           0: IDENT@95..99 "fn" [Newline("\n"), Newline("\n")] []
@@ -955,7 +955,7 @@ RRoot {
                 0: R_DOUBLE_LITERAL@106..107 "1" [] []
           2: R_PAREN@107..108 ")" [] []
       1: (empty)
-    10: R_STATEMENT@108..118
+    10: R_EXPRESSION_STATEMENT@108..118
       0: R_CALL@108..118
         0: R_IDENTIFIER@108..111
           0: IDENT@108..111 "fn" [Newline("\n")] []
@@ -970,7 +970,7 @@ RRoot {
               1: (empty)
           2: R_PAREN@117..118 ")" [] []
       1: (empty)
-    11: R_STATEMENT@118..131
+    11: R_EXPRESSION_STATEMENT@118..131
       0: R_CALL@118..131
         0: R_IDENTIFIER@118..122
           0: IDENT@118..122 "fn" [Newline("\n"), Newline("\n")] []
@@ -986,7 +986,7 @@ RRoot {
                 0: R_DOUBLE_LITERAL@129..130 "2" [] []
           2: R_PAREN@130..131 ")" [] []
       1: (empty)
-    12: R_STATEMENT@131..141
+    12: R_EXPRESSION_STATEMENT@131..141
       0: R_CALL@131..141
         0: R_IDENTIFIER@131..134
           0: IDENT@131..134 "fn" [Newline("\n")] []
@@ -1001,7 +1001,7 @@ RRoot {
               1: (empty)
           2: R_PAREN@140..141 ")" [] []
       1: (empty)
-    13: R_STATEMENT@141..156
+    13: R_EXPRESSION_STATEMENT@141..156
       0: R_CALL@141..156
         0: R_IDENTIFIER@141..145
           0: IDENT@141..145 "fn" [Newline("\n"), Newline("\n")] []
@@ -1017,7 +1017,7 @@ RRoot {
                 0: R_DOUBLE_LITERAL@154..155 "1" [] []
           2: R_PAREN@155..156 ")" [] []
       1: (empty)
-    14: R_STATEMENT@156..168
+    14: R_EXPRESSION_STATEMENT@156..168
       0: R_CALL@156..168
         0: R_IDENTIFIER@156..159
           0: IDENT@156..159 "fn" [Newline("\n")] []
@@ -1032,7 +1032,7 @@ RRoot {
               1: (empty)
           2: R_PAREN@167..168 ")" [] []
       1: (empty)
-    15: R_STATEMENT@168..189
+    15: R_EXPRESSION_STATEMENT@168..189
       0: R_CALL@168..189
         0: R_IDENTIFIER@168..186
           0: IDENT@168..186 "fn" [Newline("\n"), Newline("\n"), Comments("# Comma tests"), Newline("\n")] []
@@ -1048,7 +1048,7 @@ RRoot {
               1: (empty)
           2: R_PAREN@188..189 ")" [] []
       1: (empty)
-    16: R_STATEMENT@189..197
+    16: R_EXPRESSION_STATEMENT@189..197
       0: R_CALL@189..197
         0: R_IDENTIFIER@189..192
           0: IDENT@189..192 "fn" [Newline("\n")] []
@@ -1072,7 +1072,7 @@ RRoot {
               1: (empty)
           2: R_PAREN@196..197 ")" [] []
       1: (empty)
-    17: R_STATEMENT@197..210
+    17: R_EXPRESSION_STATEMENT@197..210
       0: R_CALL@197..210
         0: R_IDENTIFIER@197..200
           0: IDENT@197..200 "fn" [Newline("\n")] []
@@ -1110,7 +1110,7 @@ RRoot {
               1: (empty)
           2: R_PAREN@209..210 ")" [] []
       1: (empty)
-    18: R_STATEMENT@210..245
+    18: R_EXPRESSION_STATEMENT@210..245
       0: R_CALL@210..245
         0: R_IDENTIFIER@210..230
           0: IDENT@210..230 "fn" [Newline("\n"), Newline("\n"), Comments("# Comment tests"), Newline("\n")] []
@@ -1119,7 +1119,7 @@ RRoot {
           1: R_ARGUMENT_LIST@231..231
           2: R_PAREN@231..245 ")" [Newline("\n"), Whitespace("  "), Comments("# comment"), Newline("\n")] []
       1: (empty)
-    19: R_STATEMENT@245..265
+    19: R_EXPRESSION_STATEMENT@245..265
       0: R_CALL@245..265
         0: R_IDENTIFIER@245..248
           0: IDENT@245..248 "fn" [Newline("\n")] []
@@ -1139,7 +1139,7 @@ RRoot {
               1: (empty)
           2: R_PAREN@264..265 ")" [] []
       1: (empty)
-    20: R_STATEMENT@265..302
+    20: R_EXPRESSION_STATEMENT@265..302
       0: R_CALL@265..302
         0: R_IDENTIFIER@265..268
           0: IDENT@265..268 "fn" [Newline("\n")] []
@@ -1157,7 +1157,7 @@ RRoot {
                 0: IDENT@285..300 "b" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")]
           2: R_PAREN@300..302 ")" [Newline("\n")] []
       1: (empty)
-    21: R_STATEMENT@302..353
+    21: R_EXPRESSION_STATEMENT@302..353
       0: R_CALL@302..353
         0: R_IDENTIFIER@302..305
           0: IDENT@302..305 "fn" [Newline("\n")] []
@@ -1173,12 +1173,12 @@ RRoot {
                 0: R_DOUBLE_LITERAL@336..351 "1" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment3")]
           2: R_PAREN@351..353 ")" [Newline("\n")] []
       1: (empty)
-    22: R_STATEMENT@353..368
+    22: R_EXPRESSION_STATEMENT@353..368
       0: R_CALL@353..368
         0: R_BRACED_STATEMENTS@353..361
           0: L_CURLY@353..356 "{" [Newline("\n"), Newline("\n")] []
           1: R_STATEMENT_LIST@356..360
-            0: R_STATEMENT@356..360
+            0: R_EXPRESSION_STATEMENT@356..360
               0: R_IDENTIFIER@356..360
                 0: IDENT@356..360 "expr" [] []
               1: (empty)
@@ -1195,7 +1195,7 @@ RRoot {
                 0: R_DOUBLE_LITERAL@366..367 "1" [] []
           2: R_PAREN@367..368 ")" [] []
       1: (empty)
-    23: R_STATEMENT@368..435
+    23: R_EXPRESSION_STATEMENT@368..435
       0: R_CALL@368..435
         0: R_IDENTIFIER@368..421
           0: IDENT@368..421 "fn" [Newline("\n"), Newline("\n"), Comments("# `NULL` argument nam ..."), Newline("\n")] []
@@ -1211,7 +1211,7 @@ RRoot {
                 0: R_DOUBLE_LITERAL@432..433 "1" [] []
           2: R_PAREN@433..435 ")" [Newline("\n")] []
       1: (empty)
-    24: R_STATEMENT@435..451
+    24: R_EXPRESSION_STATEMENT@435..451
       0: R_CALL@435..451
         0: R_IDENTIFIER@435..438
           0: IDENT@435..438 "fn" [Newline("\n")] []
@@ -1226,7 +1226,7 @@ RRoot {
               1: (empty)
           2: R_PAREN@449..451 ")" [Newline("\n")] []
       1: (empty)
-    25: R_STATEMENT@451..468
+    25: R_EXPRESSION_STATEMENT@451..468
       0: R_CALL@451..468
         0: R_IDENTIFIER@451..454
           0: IDENT@451..454 "fn" [Newline("\n")] []
@@ -1245,7 +1245,7 @@ RRoot {
               1: (empty)
           2: R_PAREN@466..468 ")" [Newline("\n")] []
       1: (empty)
-    26: R_STATEMENT@468..548
+    26: R_EXPRESSION_STATEMENT@468..548
       0: R_CALL@468..548
         0: R_IDENTIFIER@468..546
           0: IDENT@468..546 "return" [Newline("\n"), Newline("\n"), Comments("# Standard call as of ..."), Newline("\n")] []

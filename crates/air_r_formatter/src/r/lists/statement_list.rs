@@ -1,4 +1,5 @@
 use crate::{formatter_ext::FormatterExt, joiner_ext::EmptyLines, prelude::*};
+use air_r_syntax::AnyRStatement;
 use air_r_syntax::RStatementList;
 use biome_formatter::FormatRuleWithOptions;
 
@@ -14,11 +15,20 @@ pub(crate) struct FormatRStatementListOptions {
 
 impl FormatRule<RStatementList> for FormatRStatementList {
     type Context = RFormatContext;
+
+    /// Inspired by `FormatJsStatementList`
     fn fmt(&self, node: &RStatementList, f: &mut RFormatter) -> FormatResult<()> {
         let mut join = f.join_nodes_with_hardline_ext(self.empty_lines);
 
-        for rule in node {
-            join.entry(rule.syntax(), &format_or_verbatim(rule.format()));
+        for statement in node {
+            match statement {
+                AnyRStatement::REmptyStatement(statement) => {
+                    join.entry_no_separator(statement.syntax(), &statement.format());
+                }
+                AnyRStatement::RExpressionStatement(statement) => {
+                    join.entry(statement.syntax(), &format_or_verbatim(statement.format()));
+                }
+            }
         }
 
         join.finish()

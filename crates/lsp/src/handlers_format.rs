@@ -125,12 +125,12 @@ pub(crate) fn document_range_formatting(
     // `RStatementList` that do the job.
     //
     // Since we only format logical lines, it is fine to wrap in a statement list.
-    let Some(statements): Option<Vec<air_r_syntax::RStatement>> = logical_lines
+    let Some(statements): Option<Vec<air_r_syntax::AnyRStatement>> = logical_lines
         .into_iter()
-        .map(air_r_syntax::RStatement::cast)
+        .map(air_r_syntax::AnyRStatement::cast)
         .collect()
     else {
-        tracing::warn!("Can't cast to `RStatement`");
+        tracing::warn!("Can't cast to `AnyRStatement`");
         return Ok(None);
     };
 

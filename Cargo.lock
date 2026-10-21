@@ -87,8 +87,10 @@ name = "air_r_formatter"
 version = "0.0.0"
 dependencies = [
  "air_formatter_test",
+ "air_r_factory",
  "air_r_parser",
  "air_r_syntax",
+ "anyhow",
  "biome_formatter",
  "biome_parser",
  "biome_rowan",

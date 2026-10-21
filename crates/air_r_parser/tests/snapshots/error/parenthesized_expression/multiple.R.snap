@@ -18,7 +18,7 @@ expression: snapshot
 RRoot {
     bom_token: missing (optional),
     statements: RStatementList [
-        RStatement {
+        RExpressionStatement {
             expression: RBogusExpression {
                 items: [
                     R_BOGUS@0..11 "(\n  a\n  b\n)" [] [],
@@ -37,7 +37,7 @@ RRoot {
 0: R_ROOT@0..11
   0: (empty)
   1: R_STATEMENT_LIST@0..11
-    0: R_STATEMENT@0..11
+    0: R_EXPRESSION_STATEMENT@0..11
       0: R_BOGUS_EXPRESSION@0..11
         0: R_BOGUS@0..11 "(\n  a\n  b\n)" [] []
       1: (empty)

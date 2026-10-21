@@ -32,7 +32,7 @@ function(
 RRoot {
     bom_token: missing (optional),
     statements: RStatementList [
-        RStatement {
+        RExpressionStatement {
             expression: RFunctionDefinition {
                 name: FUNCTION_KW@0..8 "function" [] [],
                 parameters: RParameters {
@@ -46,7 +46,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RFunctionDefinition {
                 name: FUNCTION_KW@12..21 "function" [Newline("\n")] [],
                 parameters: RParameters {
@@ -67,7 +67,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RFunctionDefinition {
                 name: FUNCTION_KW@26..35 "function" [Newline("\n")] [],
                 parameters: RParameters {
@@ -101,7 +101,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RFunctionDefinition {
                 name: FUNCTION_KW@47..56 "function" [Newline("\n")] [],
                 parameters: RParameters {
@@ -122,7 +122,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RFunctionDefinition {
                 name: FUNCTION_KW@78..87 "function" [Newline("\n")] [],
                 parameters: RParameters {
@@ -143,7 +143,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RFunctionDefinition {
                 name: FUNCTION_KW@94..103 "function" [Newline("\n")] [],
                 parameters: RParameters {
@@ -178,7 +178,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RFunctionDefinition {
                 name: FUNCTION_KW@116..125 "function" [Newline("\n")] [],
                 parameters: RParameters {
@@ -223,7 +223,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RFunctionDefinition {
                 name: FUNCTION_KW@146..155 "function" [Newline("\n")] [],
                 parameters: RParameters {
@@ -285,7 +285,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RFunctionDefinition {
                 name: FUNCTION_KW@189..198 "function" [Newline("\n")] [],
                 parameters: RParameters {
@@ -357,7 +357,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RFunctionDefinition {
                 name: FUNCTION_KW@240..249 "function" [Newline("\n")] [],
                 parameters: RParameters {
@@ -383,7 +383,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RFunctionDefinition {
                 name: BACKSLASH@277..280 "\\" [Newline("\n"), Newline("\n")] [],
                 parameters: RParameters {
@@ -422,7 +422,7 @@ RRoot {
 0: R_ROOT@0..289
   0: (empty)
   1: R_STATEMENT_LIST@0..288
-    0: R_STATEMENT@0..12
+    0: R_EXPRESSION_STATEMENT@0..12
       0: R_FUNCTION_DEFINITION@0..12
         0: FUNCTION_KW@0..8 "function" [] []
         1: R_PARAMETERS@8..11
@@ -432,7 +432,7 @@ RRoot {
         2: R_DOUBLE_VALUE@11..12
           0: R_DOUBLE_LITERAL@11..12 "1" [] []
       1: (empty)
-    1: R_STATEMENT@12..26
+    1: R_EXPRESSION_STATEMENT@12..26
       0: R_FUNCTION_DEFINITION@12..26
         0: FUNCTION_KW@12..21 "function" [Newline("\n")] []
         1: R_PARAMETERS@21..25
@@ -446,7 +446,7 @@ RRoot {
         2: R_IDENTIFIER@25..26
           0: IDENT@25..26 "a" [] []
       1: (empty)
-    2: R_STATEMENT@26..47
+    2: R_EXPRESSION_STATEMENT@26..47
       0: R_FUNCTION_DEFINITION@26..47
         0: FUNCTION_KW@26..35 "function" [Newline("\n")] []
         1: R_PARAMETERS@35..42
@@ -469,7 +469,7 @@ RRoot {
           2: R_IDENTIFIER@46..47
             0: IDENT@46..47 "b" [] []
       1: (empty)
-    3: R_STATEMENT@47..78
+    3: R_EXPRESSION_STATEMENT@47..78
       0: R_FUNCTION_DEFINITION@47..78
         0: FUNCTION_KW@47..56 "function" [Newline("\n")] []
         1: R_PARAMETERS@56..77
@@ -483,7 +483,7 @@ RRoot {
         2: R_IDENTIFIER@77..78
           0: IDENT@77..78 "a" [] []
       1: (empty)
-    4: R_STATEMENT@78..94
+    4: R_EXPRESSION_STATEMENT@78..94
       0: R_FUNCTION_DEFINITION@78..94
         0: FUNCTION_KW@78..87 "function" [Newline("\n")] []
         1: R_PARAMETERS@87..93
@@ -497,7 +497,7 @@ RRoot {
         2: R_DOUBLE_VALUE@93..94
           0: R_DOUBLE_LITERAL@93..94 "1" [] []
       1: (empty)
-    5: R_STATEMENT@94..116
+    5: R_EXPRESSION_STATEMENT@94..116
       0: R_FUNCTION_DEFINITION@94..116
         0: FUNCTION_KW@94..103 "function" [Newline("\n")] []
         1: R_PARAMETERS@103..115
@@ -521,7 +521,7 @@ RRoot {
         2: R_DOUBLE_VALUE@115..116
           0: R_DOUBLE_LITERAL@115..116 "1" [] []
       1: (empty)
-    6: R_STATEMENT@116..146
+    6: R_EXPRESSION_STATEMENT@116..146
       0: R_FUNCTION_DEFINITION@116..146
         0: FUNCTION_KW@116..125 "function" [Newline("\n")] []
         1: R_PARAMETERS@125..145
@@ -551,7 +551,7 @@ RRoot {
         2: R_IDENTIFIER@145..146
           0: IDENT@145..146 "a" [] []
       1: (empty)
-    7: R_STATEMENT@146..189
+    7: R_EXPRESSION_STATEMENT@146..189
       0: R_FUNCTION_DEFINITION@146..189
         0: FUNCTION_KW@146..155 "function" [Newline("\n")] []
         1: R_PARAMETERS@155..166
@@ -592,7 +592,7 @@ RRoot {
                     0: R_DOUBLE_QUOTED_STRING_LITERAL@183..188 "\"..2\"" [] []
               2: R_PAREN@188..189 ")" [] []
       1: (empty)
-    8: R_STATEMENT@189..240
+    8: R_EXPRESSION_STATEMENT@189..240
       0: R_FUNCTION_DEFINITION@189..240
         0: FUNCTION_KW@189..198 "function" [Newline("\n")] []
         1: R_PARAMETERS@198..217
@@ -639,7 +639,7 @@ RRoot {
                     0: R_DOUBLE_QUOTED_STRING_LITERAL@234..239 "\"..2\"" [] []
               2: R_PAREN@239..240 ")" [] []
       1: (empty)
-    9: R_STATEMENT@240..277
+    9: R_EXPRESSION_STATEMENT@240..277
       0: R_FUNCTION_DEFINITION@240..277
         0: FUNCTION_KW@240..249 "function" [Newline("\n")] []
         1: R_PARAMETERS@249..276
@@ -656,7 +656,7 @@ RRoot {
         2: R_DOUBLE_VALUE@276..277
           0: R_DOUBLE_LITERAL@276..277 "1" [] []
       1: (empty)
-    10: R_STATEMENT@277..288
+    10: R_EXPRESSION_STATEMENT@277..288
       0: R_FUNCTION_DEFINITION@277..288
         0: BACKSLASH@277..280 "\\" [Newline("\n"), Newline("\n")] []
         1: R_PARAMETERS@280..287

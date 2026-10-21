@@ -33,7 +33,7 @@ expression: snapshot
 RRoot {
     bom_token: missing (optional),
     statements: RStatementList [
-        RStatement {
+        RExpressionStatement {
             expression: RUnaryExpression {
                 operator: PLUS@0..1 "+" [] [],
                 argument: RDoubleValue {
@@ -42,7 +42,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RUnaryExpression {
                 operator: MINUS@2..4 "-" [Newline("\n")] [],
                 argument: RDoubleValue {
@@ -51,7 +51,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RUnaryExpression {
                 operator: TILDE@5..7 "~" [Newline("\n")] [],
                 argument: RDoubleValue {
@@ -60,7 +60,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RUnaryExpression {
                 operator: WAT@8..10 "?" [Newline("\n")] [],
                 argument: RDoubleValue {
@@ -69,7 +69,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RUnaryExpression {
                 operator: BANG@11..13 "!" [Newline("\n")] [],
                 argument: RDoubleValue {
@@ -78,7 +78,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RUnaryExpression {
                 operator: PLUS@14..17 "+" [Newline("\n"), Newline("\n")] [],
                 argument: RDoubleValue {
@@ -87,7 +87,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RUnaryExpression {
                 operator: PLUS@19..32 "+" [Newline("\n"), Newline("\n")] [Whitespace(" "), Comments("# Comment")],
                 argument: RDoubleValue {
@@ -96,7 +96,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RUnaryExpression {
                 operator: PLUS@34..37 "+" [Newline("\n"), Newline("\n")] [],
                 argument: RUnaryExpression {
@@ -108,7 +108,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RBinaryExpression {
                 left: RDoubleValue {
                     value_token: R_DOUBLE_LITERAL@61..65 "1" [Newline("\n"), Newline("\n")] [Whitespace(" ")],
@@ -137,49 +137,49 @@ RRoot {
 0: R_ROOT@0..71
   0: (empty)
   1: R_STATEMENT_LIST@0..70
-    0: R_STATEMENT@0..2
+    0: R_EXPRESSION_STATEMENT@0..2
       0: R_UNARY_EXPRESSION@0..2
         0: PLUS@0..1 "+" [] []
         1: R_DOUBLE_VALUE@1..2
           0: R_DOUBLE_LITERAL@1..2 "1" [] []
       1: (empty)
-    1: R_STATEMENT@2..5
+    1: R_EXPRESSION_STATEMENT@2..5
       0: R_UNARY_EXPRESSION@2..5
         0: MINUS@2..4 "-" [Newline("\n")] []
         1: R_DOUBLE_VALUE@4..5
           0: R_DOUBLE_LITERAL@4..5 "1" [] []
       1: (empty)
-    2: R_STATEMENT@5..8
+    2: R_EXPRESSION_STATEMENT@5..8
       0: R_UNARY_EXPRESSION@5..8
         0: TILDE@5..7 "~" [Newline("\n")] []
         1: R_DOUBLE_VALUE@7..8
           0: R_DOUBLE_LITERAL@7..8 "1" [] []
       1: (empty)
-    3: R_STATEMENT@8..11
+    3: R_EXPRESSION_STATEMENT@8..11
       0: R_UNARY_EXPRESSION@8..11
         0: WAT@8..10 "?" [Newline("\n")] []
         1: R_DOUBLE_VALUE@10..11
           0: R_DOUBLE_LITERAL@10..11 "1" [] []
       1: (empty)
-    4: R_STATEMENT@11..14
+    4: R_EXPRESSION_STATEMENT@11..14
       0: R_UNARY_EXPRESSION@11..14
         0: BANG@11..13 "!" [Newline("\n")] []
         1: R_DOUBLE_VALUE@13..14
           0: R_DOUBLE_LITERAL@13..14 "1" [] []
       1: (empty)
-    5: R_STATEMENT@14..19
+    5: R_EXPRESSION_STATEMENT@14..19
       0: R_UNARY_EXPRESSION@14..19
         0: PLUS@14..17 "+" [Newline("\n"), Newline("\n")] []
         1: R_DOUBLE_VALUE@17..19
           0: R_DOUBLE_LITERAL@17..19 "1" [Newline("\n")] []
       1: (empty)
-    6: R_STATEMENT@19..34
+    6: R_EXPRESSION_STATEMENT@19..34
       0: R_UNARY_EXPRESSION@19..34
         0: PLUS@19..32 "+" [Newline("\n"), Newline("\n")] [Whitespace(" "), Comments("# Comment")]
         1: R_DOUBLE_VALUE@32..34
           0: R_DOUBLE_LITERAL@32..34 "1" [Newline("\n")] []
       1: (empty)
-    7: R_STATEMENT@34..61
+    7: R_EXPRESSION_STATEMENT@34..61
       0: R_UNARY_EXPRESSION@34..61
         0: PLUS@34..37 "+" [Newline("\n"), Newline("\n")] []
         1: R_UNARY_EXPRESSION@37..61
@@ -187,7 +187,7 @@ RRoot {
           1: R_DOUBLE_VALUE@59..61
             0: R_DOUBLE_LITERAL@59..61 "1" [Newline("\n")] []
       1: (empty)
-    8: R_STATEMENT@61..70
+    8: R_EXPRESSION_STATEMENT@61..70
       0: R_BINARY_EXPRESSION@61..70
         0: R_DOUBLE_VALUE@61..65
           0: R_DOUBLE_LITERAL@61..65 "1" [Newline("\n"), Newline("\n")] [Whitespace(" ")]

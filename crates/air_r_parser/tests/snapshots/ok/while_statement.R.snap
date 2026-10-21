@@ -26,7 +26,7 @@ while(fn()) {
 RRoot {
     bom_token: missing (optional),
     statements: RStatementList [
-        RStatement {
+        RExpressionStatement {
             expression: RWhileStatement {
                 while_token: WHILE_KW@0..5 "while" [] [],
                 l_paren_token: L_PAREN@5..6 "(" [] [],
@@ -40,7 +40,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RWhileStatement {
                 while_token: WHILE_KW@17..24 "while" [Newline("\n"), Newline("\n")] [],
                 l_paren_token: L_PAREN@24..25 "(" [] [],
@@ -56,7 +56,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RWhileStatement {
                 while_token: WHILE_KW@33..40 "while" [Newline("\n"), Newline("\n")] [],
                 l_paren_token: L_PAREN@40..41 "(" [] [],
@@ -72,7 +72,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RWhileStatement {
                 while_token: WHILE_KW@48..55 "while" [Newline("\n"), Newline("\n")] [],
                 l_paren_token: L_PAREN@55..56 "(" [] [],
@@ -106,7 +106,7 @@ RRoot {
 0: R_ROOT@0..67
   0: (empty)
   1: R_STATEMENT_LIST@0..66
-    0: R_STATEMENT@0..17
+    0: R_EXPRESSION_STATEMENT@0..17
       0: R_WHILE_STATEMENT@0..17
         0: WHILE_KW@0..5 "while" [] []
         1: L_PAREN@5..6 "(" [] []
@@ -116,7 +116,7 @@ RRoot {
         4: R_FALSE_EXPRESSION@12..17
           0: FALSE_KW@12..17 "FALSE" [] []
       1: (empty)
-    1: R_STATEMENT@17..33
+    1: R_EXPRESSION_STATEMENT@17..33
       0: R_WHILE_STATEMENT@17..33
         0: WHILE_KW@17..24 "while" [Newline("\n"), Newline("\n")] []
         1: L_PAREN@24..25 "(" [] []
@@ -128,7 +128,7 @@ RRoot {
           1: R_STATEMENT_LIST@32..32
           2: R_CURLY@32..33 "}" [] []
       1: (empty)
-    2: R_STATEMENT@33..48
+    2: R_EXPRESSION_STATEMENT@33..48
       0: R_WHILE_STATEMENT@33..48
         0: WHILE_KW@33..40 "while" [Newline("\n"), Newline("\n")] []
         1: L_PAREN@40..41 "(" [] []
@@ -140,7 +140,7 @@ RRoot {
           1: R_STATEMENT_LIST@45..45
           2: R_CURLY@45..48 "}" [Newline("\n"), Newline("\n")] []
       1: (empty)
-    3: R_STATEMENT@48..66
+    3: R_EXPRESSION_STATEMENT@48..66
       0: R_WHILE_STATEMENT@48..66
         0: WHILE_KW@48..55 "while" [Newline("\n"), Newline("\n")] []
         1: L_PAREN@55..56 "(" [] []

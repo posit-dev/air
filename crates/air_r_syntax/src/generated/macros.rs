@@ -64,6 +64,14 @@ macro_rules! map_syntax_node {
                     let $pattern = unsafe { $crate::RElseClause::new_unchecked(node) };
                     $body
                 }
+                $crate::RSyntaxKind::R_EMPTY_STATEMENT => {
+                    let $pattern = unsafe { $crate::REmptyStatement::new_unchecked(node) };
+                    $body
+                }
+                $crate::RSyntaxKind::R_EXPRESSION_STATEMENT => {
+                    let $pattern = unsafe { $crate::RExpressionStatement::new_unchecked(node) };
+                    $body
+                }
                 $crate::RSyntaxKind::R_EXTRACT_EXPRESSION => {
                     let $pattern = unsafe { $crate::RExtractExpression::new_unchecked(node) };
                     $body
@@ -138,10 +146,6 @@ macro_rules! map_syntax_node {
                 }
                 $crate::RSyntaxKind::R_ROOT => {
                     let $pattern = unsafe { $crate::RRoot::new_unchecked(node) };
-                    $body
-                }
-                $crate::RSyntaxKind::R_STATEMENT => {
-                    let $pattern = unsafe { $crate::RStatement::new_unchecked(node) };
                     $body
                 }
                 $crate::RSyntaxKind::R_STRING_VALUE => {

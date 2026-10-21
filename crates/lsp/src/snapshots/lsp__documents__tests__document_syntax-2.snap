@@ -5,7 +5,7 @@ expression: updated_syntax
 0: R_ROOT@0..10
   0: (empty)
   1: R_STATEMENT_LIST@0..10
-    0: R_STATEMENT@0..10
+    0: R_EXPRESSION_STATEMENT@0..10
       0: R_CALL@0..10
         0: R_IDENTIFIER@0..3
           0: IDENT@0..3 "foo" [] []

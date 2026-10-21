@@ -57,16 +57,79 @@ fn directives(comments: &RComments, node: &RSyntaxNode) -> impl Iterator<Item = 
 /// - Statement lists (program and braced blocks)
 /// - Argument lists (like skipping an individual argument)
 /// - Binary expression sides (like the RHS of a pipe chain)
-///
-/// For statement lists, the `parent` of the `node` we are asking about is the
-/// intermediate `RStatement`, and that's also where the directive comments will
-/// actually be placed, so we look at the leading comments of that `RStatement`
-/// node directly.
 fn directive_node(node: &RSyntaxNode) -> Option<RSyntaxNode> {
     let parent = node.parent()?;
+
     match parent.kind() {
-        RSyntaxKind::R_STATEMENT => Some(parent),
-        RSyntaxKind::R_ARGUMENT_LIST | RSyntaxKind::R_BINARY_EXPRESSION => Some(node.clone()),
+        RSyntaxKind::R_STATEMENT_LIST => {
+            // i.e. a statement at top-level or within braced statements. Note
+            // that the statement wraps the expression plus its optional
+            // semicolon token.
+            //
+            // ```r
+            // # fmt: skip
+            // 1+1
+            //
+            // # fmt: skip
+            // 1+1; # Keeps the `;`
+            //
+            // {
+            //   # fmt: skip
+            //   1+1
+            // }
+            // ```
+            Some(node.clone())
+        }
+        RSyntaxKind::R_BINARY_EXPRESSION => {
+            // i.e. the RHS of a pipe chain
+            //
+            // ```r
+            // df |>
+            //   # fmt: skip
+            //   mutate(x=1)
+            // ```
+            Some(node.clone())
+        }
+        RSyntaxKind::R_ARGUMENT_LIST => {
+            // i.e. skipping an individual argument
+            //
+            // ```r
+            // fn(
+            //   # fmt: skip
+            //   1+1,
+            //   2 + 2
+            // )
+            // ```
+            Some(node.clone())
+        }
+        RSyntaxKind::R_EXPRESSION_STATEMENT => {
+            // Most of the time, we check directives from outer to inner and
+            // hit:
+            // - `node = RExpressionStatement`
+            // - `parent = RStatementList` which sends us through the
+            // `R_STATEMENT_LIST` branch above. This is the case for suppression
+            // directives.
+            //
+            // But with `# fmt: table` we are already holding the `RCall` or
+            // `RBinaryExpression` of interest and want its directives. In that
+            // case, the parent is `RExpressionStatement`, and all leading
+            // comments will have been placed on that parent
+            // `RExpressionStatement` instead since it shares a start location
+            // with the `RCall` / `RBinaryExpression`, so the
+            // `RExpressionStatement` is the directive node of interest and we
+            // return `parent` from here.
+            //
+            // i.e. we end up here due to how this is handled in `FormatRCall`:
+            //
+            // ```r
+            // # fmt: table
+            // tribble(
+            //   ~x, ~y,
+            //   1, 2
+            // )
+            // ```
+            Some(parent)
+        }
         _ => None,
     }
 }

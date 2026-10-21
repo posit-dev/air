@@ -18,7 +18,7 @@ expression: snapshot
 RRoot {
     bom_token: missing (optional),
     statements: RStatementList [
-        RStatement {
+        RExpressionStatement {
             expression: RBinaryExpression {
                 left: RDoubleValue {
                     value_token: R_DOUBLE_LITERAL@0..12 "1" [Comments("# Leading"), Newline("\n")] [Whitespace(" ")],
@@ -41,7 +41,7 @@ RRoot {
 0: R_ROOT@0..37
   0: (empty)
   1: R_STATEMENT_LIST@0..26
-    0: R_STATEMENT@0..26
+    0: R_EXPRESSION_STATEMENT@0..26
       0: R_BINARY_EXPRESSION@0..26
         0: R_DOUBLE_VALUE@0..12
           0: R_DOUBLE_LITERAL@0..12 "1" [Comments("# Leading"), Newline("\n")] [Whitespace(" ")]

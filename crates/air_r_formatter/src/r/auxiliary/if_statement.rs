@@ -1,10 +1,11 @@
 use crate::prelude::*;
 use crate::r::auxiliary::else_clause::FormatRElseClauseOptions;
 use air_r_syntax::AnyRExpression;
+use air_r_syntax::AnyRStatement;
+use air_r_syntax::RExpressionStatement;
 use air_r_syntax::RIfStatement;
 use air_r_syntax::RIfStatementFields;
 use air_r_syntax::RRoot;
-use air_r_syntax::RStatement;
 use air_r_syntax::RStatementList;
 use air_r_syntax::RSyntaxNode;
 use biome_formatter::FormatRuleWithOptions;
@@ -346,9 +347,9 @@ trait SyntaxPositionExt {
     /// An [SyntaxPosition::Effect] is either:
     ///
     /// - A statement of `RRoot`
-    /// - A statement of `RBracedStatements`, with the exception of the last statement,
-    ///   which is considered a [SyntaxPosition::Value], as it is the returned value
-    ///   of the braced expression
+    /// - A statement of `RBracedStatements`, with the exception of the last
+    ///   expression statement, which is considered a [SyntaxPosition::Value],
+    ///   as it is the returned value of the braced expression
     ///
     /// Everything else is considered a [SyntaxPosition::Value].
     ///
@@ -389,13 +390,14 @@ enum SyntaxPosition {
 
 impl SyntaxPositionExt for RSyntaxNode {
     fn position(&self) -> SyntaxPosition {
-        let Some(statement) = self.parent().and_then(RStatement::cast) else {
-            // If our direct parent isn't an `RStatement`, we are definitely a `Value`
+        let Some(statement) = self.parent().and_then(RExpressionStatement::cast) else {
+            // If our direct parent isn't an `RExpressionStatement`, we are
+            // definitely a `Value`
             return SyntaxPosition::Value;
         };
 
         let Some(statements) = statement.parent::<RStatementList>() else {
-            // Would be unexpected since an `RStatement` always lives in an
+            // Would be unexpected since an `RExpressionStatement` always lives in an
             // `RStatementList`, but we'd rather not crash if we are wrong
             return SyntaxPosition::Value;
         };
@@ -406,11 +408,28 @@ impl SyntaxPositionExt for RSyntaxNode {
         }
 
         // Otherwise, statement of `RBracedStatements`. If this is the last
-        // statement, it is a `Value` (the value returned from a scope), otherwise it is
-        // an `Effect`.
-        let Some(last) = statements.last() else {
-            // Would be unexpected since we just checked that `statement` is a child of
-            // this, but we'd rather not crash if we are wrong
+        // expression statement, it is a `Value`, otherwise it is an `Effect`.
+        //
+        // Note that we have to skip over trailing `REmptyStatement`s that we
+        // expect will be removed, such as:
+        //
+        // ```r
+        // {
+        //   if (a) 1
+        //   ;
+        // }
+        // ```
+        let Some(last) = statements
+            .iter()
+            .rev()
+            .find_map(|statement| match statement {
+                AnyRStatement::REmptyStatement(_) => None,
+                AnyRStatement::RExpressionStatement(statement) => Some(statement),
+            })
+        else {
+            // Would be unexpected to not find any expression statements, since
+            // we just checked that `statement` is a child of this, but we'd
+            // rather not crash if we are wrong
             return SyntaxPosition::Value;
         };
 

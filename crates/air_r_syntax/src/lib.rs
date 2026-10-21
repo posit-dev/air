@@ -117,7 +117,8 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_ARGUMENT
             | RSyntaxKind::R_ARGUMENT_NAME_CLAUSE
             | RSyntaxKind::R_STATEMENT_LIST
-            | RSyntaxKind::R_STATEMENT
+            | RSyntaxKind::R_EXPRESSION_STATEMENT
+            | RSyntaxKind::R_EMPTY_STATEMENT
             | RSyntaxKind::R_INTEGER_VALUE
             | RSyntaxKind::R_DOUBLE_VALUE
             | RSyntaxKind::R_COMPLEX_VALUE
@@ -272,7 +273,8 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_ARGUMENT
             | RSyntaxKind::R_ARGUMENT_NAME_CLAUSE
             | RSyntaxKind::R_STATEMENT_LIST
-            | RSyntaxKind::R_STATEMENT
+            | RSyntaxKind::R_EXPRESSION_STATEMENT
+            | RSyntaxKind::R_EMPTY_STATEMENT
             | RSyntaxKind::TILDE
             | RSyntaxKind::ASSIGN
             | RSyntaxKind::SUPER_ASSIGN

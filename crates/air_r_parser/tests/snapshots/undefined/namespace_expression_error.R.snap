@@ -44,7 +44,7 @@ a:::{ b }
 RRoot {
     bom_token: missing (optional),
     statements: RStatementList [
-        RStatement {
+        RExpressionStatement {
             expression: RNamespaceExpression {
                 left: RIdentifier {
                     name_token: IDENT@0..560 "a" [Comments("# TODO: tree-sitter-r ..."), Newline("\n"), Comments("# requires a RHS, so  ..."), Newline("\n"), Comments("# parse errors if we  ..."), Newline("\n"), Comments("# For example, `a::1` ..."), Newline("\n"), Newline("\n"), Comments("#> RNamespaceExpressi ..."), Newline("\n"), Comments("#>     left: RIdentif ..."), Newline("\n"), Comments("#>         name_token ..."), Newline("\n"), Comments("#>     },"), Newline("\n"), Comments("#>     operator: COLO ..."), Newline("\n"), Comments("#>     right: missing ..."), Newline("\n"), Comments("#> },"), Newline("\n"), Comments("#> RDoubleValue {"), Newline("\n"), Comments("#>     value_token: R ..."), Newline("\n"), Comments("#> },"), Newline("\n"), Newline("\n")] [],
@@ -54,13 +54,13 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RDoubleValue {
                 value_token: R_DOUBLE_LITERAL@562..563 "1" [] [],
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RNamespaceExpression {
                 left: RIdentifier {
                     name_token: IDENT@563..565 "a" [Newline("\n")] [],
@@ -70,13 +70,13 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RNaExpression {
                 value: NA_LOGICAL_KW@567..569 "NA" [] [],
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RNamespaceExpression {
                 left: RIdentifier {
                     name_token: IDENT@569..571 "a" [Newline("\n")] [],
@@ -86,13 +86,13 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RNullExpression {
                 null_token: NULL_KW@573..577 "NULL" [] [],
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RNamespaceExpression {
                 left: RIdentifier {
                     name_token: IDENT@577..579 "a" [Newline("\n")] [],
@@ -102,13 +102,13 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RTrueExpression {
                 true_token: TRUE_KW@581..585 "TRUE" [] [],
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RNamespaceExpression {
                     left: RIdentifier {
@@ -132,7 +132,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RNamespaceExpression {
                 left: RIdentifier {
                     name_token: IDENT@592..594 "a" [Newline("\n")] [],
@@ -142,11 +142,11 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RBracedStatements {
                 l_curly_token: L_CURLY@596..598 "{" [] [Whitespace(" ")],
                 statements: RStatementList [
-                    RStatement {
+                    RExpressionStatement {
                         expression: RIdentifier {
                             name_token: IDENT@598..600 "b" [] [Whitespace(" ")],
                         },
@@ -157,7 +157,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RNamespaceExpression {
                 left: RIdentifier {
                     name_token: IDENT@601..604 "a" [Newline("\n"), Newline("\n")] [],
@@ -167,13 +167,13 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RDoubleValue {
                 value_token: R_DOUBLE_LITERAL@607..608 "1" [] [],
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RNamespaceExpression {
                 left: RIdentifier {
                     name_token: IDENT@608..610 "a" [Newline("\n")] [],
@@ -183,13 +183,13 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RNaExpression {
                 value: NA_LOGICAL_KW@613..615 "NA" [] [],
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RNamespaceExpression {
                 left: RIdentifier {
                     name_token: IDENT@615..617 "a" [Newline("\n")] [],
@@ -199,13 +199,13 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RNullExpression {
                 null_token: NULL_KW@620..624 "NULL" [] [],
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RNamespaceExpression {
                 left: RIdentifier {
                     name_token: IDENT@624..626 "a" [Newline("\n")] [],
@@ -215,13 +215,13 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RTrueExpression {
                 true_token: TRUE_KW@629..633 "TRUE" [] [],
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RCall {
                 function: RNamespaceExpression {
                     left: RIdentifier {
@@ -245,7 +245,7 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RNamespaceExpression {
                 left: RIdentifier {
                     name_token: IDENT@641..643 "a" [Newline("\n")] [],
@@ -255,11 +255,11 @@ RRoot {
             },
             semicolon_token: missing (optional),
         },
-        RStatement {
+        RExpressionStatement {
             expression: RBracedStatements {
                 l_curly_token: L_CURLY@646..648 "{" [] [Whitespace(" ")],
                 statements: RStatementList [
-                    RStatement {
+                    RExpressionStatement {
                         expression: RIdentifier {
                             name_token: IDENT@648..650 "b" [] [Whitespace(" ")],
                         },
@@ -281,51 +281,51 @@ RRoot {
 0: R_ROOT@0..652
   0: (empty)
   1: R_STATEMENT_LIST@0..651
-    0: R_STATEMENT@0..562
+    0: R_EXPRESSION_STATEMENT@0..562
       0: R_NAMESPACE_EXPRESSION@0..562
         0: R_IDENTIFIER@0..560
           0: IDENT@0..560 "a" [Comments("# TODO: tree-sitter-r ..."), Newline("\n"), Comments("# requires a RHS, so  ..."), Newline("\n"), Comments("# parse errors if we  ..."), Newline("\n"), Comments("# For example, `a::1` ..."), Newline("\n"), Newline("\n"), Comments("#> RNamespaceExpressi ..."), Newline("\n"), Comments("#>     left: RIdentif ..."), Newline("\n"), Comments("#>         name_token ..."), Newline("\n"), Comments("#>     },"), Newline("\n"), Comments("#>     operator: COLO ..."), Newline("\n"), Comments("#>     right: missing ..."), Newline("\n"), Comments("#> },"), Newline("\n"), Comments("#> RDoubleValue {"), Newline("\n"), Comments("#>     value_token: R ..."), Newline("\n"), Comments("#> },"), Newline("\n"), Newline("\n")] []
         1: COLON2@560..562 "::" [] []
         2: (empty)
       1: (empty)
-    1: R_STATEMENT@562..563
+    1: R_EXPRESSION_STATEMENT@562..563
       0: R_DOUBLE_VALUE@562..563
         0: R_DOUBLE_LITERAL@562..563 "1" [] []
       1: (empty)
-    2: R_STATEMENT@563..567
+    2: R_EXPRESSION_STATEMENT@563..567
       0: R_NAMESPACE_EXPRESSION@563..567
         0: R_IDENTIFIER@563..565
           0: IDENT@563..565 "a" [Newline("\n")] []
         1: COLON2@565..567 "::" [] []
         2: (empty)
       1: (empty)
-    3: R_STATEMENT@567..569
+    3: R_EXPRESSION_STATEMENT@567..569
       0: R_NA_EXPRESSION@567..569
         0: NA_LOGICAL_KW@567..569 "NA" [] []
       1: (empty)
-    4: R_STATEMENT@569..573
+    4: R_EXPRESSION_STATEMENT@569..573
       0: R_NAMESPACE_EXPRESSION@569..573
         0: R_IDENTIFIER@569..571
           0: IDENT@569..571 "a" [Newline("\n")] []
         1: COLON2@571..573 "::" [] []
         2: (empty)
       1: (empty)
-    5: R_STATEMENT@573..577
+    5: R_EXPRESSION_STATEMENT@573..577
       0: R_NULL_EXPRESSION@573..577
         0: NULL_KW@573..577 "NULL" [] []
       1: (empty)
-    6: R_STATEMENT@577..581
+    6: R_EXPRESSION_STATEMENT@577..581
       0: R_NAMESPACE_EXPRESSION@577..581
         0: R_IDENTIFIER@577..579
           0: IDENT@577..579 "a" [Newline("\n")] []
         1: COLON2@579..581 "::" [] []
         2: (empty)
       1: (empty)
-    7: R_STATEMENT@581..585
+    7: R_EXPRESSION_STATEMENT@581..585
       0: R_TRUE_EXPRESSION@581..585
         0: TRUE_KW@581..585 "TRUE" [] []
       1: (empty)
-    8: R_STATEMENT@585..592
+    8: R_EXPRESSION_STATEMENT@585..592
       0: R_CALL@585..592
         0: R_NAMESPACE_EXPRESSION@585..589
           0: R_IDENTIFIER@585..587
@@ -341,68 +341,68 @@ RRoot {
                 0: IDENT@590..591 "b" [] []
           2: R_PAREN@591..592 ")" [] []
       1: (empty)
-    9: R_STATEMENT@592..596
+    9: R_EXPRESSION_STATEMENT@592..596
       0: R_NAMESPACE_EXPRESSION@592..596
         0: R_IDENTIFIER@592..594
           0: IDENT@592..594 "a" [Newline("\n")] []
         1: COLON2@594..596 "::" [] []
         2: (empty)
       1: (empty)
-    10: R_STATEMENT@596..601
+    10: R_EXPRESSION_STATEMENT@596..601
       0: R_BRACED_STATEMENTS@596..601
         0: L_CURLY@596..598 "{" [] [Whitespace(" ")]
         1: R_STATEMENT_LIST@598..600
-          0: R_STATEMENT@598..600
+          0: R_EXPRESSION_STATEMENT@598..600
             0: R_IDENTIFIER@598..600
               0: IDENT@598..600 "b" [] [Whitespace(" ")]
             1: (empty)
         2: R_CURLY@600..601 "}" [] []
       1: (empty)
-    11: R_STATEMENT@601..607
+    11: R_EXPRESSION_STATEMENT@601..607
       0: R_NAMESPACE_EXPRESSION@601..607
         0: R_IDENTIFIER@601..604
           0: IDENT@601..604 "a" [Newline("\n"), Newline("\n")] []
         1: COLON3@604..607 ":::" [] []
         2: (empty)
       1: (empty)
-    12: R_STATEMENT@607..608
+    12: R_EXPRESSION_STATEMENT@607..608
       0: R_DOUBLE_VALUE@607..608
         0: R_DOUBLE_LITERAL@607..608 "1" [] []
       1: (empty)
-    13: R_STATEMENT@608..613
+    13: R_EXPRESSION_STATEMENT@608..613
       0: R_NAMESPACE_EXPRESSION@608..613
         0: R_IDENTIFIER@608..610
           0: IDENT@608..610 "a" [Newline("\n")] []
         1: COLON3@610..613 ":::" [] []
         2: (empty)
       1: (empty)
-    14: R_STATEMENT@613..615
+    14: R_EXPRESSION_STATEMENT@613..615
       0: R_NA_EXPRESSION@613..615
         0: NA_LOGICAL_KW@613..615 "NA" [] []
       1: (empty)
-    15: R_STATEMENT@615..620
+    15: R_EXPRESSION_STATEMENT@615..620
       0: R_NAMESPACE_EXPRESSION@615..620
         0: R_IDENTIFIER@615..617
           0: IDENT@615..617 "a" [Newline("\n")] []
         1: COLON3@617..620 ":::" [] []
         2: (empty)
       1: (empty)
-    16: R_STATEMENT@620..624
+    16: R_EXPRESSION_STATEMENT@620..624
       0: R_NULL_EXPRESSION@620..624
         0: NULL_KW@620..624 "NULL" [] []
       1: (empty)
-    17: R_STATEMENT@624..629
+    17: R_EXPRESSION_STATEMENT@624..629
       0: R_NAMESPACE_EXPRESSION@624..629
         0: R_IDENTIFIER@624..626
           0: IDENT@624..626 "a" [Newline("\n")] []
         1: COLON3@626..629 ":::" [] []
         2: (empty)
       1: (empty)
-    18: R_STATEMENT@629..633
+    18: R_EXPRESSION_STATEMENT@629..633
       0: R_TRUE_EXPRESSION@629..633
         0: TRUE_KW@629..633 "TRUE" [] []
       1: (empty)
-    19: R_STATEMENT@633..641
+    19: R_EXPRESSION_STATEMENT@633..641
       0: R_CALL@633..641
         0: R_NAMESPACE_EXPRESSION@633..638
           0: R_IDENTIFIER@633..635
@@ -418,18 +418,18 @@ RRoot {
                 0: IDENT@639..640 "b" [] []
           2: R_PAREN@640..641 ")" [] []
       1: (empty)
-    20: R_STATEMENT@641..646
+    20: R_EXPRESSION_STATEMENT@641..646
       0: R_NAMESPACE_EXPRESSION@641..646
         0: R_IDENTIFIER@641..643
           0: IDENT@641..643 "a" [Newline("\n")] []
         1: COLON3@643..646 ":::" [] []
         2: (empty)
       1: (empty)
-    21: R_STATEMENT@646..651
+    21: R_EXPRESSION_STATEMENT@646..651
       0: R_BRACED_STATEMENTS@646..651
         0: L_CURLY@646..648 "{" [] [Whitespace(" ")]
         1: R_STATEMENT_LIST@648..650
-          0: R_STATEMENT@648..650
+          0: R_EXPRESSION_STATEMENT@648..650
             0: R_IDENTIFIER@648..650
               0: IDENT@648..650 "b" [] [Whitespace(" ")]
             1: (empty)
