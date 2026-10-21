@@ -1,6 +1,6 @@
 use crate::joiner_ext::EmptyLines;
 use crate::prelude::*;
-use crate::r::lists::expression_list::FormatRExpressionListOptions;
+use crate::r::lists::statement_list::FormatRStatementListOptions;
 use air_r_syntax::RRoot;
 use air_r_syntax::RRootFields;
 use air_r_syntax::RSyntaxNode;
@@ -27,11 +27,11 @@ impl FormatNodeRule<RRoot> for FormatRRoot {
     fn fmt_fields(&self, node: &RRoot, f: &mut RFormatter) -> FormatResult<()> {
         let RRootFields {
             bom_token,
-            expressions,
+            statements,
             eof_token,
         } = node.as_fields();
 
-        let options = FormatRExpressionListOptions {
+        let options = FormatRStatementListOptions {
             empty_lines: EmptyLines::Double,
         };
 
@@ -39,7 +39,7 @@ impl FormatNodeRule<RRoot> for FormatRRoot {
             f,
             [
                 bom_token.format(),
-                expressions.format().with_options(options),
+                statements.format().with_options(options),
                 hard_line_break(),
                 format_removed(&eof_token?),
             ]
@@ -50,7 +50,7 @@ impl FormatNodeRule<RRoot> for FormatRRoot {
         let comments = f.context().comments();
         comments.mark_suppression_checked(node.syntax());
 
-        let Some(child) = node.expressions().first() else {
+        let Some(child) = node.statements().first() else {
             return false;
         };
 

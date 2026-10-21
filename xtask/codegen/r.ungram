@@ -44,7 +44,7 @@ RBogusForVariable = SyntaxElement*
 
 RRoot =
 	bom: 'UNICODE_BOM'?
-	expressions: RExpressionList
+	statements: RStatementList
 	eof: 'EOF'
 
 // ----------------------------------------------------------------
@@ -192,11 +192,11 @@ RRepeatStatement =
 	body: AnyRExpression
 
 // ----------------------------------------------------------------
-// Braced expressions
+// Braced statements
 
-RBracedExpressions =
+RBracedStatements =
 	'{'
-	expressions: RExpressionList
+	statements: RStatementList
 	'}'
 
 // ----------------------------------------------------------------
@@ -276,9 +276,35 @@ AnyRArgumentName =
 	| RNullExpression
 
 // ----------------------------------------------------------------
-// Expression
+// Statement
 
-RExpressionList = AnyRExpression*
+RStatementList = AnyRStatement*
+
+// We represent R statements in one of two forms:
+//
+// - `RExpressionStatement`, a guaranteed `expression` with optional `;`
+// - `REmptyStatement`, a rare lone `;` with no `expression`
+//
+// We like this formation. Having a single `RStatement` with both
+// `expression` and `semicolon` as optional is another approach, but
+// would allow an invalid 4th state where neither are supplied, which
+// can't actually happen. This also matches what Biome's `js.ungram` does.
+//
+// The parser prevents a lone `;` from existing at top level without a
+// diagnostic. i.e. a top level `;` is a parse error, but `{ ; }` is fine.
+AnyRStatement =
+	RExpressionStatement
+	| REmptyStatement
+
+RExpressionStatement =
+	expression: AnyRExpression
+	semicolon: ';'?
+
+REmptyStatement =
+	';'
+
+// ----------------------------------------------------------------
+// Expression
 
 AnyRExpression =
 	AnyRValue
@@ -292,7 +318,7 @@ AnyRExpression =
 	| RForStatement
 	| RWhileStatement
 	| RRepeatStatement
-	| RBracedExpressions
+	| RBracedStatements
 	| RParenthesizedExpression
 	| RCall
 	| RSubset

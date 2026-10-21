@@ -18,6 +18,7 @@ pub struct JoinNodesBuilderExt<'fmt, 'buf, Separator, Context> {
     separator: Separator,
     fmt: &'fmt mut Formatter<'buf, Context>,
     has_elements: bool,
+    pending_lines_before: usize,
     empty_lines: EmptyLines,
 }
 
@@ -32,6 +33,7 @@ impl<'fmt, 'buf, Separator, Context> JoinNodesBuilderExt<'fmt, 'buf, Separator, 
             separator,
             fmt,
             has_elements: false,
+            pending_lines_before: 0,
             empty_lines,
         }
     }
@@ -46,7 +48,7 @@ where
     pub fn entry<L: Language>(&mut self, node: &SyntaxNode<L>, content: &dyn Format<Context>) {
         self.result = self.result.and_then(|_| {
             if self.has_elements {
-                let n_lines = get_lines_before(node);
+                let n_lines = self.pending_lines_before.max(get_lines_before(node));
 
                 match self.empty_lines {
                     EmptyLines::Single => {
@@ -76,16 +78,47 @@ where
             }
 
             self.has_elements = true;
+            self.pending_lines_before = 0;
 
             write!(self.fmt, [content])
         });
     }
 
-    /// Writes an entry without adding a separating line break or empty line.
-    pub fn entry_no_separator(&mut self, content: &dyn Format<Context>) {
+    /// Writes an entry without adding a separating line break or empty line
+    ///
+    /// Only used for `REmptyStatement`
+    ///
+    /// The entry doesn't count as an element, but the existing line breaks
+    /// before it carry over to the next `entry()`. For example, with the
+    /// following, the empty line before the `;` is kept due to this:
+    ///
+    /// ```r
+    /// {
+    ///   1
+    ///
+    ///   ;
+    ///   2
+    /// }
+    /// ```
+    ///
+    /// We don't set `self.has_elements = true` so that in the following case,
+    /// the `entry()` call to write `1` doesn't write a blank line at the start
+    /// of the block (we want to remove all blank lines here):
+    ///
+    /// ```r
+    /// {
+    ///
+    ///   ;
+    ///   1
+    /// }
+    /// ```
+    pub fn entry_no_separator<L: Language>(
+        &mut self,
+        node: &SyntaxNode<L>,
+        content: &dyn Format<Context>,
+    ) {
         self.result = self.result.and_then(|_| {
-            self.has_elements = true;
-
+            self.pending_lines_before = self.pending_lines_before.max(get_lines_before(node));
             write!(self.fmt, [content])
         })
     }

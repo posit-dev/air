@@ -21,28 +21,40 @@ expression: snapshot
 ```
 RRoot {
     bom_token: missing (optional),
-    expressions: RExpressionList [
-        RDots {
-            value_token: DOTS@0..34 "..." [Comments("# Parses, but fails a ..."), Newline("\n")] [],
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RDots {
+                value_token: DOTS@0..34 "..." [Comments("# Parses, but fails a ..."), Newline("\n")] [],
+            },
+            semicolon_token: missing (optional),
         },
-        RBracedExpressions {
-            l_curly_token: L_CURLY@34..38 "{" [Newline("\n"), Newline("\n")] [Whitespace(" ")],
-            expressions: RExpressionList [
-                RDots {
-                    value_token: DOTS@38..42 "..." [] [Whitespace(" ")],
+        RExpressionStatement {
+            expression: RBracedStatements {
+                l_curly_token: L_CURLY@34..38 "{" [Newline("\n"), Newline("\n")] [Whitespace(" ")],
+                statements: RStatementList [
+                    RExpressionStatement {
+                        expression: RDots {
+                            value_token: DOTS@38..42 "..." [] [Whitespace(" ")],
+                        },
+                        semicolon_token: missing (optional),
+                    },
+                ],
+                r_curly_token: R_CURLY@42..43 "}" [] [],
+            },
+            semicolon_token: missing (optional),
+        },
+        RExpressionStatement {
+            expression: RCall {
+                function: RDots {
+                    value_token: DOTS@43..76 "..." [Newline("\n"), Newline("\n"), Comments("# An actual base R fu ..."), Newline("\n")] [],
                 },
-            ],
-            r_curly_token: R_CURLY@42..43 "}" [] [],
-        },
-        RCall {
-            function: RDots {
-                value_token: DOTS@43..76 "..." [Newline("\n"), Newline("\n"), Comments("# An actual base R fu ..."), Newline("\n")] [],
+                arguments: RCallArguments {
+                    l_paren_token: L_PAREN@76..77 "(" [] [],
+                    items: RArgumentList [],
+                    r_paren_token: R_PAREN@77..78 ")" [] [],
+                },
             },
-            arguments: RCallArguments {
-                l_paren_token: L_PAREN@76..77 "(" [] [],
-                items: RArgumentList [],
-                r_paren_token: R_PAREN@77..78 ")" [] [],
-            },
+            semicolon_token: missing (optional),
         },
     ],
     eof_token: EOF@78..79 "" [Newline("\n")] [],
@@ -54,22 +66,30 @@ RRoot {
 ```
 0: R_ROOT@0..79
   0: (empty)
-  1: R_EXPRESSION_LIST@0..78
-    0: R_DOTS@0..34
-      0: DOTS@0..34 "..." [Comments("# Parses, but fails a ..."), Newline("\n")] []
-    1: R_BRACED_EXPRESSIONS@34..43
-      0: L_CURLY@34..38 "{" [Newline("\n"), Newline("\n")] [Whitespace(" ")]
-      1: R_EXPRESSION_LIST@38..42
-        0: R_DOTS@38..42
-          0: DOTS@38..42 "..." [] [Whitespace(" ")]
-      2: R_CURLY@42..43 "}" [] []
-    2: R_CALL@43..78
-      0: R_DOTS@43..76
-        0: DOTS@43..76 "..." [Newline("\n"), Newline("\n"), Comments("# An actual base R fu ..."), Newline("\n")] []
-      1: R_CALL_ARGUMENTS@76..78
-        0: L_PAREN@76..77 "(" [] []
-        1: R_ARGUMENT_LIST@77..77
-        2: R_PAREN@77..78 ")" [] []
+  1: R_STATEMENT_LIST@0..78
+    0: R_EXPRESSION_STATEMENT@0..34
+      0: R_DOTS@0..34
+        0: DOTS@0..34 "..." [Comments("# Parses, but fails a ..."), Newline("\n")] []
+      1: (empty)
+    1: R_EXPRESSION_STATEMENT@34..43
+      0: R_BRACED_STATEMENTS@34..43
+        0: L_CURLY@34..38 "{" [Newline("\n"), Newline("\n")] [Whitespace(" ")]
+        1: R_STATEMENT_LIST@38..42
+          0: R_EXPRESSION_STATEMENT@38..42
+            0: R_DOTS@38..42
+              0: DOTS@38..42 "..." [] [Whitespace(" ")]
+            1: (empty)
+        2: R_CURLY@42..43 "}" [] []
+      1: (empty)
+    2: R_EXPRESSION_STATEMENT@43..78
+      0: R_CALL@43..78
+        0: R_DOTS@43..76
+          0: DOTS@43..76 "..." [Newline("\n"), Newline("\n"), Comments("# An actual base R fu ..."), Newline("\n")] []
+        1: R_CALL_ARGUMENTS@76..78
+          0: L_PAREN@76..77 "(" [] []
+          1: R_ARGUMENT_LIST@77..77
+          2: R_PAREN@77..78 ")" [] []
+      1: (empty)
   2: EOF@78..79 "" [Newline("\n")] []
 
 ```

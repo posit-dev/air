@@ -3,7 +3,7 @@
 pub(crate) mod argument;
 pub(crate) mod argument_name_clause;
 pub(crate) mod binary_expression;
-pub(crate) mod braced_expressions;
+pub(crate) mod braced_statements;
 pub(crate) mod break_expression;
 pub(crate) mod call;
 pub(crate) mod call_arguments;
@@ -12,6 +12,8 @@ pub(crate) mod dot_dot_i;
 pub(crate) mod dots;
 pub(crate) mod double_value;
 pub(crate) mod else_clause;
+pub(crate) mod empty_statement;
+pub(crate) mod expression_statement;
 pub(crate) mod extract_expression;
 pub(crate) mod false_expression;
 pub(crate) mod for_statement;

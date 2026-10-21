@@ -16,9 +16,12 @@ string"
 ```
 RRoot {
     bom_token: missing (optional),
-    expressions: RExpressionList [
-        RStringValue {
-            value: R_DOUBLE_QUOTED_STRING_LITERAL@0..19 "\"multiline\r\nstring\"" [] [],
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RStringValue {
+                value: R_DOUBLE_QUOTED_STRING_LITERAL@0..19 "\"multiline\r\nstring\"" [] [],
+            },
+            semicolon_token: missing (optional),
         },
     ],
     eof_token: EOF@19..21 "" [Newline("\r\n")] [],
@@ -30,9 +33,11 @@ RRoot {
 ```
 0: R_ROOT@0..21
   0: (empty)
-  1: R_EXPRESSION_LIST@0..19
-    0: R_STRING_VALUE@0..19
-      0: R_DOUBLE_QUOTED_STRING_LITERAL@0..19 "\"multiline\r\nstring\"" [] []
+  1: R_STATEMENT_LIST@0..19
+    0: R_EXPRESSION_STATEMENT@0..19
+      0: R_STRING_VALUE@0..19
+        0: R_DOUBLE_QUOTED_STRING_LITERAL@0..19 "\"multiline\r\nstring\"" [] []
+      1: (empty)
   2: EOF@19..21 "" [Newline("\r\n")] []
 
 ```

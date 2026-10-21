@@ -1,4 +1,4 @@
-use air_r_syntax::{RExpressionList, RSyntaxKind, RSyntaxNode, WalkEvent};
+use air_r_syntax::{RStatementList, RSyntaxKind, RSyntaxNode, WalkEvent};
 use biome_rowan::{AstNode, Language, SyntaxElement};
 use biome_text_size::{TextRange, TextSize};
 use tower_lsp::lsp_types;
@@ -122,19 +122,19 @@ pub(crate) fn document_range_formatting(
     // deep in the tree. See `CommentsBuilderVisitor` in biome_formatter and the
     // `is_root` logic. Note that `node` needs to be wrapped in at least two
     // other nodes in order to fix this problem, and here we have an `RRoot` and
-    // `RExpressionList` that do the job.
+    // `RStatementList` that do the job.
     //
-    // Since we only format logical lines, it is fine to wrap in an expression list.
-    let Some(exprs): Option<Vec<air_r_syntax::AnyRExpression>> = logical_lines
+    // Since we only format logical lines, it is fine to wrap in a statement list.
+    let Some(statements): Option<Vec<air_r_syntax::AnyRStatement>> = logical_lines
         .into_iter()
-        .map(air_r_syntax::AnyRExpression::cast)
+        .map(air_r_syntax::AnyRStatement::cast)
         .collect()
     else {
-        tracing::warn!("Can't cast to `AnyRExpression`");
+        tracing::warn!("Can't cast to `AnyRStatement`");
         return Ok(None);
     };
 
-    let list = air_r_factory::r_expression_list(exprs);
+    let list = air_r_factory::r_statement_list(statements);
     let eof = air_r_syntax::RSyntaxToken::new_detached(RSyntaxKind::EOF, "", vec![], vec![]);
     let root = air_r_factory::r_root(list, eof).build();
 
@@ -152,7 +152,7 @@ pub(crate) fn document_range_formatting(
 
     let mut format_text = format_info.into_code();
 
-    // Remove last hard break line from our artifical expression list
+    // Remove last hard break line from our artifical statement list
     format_text.pop();
     let edits = to_proto::replace_range_edit(
         format_range,
@@ -202,14 +202,14 @@ where
     TextRange::new(start, end)
 }
 
-/// Finds consecutive logical lines. Currently that's only expressions at
+/// Finds consecutive logical lines. Currently that's only statements at
 /// top-level or in a braced list.
 fn find_deepest_enclosing_logical_lines(node: RSyntaxNode, range: TextRange) -> Vec<RSyntaxNode> {
-    let start_lists = find_expression_lists(&node, range.start(), false);
-    let end_lists = find_expression_lists(&node, range.end(), true);
+    let start_lists = find_statement_lists(&node, range.start(), false);
+    let end_lists = find_statement_lists(&node, range.end(), true);
 
     // Both vectors of lists should have a common prefix, starting from the
-    // program's expression list. As soon as the lists diverge we stop.
+    // program's statement list. As soon as the lists diverge we stop.
     let Some(list) = start_lists
         .into_iter()
         .zip(end_lists)
@@ -217,13 +217,13 @@ fn find_deepest_enclosing_logical_lines(node: RSyntaxNode, range: TextRange) -> 
         .map(|pair| pair.0)
         .last()
     else {
-        // Should not happen as the range is always included in the program's expression list
+        // Should not happen as the range is always included in the program's statement list
         tracing::warn!("Can't find common list parent");
         return vec![];
     };
 
-    let Some(list) = RExpressionList::cast(list) else {
-        tracing::warn!("Can't cast to expression list");
+    let Some(list) = RStatementList::cast(list) else {
+        tracing::warn!("Can't cast to statement list");
         return vec![];
     };
 
@@ -238,7 +238,7 @@ fn find_deepest_enclosing_logical_lines(node: RSyntaxNode, range: TextRange) -> 
     // .filter(|node| range.contains_range(node.text_trimmed_range()))
     // ```
     let logical_lines: Vec<RSyntaxNode> = iter
-        .map(|expr| expr.into_syntax())
+        .map(|statement| statement.into_syntax())
         .skip_while(|node| !node.text_range_with_trivia().contains(range.start()))
         .take_while(|node| node.text_trimmed_range().start() <= range.end())
         .collect();
@@ -246,7 +246,7 @@ fn find_deepest_enclosing_logical_lines(node: RSyntaxNode, range: TextRange) -> 
     logical_lines
 }
 
-fn find_expression_lists(node: &RSyntaxNode, offset: TextSize, end: bool) -> Vec<RSyntaxNode> {
+fn find_statement_lists(node: &RSyntaxNode, offset: TextSize, end: bool) -> Vec<RSyntaxNode> {
     let mut preorder = node.preorder();
     let mut nodes: Vec<RSyntaxNode> = vec![];
 
@@ -270,7 +270,7 @@ fn find_expression_lists(node: &RSyntaxNode, offset: TextSize, end: bool) -> Vec
                     continue;
                 }
 
-                if parent.kind() == RSyntaxKind::R_EXPRESSION_LIST {
+                if parent.kind() == RSyntaxKind::R_STATEMENT_LIST {
                     nodes.push(parent.clone());
                     continue;
                 }

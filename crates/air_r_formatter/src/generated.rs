@@ -114,39 +114,39 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RBinaryExpression {
         )
     }
 }
-impl FormatRule<air_r_syntax::RBracedExpressions>
-    for crate::r::auxiliary::braced_expressions::FormatRBracedExpressions
+impl FormatRule<air_r_syntax::RBracedStatements>
+    for crate::r::auxiliary::braced_statements::FormatRBracedStatements
 {
     type Context = RFormatContext;
     #[inline(always)]
-    fn fmt(&self, node: &air_r_syntax::RBracedExpressions, f: &mut RFormatter) -> FormatResult<()> {
-        FormatNodeRule::<air_r_syntax::RBracedExpressions>::fmt(self, node, f)
+    fn fmt(&self, node: &air_r_syntax::RBracedStatements, f: &mut RFormatter) -> FormatResult<()> {
+        FormatNodeRule::<air_r_syntax::RBracedStatements>::fmt(self, node, f)
     }
 }
-impl AsFormat<RFormatContext> for air_r_syntax::RBracedExpressions {
+impl AsFormat<RFormatContext> for air_r_syntax::RBracedStatements {
     type Format<'a> = FormatRefWithRule<
         'a,
-        air_r_syntax::RBracedExpressions,
-        crate::r::auxiliary::braced_expressions::FormatRBracedExpressions,
+        air_r_syntax::RBracedStatements,
+        crate::r::auxiliary::braced_statements::FormatRBracedStatements,
     >;
     fn format(&self) -> Self::Format<'_> {
         #![allow(clippy::default_constructed_unit_structs)]
         FormatRefWithRule::new(
             self,
-            crate::r::auxiliary::braced_expressions::FormatRBracedExpressions::default(),
+            crate::r::auxiliary::braced_statements::FormatRBracedStatements::default(),
         )
     }
 }
-impl IntoFormat<RFormatContext> for air_r_syntax::RBracedExpressions {
+impl IntoFormat<RFormatContext> for air_r_syntax::RBracedStatements {
     type Format = FormatOwnedWithRule<
-        air_r_syntax::RBracedExpressions,
-        crate::r::auxiliary::braced_expressions::FormatRBracedExpressions,
+        air_r_syntax::RBracedStatements,
+        crate::r::auxiliary::braced_statements::FormatRBracedStatements,
     >;
     fn into_format(self) -> Self::Format {
         #![allow(clippy::default_constructed_unit_structs)]
         FormatOwnedWithRule::new(
             self,
-            crate::r::auxiliary::braced_expressions::FormatRBracedExpressions::default(),
+            crate::r::auxiliary::braced_statements::FormatRBracedStatements::default(),
         )
     }
 }
@@ -401,6 +401,82 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RElseClause {
         FormatOwnedWithRule::new(
             self,
             crate::r::auxiliary::else_clause::FormatRElseClause::default(),
+        )
+    }
+}
+impl FormatRule<air_r_syntax::REmptyStatement>
+    for crate::r::auxiliary::empty_statement::FormatREmptyStatement
+{
+    type Context = RFormatContext;
+    #[inline(always)]
+    fn fmt(&self, node: &air_r_syntax::REmptyStatement, f: &mut RFormatter) -> FormatResult<()> {
+        FormatNodeRule::<air_r_syntax::REmptyStatement>::fmt(self, node, f)
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::REmptyStatement {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::REmptyStatement,
+        crate::r::auxiliary::empty_statement::FormatREmptyStatement,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::auxiliary::empty_statement::FormatREmptyStatement::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::REmptyStatement {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::REmptyStatement,
+        crate::r::auxiliary::empty_statement::FormatREmptyStatement,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::auxiliary::empty_statement::FormatREmptyStatement::default(),
+        )
+    }
+}
+impl FormatRule<air_r_syntax::RExpressionStatement>
+    for crate::r::auxiliary::expression_statement::FormatRExpressionStatement
+{
+    type Context = RFormatContext;
+    #[inline(always)]
+    fn fmt(
+        &self,
+        node: &air_r_syntax::RExpressionStatement,
+        f: &mut RFormatter,
+    ) -> FormatResult<()> {
+        FormatNodeRule::<air_r_syntax::RExpressionStatement>::fmt(self, node, f)
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::RExpressionStatement {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::RExpressionStatement,
+        crate::r::auxiliary::expression_statement::FormatRExpressionStatement,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::auxiliary::expression_statement::FormatRExpressionStatement::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::RExpressionStatement {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::RExpressionStatement,
+        crate::r::auxiliary::expression_statement::FormatRExpressionStatement,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::auxiliary::expression_statement::FormatRExpressionStatement::default(),
         )
     }
 }
@@ -1380,33 +1456,6 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RArgumentList {
         )
     }
 }
-impl AsFormat<RFormatContext> for air_r_syntax::RExpressionList {
-    type Format<'a> = FormatRefWithRule<
-        'a,
-        air_r_syntax::RExpressionList,
-        crate::r::lists::expression_list::FormatRExpressionList,
-    >;
-    fn format(&self) -> Self::Format<'_> {
-        #![allow(clippy::default_constructed_unit_structs)]
-        FormatRefWithRule::new(
-            self,
-            crate::r::lists::expression_list::FormatRExpressionList::default(),
-        )
-    }
-}
-impl IntoFormat<RFormatContext> for air_r_syntax::RExpressionList {
-    type Format = FormatOwnedWithRule<
-        air_r_syntax::RExpressionList,
-        crate::r::lists::expression_list::FormatRExpressionList,
-    >;
-    fn into_format(self) -> Self::Format {
-        #![allow(clippy::default_constructed_unit_structs)]
-        FormatOwnedWithRule::new(
-            self,
-            crate::r::lists::expression_list::FormatRExpressionList::default(),
-        )
-    }
-}
 impl AsFormat<RFormatContext> for air_r_syntax::RParameterList {
     type Format<'a> = FormatRefWithRule<
         'a,
@@ -1431,6 +1480,33 @@ impl IntoFormat<RFormatContext> for air_r_syntax::RParameterList {
         FormatOwnedWithRule::new(
             self,
             crate::r::lists::parameter_list::FormatRParameterList::default(),
+        )
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::RStatementList {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::RStatementList,
+        crate::r::lists::statement_list::FormatRStatementList,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::lists::statement_list::FormatRStatementList::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::RStatementList {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::RStatementList,
+        crate::r::lists::statement_list::FormatRStatementList,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::lists::statement_list::FormatRStatementList::default(),
         )
     }
 }
@@ -1765,6 +1841,33 @@ impl IntoFormat<RFormatContext> for air_r_syntax::AnyRSelector {
     fn into_format(self) -> Self::Format {
         #![allow(clippy::default_constructed_unit_structs)]
         FormatOwnedWithRule::new(self, crate::r::any::selector::FormatAnyRSelector::default())
+    }
+}
+impl AsFormat<RFormatContext> for air_r_syntax::AnyRStatement {
+    type Format<'a> = FormatRefWithRule<
+        'a,
+        air_r_syntax::AnyRStatement,
+        crate::r::any::statement::FormatAnyRStatement,
+    >;
+    fn format(&self) -> Self::Format<'_> {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatRefWithRule::new(
+            self,
+            crate::r::any::statement::FormatAnyRStatement::default(),
+        )
+    }
+}
+impl IntoFormat<RFormatContext> for air_r_syntax::AnyRStatement {
+    type Format = FormatOwnedWithRule<
+        air_r_syntax::AnyRStatement,
+        crate::r::any::statement::FormatAnyRStatement,
+    >;
+    fn into_format(self) -> Self::Format {
+        #![allow(clippy::default_constructed_unit_structs)]
+        FormatOwnedWithRule::new(
+            self,
+            crate::r::any::statement::FormatAnyRStatement::default(),
+        )
     }
 }
 impl AsFormat<RFormatContext> for air_r_syntax::AnyRValue {

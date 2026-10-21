@@ -33,61 +33,91 @@ expression: snapshot
 ```
 RRoot {
     bom_token: missing (optional),
-    expressions: RExpressionList [
-        RBracedExpressions {
-            l_curly_token: L_CURLY@0..2 "{" [] [Whitespace(" ")],
-            expressions: RExpressionList [],
-            r_curly_token: R_CURLY@2..3 "}" [] [],
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RBracedStatements {
+                l_curly_token: L_CURLY@0..2 "{" [] [Whitespace(" ")],
+                statements: RStatementList [],
+                r_curly_token: R_CURLY@2..3 "}" [] [],
+            },
+            semicolon_token: missing (optional),
         },
-        RBracedExpressions {
-            l_curly_token: L_CURLY@3..6 "{" [Newline("\n"), Newline("\n")] [],
-            expressions: RExpressionList [],
-            r_curly_token: R_CURLY@6..9 "}" [Newline("\n"), Newline("\n")] [],
+        RExpressionStatement {
+            expression: RBracedStatements {
+                l_curly_token: L_CURLY@3..6 "{" [Newline("\n"), Newline("\n")] [],
+                statements: RStatementList [],
+                r_curly_token: R_CURLY@6..9 "}" [Newline("\n"), Newline("\n")] [],
+            },
+            semicolon_token: missing (optional),
         },
-        RBracedExpressions {
-            l_curly_token: L_CURLY@9..13 "{" [Newline("\n"), Newline("\n")] [Whitespace(" ")],
-            expressions: RExpressionList [
-                RDoubleValue {
-                    value_token: R_DOUBLE_LITERAL@13..15 "1" [] [Whitespace(" ")],
-                },
-            ],
-            r_curly_token: R_CURLY@15..16 "}" [] [],
+        RExpressionStatement {
+            expression: RBracedStatements {
+                l_curly_token: L_CURLY@9..13 "{" [Newline("\n"), Newline("\n")] [Whitespace(" ")],
+                statements: RStatementList [
+                    RExpressionStatement {
+                        expression: RDoubleValue {
+                            value_token: R_DOUBLE_LITERAL@13..15 "1" [] [Whitespace(" ")],
+                        },
+                        semicolon_token: missing (optional),
+                    },
+                ],
+                r_curly_token: R_CURLY@15..16 "}" [] [],
+            },
+            semicolon_token: missing (optional),
         },
-        RBracedExpressions {
-            l_curly_token: L_CURLY@16..19 "{" [Newline("\n"), Newline("\n")] [],
-            expressions: RExpressionList [
-                RDoubleValue {
-                    value_token: R_DOUBLE_LITERAL@19..23 "1" [Newline("\n"), Whitespace("  ")] [],
-                },
-                RBinaryExpression {
-                    left: RDoubleValue {
-                        value_token: R_DOUBLE_LITERAL@23..28 "2" [Newline("\n"), Whitespace("  ")] [Whitespace(" ")],
+        RExpressionStatement {
+            expression: RBracedStatements {
+                l_curly_token: L_CURLY@16..19 "{" [Newline("\n"), Newline("\n")] [],
+                statements: RStatementList [
+                    RExpressionStatement {
+                        expression: RDoubleValue {
+                            value_token: R_DOUBLE_LITERAL@19..23 "1" [Newline("\n"), Whitespace("  ")] [],
+                        },
+                        semicolon_token: missing (optional),
                     },
-                    operator: PLUS@28..30 "+" [] [Whitespace(" ")],
-                    right: RDoubleValue {
-                        value_token: R_DOUBLE_LITERAL@30..31 "2" [] [],
+                    RExpressionStatement {
+                        expression: RBinaryExpression {
+                            left: RDoubleValue {
+                                value_token: R_DOUBLE_LITERAL@23..28 "2" [Newline("\n"), Whitespace("  ")] [Whitespace(" ")],
+                            },
+                            operator: PLUS@28..30 "+" [] [Whitespace(" ")],
+                            right: RDoubleValue {
+                                value_token: R_DOUBLE_LITERAL@30..31 "2" [] [],
+                            },
+                        },
+                        semicolon_token: missing (optional),
                     },
-                },
-                RBinaryExpression {
-                    left: RDoubleValue {
-                        value_token: R_DOUBLE_LITERAL@31..36 "3" [Newline("\n"), Whitespace("  ")] [Whitespace(" ")],
+                    RExpressionStatement {
+                        expression: RBinaryExpression {
+                            left: RDoubleValue {
+                                value_token: R_DOUBLE_LITERAL@31..36 "3" [Newline("\n"), Whitespace("  ")] [Whitespace(" ")],
+                            },
+                            operator: PLUS@36..37 "+" [] [],
+                            right: RDoubleValue {
+                                value_token: R_DOUBLE_LITERAL@37..43 "4" [Newline("\n"), Whitespace("    ")] [],
+                            },
+                        },
+                        semicolon_token: missing (optional),
                     },
-                    operator: PLUS@36..37 "+" [] [],
-                    right: RDoubleValue {
-                        value_token: R_DOUBLE_LITERAL@37..43 "4" [Newline("\n"), Whitespace("    ")] [],
-                    },
-                },
-            ],
-            r_curly_token: R_CURLY@43..45 "}" [Newline("\n")] [],
+                ],
+                r_curly_token: R_CURLY@43..45 "}" [Newline("\n")] [],
+            },
+            semicolon_token: missing (optional),
         },
-        RBracedExpressions {
-            l_curly_token: L_CURLY@45..70 "{" [Newline("\n"), Newline("\n"), Comments("# comment1"), Newline("\n")] [Whitespace(" "), Comments("# comment2")],
-            expressions: RExpressionList [
-                RDoubleValue {
-                    value_token: R_DOUBLE_LITERAL@70..85 "1" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment3")],
-                },
-            ],
-            r_curly_token: R_CURLY@85..98 "}" [Newline("\n")] [Whitespace(" "), Comments("# comment4")],
+        RExpressionStatement {
+            expression: RBracedStatements {
+                l_curly_token: L_CURLY@45..70 "{" [Newline("\n"), Newline("\n"), Comments("# comment1"), Newline("\n")] [Whitespace(" "), Comments("# comment2")],
+                statements: RStatementList [
+                    RExpressionStatement {
+                        expression: RDoubleValue {
+                            value_token: R_DOUBLE_LITERAL@70..85 "1" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment3")],
+                        },
+                        semicolon_token: missing (optional),
+                    },
+                ],
+                r_curly_token: R_CURLY@85..98 "}" [Newline("\n")] [Whitespace(" "), Comments("# comment4")],
+            },
+            semicolon_token: missing (optional),
         },
     ],
     eof_token: EOF@98..99 "" [Newline("\n")] [],
@@ -99,45 +129,65 @@ RRoot {
 ```
 0: R_ROOT@0..99
   0: (empty)
-  1: R_EXPRESSION_LIST@0..98
-    0: R_BRACED_EXPRESSIONS@0..3
-      0: L_CURLY@0..2 "{" [] [Whitespace(" ")]
-      1: R_EXPRESSION_LIST@2..2
-      2: R_CURLY@2..3 "}" [] []
-    1: R_BRACED_EXPRESSIONS@3..9
-      0: L_CURLY@3..6 "{" [Newline("\n"), Newline("\n")] []
-      1: R_EXPRESSION_LIST@6..6
-      2: R_CURLY@6..9 "}" [Newline("\n"), Newline("\n")] []
-    2: R_BRACED_EXPRESSIONS@9..16
-      0: L_CURLY@9..13 "{" [Newline("\n"), Newline("\n")] [Whitespace(" ")]
-      1: R_EXPRESSION_LIST@13..15
-        0: R_DOUBLE_VALUE@13..15
-          0: R_DOUBLE_LITERAL@13..15 "1" [] [Whitespace(" ")]
-      2: R_CURLY@15..16 "}" [] []
-    3: R_BRACED_EXPRESSIONS@16..45
-      0: L_CURLY@16..19 "{" [Newline("\n"), Newline("\n")] []
-      1: R_EXPRESSION_LIST@19..43
-        0: R_DOUBLE_VALUE@19..23
-          0: R_DOUBLE_LITERAL@19..23 "1" [Newline("\n"), Whitespace("  ")] []
-        1: R_BINARY_EXPRESSION@23..31
-          0: R_DOUBLE_VALUE@23..28
-            0: R_DOUBLE_LITERAL@23..28 "2" [Newline("\n"), Whitespace("  ")] [Whitespace(" ")]
-          1: PLUS@28..30 "+" [] [Whitespace(" ")]
-          2: R_DOUBLE_VALUE@30..31
-            0: R_DOUBLE_LITERAL@30..31 "2" [] []
-        2: R_BINARY_EXPRESSION@31..43
-          0: R_DOUBLE_VALUE@31..36
-            0: R_DOUBLE_LITERAL@31..36 "3" [Newline("\n"), Whitespace("  ")] [Whitespace(" ")]
-          1: PLUS@36..37 "+" [] []
-          2: R_DOUBLE_VALUE@37..43
-            0: R_DOUBLE_LITERAL@37..43 "4" [Newline("\n"), Whitespace("    ")] []
-      2: R_CURLY@43..45 "}" [Newline("\n")] []
-    4: R_BRACED_EXPRESSIONS@45..98
-      0: L_CURLY@45..70 "{" [Newline("\n"), Newline("\n"), Comments("# comment1"), Newline("\n")] [Whitespace(" "), Comments("# comment2")]
-      1: R_EXPRESSION_LIST@70..85
-        0: R_DOUBLE_VALUE@70..85
-          0: R_DOUBLE_LITERAL@70..85 "1" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment3")]
-      2: R_CURLY@85..98 "}" [Newline("\n")] [Whitespace(" "), Comments("# comment4")]
+  1: R_STATEMENT_LIST@0..98
+    0: R_EXPRESSION_STATEMENT@0..3
+      0: R_BRACED_STATEMENTS@0..3
+        0: L_CURLY@0..2 "{" [] [Whitespace(" ")]
+        1: R_STATEMENT_LIST@2..2
+        2: R_CURLY@2..3 "}" [] []
+      1: (empty)
+    1: R_EXPRESSION_STATEMENT@3..9
+      0: R_BRACED_STATEMENTS@3..9
+        0: L_CURLY@3..6 "{" [Newline("\n"), Newline("\n")] []
+        1: R_STATEMENT_LIST@6..6
+        2: R_CURLY@6..9 "}" [Newline("\n"), Newline("\n")] []
+      1: (empty)
+    2: R_EXPRESSION_STATEMENT@9..16
+      0: R_BRACED_STATEMENTS@9..16
+        0: L_CURLY@9..13 "{" [Newline("\n"), Newline("\n")] [Whitespace(" ")]
+        1: R_STATEMENT_LIST@13..15
+          0: R_EXPRESSION_STATEMENT@13..15
+            0: R_DOUBLE_VALUE@13..15
+              0: R_DOUBLE_LITERAL@13..15 "1" [] [Whitespace(" ")]
+            1: (empty)
+        2: R_CURLY@15..16 "}" [] []
+      1: (empty)
+    3: R_EXPRESSION_STATEMENT@16..45
+      0: R_BRACED_STATEMENTS@16..45
+        0: L_CURLY@16..19 "{" [Newline("\n"), Newline("\n")] []
+        1: R_STATEMENT_LIST@19..43
+          0: R_EXPRESSION_STATEMENT@19..23
+            0: R_DOUBLE_VALUE@19..23
+              0: R_DOUBLE_LITERAL@19..23 "1" [Newline("\n"), Whitespace("  ")] []
+            1: (empty)
+          1: R_EXPRESSION_STATEMENT@23..31
+            0: R_BINARY_EXPRESSION@23..31
+              0: R_DOUBLE_VALUE@23..28
+                0: R_DOUBLE_LITERAL@23..28 "2" [Newline("\n"), Whitespace("  ")] [Whitespace(" ")]
+              1: PLUS@28..30 "+" [] [Whitespace(" ")]
+              2: R_DOUBLE_VALUE@30..31
+                0: R_DOUBLE_LITERAL@30..31 "2" [] []
+            1: (empty)
+          2: R_EXPRESSION_STATEMENT@31..43
+            0: R_BINARY_EXPRESSION@31..43
+              0: R_DOUBLE_VALUE@31..36
+                0: R_DOUBLE_LITERAL@31..36 "3" [Newline("\n"), Whitespace("  ")] [Whitespace(" ")]
+              1: PLUS@36..37 "+" [] []
+              2: R_DOUBLE_VALUE@37..43
+                0: R_DOUBLE_LITERAL@37..43 "4" [Newline("\n"), Whitespace("    ")] []
+            1: (empty)
+        2: R_CURLY@43..45 "}" [Newline("\n")] []
+      1: (empty)
+    4: R_EXPRESSION_STATEMENT@45..98
+      0: R_BRACED_STATEMENTS@45..98
+        0: L_CURLY@45..70 "{" [Newline("\n"), Newline("\n"), Comments("# comment1"), Newline("\n")] [Whitespace(" "), Comments("# comment2")]
+        1: R_STATEMENT_LIST@70..85
+          0: R_EXPRESSION_STATEMENT@70..85
+            0: R_DOUBLE_VALUE@70..85
+              0: R_DOUBLE_LITERAL@70..85 "1" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment3")]
+            1: (empty)
+        2: R_CURLY@85..98 "}" [Newline("\n")] [Whitespace(" "), Comments("# comment4")]
+      1: (empty)
   2: EOF@98..99 "" [Newline("\n")] []
 
 ```

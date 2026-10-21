@@ -51,14 +51,14 @@ impl RBinaryExpression {
         )
     }
 }
-impl RBracedExpressions {
+impl RBracedStatements {
     pub fn with_l_curly_token(self, element: SyntaxToken) -> Self {
         Self::unwrap_cast(
             self.syntax
                 .splice_slots(0usize..=0usize, once(Some(element.into()))),
         )
     }
-    pub fn with_expressions(self, element: RExpressionList) -> Self {
+    pub fn with_statements(self, element: RStatementList) -> Self {
         Self::unwrap_cast(
             self.syntax
                 .splice_slots(1usize..=1usize, once(Some(element.into_syntax().into()))),
@@ -156,6 +156,28 @@ impl RElseClause {
         Self::unwrap_cast(
             self.syntax
                 .splice_slots(1usize..=1usize, once(Some(element.into_syntax().into()))),
+        )
+    }
+}
+impl REmptyStatement {
+    pub fn with_semicolon_token(self, element: SyntaxToken) -> Self {
+        Self::unwrap_cast(
+            self.syntax
+                .splice_slots(0usize..=0usize, once(Some(element.into()))),
+        )
+    }
+}
+impl RExpressionStatement {
+    pub fn with_expression(self, element: AnyRExpression) -> Self {
+        Self::unwrap_cast(
+            self.syntax
+                .splice_slots(0usize..=0usize, once(Some(element.into_syntax().into()))),
+        )
+    }
+    pub fn with_semicolon_token(self, element: Option<SyntaxToken>) -> Self {
+        Self::unwrap_cast(
+            self.syntax
+                .splice_slots(1usize..=1usize, once(element.map(|element| element.into()))),
         )
     }
 }
@@ -454,7 +476,7 @@ impl RRoot {
                 .splice_slots(0usize..=0usize, once(element.map(|element| element.into()))),
         )
     }
-    pub fn with_expressions(self, element: RExpressionList) -> Self {
+    pub fn with_statements(self, element: RStatementList) -> Self {
         Self::unwrap_cast(
             self.syntax
                 .splice_slots(1usize..=1usize, once(Some(element.into_syntax().into()))),

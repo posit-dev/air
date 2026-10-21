@@ -59,7 +59,7 @@ fn is_titled_block_call(arguments: &RCallArguments) -> bool {
     }
 
     // Second must be braces
-    if !matches!(second, AnyRExpression::RBracedExpressions(_)) {
+    if !matches!(second, AnyRExpression::RBracedStatements(_)) {
         return false;
     }
 

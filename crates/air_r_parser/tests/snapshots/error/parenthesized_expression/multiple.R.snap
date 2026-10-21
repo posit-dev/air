@@ -17,11 +17,14 @@ expression: snapshot
 ```
 RRoot {
     bom_token: missing (optional),
-    expressions: RExpressionList [
-        RBogusExpression {
-            items: [
-                R_BOGUS@0..11 "(\n  a\n  b\n)" [] [],
-            ],
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RBogusExpression {
+                items: [
+                    R_BOGUS@0..11 "(\n  a\n  b\n)" [] [],
+                ],
+            },
+            semicolon_token: missing (optional),
         },
     ],
     eof_token: EOF@11..11 "" [] [],
@@ -33,9 +36,11 @@ RRoot {
 ```
 0: R_ROOT@0..11
   0: (empty)
-  1: R_EXPRESSION_LIST@0..11
-    0: R_BOGUS_EXPRESSION@0..11
-      0: R_BOGUS@0..11 "(\n  a\n  b\n)" [] []
+  1: R_STATEMENT_LIST@0..11
+    0: R_EXPRESSION_STATEMENT@0..11
+      0: R_BOGUS_EXPRESSION@0..11
+        0: R_BOGUS@0..11 "(\n  a\n  b\n)" [] []
+      1: (empty)
   2: EOF@11..11 "" [] []
 
 ```

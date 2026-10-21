@@ -202,7 +202,8 @@ Smaller cleanups worth making while in there:
 One hazard for the swap: the generator deletes files it doesn't recognize.
 `RBracedExpressions` -> `RBracedStatements` and `RExpressionList` ->
 `RStatementList` must be `git mv`'d to their new paths *before* codegen runs, or
-the hand-written bodies get deleted.
+the hand-written bodies get deleted. P6 did both renames, so the swap doesn't
+hit this.
 
 ## The stack
 
@@ -253,7 +254,7 @@ value. Order is by risk, smallest first.
   `text_trimmed()` in the same commit. `inner_string_text()` is not carried
   over, since nothing in air uses it. It arrives with the swap. Expected result: zero formatter snapshot diff, CRLF tests included.
 
-- P6. Statement layer without semicolons. Grammar gains
+- P6. Done. Statement layer without semicolons. Grammar gains
   `RStatement { expression?, ';'? }`, `RStatementList`, and `RBracedStatements`.
   `RRoot.statements` replaces `expressions`. The walker wraps each child of the
   program and of `{}` in an `R_STATEMENT` and never fills the `;` slot. The
@@ -263,6 +264,15 @@ value. Order is by risk, smallest first.
   zero formatter snapshot diff. This is the riskiest formatter PR, and it lands
   with tree-sitter still underneath, so any snapshot movement can only come from
   the statement layer.
+
+- P6b. Done. Split `RStatement` into `AnyRStatement = RExpressionStatement |
+  REmptyStatement`, following Biome's `JsExpressionStatement` /
+  `JsEmptyStatement`. Lands in aether first, then air copies the grammar and
+  re-runs codegen on `feature/statements` before P6 merges. The same air commit
+  adds all of the empty-statement and semicolon formatting (list join, blank
+  lines, `{;}`, comment placement, `position()`, curly-curly), tested with
+  hand-built trees marked `TODO(aether)`. Full plan, including the Biome
+  comparison, in `plans/empty-statement.md`.
 
 - P7. Parse API convergence. Rename to `RParse`, `has_errors()`,
   `diagnostics()`. Replace `ParseError` in `workspace` / CLI / LSP with whatever
@@ -297,22 +307,27 @@ Scoped to what can't move earlier. Checklist:
 
 - [ ] `xtask`: delete grammar codegen and point `formatter.rs` at
   `aether_r_grammar::ast()`. Syntax crate ident becomes `aether_r_syntax`.
-  Remove `just gen-grammar`. `git mv` renamed rule files before running
-  `just gen-formatter`.
+  Remove `just gen-grammar`.
 
-- [ ] Semicolons: `FormatRStatement` drops the token with `format_removed()`.
-  Expression-less statements emit nothing and don't produce blank lines.
-  Comments on empty statements get placement rules. New spec file
+- [ ] Semicolons: the formatting itself landed in P6b. What's left is listed
+  under "What is left for the swap" in `plans/empty-statement.md`: replace the
+  `TODO(aether)` hand-built tests with snapshot specs. New spec file
   `statements/semicolons.R` covering `1;2`, `1;`, `1;;2` in braces, `{;}`,
   `{;1}`, `1; # c`, `1 ; # c`, blank lines around a lone `;` in braces,
-  `# fmt: skip` on a statement ending in `;`, and range formatting across
-  `;`.
+  `# fmt: skip` on a statement ending in `;` (the whole `RExpressionStatement`
+  stays verbatim, `;` included), range formatting across `;`,
+  curly-curly with a `;` (`fn({{ x }; })`, `fn({{ x; }})`, both formatting to
+  `fn({{ x }})`), and every case from P6b's hand-built tests.
+  Also a comment before a `;` on the next line, like `{1 # c` then `;}`. A `;`
+  after a newline is its own `REmptyStatement`, so this exercises the "trail
+  the preceding node" rule. The curly-curly form `fn({{ x } # c` then `;})` has
+  two outer statements, so the length check already rejects it.
 
 - [ ] New spec tests for things only aether can parse: `r"-|a|-"` raw strings
   and `%a\b%`.
 
 - [ ] LSP: `Document` holds `RParse`. Range formatting builds
-  `r_statement_list()` from the selected `RStatement`s directly. Remove the
+  `r_statement_list()` from the selected `AnyRStatement`s directly. Remove the
   `TreeSitter` view kind and the matching VS Code command (question below).
 
 - [ ] `air_formatter_test` / spec harness: only import changes, since
@@ -360,9 +375,9 @@ Scoped to what can't move earlier. Checklist:
 - `xtask` uses option A: aether exposes an `aether_r_grammar` crate, and air
   keeps only `formatter.rs` plus a verify test.
 
-- `# fmt: skip` suppresses the whole `RStatement`, so a trailing `;` is kept
-  verbatim. P6 moves directive and suppression checks from the expression onto
-  the statement.
+- `# fmt: skip` suppresses the whole `RExpressionStatement`, so a trailing `;`
+  is kept verbatim. P6 moved directive checks from the expression onto the
+  statement, and P6b made the statement itself suppressible.
 
 - Air pins `https://github.com/DavisVaughan/aether` by `rev`, like biome.
   Aether's `Cargo.toml` `repository` / `homepage` should be updated to match

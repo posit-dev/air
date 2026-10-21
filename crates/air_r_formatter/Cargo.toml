@@ -24,7 +24,9 @@ tracing = { workspace = true }
 
 [dev-dependencies]
 air_formatter_test = { workspace = true }
+air_r_factory = { workspace = true }
 air_r_parser = { workspace = true }
+anyhow = { workspace = true }
 biome_parser = { workspace = true }
 tests_macros = { workspace = true }
 workspace = { workspace = true }

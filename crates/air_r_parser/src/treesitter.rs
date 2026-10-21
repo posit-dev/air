@@ -100,7 +100,7 @@ fn node_syntax_kind(x: &Node) -> RSyntaxKind {
         "for_statement" => RSyntaxKind::R_FOR_STATEMENT,
         "while_statement" => RSyntaxKind::R_WHILE_STATEMENT,
         "repeat_statement" => RSyntaxKind::R_REPEAT_STATEMENT,
-        "braced_expression" => RSyntaxKind::R_BRACED_EXPRESSIONS,
+        "braced_expression" => RSyntaxKind::R_BRACED_STATEMENTS,
         "parenthesized_expression" => RSyntaxKind::R_PARENTHESIZED_EXPRESSION,
         "call" => RSyntaxKind::R_CALL,
         "subset" => RSyntaxKind::R_SUBSET,

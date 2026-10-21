@@ -106,7 +106,7 @@ pub enum RSyntaxKind {
     R_FOR_STATEMENT,
     R_WHILE_STATEMENT,
     R_REPEAT_STATEMENT,
-    R_BRACED_EXPRESSIONS,
+    R_BRACED_STATEMENTS,
     R_PARENTHESIZED_EXPRESSION,
     R_CALL,
     R_CALL_ARGUMENTS,
@@ -117,7 +117,9 @@ pub enum RSyntaxKind {
     R_ARGUMENT_LIST,
     R_ARGUMENT,
     R_ARGUMENT_NAME_CLAUSE,
-    R_EXPRESSION_LIST,
+    R_STATEMENT_LIST,
+    R_EXPRESSION_STATEMENT,
+    R_EMPTY_STATEMENT,
     R_INTEGER_VALUE,
     R_DOUBLE_VALUE,
     R_COMPLEX_VALUE,
@@ -202,7 +204,7 @@ impl RSyntaxKind {
     }
     pub const fn is_list(self) -> bool {
         match self {
-            R_PARAMETER_LIST | R_ARGUMENT_LIST | R_EXPRESSION_LIST => true,
+            R_PARAMETER_LIST | R_ARGUMENT_LIST | R_STATEMENT_LIST => true,
             _ => false,
         }
     }

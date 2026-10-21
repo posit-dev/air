@@ -105,7 +105,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_FOR_STATEMENT
             | RSyntaxKind::R_WHILE_STATEMENT
             | RSyntaxKind::R_REPEAT_STATEMENT
-            | RSyntaxKind::R_BRACED_EXPRESSIONS
+            | RSyntaxKind::R_BRACED_STATEMENTS
             | RSyntaxKind::R_PARENTHESIZED_EXPRESSION
             | RSyntaxKind::R_CALL
             | RSyntaxKind::R_CALL_ARGUMENTS
@@ -116,7 +116,9 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_ARGUMENT_LIST
             | RSyntaxKind::R_ARGUMENT
             | RSyntaxKind::R_ARGUMENT_NAME_CLAUSE
-            | RSyntaxKind::R_EXPRESSION_LIST
+            | RSyntaxKind::R_STATEMENT_LIST
+            | RSyntaxKind::R_EXPRESSION_STATEMENT
+            | RSyntaxKind::R_EMPTY_STATEMENT
             | RSyntaxKind::R_INTEGER_VALUE
             | RSyntaxKind::R_DOUBLE_VALUE
             | RSyntaxKind::R_COMPLEX_VALUE
@@ -259,7 +261,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_FOR_STATEMENT
             | RSyntaxKind::R_WHILE_STATEMENT
             | RSyntaxKind::R_REPEAT_STATEMENT
-            | RSyntaxKind::R_BRACED_EXPRESSIONS
+            | RSyntaxKind::R_BRACED_STATEMENTS
             | RSyntaxKind::R_PARENTHESIZED_EXPRESSION
             | RSyntaxKind::R_CALL
             | RSyntaxKind::R_CALL_ARGUMENTS
@@ -270,7 +272,9 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_ARGUMENT_LIST
             | RSyntaxKind::R_ARGUMENT
             | RSyntaxKind::R_ARGUMENT_NAME_CLAUSE
-            | RSyntaxKind::R_EXPRESSION_LIST
+            | RSyntaxKind::R_STATEMENT_LIST
+            | RSyntaxKind::R_EXPRESSION_STATEMENT
+            | RSyntaxKind::R_EMPTY_STATEMENT
             | RSyntaxKind::TILDE
             | RSyntaxKind::ASSIGN
             | RSyntaxKind::SUPER_ASSIGN
