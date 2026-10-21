@@ -265,6 +265,15 @@ value. Order is by risk, smallest first.
   with tree-sitter still underneath, so any snapshot movement can only come from
   the statement layer.
 
+- P6b. Done. Split `RStatement` into `AnyRStatement = RExpressionStatement |
+  REmptyStatement`, following Biome's `JsExpressionStatement` /
+  `JsEmptyStatement`. Lands in aether first, then air copies the grammar and
+  re-runs codegen on `feature/statements` before P6 merges. The same air commit
+  adds all of the empty-statement and semicolon formatting (list join, blank
+  lines, `{;}`, comment placement, `position()`, curly-curly), tested with
+  hand-built trees marked `TODO(aether)`. Full plan, including the Biome
+  comparison, in `plans/empty-statement.md`.
+
 - P7. Parse API convergence. Rename to `RParse`, `has_errors()`,
   `diagnostics()`. Replace `ParseError` in `workspace` / CLI / LSP with whatever
   we decide below. The walker produces one `ParseDiagnostic` for the whole file,
@@ -300,32 +309,25 @@ Scoped to what can't move earlier. Checklist:
   `aether_r_grammar::ast()`. Syntax crate ident becomes `aether_r_syntax`.
   Remove `just gen-grammar`.
 
-- [ ] Semicolons: `FormatRStatement` already drops the token with
-  `format_removed()` (P6). Expression-less statements emit nothing and don't
-  produce blank lines. `SyntaxPosition` treats the last statement of `{}` as
-  the value, so it must skip trailing expression-less statements, like in
-  `{ if (a) 1;; }`.
-  Comments on empty statements get placement rules. New spec file
+- [ ] Semicolons: the formatting itself landed in P6b. What's left is listed
+  under "What is left for the swap" in `plans/empty-statement.md`: replace the
+  `TODO(aether)` hand-built tests with snapshot specs. New spec file
   `statements/semicolons.R` covering `1;2`, `1;`, `1;;2` in braces, `{;}`,
   `{;1}`, `1; # c`, `1 ; # c`, blank lines around a lone `;` in braces,
-  `# fmt: skip` on a statement ending in `;`, range formatting across `;`,
-  and curly-curly with a `;` (`fn({{ x }; })`, `fn({{ x; }})`).
-  Also a comment between the expression and its `;` (`1 # c` then `;` on the
-  next line). The comment is inside the `RStatement`, so it trails the
-  expression, not the statement. The curly-curly form is `fn({{ x } # c` then
-  `;})`. There, the comment trails the inner `{`, which panics in
-  `fmt_curly_curly()` unless the `;` disqualifies curly-curly.
-
-- [ ] Curly-curly with a `;` in either statement, like `fn({{ x }; })` or
-  `fn({{ x; }})`, is not curly-curly. `as_curly_curly()` must return `None`
-  when either `RStatement` has a `semicolon_token()`. Then `fmt_curly_curly()`
-  never sees a `;`. P6 deliberately left the `;` out of it.
+  `# fmt: skip` on a statement ending in `;` (the whole `RExpressionStatement`
+  stays verbatim, `;` included), range formatting across `;`,
+  curly-curly with a `;` (`fn({{ x }; })`, `fn({{ x; }})`, both formatting to
+  `fn({{ x }})`), and every case from P6b's hand-built tests.
+  Also a comment before a `;` on the next line, like `{1 # c` then `;}`. A `;`
+  after a newline is its own `REmptyStatement`, so this exercises the "trail
+  the preceding node" rule. The curly-curly form `fn({{ x } # c` then `;})` has
+  two outer statements, so the length check already rejects it.
 
 - [ ] New spec tests for things only aether can parse: `r"-|a|-"` raw strings
   and `%a\b%`.
 
 - [ ] LSP: `Document` holds `RParse`. Range formatting builds
-  `r_statement_list()` from the selected `RStatement`s directly. Remove the
+  `r_statement_list()` from the selected `AnyRStatement`s directly. Remove the
   `TreeSitter` view kind and the matching VS Code command (question below).
 
 - [ ] `air_formatter_test` / spec harness: only import changes, since
@@ -373,9 +375,9 @@ Scoped to what can't move earlier. Checklist:
 - `xtask` uses option A: aether exposes an `aether_r_grammar` crate, and air
   keeps only `formatter.rs` plus a verify test.
 
-- `# fmt: skip` suppresses the whole `RStatement`, so a trailing `;` is kept
-  verbatim. P6 moves directive and suppression checks from the expression onto
-  the statement.
+- `# fmt: skip` suppresses the whole `RExpressionStatement`, so a trailing `;`
+  is kept verbatim. P6 moved directive checks from the expression onto the
+  statement, and P6b made the statement itself suppressible.
 
 - Air pins `https://github.com/DavisVaughan/aether` by `rev`, like biome.
   Aether's `Cargo.toml` `repository` / `homepage` should be updated to match
