@@ -1,6 +1,6 @@
 ---
 source: crates/air_formatter_test/src/snapshot_builder.rs
-info: r/statements/semicolons.R
+info: r/semicolons.R
 ---
 # Input
 

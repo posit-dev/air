@@ -149,7 +149,7 @@ it needs, so every commit builds.
   `cargo run -p xtask_accept && git diff --exit-code`.
 
 - [x] Formatter specs for semicolons, replacing the hand-built `TODO(aether)`
-  tests in `r/auxiliary/empty_statement.rs`. New `statements/semicolons.R`
+  tests in `r/auxiliary/empty_statement.rs`. New `semicolons.R`
   covers:
   - `1;2`, `1;`, `1;;2` in braces, `{;}`, `{;1}`.
   - `1; # c` and `1 ; # c`.
