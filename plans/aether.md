@@ -1,402 +1,218 @@
 # Moving air onto aether
 
-Status: draft, open questions at the bottom.
+Status: ready to start the swap. One open item at the bottom.
 
 ## Goal
 
-Replace air's tree-sitter based `air_r_parser`, and the `air_r_syntax` /
-`air_r_factory` crates generated from air's own `r.ungram`, with aether's
-`aether_r_parser`, `aether_r_syntax`, and `aether_r_factory`. After the move,
-air owns no grammar and no parser. It owns the formatter, the LSP, the CLI, and
-a formatter-only codegen.
+Bring all of aether into air under the `air_` prefix. Aether's crates replace
+air's crates of the same role, and aether's test crates come along unchanged.
+After the swap, air's parser is aether's hand-written parser, and tree-sitter is
+gone.
+
+This is a plain copy, not a dependency. Air does not pin aether by git, and
+there is no `aether_r_*` rename across air's code. If the parser ever needs to
+live on its own again, it can be split back out.
 
 Success means:
 
-- `air_r_parser`, `air_r_syntax`, `air_r_factory`, `biome_ungrammar`,
-  `tree-sitter`, and `tree-sitter-r` are gone from air's workspace.
+- `crates/air_r_parser` is aether's parser, and `tree-sitter` and
+  `tree-sitter-r` are gone from the workspace.
 
-- Every formatter spec snapshot is unchanged, except where a deviation in
-  aether's `docs/deviations.md` explains the change.
+- `air_r_parser_tests` and `air_r_test_macros` exist, and `just accept` and
+  `just test-quick-parser` work.
 
-- `xtask` generates formatter boilerplate only, reading the grammar from aether
-  instead of a local copy.
+- Every formatter spec snapshot is unchanged, except for new specs covering
+  input that only aether can parse.
 
-## Short answer: piecewise or one big PR?
+## Rule for collisions
 
-Mostly piecewise. Nearly every tree-shape deviation can be reproduced by air's
-own tree-sitter walker first. That lets each formatter change land on `main`
-against a green snapshot suite, one deviation at a time. The swap PR at the end
-is then mostly mechanical.
+When air and aether disagree on a file, crate, setting, or dependency, aether
+wins. Exceptions are listed under Decisions.
 
-What can't be split out of the swap:
+## Where the two repos stand
 
-- The dependency swap itself, crate deletions, and the `air_r_*` to `aether_r_*`
-  rename.
+The prep work (P1 to P7, all merged) has brought air's tree-sitter walker in
+line with aether's tree shape. What's left to reconcile is small:
 
-- Semicolons as real `SEMICOLON` tokens. tree-sitter-r never emits `;`, so
-  faking it in the walker means synthesizing tokens from gap text. That's real
-  throwaway complexity for a small formatter change, so it stays in the swap.
-  The statement layer around it does not (see P6).
+- `r.ungram`: byte-identical.
 
-- Diagnostics-only deviations (`1 2`, a stray top-level `;`, `foo::\nbar`,
-  `a$1`, and so on). These only exist in aether's parser.
+- `air_r_syntax` vs `aether_r_syntax`, after swapping the prefix: aether adds
+  `string_ext.rs` and `pub use biome_rowan::TokenText`. It also splits one
+  `use crate::{RRoot, RSyntaxKind}` into two lines.
 
-- `|` raw strings and `%a\b%`, which tree-sitter can't lex.
+- `air_r_factory` vs `aether_r_factory`: identical after swapping the prefix.
 
-- Rewiring `xtask` to read aether's grammar.
+- `biome_ungrammar`: identical, except air has a stray `Cargo.lock`.
 
-## Findings from research
+- `air_r_parser` vs `aether_r_parser`: same public API (`RParse`, `parse()`,
+  `RParserOptions`, `has_errors()`, `diagnostics()`, `into_diagnostics()`,
+  `From<RParse> for AnyParse`). The internals are fully replaced.
 
-### Experiments run
+- `xtask`: aether's is a superset of air's. It adds `accept.rs`, a `main.rs`,
+  a `bpaf` `TaskCommand`, and a `project_root()` that searches for
+  `[workspace]`.
 
-I parsed every `.R` fixture in air with aether, using a scratch probe that
-depends on `aether_r_parser` by path.
+- `xtask/codegen`: aether's is air's minus `formatter.rs`, the `Formatter` and
+  `All` commands, and `LanguageKind::formatter_crate_name()`.
 
-- Formatter specs: exactly one fixture fails. `binary_expression_sticky.R` line
-  41 is two expressions glued onto one line, a typo in the fixture. tree-sitter
-  accepted it silently. After the swap, the spec harness would panic on it.
-
-- Parser fixtures: the expected `error/` failures, plus `ok/semicolons/*` (stray
-  top-level `;`, now an error as in R) and `undefined/*` (now diagnosed). These
-  fixtures are deleted with `air_r_parser` anyway.
-
-I also ran today's `air` binary on semicolon inputs:
-
-  | input                       | air today                                             | under aether                           |
-  | ---                         | ---                                                   | ---                                    |
-  | `1;2`                       | `1` / `2` on two lines                                | same, by removing the `;` token        |
-  | `{1; 2}`                    | two lines in braces                                   | same                                   |
-  | `1; # c`                    | `1 # c`                                               | same, if comments are placed correctly |
-  | `;1`                        | `1`                                                   | parse error, refuses to format         |
-  | `1 2`                       | `1` / `2`                                             | parse error, refuses to format         |
-  | `for (... in 1:2) print(1)` | verbatim, trailing newline lost (whole file is bogus) | formats normally                       |
-
-So for valid R, the semicolon formatting that was agreed on in `deviations.md`
-gives the same output air produces today. The semicolon work is about keeping
-output identical, not changing it. Air has no semicolon formatter specs at all,
-which needs fixing.
-
-### The `RStatement` layer is the subtle part
-
-Today an expression's parent is `RExpressionList`. After the swap it is
-`RStatement`, and the list is one level further up. Biome attaches a leading
-comment to the outermost node that follows it, so own-line comments become
-leading comments of the `RStatement`, not of the expression. Places that break:
-
-- `comments_ext.rs` `can_have_directive()` matches the parent kind
-  `R_EXPRESSION_LIST`. `# fmt: skip` on a top-level or braced expression would
-  silently stop working.
-
-- `if_statement.rs:391` and `binary_expression.rs:348` cast the parent to
-  `RExpressionList`.
-
-- `comments.rs` `place_leading_or_dangling_body_comment()` and `root.rs`
-  `is_suppressed()` reach through `.expressions().first()`.
-
-- `call_arguments.rs` `braced_expressions_is_groupable()` and
-  `braced_expressions.rs`.
-
-- LSP `handlers_format.rs` builds a synthetic `RRoot` from `r_expression_list()`
-  and checks `R_EXPRESSION_LIST` in `find_deepest_enclosing_logical_lines()`.
-
-Empty statements (`{;}`, `{1;;2}`) are a second trap. They are nodes, so
-comments can attach to them, and Biome's debug checks panic on unformatted
-comments or tokens. They must call `format_removed()` on the `;` and either
-format or re-home their comments.
-
-### Parser API differences
-
-  | air                                                                         | aether                                                           |
-  | ---                                                                         | ---                                                              |
-  | `Parse`                                                                     | `RParse`                                                         |
-  | `has_error()`                                                               | `has_errors()`                                                   |
-  | `error()` / `into_error()` -> `ParseError` (implements `std::error::Error`) | `diagnostics()` / `into_diagnostics()` -> `Vec<ParseDiagnostic>` |
-  | `into_result()`                                                             | gone                                                             |
-  | `RParserOptions` derives serde                                              | no serde                                                         |
-  | one whole-file error, no location                                           | one diagnostic per error, with ranges                            |
-
-`workspace::format::FormatSourceError::Parse` wraps `ParseError` through
-`#[from]`. That needs a new error type, because `ParseDiagnostic` doesn't
-implement `std::error::Error`.
-
-### Syntax crate differences
-
-- `call_ext.rs` (`RCall::is_test_call()`) is not in aether. It's an inherent
-  impl on what will be a foreign type, so it becomes a formatter-side function
-  or extension trait.
-
-- `OperatorPrecedence` is not in aether, and it is dead code in air today.
-  Nothing outside `air_r_syntax` references it.
-
-- `string_ext.rs` (`RStringValue::inner_string_text()`) is new in aether.
-
-- Both pin the same `lionel-/biome` rev. This has to stay in lockstep forever:
-  `biome_rowan` types in `aether_r_syntax` must be the same crate as the ones
-  `air_r_formatter` uses. Bumping biome becomes a two-repo change.
-
-### `xtask` today
-
-`xtask/codegen` does two jobs:
-
-1. Grammar codegen: `ast.rs`, `generate_*.rs`, `kind_src.rs`, `r_kinds_src.rs`,
-   `language_kind.rs`. It reads `r.ungram` and writes `air_r_syntax` /
-   `air_r_factory`. This is byte-for-byte the same as aether's `xtask/codegen`,
-   except for crate names. It is deleted outright.
-
-2. Formatter codegen: `formatter.rs`, 682 lines. It writes stubs for missing
-   node formatters, fully regenerates the union formatters (`r/any/*.rs`), every
-   `mod.rs`, and the 1646-line `generated.rs` (`AsFormat` / `IntoFormat` /
-   `FormatRule` impls for every node). It deletes any file under `r/` that
-   doesn't match a node. It uses `git2` to refuse to overwrite dirty files and
-   to auto-stage its output.
-
-The only thing formatter codegen needs from the grammar is `load_ast()`'s
-classification of each type name: node, list (separated or not), bogus, or union
-with variants. That function lives in the half being deleted, and reads
-`r.ungram`, which moves to aether.
-
-Formatter codegen has run 20 times in air's history, mostly in the first months.
-The grammar changes rarely now.
-
-### Options for formatter codegen after the move
-
-A. Aether exposes the grammar model as a library (recommended). Move `r.ungram`,
-`kind_src.rs`, `r_kinds_src.rs`, and the classification half of `ast.rs` out of
-aether's `xtask/codegen` into a new `publish = false` crate, for example
-`aether_r_grammar`, exposing `ast() -> AstSrc`. Aether's own codegen consumes
-it. Air's `xtask` depends on it by git at the same rev as the other aether
-crates, so the grammar it reads is always the grammar air compiles against. Air
-keeps `formatter.rs` and loses everything else.
-
-B. Read `r.ungram` from cargo's git checkout of aether through `cargo metadata`.
-Works, but air must vendor `biome_ungrammar` and the classification code. Two
-copies of the same code drift. Rejected.
-
-C. Vendor a copy of `r.ungram` in air. Same drift problem. Rejected.
-
-D. Drop formatter codegen. Replace `generated.rs` with a `macro_rules!` table,
-write union formatters by hand, and add stubs by hand. The compiler catches most
-drift, since a missing `AsFormat` impl or a non-exhaustive union `match` won't
-compile. It deletes `xtask/codegen` entirely. The cost is losing a generator
-Biome-style formatters all share, and every aether grammar change becoming hand
-work.
-
-E. Move formatter stub generation into aether, writing into an air checkout.
-Couples aether to air's file layout. Rejected.
-
-I recommend A, plus a `Mode::Verify` test in the style of rust-analyzer's
-sourcegen tests: bumping the aether rev without re-running codegen fails CI.
-
-Smaller cleanups worth making while in there:
-
-- Drop the `LanguageKind` abstraction. There is one language.
-
-- Drop `git2`. Stubs are only written when missing, and everything else it
-  protects is fully generated. Aether already dropped it.
-
-- Adopt aether's `project_root()`, which searches for `[workspace]` instead of
-  counting ancestors.
-
-- Possibly switch generated `r/any/mod.rs` to `r/any.rs` (question below).
-
-One hazard for the swap: the generator deletes files it doesn't recognize.
-`RBracedExpressions` -> `RBracedStatements` and `RExpressionList` ->
-`RStatementList` must be `git mv`'d to their new paths *before* codegen runs, or
-the hand-written bodies get deleted. P6 did both renames, so the swap doesn't
-hit this.
+- Air's `tests_macros` stays. The formatter spec harness still uses it.
+  `air_r_test_macros` is a different, smaller macro for the markdown corpus.
 
 ## The stack
 
-Two repos. The aether PRs come first because air's swap depends on them.
+Two prep PRs on `main`, then one swap PR.
 
-### Aether
+### Prep 1: drop the tree-sitter LSP view
 
-- A1. Extract `aether_r_grammar` (option A). Aether's codegen output is
-  unchanged.
+Self-contained, and it can land now.
 
-- A2. Audit air's `crates/air_r_parser/tests/snapshots/**` against aether's
-  corpus, and port any construct that isn't covered. Air's fixtures are deleted
-  in the swap, so aether's corpus has to hold everything first. Aether's retired
-  oracle compared against air, so gaps should be small, but the audit makes
-  sure.
+- `crates/lsp/src/handlers_ext.rs`: remove `ViewFileKind::TreeSitter` and
+  `format_ts_node()`.
 
-- A3. Settle the repo URL and the rev or tag air pins.
+- `crates/lsp/Cargo.toml`: drop `tree-sitter` and `tree-sitter-r`.
 
-### Air: prep PRs on `main`
+- `editors/code`: remove `air.viewTreeSitter` from `commands.ts`,
+  `package.json`, and the `"TreeSitter"` member of `ViewFileKind` in
+  `request/viewFile.ts`.
 
-Each one is green on its own, keeps the tree-sitter parser, and has independent
-value. Order is by risk, smallest first.
+- Changelog bullet for the VS Code extension.
 
-- P1. Done. Fix the `binary_expression_sticky.R` fixture typo. Snapshot change only.
+### Prep 2: `test-health.yml` with fmt and clippy
 
-- P2. Done. Delete the dead `OperatorPrecedence`. Move `is_test_call()` into
-  `air_r_formatter`.
+Air's CI runs neither today.
 
-- P3. Done. Switch the tree-sitter walker's whitespace attachment to Biome's JS rule
-  (trailing on the token before). `deviations.md` asks for exactly this
-  experiment: run the formatter suite before any formatter change, so a
-  whitespace regression can't hide in the semicolon churn. Expected result: zero
-  formatter snapshot diff. Parser snapshots and the LSP syntax snapshots will
-  move. If a formatter snapshot moves, stop and fix aether first.
+- New `.github/workflows/test-health.yml`, wired into `test.yml`. It runs
+  `cargo fmt --all --check` and
+  `cargo clippy --workspace --all-targets -- -D warnings` on Linux.
 
-- P4. Done. Grammar additions that need no walker work: `AnyRForVariable`
-  (`RIdentifier | RDots | RDotDotI | RBogusForVariable`), `RBogusSelector`,
-  `RBogusParameterName`, `RBogusForVariable`, `ERROR_TOKEN`, plus `is_bogus()` /
-  `to_bogus()` arms and generated formatter stubs. This fixes `for (... in x)`
-  in air today: the walker already emits `R_DOTS` there. Add a spec test and a
-  changelog bullet.
+- Fix whatever they flag in air's code, in its own commit.
 
-- P5. Done. Strings as one token. Walker emits
-  `R_{SINGLE,DOUBLE}_QUOTED_STRING_LITERAL` / `R_RAW_STRING_LITERAL` instead of
-  open/content/close (this reverts #497's shape). Rewrite `string_value.rs`.
-  Follow the warning in `deviations.md` about `string_content.rs`: remove the
-  trivia assert and switch `normalize_string_content_token()` to
-  `text_trimmed()` in the same commit. `inner_string_text()` is not carried
-  over, since nothing in air uses it. It arrives with the swap. Expected result: zero formatter snapshot diff, CRLF tests included.
+The swap PR adds two more checks to the same workflow.
 
-- P6. Done. Statement layer without semicolons. Grammar gains
-  `RStatement { expression?, ';'? }`, `RStatementList`, and `RBracedStatements`.
-  `RRoot.statements` replaces `expressions`. The walker wraps each child of the
-  program and of `{}` in an `R_STATEMENT` and never fills the `;` slot. The
-  formatter gains `FormatRStatement`, and every site in the `RStatement` section
-  above is fixed, along with the LSP range formatter. Write `format_removed()`
-  for the `;` slot here even though nothing produces it yet. Expected result:
-  zero formatter snapshot diff. This is the riskiest formatter PR, and it lands
-  with tree-sitter still underneath, so any snapshot movement can only come from
-  the statement layer.
+### The swap PR
 
-- P6b. Done. Split `RStatement` into `AnyRStatement = RExpressionStatement |
-  REmptyStatement`, following Biome's `JsExpressionStatement` /
-  `JsEmptyStatement`. Lands in aether first, then air copies the grammar and
-  re-runs codegen on `feature/statements` before P6 merges. The same air commit
-  adds all of the empty-statement and semicolon formatting (list join, blank
-  lines, `{;}`, comment placement, `position()`, curly-curly), tested with
-  hand-built trees marked `TODO(aether)`. Full plan, including the Biome
-  comparison, in `plans/empty-statement.md`.
+Each bullet is roughly one commit.
 
-- P7. Done. Parse API convergence. Rename to `RParse`, `has_errors()`,
-  `diagnostics()`. `ParseError` is gone. `FormatSourceError::Parse` holds the
-  `Vec<ParseDiagnostic>` and owns the one-line message, so CLI output survives
-  the swap unchanged. The walker produces one span-less `ParseDiagnostic` for
-  the whole file, as now.
+- [ ] Copy aether's crates in, renaming `aether` to `air` in crate names,
+  paths, idents, and descriptions:
+  - `aether_r_parser` replaces `crates/air_r_parser` wholesale, including
+    deleting `treesitter.rs`, the old spec harness, and the 78 fixtures under
+    `tests/snapshots/`. Aether's corpus replaces them.
+  - `aether_r_syntax` replaces `crates/air_r_syntax`.
+  - `aether_r_factory` replaces `crates/air_r_factory`.
+  - `aether_r_parser_tests` arrives as `crates/air_r_parser_tests`.
+  - `aether_r_test_macros` arrives as `crates/air_r_test_macros`.
+  - `biome_ungrammar` replaces air's copy, dropping the stray `Cargo.lock`.
 
-- P8. Optional `xtask` cleanup that doesn't depend on aether. Nothing here is
-  needed for the move: the swap's only required `xtask` change is deleting
-  grammar codegen and pointing `formatter.rs` at `aether_r_grammar`. Candidates:
-  - A `Mode::Verify` test, so a stale `generated.rs` fails CI after an aether
-    rev bump. This is the only one with real value.
-  - Drop `git2`, which builds libgit2 (C) for every workspace build and clippy
-    run.
-  - Drop the single-language `LanguageKind` abstraction.
-  - Adopt aether's `project_root()`.
+- [ ] `xtask`: aether's `xtask` replaces air's, renamed. Add `"xtask"` to
+  workspace `members`, since it now has a binary.
 
-### Air: the swap PR
+- [ ] `xtask/codegen`: start from aether's crate, then re-add air's
+  `formatter.rs` unchanged (`git2` included), the `Formatter` and `All`
+  commands, and `formatter_crate_name()`. Run `just gen-grammar` and
+  `just gen-formatter`. Both should produce no diff.
 
-Scoped to what can't move earlier. Checklist:
+- [ ] Workspace `Cargo.toml`:
+  - Add `air_r_parser_tests`, `air_r_test_macros`, `biome_console`,
+    `biome_diagnostics`, `bpaf`, `similar`, and `unicode-ident`.
+  - Give `serde` the `derive` feature, as aether does.
+  - Remove `tree-sitter` and `tree-sitter-r`, plus `biome_unicode_table` if
+    nothing else uses it.
+  - Clippy lint `empty_enum` becomes `empty_enums`.
 
-- [ ] Workspace `Cargo.toml`: add `aether_r_parser`, `aether_r_syntax`,
-  `aether_r_factory` (and `aether_r_grammar` for `xtask`) as git deps pinned
-  to one rev. Remove `air_r_*`, `biome_ungrammar`, `biome_unicode_table`,
-  `tree-sitter`, `tree-sitter-r`.
+- [ ] Workspace config, taking aether's version:
+  - `.config/nextest.toml`, verbatim.
+  - `rust-toolchain.toml`, which adds `components = ["rustfmt", "clippy"]`.
 
-- [ ] Delete `crates/air_r_parser`, `crates/air_r_syntax`,
-  `crates/air_r_factory`, `crates/biome_ungrammar`, and
-  `xtask/codegen/r.ungram`.
+- [ ] `justfile`:
+  - `gen-grammar` stays, and runs the merged codegen.
+  - Aether's `test` is dropped. Air's `test *ARGS` stays.
+  - Aether's `accept` is added as-is.
+  - Aether's `quick` is added as `test-quick-parser`.
+  - Air's `test-quick` becomes `test-quick-formatter`.
 
-- [ ] Mechanical rename `air_r_syntax` -> `aether_r_syntax`, and the same for
-  the factory and parser, as its own commit.
+- [ ] `test-health.yml`: add aether's two checks, which are
+  `just gen-grammar && git diff --exit-code` and
+  `cargo run -p xtask -- accept && git diff --exit-code`.
 
-- [ ] `xtask`: delete grammar codegen and point `formatter.rs` at
-  `aether_r_grammar::ast()`. Syntax crate ident becomes `aether_r_syntax`.
-  Remove `just gen-grammar`.
+- [ ] Formatter specs for semicolons, replacing the hand-built `TODO(aether)`
+  tests in `r/auxiliary/empty_statement.rs`. New `statements/semicolons.R`
+  covers:
+  - `1;2`, `1;`, `1;;2` in braces, `{;}`, `{;1}`.
+  - `1; # c` and `1 ; # c`.
+  - A comment before a `;` on the next line, as in `{1 # c` then `;}`.
+  - Blank lines around a lone `;` in braces.
+  - `# fmt: skip` on a statement ending in `;` (kept verbatim, `;` included).
+  - Curly-curly with a `;`: `fn({{ x }; })` and `fn({{ x; }})` both format
+    to `fn({{ x }})`.
+  - Every case from the hand-built tests.
 
-- [ ] Semicolons: the formatting itself landed in P6b. What's left is listed
-  under "What is left for the swap" in `plans/empty-statement.md`: replace the
-  `TODO(aether)` hand-built tests with snapshot specs. New spec file
-  `statements/semicolons.R` covering `1;2`, `1;`, `1;;2` in braces, `{;}`,
-  `{;1}`, `1; # c`, `1 ; # c`, blank lines around a lone `;` in braces,
-  `# fmt: skip` on a statement ending in `;` (the whole `RExpressionStatement`
-  stays verbatim, `;` included), range formatting across `;`,
-  curly-curly with a `;` (`fn({{ x }; })`, `fn({{ x; }})`, both formatting to
-  `fn({{ x }})`), and every case from P6b's hand-built tests.
-  Also a comment before a `;` on the next line, like `{1 # c` then `;}`. A `;`
-  after a newline is its own `REmptyStatement`, so this exercises the "trail
-  the preceding node" rule. The curly-curly form `fn({{ x } # c` then `;})` has
-  two outer statements, so the length check already rejects it.
+- [ ] Formatter specs for input only aether can parse: `r"-|a|-"` raw strings,
+  `%a\b%`, and `for (... in x)`.
 
-- [ ] New spec tests for things only aether can parse: `r"-|a|-"` raw strings
-  and `%a\b%`.
+- [ ] Range formatting across `;` in the LSP tests.
 
-- [ ] LSP: `Document` holds `RParse`. Range formatting builds
-  `r_statement_list()` from the selected `AnyRStatement`s directly. Remove the
-  `TreeSitter` view kind and the matching VS Code command (question below).
+- [ ] Snapshots: the `crates/crates` crate list and the LSP `document_syntax`
+  snapshots.
 
-- [ ] `air_formatter_test` / spec harness: only import changes, since
-  `From<RParse> for AnyParse` exists.
+- [ ] `CLAUDE.md`:
+  - Root: update the crate layout, say that the parser is hand-written, and
+    document `just accept` and `just test-quick-parser`.
+  - New nested `crates/air_r_parser/CLAUDE.md`, a trimmed copy of aether's. It
+    keeps the invariants, the corpus test format, and the reference
+    implementations. It drops the `deviations.md` references, since that file
+    doesn't come over.
 
-- [ ] Snapshots: `crates/crates` crate list and LSP `document_syntax` snapshots.
-
-- [ ] Docs: `CLAUDE.md` (crate layout, codegen), `CONTRIBUTING.md` (how to patch
-  aether locally with `[patch."<aether url>"]`), `justfile`,
-  `xtask/README.md`, `xtask/codegen/README.md`.
+- [ ] Docs: `CONTRIBUTING.md`, `xtask/README.md`, `xtask/codegen/README.md`.
 
 - [ ] `CHANGELOG.md`:
   - Files R rejects are now rejected: two expressions on one line, a stray
     top-level `;`, `pkg::` followed by a newline, `x$1`.
-  - `r"-|...|-"` and `%a\b%` now parse.
+  - `r"-|...|-"`, `%a\b%`, and `for (... in x)` now parse.
   - Building air no longer needs a C compiler.
-  - Performance, if the benchmark below shows a win.
+  - Performance, if the benchmark shows a win.
 
-- [ ] Validation beyond the spec suite:
-  - Ecosystem diff: format a large corpus of real R code with `main` and with
-    the branch, and diff the outputs. Every difference must trace to a
-    deviation, and every file that newly fails to parse must be one R also
+- [ ] Validation before merge:
+  - Ecosystem diff: format a fixed list of GitHub repos, cloned at pinned SHAs,
+    with `main` and with the branch, then diff. Every formatting difference must
+    be explained, and every file that newly fails to parse must be one R also
     rejects.
   - CLI benchmark on the same corpus.
 
-### Follow-ups after the swap
+## Decisions
 
-- Print aether's diagnostics with locations from the CLI, instead of "Failed to
-  parse due to syntax errors."
+- Plain copy, not a git subtree. Blame for parser files starts at the import
+  commit.
+
+- One swap PR after two prep PRs, not a longer stack.
+
+- Aether's `docs/deviations.md` does not come over.
+
+- Aether's `CLAUDE.md` becomes a nested `crates/air_r_parser/CLAUDE.md`.
+
+- `formatter.rs` comes over unchanged, `git2` and all. Any cleanup is a later
+  PR.
+
+- Aether's `.config/nextest.toml` is taken verbatim, including the 3×10s
+  terminate. Any LSP test that trips it gets fixed.
+
+- The CLI keeps today's one-line parse error. Rich diagnostics are a follow-up.
+
+- What happens to the aether repo is out of scope.
+
+## Follow-ups after the swap
+
+- Print parse diagnostics with locations from the CLI, instead of "Failed to
+  parse due to syntax errors." This is the `TODO(aether)` in
+  `crates/workspace/src/format.rs`.
 
 - Consider publishing parse diagnostics from the LSP, now that they carry
   ranges.
 
-- Consider formatting around local errors (aether keeps the rest of the tree
-  intact). Air refuses today, and that stays true in this plan.
+- Consider formatting around local errors, since the parser keeps the rest of
+  the tree intact. Air refuses today, and that stays true in this plan.
 
-- Downstream: Jarl should move from air's git crates to aether directly once air
-  no longer exports `air_r_parser`.
+## Open
 
-## Decisions
-
-- P3, P5, and P6 are in the stack. The throwaway walker work is worth getting
-  provably neutral formatter PRs.
-
-- `xtask` uses option A: aether exposes an `aether_r_grammar` crate, and air
-  keeps only `formatter.rs` plus a verify test.
-
-- `# fmt: skip` suppresses the whole `RExpressionStatement`, so a trailing `;`
-  is kept verbatim. P6 moved directive checks from the expression onto the
-  statement, and P6b made the statement itself suppressible.
-
-- Air pins `https://github.com/DavisVaughan/aether` by `rev`, like biome.
-  Aether's `Cargo.toml` `repository` / `homepage` should be updated to match
-  (part of A3).
-
-- `feature/aether` only holds this plan. P1 to P8 target `main` one at a time,
-  and the swap stacks on top at the end.
-
-- The CLI keeps today's one-line parse error through P7 and the swap. Rich
-  diagnostics are a follow-up.
-
-- The swap drops the "view tree-sitter tree" LSP request and VS Code command,
-  removing tree-sitter entirely.
-
-- The ecosystem diff runs on a fixed list of GitHub repos cloned at pinned SHAs.
-  The list goes in this plan before the swap starts.
-
-## Open questions
-
-1. Is P8 worth keeping? None of it is needed for the move. See the note under
-   P8.
+1. The repo list for the ecosystem diff. It needs to go here before the swap PR
+   is opened.
