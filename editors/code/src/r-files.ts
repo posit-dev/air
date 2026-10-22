@@ -9,7 +9,10 @@ export type REditor = vscode.TextEditor & { document: RDocument };
 export function isRDocument(
 	document: vscode.TextDocument,
 ): document is RDocument {
-	return document.languageId === "r" && document.uri.scheme === "file";
+	 return (
+      document.languageId === "r" &&
+      (document.uri.scheme === "file" || document.uri.scheme === "untitled")
+    );
 }
 
 export function isREditor(editor: vscode.TextEditor): editor is REditor {
