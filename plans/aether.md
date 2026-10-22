@@ -135,7 +135,7 @@ it needs, so every commit builds.
   - Move `git2` into the workspace dependencies, so `xtask_codegen` inherits
     it like everything else.
 
-- [ ] `.config/nextest.toml`: take aether's, verbatim.
+- [x] `.config/nextest.toml`: take aether's, verbatim.
 
 - [ ] `justfile`:
   - `gen-grammar` stays, and runs the merged codegen.
