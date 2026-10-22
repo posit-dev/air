@@ -152,16 +152,55 @@ fn handle_empty_statement_comment(
 
     match comment.text_position() {
         CommentTextPosition::EndOfLine => match (preceding, following) {
-            // ```r
-            // {
-            //   1
-            //   ; # Trails preceding
-            //   2
-            // }
-            // ```
-            (Some(preceding), Some(_)) => CommentPlacement::trailing(preceding, comment),
+            (Some(preceding), Some(following)) => {
+                // Is the comment on the same line as the closest non-empty `preceding` node?
+                let is_on_preceding_line = comment.preceding_node().is_some_and(|preceding| {
+                    preceding
+                        .siblings(Direction::Prev)
+                        .take_while(|sibling| REmptyStatement::can_cast(sibling.kind()))
+                        .all(|sibling| !sibling.has_leading_newline())
+                });
+
+                if is_on_preceding_line {
+                    // ```r
+                    // {
+                    //   1; ; # Trails preceding
+                    //   2
+                    // }
+                    // ```
+                    CommentPlacement::trailing(preceding, comment)
+                } else {
+                    // Leading keeps the relative ordering here:
+                    //
+                    // ```r
+                    // {
+                    //   1
+                    //   # Leads following 1
+                    //   ; # Leads following 2
+                    //   2
+                    // }
+                    // ```
+                    //
+                    // And generally also makes sense here where the `;` is
+                    // simply removed and the comment doesn't move
+                    //
+                    // ```r
+                    // {
+                    //   1
+                    //   ; # Leads following
+                    //   2
+                    // }
+                    //
+                    // ```
+                    CommentPlacement::leading(following, comment)
+                }
+            }
 
             // ```r
+            // {
+            //   1; ; # Trails preceding
+            // }
+            //
             // {
             //   1
             //   ; # Trails preceding

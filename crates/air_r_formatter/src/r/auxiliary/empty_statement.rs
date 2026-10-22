@@ -527,24 +527,20 @@ mod test {
         Ok(())
     }
 
-    /// Handles every variant of [crate::comments::handle_empty_statement_comment]
     #[test]
-    fn test_handle_empty_statement_comment() -> anyhow::Result<()> {
-        const TRAILS: Trivia = Comment("# Trails preceding");
-        const LEADS: Trivia = Comment("# Leads following");
-        const DANGLING: Trivia = Comment("# Dangling on enclosing");
-
-        // `CommentTextPosition::EndOfLine`
-
+    fn test_comments_around_lone_semicolon_keep_order() -> anyhow::Result<()> {
         let source = "\
 {
   1
-  ; # Trails preceding
+  # a
+  ; # b
   2
 }";
         let expected = "\
 {
-  1 # Trails preceding
+  1
+  # a
+  # b
   2
 }
 ";
@@ -557,7 +553,153 @@ mod test {
                     "1",
                     &[],
                 ))),
-                empty(token(SEMICOLON, &[Newline, INDENT], ";", &[SPACE, TRAILS])),
+                empty(token(
+                    SEMICOLON,
+                    &[Newline, INDENT, Comment("# a"), Newline, INDENT],
+                    ";",
+                    &[SPACE, Comment("# b")],
+                )),
+                statement(double(token(
+                    R_DOUBLE_LITERAL,
+                    &[Newline, INDENT],
+                    "2",
+                    &[],
+                ))),
+            ],
+            token(R_CURLY, &[Newline], "}", &[]),
+        ))]);
+        assert_eq!(format(tree, source)?, expected);
+        Ok(())
+    }
+
+    /// Handles every variant of [crate::comments::handle_empty_statement_comment]
+    #[test]
+    fn test_handle_empty_statement_comment() -> anyhow::Result<()> {
+        const TRAILS: Trivia = Comment("# Trails preceding");
+        const LEADS: Trivia = Comment("# Leads following");
+        const DANGLING: Trivia = Comment("# Dangling on enclosing");
+
+        // `CommentTextPosition::EndOfLine`
+
+        let source = "\
+{
+  1; ; # Trails preceding
+  2
+}";
+        let expected = "\
+{
+  1 # Trails preceding
+  2
+}
+";
+        let tree = root([statement(braces(
+            token(L_CURLY, &[], "{", &[]),
+            [
+                statement_with_semicolon(
+                    double(token(R_DOUBLE_LITERAL, &[Newline, INDENT], "1", &[])),
+                    token(SEMICOLON, &[], ";", &[]),
+                ),
+                empty(token(SEMICOLON, &[SPACE], ";", &[SPACE, TRAILS])),
+                statement(double(token(
+                    R_DOUBLE_LITERAL,
+                    &[Newline, INDENT],
+                    "2",
+                    &[],
+                ))),
+            ],
+            token(R_CURLY, &[Newline], "}", &[]),
+        ))]);
+        assert_eq!(format(tree, source)?, expected);
+
+        let source = "\
+{
+  1; ; ; # Trails preceding
+  2
+}";
+        let expected = "\
+{
+  1 # Trails preceding
+  2
+}
+";
+        let tree = root([statement(braces(
+            token(L_CURLY, &[], "{", &[]),
+            [
+                statement_with_semicolon(
+                    double(token(R_DOUBLE_LITERAL, &[Newline, INDENT], "1", &[])),
+                    token(SEMICOLON, &[], ";", &[]),
+                ),
+                empty(token(SEMICOLON, &[SPACE], ";", &[])),
+                empty(token(SEMICOLON, &[SPACE], ";", &[SPACE, TRAILS])),
+                statement(double(token(
+                    R_DOUBLE_LITERAL,
+                    &[Newline, INDENT],
+                    "2",
+                    &[],
+                ))),
+            ],
+            token(R_CURLY, &[Newline], "}", &[]),
+        ))]);
+        assert_eq!(format(tree, source)?, expected);
+
+        let source = "\
+{
+  1
+  ; ; # Leads following
+  2
+}";
+        let expected = "\
+{
+  1
+  # Leads following
+  2
+}
+";
+        let tree = root([statement(braces(
+            token(L_CURLY, &[], "{", &[]),
+            [
+                statement(double(token(
+                    R_DOUBLE_LITERAL,
+                    &[Newline, INDENT],
+                    "1",
+                    &[],
+                ))),
+                empty(token(SEMICOLON, &[Newline, INDENT], ";", &[])),
+                empty(token(SEMICOLON, &[SPACE], ";", &[SPACE, LEADS])),
+                statement(double(token(
+                    R_DOUBLE_LITERAL,
+                    &[Newline, INDENT],
+                    "2",
+                    &[],
+                ))),
+            ],
+            token(R_CURLY, &[Newline], "}", &[]),
+        ))]);
+        assert_eq!(format(tree, source)?, expected);
+
+        let source = "\
+{
+  1
+  ; # Leads following
+  2
+}";
+        let expected = "\
+{
+  1
+  # Leads following
+  2
+}
+";
+        let tree = root([statement(braces(
+            token(L_CURLY, &[], "{", &[]),
+            [
+                statement(double(token(
+                    R_DOUBLE_LITERAL,
+                    &[Newline, INDENT],
+                    "1",
+                    &[],
+                ))),
+                empty(token(SEMICOLON, &[Newline, INDENT], ";", &[SPACE, LEADS])),
                 statement(double(token(
                     R_DOUBLE_LITERAL,
                     &[Newline, INDENT],
