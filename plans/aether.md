@@ -126,8 +126,10 @@ it needs, so every commit builds.
   dependencies, as aether's codegen uses it from there. Run `just gen-grammar`
   and `just gen-formatter`. Both should produce no diff.
 
-- [ ] Workspace `Cargo.toml`, for what the earlier bullets didn't need:
-  - Give `serde` the `derive` feature, as aether does.
+- [x] Workspace `Cargo.toml`, for what the earlier bullets didn't need:
+  - Keep `serde` without `derive`, unlike aether. Instead, `lsp`,
+    `lsp_test`, and `settings` ask for `derive` themselves, as every other
+    crate that derives already does.
   - Remove `tree-sitter`, `tree-sitter-r`, and `biome_unicode_table`, which
     nothing uses after the copy.
 
@@ -204,6 +206,9 @@ it needs, so every commit builds.
 
 - `accept` lives in its own `xtask_accept` crate rather than in `xtask`, so
   `xtask_codegen` doesn't build the parser it generates code for.
+
+- The workspace `serde` stays without `derive`. Each crate that derives asks
+  for the feature itself.
 
 - Aether's `.config/nextest.toml` is taken verbatim, including the 3×10s
   terminate. Any LSP test that trips it gets fixed.

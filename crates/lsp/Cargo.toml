@@ -27,7 +27,7 @@ dissimilar.workspace = true
 futures.workspace = true
 itertools.workspace = true
 line_ending.workspace = true
-serde.workspace = true
+serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 settings.workspace = true
 struct-field-names-as-array.workspace = true

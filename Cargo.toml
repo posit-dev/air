@@ -32,7 +32,6 @@ biome_rowan = { git = "https://github.com/lionel-/biome", rev = "a1296ea6ba363d8
 biome_string_case = { git = "https://github.com/lionel-/biome", rev = "a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9" }
 biome_text_size = { git = "https://github.com/lionel-/biome", rev = "a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9" }
 biome_ungrammar = { path = "./crates/biome_ungrammar" }
-biome_unicode_table = { git = "https://github.com/lionel-/biome", rev = "a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9" }
 bpaf = { version = "0.9.15", features = ["derive"] }
 bytes = "1.8.0"
 cargo_metadata = "0.20.0"
@@ -80,8 +79,6 @@ toml = "0.8.19"
 tower-lsp = { branch = "bugfix/patches", git = "https://github.com/lionel-/tower-lsp" }
 tracing = { version = "0.1.40", default-features = false, features = ["std"] }
 tracing-subscriber = "0.3.19"
-tree-sitter = "0.24.7"
-tree-sitter-r = { git = "https://github.com/r-lib/tree-sitter-r", rev = "d459b97a9a11dd81643ab674938bede2874663b0" }
 unicode-ident = "1.0"
 url = "2.5.3"
 uuid = { version = "1.11.0", features = ["v4"] }

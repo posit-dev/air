@@ -14,13 +14,13 @@ publish = false
 [dependencies]
 biome_formatter = { workspace = true, optional = true }
 schemars = { workspace = true, optional = true }
-serde = { workspace = true, optional = true }
+serde = { workspace = true, features = ["derive"], optional = true }
 
 [dev-dependencies]
 anyhow = { workspace = true }
 biome_formatter = { workspace = true }
 insta = { workspace = true }
-serde = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
 # Self dependency to activate optional features for tests.
 # `cargo shear` will try and incorrectly remove this.
 settings = { features = ["biome", "serde"], path = "./" }
