@@ -1,0 +1,496 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/statements/semicolons.R
+---
+# Input
+
+```R
+# ------------------------------------------------------------------------
+# Semicolons between statements
+
+1;2
+
+1;
+
+{1;;2}
+
+{;1}
+
+{
+  1;;
+  2
+}
+
+# Trailing semicolons keep value position
+{
+  if (a) 1;;
+}
+
+# ------------------------------------------------------------------------
+# Braces with only semicolons
+
+{;}
+
+{;;}
+
+# ------------------------------------------------------------------------
+# Empty lines around a lone semicolon
+
+# Empty line before lone semicolon is kept
+{
+  1
+
+  ;
+  2
+}
+
+# Empty line after lone semicolon is kept
+{
+  1
+  ;
+
+  2
+}
+
+# Empty line before leading lone semicolon is removed
+{
+
+  ;
+  1
+}
+
+# Lone semicolon does not add empty line
+{
+  1
+  ;
+  2
+}
+
+# ------------------------------------------------------------------------
+# Comments after a semicolon
+
+1; # c
+
+1 ; # c
+
+# ------------------------------------------------------------------------
+# Comment before a lone semicolon
+
+{
+  1 # c
+  ;
+}
+
+{1 # c
+;}
+
+# ------------------------------------------------------------------------
+# Comment after a lone semicolon
+
+# Trails previous statement
+{
+  1
+  ; # c
+}
+
+# Leads next statement
+{
+  ; # c
+  1
+}
+
+# Dangles
+{;# c
+}
+
+# ------------------------------------------------------------------------
+# Comments around a lone semicolon
+
+# Dangle
+{
+  # a
+  ; # b
+  # c
+}
+
+# Keep order
+{
+  1
+  # a
+  ; # b
+  2
+}
+
+# ------------------------------------------------------------------------
+# Every variant of `handle_empty_statement_comment()`, end of line
+
+{
+  1; ; # Trails preceding
+  2
+}
+
+{
+  1; ; ; # Trails preceding
+  2
+}
+
+{
+  1
+  ; ; # Leads following
+  2
+}
+
+{
+  1
+  ; # Leads following
+  2
+}
+
+{
+  1
+  ; # Trails preceding
+}
+
+{
+  ; # Leads following
+  2
+}
+
+{
+  ; # Dangling on enclosing
+}
+
+# ------------------------------------------------------------------------
+# Every variant of `handle_empty_statement_comment()`, own line
+
+{
+  1
+  # Leads following
+  ;
+  2
+}
+
+{
+  1
+  ;
+  # Leads following
+  2
+}
+
+{
+  # Leads following
+  ;
+  2
+}
+
+{
+  ;
+  # Leads following
+  2
+}
+
+{
+  1
+  # Trails preceding
+  ;
+}
+
+{
+  1
+  ;
+  # Trails preceding
+}
+
+{
+  # Dangling on enclosing
+  ;
+}
+
+{
+  ;
+  # Dangling on enclosing
+}
+
+# ------------------------------------------------------------------------
+# Function body comment skips semicolons
+
+# Due to `place_leading_or_dangling_body_comment()` finding the first
+# non-empy statement, and placing the comment as leading on that.
+
+function() # Leads 1
+{
+  ;
+  1
+}
+
+function() # Dangles braces
+{;}
+
+function() # Dangles braces
+{
+  ;
+}
+
+# ------------------------------------------------------------------------
+# Curly-curly removes semicolon
+
+fn({{ x }; })
+
+fn({{ x; }})
+
+# ------------------------------------------------------------------------
+# `# fmt: skip` keeps semicolon
+
+# fmt: skip
+x;
+
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Space
+Indent width: 2
+Line ending: LF
+Line width: 80
+Persistent line breaks: Respect
+Assignment style: Arrow
+Table: fcase, rowwiseDT, tribble
+-----
+
+```R
+# ------------------------------------------------------------------------
+# Semicolons between statements
+
+1
+2
+
+1
+
+{
+  1
+  2
+}
+
+{
+  1
+}
+
+{
+  1
+  2
+}
+
+# Trailing semicolons keep value position
+{
+  if (a) 1
+}
+
+# ------------------------------------------------------------------------
+# Braces with only semicolons
+
+{}
+
+{}
+
+# ------------------------------------------------------------------------
+# Empty lines around a lone semicolon
+
+# Empty line before lone semicolon is kept
+{
+  1
+
+  2
+}
+
+# Empty line after lone semicolon is kept
+{
+  1
+
+  2
+}
+
+# Empty line before leading lone semicolon is removed
+{
+  1
+}
+
+# Lone semicolon does not add empty line
+{
+  1
+  2
+}
+
+# ------------------------------------------------------------------------
+# Comments after a semicolon
+
+1 # c
+
+1 # c
+
+# ------------------------------------------------------------------------
+# Comment before a lone semicolon
+
+{
+  1 # c
+}
+
+{
+  1 # c
+}
+
+# ------------------------------------------------------------------------
+# Comment after a lone semicolon
+
+# Trails previous statement
+{
+  1 # c
+}
+
+# Leads next statement
+{
+  # c
+  1
+}
+
+# Dangles
+{
+  # c
+}
+
+# ------------------------------------------------------------------------
+# Comments around a lone semicolon
+
+# Dangle
+{
+  # a
+  # b
+  # c
+}
+
+# Keep order
+{
+  1
+  # a
+  # b
+  2
+}
+
+# ------------------------------------------------------------------------
+# Every variant of `handle_empty_statement_comment()`, end of line
+
+{
+  1 # Trails preceding
+  2
+}
+
+{
+  1 # Trails preceding
+  2
+}
+
+{
+  1
+  # Leads following
+  2
+}
+
+{
+  1
+  # Leads following
+  2
+}
+
+{
+  1 # Trails preceding
+}
+
+{
+  # Leads following
+  2
+}
+
+{
+  # Dangling on enclosing
+}
+
+# ------------------------------------------------------------------------
+# Every variant of `handle_empty_statement_comment()`, own line
+
+{
+  1
+  # Leads following
+  2
+}
+
+{
+  1
+  # Leads following
+  2
+}
+
+{
+  # Leads following
+  2
+}
+
+{
+  # Leads following
+  2
+}
+
+{
+  1
+  # Trails preceding
+}
+
+{
+  1
+  # Trails preceding
+}
+
+{
+  # Dangling on enclosing
+}
+
+{
+  # Dangling on enclosing
+}
+
+# ------------------------------------------------------------------------
+# Function body comment skips semicolons
+
+# Due to `place_leading_or_dangling_body_comment()` finding the first
+# non-empy statement, and placing the comment as leading on that.
+
+function() {
+  # Leads 1
+  1
+}
+
+function() {
+  # Dangles braces
+}
+
+function() {
+  # Dangles braces
+}
+
+# ------------------------------------------------------------------------
+# Curly-curly removes semicolon
+
+fn({{ x }})
+
+fn({{ x }})
+
+# ------------------------------------------------------------------------
+# `# fmt: skip` keeps semicolon
+
+# fmt: skip
+x;
+```

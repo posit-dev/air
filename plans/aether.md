@@ -148,7 +148,7 @@ it needs, so every commit builds.
   `just gen-grammar && git diff --exit-code` and
   `cargo run -p xtask_accept && git diff --exit-code`.
 
-- [ ] Formatter specs for semicolons, replacing the hand-built `TODO(aether)`
+- [x] Formatter specs for semicolons, replacing the hand-built `TODO(aether)`
   tests in `r/auxiliary/empty_statement.rs`. New `statements/semicolons.R`
   covers:
   - `1;2`, `1;`, `1;;2` in braces, `{;}`, `{;1}`.
