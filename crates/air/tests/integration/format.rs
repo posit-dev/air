@@ -348,6 +348,32 @@ fn test_check_output_format() {
 }
 
 #[test]
+fn test_no_color_when_stderr_is_not_a_terminal() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    std::fs::write(directory.join("needs-formatting.R"), "1+1\n")?;
+    std::fs::write(directory.join("parse-error.R"), "1+/1\n")?;
+
+    // `run()` captures stderr through pipes so `is_terminal()` is `false`, just
+    // like a user doing `air format R/ 2>errors.log` to pipe stderr to a log
+    // file
+    let output = Command::new(binary_path())
+        .current_dir(directory)
+        // Defensive to be reproducible on all systems, just in case
+        .env_remove("NO_COLOR")
+        .arg("format")
+        .arg(".")
+        .arg("--check")
+        .run();
+
+    assert!(!output.stderr.contains('\x1b'));
+    insta::assert_snapshot!(output);
+
+    Ok(())
+}
+
+#[test]
 fn test_stdin_cant_supply_paths() -> anyhow::Result<()> {
     let directory = TempDir::new()?;
     let directory = directory.path();

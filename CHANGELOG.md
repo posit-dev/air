@@ -32,6 +32,8 @@
 
     - `x$1` where the right-hand side is not an identifier
 
+- Air no longer emits colored output when stderr is not a terminal, such as when stderr is redirected to a file.
+
 # 0.12.0
 
 - New `--no-configuration` flag to format with Air's built-in defaults without loading a project or user configuration file (#479, @LeonidasZhak).

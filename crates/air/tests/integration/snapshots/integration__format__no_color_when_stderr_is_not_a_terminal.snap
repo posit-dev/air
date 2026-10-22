@@ -1,0 +1,14 @@
+---
+source: crates/air/tests/integration/format.rs
+expression: output
+---
+success: false
+exit_code: 255
+----- stdout -----
+
+----- stderr -----
+ERROR Failed to format parse-error.R: Failed to parse due to syntax errors.
+Would reformat: needs-formatting.R
+
+----- args -----
+format . --check
