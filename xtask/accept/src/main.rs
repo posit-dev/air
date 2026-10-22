@@ -1,12 +1,24 @@
-use crate::Result;
-use air_r_parser_tests::{check, corpus, Document};
 use std::fs;
 
-pub fn accept() -> Result<()> {
+use air_r_parser_tests::check;
+use air_r_parser_tests::corpus;
+use air_r_parser_tests::Document;
+use xtask::anyhow;
+use xtask::project_root;
+use xtask::pushd;
+use xtask::Result;
+
+fn main() -> Result<()> {
+    let _d = pushd(project_root());
+    accept()
+}
+
+/// Regenerates every corpus snapshot
+fn accept() -> Result<()> {
     for input_path in corpus::input_files() {
         let display = corpus::relative(&input_path);
         let mut document = Document::parse(&fs::read_to_string(&input_path)?)
-            .map_err(|err| crate::anyhow!("{display}: {err}"))?;
+            .map_err(|err| anyhow!("{display}: {err}"))?;
 
         for section in &mut document.sections {
             let expectation = section.expectation;

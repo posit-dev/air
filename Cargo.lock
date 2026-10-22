@@ -2793,9 +2793,15 @@ checksum = "1e9df38ee2d2c3c5948ea468a8406ff0db0b29ae1ffde1bcf20ef305bcc95c51"
 name = "xtask"
 version = "0.0.0"
 dependencies = [
- "air_r_parser_tests",
  "anyhow",
- "bpaf",
+]
+
+[[package]]
+name = "xtask_accept"
+version = "0.0.0"
+dependencies = [
+ "air_r_parser_tests",
+ "xtask",
 ]
 
 [[package]]

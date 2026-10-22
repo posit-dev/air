@@ -115,14 +115,16 @@ it needs, so every commit builds.
   - Update the `crates/crates` crate list snapshot, which gains
     `air_r_parser_tests` and `air_r_test_macros`.
 
-- [ ] `xtask`: aether's `xtask` replaces air's, renamed. Add `"xtask"` to
-  workspace `members`, since it now has a binary. Add `bpaf` to the workspace
-  dependencies.
+- [x] `xtask`: take aether's `project_root()`, which searches for
+  `[workspace]`. Aether's `accept` becomes its own crate, `xtask/accept`
+  (`xtask_accept`), mirroring `xtask/codegen` and `xtask/json_schema`. Add
+  `"xtask/accept"` to workspace `members`.
 
 - [ ] `xtask/codegen`: start from aether's crate, then re-add air's
   `formatter.rs` unchanged (`git2` included), the `Formatter` and `All`
-  commands, and `formatter_crate_name()`. Run `just gen-grammar` and
-  `just gen-formatter`. Both should produce no diff.
+  commands, and `formatter_crate_name()`. Add `bpaf` to the workspace
+  dependencies, as aether's codegen uses it from there. Run `just gen-grammar`
+  and `just gen-formatter`. Both should produce no diff.
 
 - [ ] Workspace `Cargo.toml`, for what the earlier bullets didn't need:
   - Give `serde` the `derive` feature, as aether does.
@@ -134,13 +136,13 @@ it needs, so every commit builds.
 - [ ] `justfile`:
   - `gen-grammar` stays, and runs the merged codegen.
   - Aether's `test` is dropped. Air's `test *ARGS` stays.
-  - Aether's `accept` is added as-is.
+  - Aether's `accept` is added, running `cargo run -p xtask_accept`.
   - Aether's `quick` is added as `test-quick-parser`.
   - Air's `test-quick` becomes `test-quick-formatter`.
 
 - [ ] `test-health.yml`: add aether's two checks, which are
   `just gen-grammar && git diff --exit-code` and
-  `cargo run -p xtask -- accept && git diff --exit-code`.
+  `cargo run -p xtask_accept && git diff --exit-code`.
 
 - [ ] Formatter specs for semicolons, replacing the hand-built `TODO(aether)`
   tests in `r/auxiliary/empty_statement.rs`. New `statements/semicolons.R`
@@ -199,6 +201,9 @@ it needs, so every commit builds.
 - Aether's `CLAUDE.md` becomes a nested `crates/air_r_parser/CLAUDE.md`.
 
 - `formatter.rs` comes over unchanged, `git2` and all.
+
+- `accept` lives in its own `xtask_accept` crate rather than in `xtask`, so
+  `xtask_codegen` doesn't build the parser it generates code for.
 
 - Aether's `.config/nextest.toml` is taken verbatim, including the 3×10s
   terminate. Any LSP test that trips it gets fixed.

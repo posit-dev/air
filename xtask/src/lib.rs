@@ -1,22 +1,12 @@
 //! Codegen tools mostly used to generate ast and syntax definitions. Adapted from rust analyzer's codegen
 
-pub mod accept;
 pub mod glue;
 
-use bpaf::Bpaf;
 use std::{
     env,
     fmt::Display,
     path::{Path, PathBuf},
 };
-
-#[derive(Debug, Clone, Bpaf)]
-#[bpaf(options)]
-pub enum TaskCommand {
-    /// Regenerates every corpus snapshot
-    #[bpaf(command)]
-    Accept,
-}
 
 pub use crate::glue::{pushd, pushenv};
 
@@ -32,8 +22,7 @@ pub fn project_root() -> PathBuf {
     let manifest_dir =
         env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| env!("CARGO_MANIFEST_DIR").to_owned());
 
-    // Searched rather than counted, because `xtask` and `xtask/codegen` sit at
-    // different depths
+    // Searched rather than counted, so it holds wherever the calling crate sits
     Path::new(&manifest_dir)
         .ancestors()
         .find(|directory| {
