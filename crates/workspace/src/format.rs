@@ -1,6 +1,7 @@
 use air_r_formatter::context::RFormatOptions;
-use air_r_parser::Parse;
+use air_r_parser::RParse;
 use air_r_parser::RParserOptions;
+use biome_parser::diagnostic::ParseDiagnostic;
 use thiserror::Error;
 
 #[derive(Debug)]
@@ -13,8 +14,9 @@ pub enum FormattedSource {
 
 #[derive(Error, Debug)]
 pub enum FormatSourceError {
-    #[error(transparent)]
-    Parse(#[from] air_r_parser::ParseError),
+    // TODO(aether): Render the diagnostics in the CLI, where the path and source are known
+    #[error("Failed to parse due to syntax errors.")]
+    Parse(Vec<ParseDiagnostic>),
     #[error(transparent)]
     Format(#[from] biome_formatter::FormatError),
     #[error(transparent)]
@@ -42,9 +44,8 @@ pub fn format_source(
 ) -> std::result::Result<FormattedSource, FormatSourceError> {
     let parse = air_r_parser::parse(source, RParserOptions::default());
 
-    if parse.has_error() {
-        let error = parse.into_error().unwrap();
-        return Err(error.into());
+    if parse.has_errors() {
+        return Err(FormatSourceError::Parse(parse.into_diagnostics()));
     }
 
     format_source_with_parse(source, &parse, options).map_err(|err| match err {
@@ -63,10 +64,10 @@ pub fn format_source(
 /// the caller to handle that case appropriately.
 pub fn format_source_with_parse(
     source: &str,
-    parse: &Parse,
+    parse: &RParse,
     options: RFormatOptions,
 ) -> std::result::Result<FormattedSource, FormatParseError> {
-    if parse.has_error() {
+    if parse.has_errors() {
         panic!("Can't supply a `parse` with known errors.");
     }
 

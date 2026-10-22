@@ -24,7 +24,7 @@ pub struct Document {
 
     /// We store the syntax tree in the document for now.
     /// We will think about laziness and incrementality in the future.
-    pub parse: air_r_parser::Parse,
+    pub parse: air_r_parser::RParse,
 
     /// The version of the document we last synchronized with.
     /// None if the document hasn't been synchronized yet.

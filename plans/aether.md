@@ -274,10 +274,11 @@ value. Order is by risk, smallest first.
   hand-built trees marked `TODO(aether)`. Full plan, including the Biome
   comparison, in `plans/empty-statement.md`.
 
-- P7. Parse API convergence. Rename to `RParse`, `has_errors()`,
-  `diagnostics()`. Replace `ParseError` in `workspace` / CLI / LSP with whatever
-  we decide below. The walker produces one `ParseDiagnostic` for the whole file,
-  as now.
+- P7. Done. Parse API convergence. Rename to `RParse`, `has_errors()`,
+  `diagnostics()`. `ParseError` is gone. `FormatSourceError::Parse` holds the
+  `Vec<ParseDiagnostic>` and owns the one-line message, so CLI output survives
+  the swap unchanged. The walker produces one span-less `ParseDiagnostic` for
+  the whole file, as now.
 
 - P8. Optional `xtask` cleanup that doesn't depend on aether. Nothing here is
   needed for the move: the swap's only required `xtask` change is deleting

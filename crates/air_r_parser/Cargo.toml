@@ -22,7 +22,6 @@ air_r_syntax = { workspace = true }
 biome_parser = { workspace = true }
 biome_rowan = { workspace = true }
 biome_unicode_table = { workspace = true }
-serde = { workspace = true, features = ["derive"] }
 tracing = { workspace = true }
 tree-sitter = { workspace = true }
 tree-sitter-r = { workspace = true }

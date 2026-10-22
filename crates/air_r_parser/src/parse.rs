@@ -2,6 +2,7 @@ use air_r_syntax::RRoot;
 use air_r_syntax::RSyntaxKind;
 use air_r_syntax::RSyntaxNode;
 use biome_parser::AnyParse;
+use biome_parser::diagnostic::ParseDiagnostic;
 use biome_parser::event::Event;
 use biome_parser::prelude::Trivia;
 use biome_rowan::AstNode;
@@ -13,7 +14,6 @@ use biome_rowan::TriviaPieceKind;
 use biome_unicode_table::Dispatch;
 use tree_sitter::Tree;
 
-use crate::ParseError;
 use crate::RLosslessTreeSink;
 use crate::RParserOptions;
 use crate::treesitter::NodeTypeExt;
@@ -22,30 +22,40 @@ use crate::treesitter::WalkEvent;
 
 /// A utility struct for managing the result of a parser job
 ///
-/// This struct holds a handle to the root node of the parsed syntax tree, along with a
-/// possible error emitted by the parser while generating this entry.
+/// This struct holds a handle to the root node of the parsed syntax tree, along
+/// with the diagnostics the parser emitted while producing it.
 ///
 /// It can be dynamically downcast into a concrete [RSyntaxNode] or [RRoot].
 ///
-/// It can be sent or shared between threads.
+/// # Why a [SendNode] not an [RSyntaxNode]?
 ///
-/// This type is the same as [biome_parser::AnyParse], except it uses our [ParseError]
-/// error type rather than [biome_parser::ParseDiagnostic], since oddly that doesn't
-/// implement [std::error::Error] and we need that to compose with other errors.
+/// Every other Biome parser stores its own language's node and converts to
+/// [SendNode] at the [AnyParse] boundary, which is the only place biome needs
+/// a tree to cross a thread. Air never reaches that boundary: its LSP keeps
+/// an [RParse] in every `Document` and clones the whole `WorldState` into
+/// `spawn_blocking`, whose handlers are `Send + 'static`. So [RParse] itself
+/// has to be [Send], and [RSyntaxNode] is not — it holds an `Rc`.
+///
+/// The price is that [`RParse::syntax()`] rebuilds a red root on every call
+/// instead of bumping a refcount. Cheap, but not free, so hold the result
+/// rather than calling it in a loop.
+///
+/// TODO: We should probably investigate if we really need this in Air and Ark
+/// so we can be more like Biome
 #[derive(Clone, Debug)]
-pub struct Parse {
+pub struct RParse {
     root: SendNode,
-    error: Option<ParseError>,
+    diagnostics: Vec<ParseDiagnostic>,
 }
 
-impl Parse {
-    fn new(root: RSyntaxNode, error: Option<ParseError>) -> Parse {
+impl RParse {
+    fn new(root: RSyntaxNode, diagnostics: Vec<ParseDiagnostic>) -> Self {
         // Safety: This method is not exposed, we only use it internally
         let root = root.as_send().unwrap();
-        Parse { root, error }
+        Self { root, diagnostics }
     }
 
-    /// The syntax node represented by this Parse result
+    /// The syntax node represented by this parse result
     pub fn syntax(&self) -> RSyntaxNode {
         self.root
             .clone()
@@ -58,73 +68,55 @@ impl Parse {
         RRoot::unwrap_cast(self.syntax())
     }
 
-    /// Convert this parse result into a [Result]
-    pub fn into_result(self) -> Result<RSyntaxNode, ParseError> {
-        match self.error {
-            Some(err) => Err(err),
-            None => Ok(self.syntax()),
-        }
+    /// Every diagnostic the parser emitted, in source order
+    pub fn diagnostics(&self) -> &[ParseDiagnostic] {
+        &self.diagnostics
     }
 
-    /// Get the error which occurred when parsing
-    pub fn error(&self) -> Option<&ParseError> {
-        self.error.as_ref()
+    /// Every diagnostic the parser emitted, consuming the result
+    pub fn into_diagnostics(self) -> Vec<ParseDiagnostic> {
+        self.diagnostics
     }
 
-    /// Get the error which occurred when parsing
-    pub fn into_error(self) -> Option<ParseError> {
-        self.error
-    }
-
-    /// Returns [true] if the parser encountered some errors during the parsing.
-    pub fn has_error(&self) -> bool {
-        self.error.is_some()
+    /// Returns [true] if the parser encountered some errors during parsing
+    pub fn has_errors(&self) -> bool {
+        self.diagnostics.iter().any(ParseDiagnostic::is_error)
     }
 }
 
-impl From<Parse> for AnyParse {
-    fn from(parse: Parse) -> Self {
-        let root = parse.root;
-        let diagnostics = match parse.error {
-            Some(error) => vec![error.into()],
-            None => vec![],
-        };
-        Self::new(root, diagnostics)
+impl From<RParse> for AnyParse {
+    fn from(parse: RParse) -> Self {
+        Self::new(parse.root, parse.diagnostics)
     }
 }
 
-pub fn parse(text: &str, options: RParserOptions) -> Parse {
+/// Parses `text`
+pub fn parse(text: &str, options: RParserOptions) -> RParse {
     let mut cache = NodeCache::default();
-    let (events, tokens, errors) = parse_text(text, options);
-    build_tree(text, events, tokens, errors, &mut cache)
+    let (events, trivia, diagnostics) = parse_text(text, options);
+    build_tree(text, events, trivia, diagnostics, &mut cache)
 }
 
 fn build_tree(
     text: &str,
     events: Vec<Event<RSyntaxKind>>,
-    tokens: Vec<Trivia>,
-    errors: Option<ParseError>,
+    trivia: Vec<Trivia>,
+    diagnostics: Vec<ParseDiagnostic>,
     cache: &mut NodeCache,
-) -> Parse {
+) -> RParse {
     tracing::debug_span!("parse").in_scope(move || {
-        // We've determined that passing diagnostics through does nothing.
-        // They go into the tree-sink but come right back out. We think they
-        // are a holdover from rust-analyzer that can be removed now. The real
-        // errors are in `errors`.
-        let _diagnostics = vec![];
+        let mut tree_sink = RLosslessTreeSink::with_cache(text, &trivia, cache);
+        biome_parser::event::process(&mut tree_sink, events, diagnostics);
+        let (green, diagnostics) = tree_sink.finish();
 
-        let mut tree_sink = RLosslessTreeSink::with_cache(text, &tokens, cache);
-        biome_parser::event::process(&mut tree_sink, events, _diagnostics);
-        let (green, _diagnostics) = tree_sink.finish();
-
-        Parse::new(green, errors)
+        RParse::new(green, diagnostics)
     })
 }
 
 fn parse_text(
     text: &str,
     _options: RParserOptions,
-) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Option<ParseError>) {
+) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Vec<ParseDiagnostic>) {
     let mut parser = tree_sitter::Parser::new();
     parser
         .set_language(&tree_sitter_r::LANGUAGE.into())
@@ -137,7 +129,7 @@ fn parse_text(
 fn parse_from_treesitter(
     ast: &Tree,
     text: &str,
-) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Option<ParseError>) {
+) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Vec<ParseDiagnostic>) {
     if ast.root_node().has_error() {
         // TODO: In the long term we want an error resiliant parser.
         // This would probably only be able to happen if we swap out tree sitter
@@ -151,12 +143,12 @@ fn parse_from_treesitter(
     let mut iter = root.preorder();
     walker.walk(&mut iter);
 
-    let (events, trivia) = walker.parse.drain();
+    let (events, trivia) = walker.events.drain();
 
-    (events, trivia, None)
+    (events, trivia, Vec::new())
 }
 
-fn parse_failure(text: &str) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Option<ParseError>) {
+fn parse_failure(text: &str) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Vec<ParseDiagnostic>) {
     // Safety: We don't allow files longer than a `u32` can support.
     let end =
         TextSize::try_from(text.len()).expect("`text` can't be longer than `TextSize` allows.");
@@ -195,17 +187,18 @@ fn parse_failure(text: &str) -> (Vec<Event<RSyntaxKind>>, Vec<Trivia>, Option<Pa
     // No trivia
     let trivia = vec![];
 
-    // Single parse error for now
-    let error = ParseError::new(String::from("Failed to parse due to syntax errors."));
+    // Single whole-file diagnostic for now
+    let span: Option<TextRange> = None;
+    let diagnostic = ParseDiagnostic::new("Failed to parse due to syntax errors.", span);
 
-    (events, trivia, Some(error))
+    (events, trivia, vec![diagnostic])
 }
 
 /// Given an ast with absolutely no ERROR or MISSING nodes, let's walk that tree
 /// and collect our `trivia` and `events`.
 struct RWalk<'src> {
     text: &'src str,
-    parse: RParse,
+    events: RWalkEvents,
     last_end: TextSize,
 }
 
@@ -213,7 +206,7 @@ impl<'src> RWalk<'src> {
     fn new(text: &'src str) -> Self {
         Self {
             text,
-            parse: RParse::new(),
+            events: RWalkEvents::new(),
             last_end: TextSize::from(0),
         }
     }
@@ -575,12 +568,12 @@ impl<'src> RWalk<'src> {
     }
 
     fn handle_node_enter(&mut self, kind: RSyntaxKind) {
-        self.parse.start(kind);
+        self.events.start(kind);
     }
 
     // `_kind` is nice to see at call sites as it makes the code more self-expanatory
     fn handle_node_leave(&mut self, _kind: RSyntaxKind) {
-        self.parse.finish();
+        self.events.finish();
     }
 
     fn handle_value_enter(&mut self, kind: RSyntaxKind) {
@@ -637,7 +630,7 @@ impl<'src> RWalk<'src> {
 
         // Derive trivia between last token and end of document. Leading
         // trivia here belongs to the `EOF` token, which `TreeSink` adds for us.
-        self.parse.derive_trivia(gap, self.last_end);
+        self.events.derive_trivia(gap, self.last_end);
 
         self.handle_node_leave(RSyntaxKind::R_ROOT);
     }
@@ -649,9 +642,9 @@ impl<'src> RWalk<'src> {
         let this_end = TextSize::try_from(node.end_byte()).unwrap();
         let gap = &self.text[usize::from(self.last_end)..usize::from(this_start)];
 
-        self.parse.derive_trivia(gap, self.last_end);
+        self.events.derive_trivia(gap, self.last_end);
 
-        self.parse.token(kind, this_end);
+        self.events.token(kind, this_end);
 
         self.last_end = this_end;
     }
@@ -665,9 +658,9 @@ impl<'src> RWalk<'src> {
         let this_end = TextSize::try_from(node.end_byte()).unwrap();
         let gap = &self.text[usize::from(self.last_end)..usize::from(this_start)];
 
-        self.parse.derive_trivia(gap, self.last_end);
+        self.events.derive_trivia(gap, self.last_end);
 
-        self.parse.comment(TextRange::new(this_start, this_end));
+        self.events.comment(TextRange::new(this_start, this_end));
 
         self.last_end = this_end;
     }
@@ -1070,7 +1063,7 @@ impl<'src> RWalk<'src> {
     }
 }
 
-struct RParse {
+struct RWalkEvents {
     events: Vec<Event<RSyntaxKind>>,
     trivia: Vec<Trivia>,
 
@@ -1081,7 +1074,7 @@ struct RParse {
     trailing: bool,
 }
 
-impl RParse {
+impl RWalkEvents {
     fn new() -> Self {
         Self {
             events: Vec::new(),
