@@ -87,6 +87,11 @@ Air's CI runs neither today.
 
 - Fix whatever they flag in air's code, in its own commit.
 
+- Take aether's `rust-toolchain.toml`, which adds
+  `components = ["rustfmt", "clippy"]`.
+
+- Rename the clippy lint `empty_enum` to `empty_enums`, as aether does.
+
 The swap PR adds two more checks to the same workflow.
 
 ### The swap PR
@@ -118,11 +123,8 @@ Each bullet is roughly one commit.
   - Give `serde` the `derive` feature, as aether does.
   - Remove `tree-sitter` and `tree-sitter-r`, plus `biome_unicode_table` if
     nothing else uses it.
-  - Clippy lint `empty_enum` becomes `empty_enums`.
 
-- [ ] Workspace config, taking aether's version:
-  - `.config/nextest.toml`, verbatim.
-  - `rust-toolchain.toml`, which adds `components = ["rustfmt", "clippy"]`.
+- [ ] `.config/nextest.toml`: take aether's, verbatim.
 
 - [ ] `justfile`:
   - `gen-grammar` stays, and runs the merged codegen.
