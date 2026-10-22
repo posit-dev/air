@@ -174,7 +174,7 @@ it needs, so every commit builds.
   after the copy, so this is only a check that the later bullets leave them
   alone. They are byte-identical to `main`'s, so there is no commit.
 
-- [ ] `CLAUDE.md`:
+- [x] `CLAUDE.md`:
   - Root: update the crate layout, say that the parser is hand-written, and
     document `just accept` and `just test-quick-parser`.
   - New nested `crates/air_r_parser/CLAUDE.md`, a trimmed copy of aether's. It

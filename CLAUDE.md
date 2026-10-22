@@ -37,8 +37,11 @@ Air is an R language server and formatter written in Rust. Workspace crate layou
 ### Running Tests
 
 - Use `just test` to run tests via nextest, NOT `cargo test`
-- Example: `just test -p workspace --lib discovery::test`
-- Passes arguments through to `cargo nextest run`
+    - Example: `just test -p workspace --lib discovery::test`
+    - Passes arguments through to `cargo nextest run`
+- `just test-snapshot-accept` regenerates the parser's markdown snapshots
+- `just test-insta` regenerates the formatter's insta snapshots, `cargo insta review` to accept them
+- `just test-quick-parser` and `just test-quick-formatter` run the `quick_test.rs` scratchpads
 
 ### Unit Tests
 
