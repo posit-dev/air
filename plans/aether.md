@@ -190,8 +190,7 @@ Each bullet is roughly one commit.
 
 - Aether's `CLAUDE.md` becomes a nested `crates/air_r_parser/CLAUDE.md`.
 
-- `formatter.rs` comes over unchanged, `git2` and all. Any cleanup is a later
-  PR.
+- `formatter.rs` comes over unchanged, `git2` and all.
 
 - Aether's `.config/nextest.toml` is taken verbatim, including the 3×10s
   terminate. Any LSP test that trips it gets fixed.
