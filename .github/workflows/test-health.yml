@@ -20,8 +20,19 @@ jobs:
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
 
+      - name: Install just
+        uses: taiki-e/install-action@v2
+        with:
+          tool: just
+
       - name: Check formatting
         run: cargo fmt --all --check
 
       - name: Clippy
         run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Codegen is up to date
+        run: just gen-grammar && git diff --exit-code
+
+      - name: Parser markdown snapshots are up to date
+        run: cargo run -p xtask_accept && git diff --exit-code

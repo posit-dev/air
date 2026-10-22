@@ -144,7 +144,7 @@ it needs, so every commit builds.
   - Aether's `quick` is added as `test-quick-parser`.
   - Air's `test-quick` becomes `test-quick-formatter`.
 
-- [ ] `test-health.yml`: add aether's two checks, which are
+- [x] `test-health.yml`: add aether's two checks, which are
   `just gen-grammar && git diff --exit-code` and
   `cargo run -p xtask_accept && git diff --exit-code`.
 
