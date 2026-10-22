@@ -170,9 +170,9 @@ it needs, so every commit builds.
   `a b`, since formatting drops the `;`. Such a range now widens to the end of
   the line.
 
-- [ ] Snapshots: the LSP `document_syntax` snapshots. They pass unchanged
+- [x] Snapshots: the LSP `document_syntax` snapshots. They pass unchanged
   after the copy, so this is only a check that the later bullets leave them
-  alone.
+  alone. They are byte-identical to `main`'s, so there is no commit.
 
 - [ ] `CLAUDE.md`:
   - Root: update the crate layout, say that the parser is hand-written, and
