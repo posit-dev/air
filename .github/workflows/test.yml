@@ -21,3 +21,8 @@ jobs:
     name: Test linux
     uses: ./.github/workflows/test-linux.yml
     secrets: inherit
+
+  test_health:
+    name: Test health
+    uses: ./.github/workflows/test-health.yml
+    secrets: inherit

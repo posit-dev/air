@@ -1,5 +1,6 @@
 use std::array::IntoIter;
 
+use aether_lsp_utils::proto::PositionEncoding;
 use anyhow::Context;
 use anyhow::anyhow;
 use biome_line_index::WideEncoding;
@@ -31,7 +32,6 @@ use crate::documents::Document;
 use crate::logging;
 use crate::logging::LogMessageSender;
 use crate::main_loop::LspState;
-use aether_lsp_utils::proto::PositionEncoding;
 use crate::settings::DocumentSettings;
 use crate::settings::InitializationOptions;
 use crate::settings_vsc::VscDiagnosticsSettings;
