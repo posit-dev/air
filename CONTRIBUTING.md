@@ -187,6 +187,6 @@ We use [nextest](https://nexte.st/) for testing rather than a standard `cargo te
 
 Install the nextest cli tool using a [prebuilt binary](https://nexte.st/docs/installation/pre-built-binaries/).
 
-Run tests locally with `just test`, which calls `cargo nextest run`. Run insta snapshot tests in "update" mode with `just test-insta`.
+Run tests locally with `just test`, which calls `cargo nextest run`. Run insta snapshot tests in "update" mode with `just test-insta`. Regenerate the parser's markdown snapshots with `just test-snapshot-accept`.
 
 On CI we use the nextest profile found in `.config/nextest.toml`.

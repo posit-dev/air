@@ -137,7 +137,7 @@ it needs, so every commit builds.
 
 - [x] `.config/nextest.toml`: take aether's, verbatim.
 
-- [ ] `justfile`:
+- [x] `justfile`:
   - `gen-grammar` stays, and runs the merged codegen.
   - Aether's `test` is dropped. Air's `test *ARGS` stays.
   - Aether's `accept` is added, running `cargo run -p xtask_accept`.
