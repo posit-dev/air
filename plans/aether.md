@@ -96,9 +96,10 @@ The swap PR adds two more checks to the same workflow.
 
 ### The swap PR
 
-Each bullet is roughly one commit.
+Each bullet is roughly one commit. Each bullet adds the workspace dependencies
+it needs, so every commit builds.
 
-- [ ] Copy aether's crates in, renaming `aether` to `air` in crate names,
+- [x] Copy aether's crates in, renaming `aether` to `air` in crate names,
   paths, idents, and descriptions:
   - `aether_r_parser` replaces `crates/air_r_parser` wholesale, including
     deleting `treesitter.rs`, the old spec harness, and the 78 fixtures under
@@ -108,21 +109,25 @@ Each bullet is roughly one commit.
   - `aether_r_parser_tests` arrives as `crates/air_r_parser_tests`.
   - `aether_r_test_macros` arrives as `crates/air_r_test_macros`.
   - `biome_ungrammar` replaces air's copy, dropping the stray `Cargo.lock`.
+  - Add `air_r_parser_tests`, `air_r_test_macros`, `biome_console`,
+    `biome_diagnostics`, `similar`, and `unicode-ident` to the workspace
+    dependencies.
+  - Update the `crates/crates` crate list snapshot, which gains
+    `air_r_parser_tests` and `air_r_test_macros`.
 
 - [ ] `xtask`: aether's `xtask` replaces air's, renamed. Add `"xtask"` to
-  workspace `members`, since it now has a binary.
+  workspace `members`, since it now has a binary. Add `bpaf` to the workspace
+  dependencies.
 
 - [ ] `xtask/codegen`: start from aether's crate, then re-add air's
   `formatter.rs` unchanged (`git2` included), the `Formatter` and `All`
   commands, and `formatter_crate_name()`. Run `just gen-grammar` and
   `just gen-formatter`. Both should produce no diff.
 
-- [ ] Workspace `Cargo.toml`:
-  - Add `air_r_parser_tests`, `air_r_test_macros`, `biome_console`,
-    `biome_diagnostics`, `bpaf`, `similar`, and `unicode-ident`.
+- [ ] Workspace `Cargo.toml`, for what the earlier bullets didn't need:
   - Give `serde` the `derive` feature, as aether does.
-  - Remove `tree-sitter` and `tree-sitter-r`, plus `biome_unicode_table` if
-    nothing else uses it.
+  - Remove `tree-sitter`, `tree-sitter-r`, and `biome_unicode_table`, which
+    nothing uses after the copy.
 
 - [ ] `.config/nextest.toml`: take aether's, verbatim.
 
@@ -154,8 +159,9 @@ Each bullet is roughly one commit.
 
 - [ ] Range formatting across `;` in the LSP tests.
 
-- [ ] Snapshots: the `crates/crates` crate list and the LSP `document_syntax`
-  snapshots.
+- [ ] Snapshots: the LSP `document_syntax` snapshots. They pass unchanged
+  after the copy, so this is only a check that the later bullets leave them
+  alone.
 
 - [ ] `CLAUDE.md`:
   - Root: update the crate layout, say that the parser is hand-written, and

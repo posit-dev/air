@@ -5,7 +5,8 @@
 //!
 //! This is a simple wrapper around the `rowan` crate which does most of the heavy lifting and is language agnostic.
 
-use crate::{RRoot, RSyntaxKind};
+use crate::RRoot;
+use crate::RSyntaxKind;
 use biome_rowan::Language;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]

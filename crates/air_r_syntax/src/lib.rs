@@ -1,6 +1,7 @@
 #[macro_use]
 mod generated;
 pub mod argument_ext;
+pub mod string_ext;
 mod syntax_node;
 
 pub use self::generated::*;
@@ -8,6 +9,7 @@ pub use biome_rowan::TextLen;
 pub use biome_rowan::TextRange;
 pub use biome_rowan::TextSize;
 pub use biome_rowan::TokenAtOffset;
+pub use biome_rowan::TokenText;
 pub use biome_rowan::TriviaPieceKind;
 pub use biome_rowan::WalkEvent;
 pub use syntax_node::*;
