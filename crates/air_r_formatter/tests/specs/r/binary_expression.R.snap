@@ -49,6 +49,7 @@ argument_that_is_quite_long + argument_that_is_quite_long^argument_that_is_quite
 1 / 2
 1 |> 2
 1 %>% 2
+1 %a\b% 2
 
 # The following expressions should not have spaces
 1 ? 2
@@ -753,6 +754,7 @@ argument_that_is_quite_long +
 1 / 2
 1 |> 2
 1 %>% 2
+1 %a\b% 2
 
 # The following expressions should not have spaces
 1?2
@@ -1524,17 +1526,17 @@ y ~ x1 +
 
 # Lines exceeding max width of 80 characters
 ```
-  206: # TODO: Do we really want these chained? It seems like no good can come of that even though they have same precedence
-  582: a_really_really_really_really_really_really_long_thing_here ~ a_really_really_really_really_really_really_long_thing_here2
-  583: a_really_really_really_really_really_really_long_thing_here = a_really_really_really_really_really_really_long_thing_here2
-  584: a_really_really_really_really_really_really_long_thing_here := a_really_really_really_really_really_really_long_thing_here2
-  585: a_really_really_really_really_really_really_long_thing_here <- a_really_really_really_really_really_really_long_thing_here2
-  586: a_really_really_really_really_really_really_long_thing_here -> a_really_really_really_really_really_really_long_thing_here2
-  587: a_really_really_really_really_really_really_long_thing_here <<- a_really_really_really_really_really_really_long_thing_here2
-  588: a_really_really_really_really_really_really_long_thing_here ->> a_really_really_really_really_really_really_long_thing_here2
-  700: a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2 ~ a_really_really_long_thing_here3
-  701: a_really_really_long_thing_here1 ~ a_really_really_really_really_really_really_long_thing_here2 ~ a_really_really_long_thing_here3
-  702: (a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2) ~ a_really_really_long_thing_here3
-  703: a_really_really_long_thing_here1 ~ (a_really_really_long_thing_here2 ~ a_really_really_long_thing_here3)
-  756: # https://github.com/posit-dev/positron/discussions/6095#discussioncomment-13112983
+  207: # TODO: Do we really want these chained? It seems like no good can come of that even though they have same precedence
+  583: a_really_really_really_really_really_really_long_thing_here ~ a_really_really_really_really_really_really_long_thing_here2
+  584: a_really_really_really_really_really_really_long_thing_here = a_really_really_really_really_really_really_long_thing_here2
+  585: a_really_really_really_really_really_really_long_thing_here := a_really_really_really_really_really_really_long_thing_here2
+  586: a_really_really_really_really_really_really_long_thing_here <- a_really_really_really_really_really_really_long_thing_here2
+  587: a_really_really_really_really_really_really_long_thing_here -> a_really_really_really_really_really_really_long_thing_here2
+  588: a_really_really_really_really_really_really_long_thing_here <<- a_really_really_really_really_really_really_long_thing_here2
+  589: a_really_really_really_really_really_really_long_thing_here ->> a_really_really_really_really_really_really_long_thing_here2
+  701: a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2 ~ a_really_really_long_thing_here3
+  702: a_really_really_long_thing_here1 ~ a_really_really_really_really_really_really_long_thing_here2 ~ a_really_really_long_thing_here3
+  703: (a_really_really_long_thing_here1 ~ a_really_really_long_thing_here2) ~ a_really_really_long_thing_here3
+  704: a_really_really_long_thing_here1 ~ (a_really_really_long_thing_here2 ~ a_really_really_long_thing_here3)
+  757: # https://github.com/posit-dev/positron/discussions/6095#discussioncomment-13112983
 ```

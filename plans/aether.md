@@ -160,8 +160,10 @@ it needs, so every commit builds.
     to `fn({{ x }})`.
   - Every case from the hand-built tests.
 
-- [ ] Formatter specs for input only aether can parse: `r"-|a|-"` raw strings,
-  `%a\b%`, and `for (... in x)`.
+- [x] Formatter specs for input only aether can parse: `r"|a|"` and
+  `r"-|a|-"` raw strings in `value/string_value.R`, and `%a\b%` in
+  `binary_expression.R`. `for (... in x)` already parsed with tree-sitter and
+  is covered by `for_statement.R`.
 
 - [ ] Range formatting across `;` in the LSP tests.
 
@@ -182,7 +184,9 @@ it needs, so every commit builds.
 - [ ] `CHANGELOG.md`:
   - Files R rejects are now rejected: two expressions on one line, a stray
     top-level `;`, `pkg::` followed by a newline, `x$1`.
-  - `r"-|...|-"`, `%a\b%`, and `for (... in x)` now parse.
+  - `%a\b%` now parses.
+  - `r"|...|"` and `r"-|...|-"` are now kept as raw strings. Tree-sitter read
+    them as `r` followed by a string, which air split onto two lines.
   - Building air no longer needs a C compiler.
   - Performance, if the benchmark shows a win.
 
