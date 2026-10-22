@@ -182,7 +182,7 @@ it needs, so every commit builds.
     implementations. It drops the `deviations.md` references, since that file
     doesn't come over.
 
-- [ ] Docs: `CONTRIBUTING.md`, `xtask/README.md`, `xtask/codegen/README.md`.
+- [x] Docs: `CONTRIBUTING.md`, `xtask/README.md`, `xtask/codegen/README.md`.
 
 - [ ] `CHANGELOG.md`:
   - Files R rejects are now rejected: two expressions on one line, a stray

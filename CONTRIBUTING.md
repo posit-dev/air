@@ -189,4 +189,4 @@ Install the nextest cli tool using a [prebuilt binary](https://nexte.st/docs/ins
 
 Run tests locally with `just test`, which calls `cargo nextest run`. Run insta snapshot tests in "update" mode with `just test-insta`. Regenerate the parser's markdown snapshots with `just test-snapshot-accept`.
 
-On CI we use the nextest profile found in `.config/nextest.toml`.
+The nextest profiles are in `.config/nextest.toml`. Local runs use `default`, and CI uses `ci`.
