@@ -46,6 +46,7 @@ etcetera = "0.11.0"
 fs = { path = "./crates/fs" }
 futures = "0.3.31"
 futures-util = "0.3.31"
+git2 = { version = "0.21.0", default-features = false }
 globwalk = "0.9.1"
 httparse = "1.9.5"
 ignore = "0.4.23"

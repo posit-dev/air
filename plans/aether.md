@@ -132,6 +132,8 @@ it needs, so every commit builds.
     crate that derives already does.
   - Remove `tree-sitter`, `tree-sitter-r`, and `biome_unicode_table`, which
     nothing uses after the copy.
+  - Move `git2` into the workspace dependencies, so `xtask_codegen` inherits
+    it like everything else.
 
 - [ ] `.config/nextest.toml`: take aether's, verbatim.
 
