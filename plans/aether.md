@@ -184,7 +184,7 @@ it needs, so every commit builds.
 
 - [x] Docs: `CONTRIBUTING.md`, `xtask/README.md`, `xtask/codegen/README.md`.
 
-- [ ] `CHANGELOG.md`:
+- [x] `CHANGELOG.md`:
   - Files R rejects are now rejected: two expressions on one line, a stray
     top-level `;`, `pkg::` followed by a newline, `x$1`.
   - `%a\b%` now parses.
