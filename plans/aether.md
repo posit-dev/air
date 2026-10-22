@@ -165,7 +165,10 @@ it needs, so every commit builds.
   `binary_expression.R`. `for (... in x)` already parsed with tree-sitter and
   is covered by `for_statement.R`.
 
-- [ ] Range formatting across `;` in the LSP tests.
+- [x] Range formatting across `;` in the LSP tests. A range ending before
+  another statement on the same line joined the two, as in `<<a>>; b` to
+  `a b`, since formatting drops the `;`. Such a range now widens to the end of
+  the line.
 
 - [ ] Snapshots: the LSP `document_syntax` snapshots. They pass unchanged
   after the copy, so this is only a check that the later bullets leave them

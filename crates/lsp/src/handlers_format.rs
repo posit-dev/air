@@ -237,12 +237,28 @@ fn find_deepest_enclosing_logical_lines(node: RSyntaxNode, range: TextRange) -> 
     // ```rust
     // .filter(|node| range.contains_range(node.text_trimmed_range()))
     // ```
-    let logical_lines: Vec<RSyntaxNode> = iter
+    let mut logical_lines: Vec<RSyntaxNode> = iter
         .map(|statement| statement.into_syntax())
         .skip_while(|node| !node.text_range_with_trivia().contains(range.start()))
-        .take_while(|node| node.text_trimmed_range().start() <= range.end())
         .collect();
 
+    let mut len = logical_lines
+        .iter()
+        .take_while(|node| node.text_trimmed_range().start() <= range.end())
+        .count();
+
+    // Formatting drops `;`, so a statement sharing a line with the last one must
+    // come along or the two would be joined
+    if len > 0 {
+        while logical_lines
+            .get(len)
+            .is_some_and(|node| !node.has_leading_newline())
+        {
+            len += 1;
+        }
+    }
+
+    logical_lines.truncate(len);
     logical_lines
 }
 
@@ -538,6 +554,126 @@ mod tests {
         let (doc, range) = Document::doodle_and_range(
 "{ x;  <<f(
 1)>>  }
+",
+        );
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
+        insta::assert_snapshot!(output);
+    }
+
+    // Formatting drops `;`, so a range ending before another statement on the
+    // same line widens to include it
+    #[tokio::test]
+    async fn test_format_range_semicolons() {
+        let mut client = new_test_client().await;
+
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"<<a>>; b
+",
+        );
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
+        insta::assert_snapshot!(output);
+
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"<<a;>> b
+",
+        );
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
+        insta::assert_snapshot!(output);
+
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"<<a>> ; b
+",
+        );
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
+        insta::assert_snapshot!(output);
+
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"<<a>>; b; c
+",
+        );
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
+        insta::assert_snapshot!(output);
+
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"a; <<b>>; c
+",
+        );
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
+        insta::assert_snapshot!(output);
+
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"<<a; b>>; c
+",
+        );
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
+        insta::assert_snapshot!(output);
+
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"<<a; b>>
+",
+        );
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
+        insta::assert_snapshot!(output);
+
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"{ <<a>>; b }
+",
+        );
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
+        insta::assert_snapshot!(output);
+
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"if (x) <<a>>; b
+",
+        );
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
+        insta::assert_snapshot!(output);
+
+        // A `;` before a line break is dropped without widening
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"<<a;>>
+b
+",
+        );
+        let output = client
+            .format_document_range(&doc, FileName::Random, range)
+            .await;
+        insta::assert_snapshot!(output);
+
+        #[rustfmt::skip]
+        let (doc, range) = Document::doodle_and_range(
+"<<a>>; # c
+b
 ",
         );
         let output = client
