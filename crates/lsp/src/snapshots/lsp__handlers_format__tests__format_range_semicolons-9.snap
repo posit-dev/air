@@ -1,0 +1,8 @@
+---
+source: crates/lsp/src/handlers_format.rs
+expression: output
+---
+if (x) {
+  a
+}
+b

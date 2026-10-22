@@ -107,15 +107,24 @@ version = "0.0.0"
 dependencies = [
  "air_r_factory",
  "air_r_syntax",
+ "biome_diagnostics",
  "biome_parser",
  "biome_rowan",
- "biome_unicode_table",
- "insta",
- "serde",
- "tests_macros",
- "tracing",
- "tree-sitter",
- "tree-sitter-r",
+ "unicode-ident",
+]
+
+[[package]]
+name = "air_r_parser_tests"
+version = "0.0.0"
+dependencies = [
+ "air_r_parser",
+ "air_r_syntax",
+ "air_r_test_macros",
+ "biome_console",
+ "biome_diagnostics",
+ "biome_parser",
+ "biome_rowan",
+ "similar",
 ]
 
 [[package]]
@@ -124,6 +133,14 @@ version = "0.0.0"
 dependencies = [
  "biome_rowan",
  "serde",
+]
+
+[[package]]
+name = "air_r_test_macros"
+version = "0.0.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
 ]
 
 [[package]]
@@ -1343,8 +1360,6 @@ dependencies = [
  "tower-lsp",
  "tracing",
  "tracing-subscriber",
- "tree-sitter",
- "tree-sitter-r",
  "url",
  "uuid",
  "workspace",
@@ -1656,18 +1671,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "regex"
-version = "1.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b544ef1b4eac5dc2db33ea63606ae9ffcfac26c1416a2806ae0bf5f56b201191"
-dependencies = [
- "aho-corasick",
- "memchr",
- "regex-automata",
- "regex-syntax",
-]
-
-[[package]]
 name = "regex-automata"
 version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1963,12 +1966,6 @@ name = "stable_deref_trait"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a8f112729512f8e442d81f95a8a7ddf2b7c6b8a1a6f509a95864142b30cab2d3"
-
-[[package]]
-name = "streaming-iterator"
-version = "0.1.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2b2231b7c3057d5e4ad0156fb3dc807d900806020c5ffa3ee6ff2c8c76fb8520"
 
 [[package]]
 name = "strsim"
@@ -2381,34 +2378,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tree-sitter"
-version = "0.24.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5387dffa7ffc7d2dae12b50c6f7aab8ff79d6210147c6613561fc3d474c6f75"
-dependencies = [
- "cc",
- "regex",
- "regex-syntax",
- "streaming-iterator",
- "tree-sitter-language",
-]
-
-[[package]]
-name = "tree-sitter-language"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e8ddffe35a0e5eeeadf13ff7350af564c6e73993a24db62caee1822b185c2600"
-
-[[package]]
-name = "tree-sitter-r"
-version = "1.2.0"
-source = "git+https://github.com/r-lib/tree-sitter-r?rev=d459b97a9a11dd81643ab674938bede2874663b0#d459b97a9a11dd81643ab674938bede2874663b0"
-dependencies = [
- "cc",
- "tree-sitter-language",
-]
-
-[[package]]
 name = "typeid"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2790,6 +2759,7 @@ dependencies = [
  "air_r_parser",
  "anyhow",
  "biome_formatter",
+ "biome_parser",
  "etcetera",
  "fs",
  "ignore",
@@ -2822,6 +2792,14 @@ name = "xtask"
 version = "0.0.0"
 dependencies = [
  "anyhow",
+]
+
+[[package]]
+name = "xtask_accept"
+version = "0.0.0"
+dependencies = [
+ "air_r_parser_tests",
+ "xtask",
 ]
 
 [[package]]

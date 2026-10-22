@@ -113,12 +113,12 @@ impl Format<RFormatContext> for FormatFunctionBody<'_> {
     fn fmt(&self, f: &mut Formatter<RFormatContext>) -> FormatResult<()> {
         match self.node {
             // Body already has braces, just format it
-            AnyRExpression::RBracedExpressions(node) => {
+            AnyRExpression::RBracedStatements(node) => {
                 write!(f, [node.format()])
             }
             // Body does not have braces yet
             node => {
-                if should_force_braced_expressions(node)? {
+                if should_force_braced_statements(node)? {
                     write!(
                         f,
                         [
@@ -142,7 +142,7 @@ impl Format<RFormatContext> for FormatFunctionBody<'_> {
     }
 }
 
-fn should_force_braced_expressions(node: &AnyRExpression) -> SyntaxResult<bool> {
+fn should_force_braced_statements(node: &AnyRExpression) -> SyntaxResult<bool> {
     // A kind of persistent line break, but not one we respect
     // with the `persistent_line_breaks` setting, because it is
     // more related to whether or not we autobrace

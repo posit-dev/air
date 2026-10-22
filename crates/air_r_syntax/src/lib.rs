@@ -1,14 +1,21 @@
 #[macro_use]
 mod generated;
 pub mod argument_ext;
-pub mod call_ext;
+pub mod string_ext;
 mod syntax_node;
 
 pub use self::generated::*;
-pub use biome_rowan::{TextLen, TextRange, TextSize, TokenAtOffset, TriviaPieceKind, WalkEvent};
+pub use biome_rowan::TextLen;
+pub use biome_rowan::TextRange;
+pub use biome_rowan::TextSize;
+pub use biome_rowan::TokenAtOffset;
+pub use biome_rowan::TokenText;
+pub use biome_rowan::TriviaPieceKind;
+pub use biome_rowan::WalkEvent;
 pub use syntax_node::*;
 
-use biome_rowan::{RawSyntaxKind, SyntaxKind};
+use biome_rowan::RawSyntaxKind;
+use biome_rowan::SyntaxKind;
 
 impl From<u16> for RSyntaxKind {
     fn from(d: u16) -> RSyntaxKind {
@@ -29,9 +36,12 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
 
     fn is_bogus(&self) -> bool {
         match self {
-            RSyntaxKind::R_BOGUS | RSyntaxKind::R_BOGUS_VALUE | RSyntaxKind::R_BOGUS_EXPRESSION => {
-                true
-            }
+            RSyntaxKind::R_BOGUS
+            | RSyntaxKind::R_BOGUS_VALUE
+            | RSyntaxKind::R_BOGUS_EXPRESSION
+            | RSyntaxKind::R_BOGUS_SELECTOR
+            | RSyntaxKind::R_BOGUS_PARAMETER_NAME
+            | RSyntaxKind::R_BOGUS_FOR_VARIABLE => true,
 
             RSyntaxKind::TOMBSTONE
             | RSyntaxKind::EOF
@@ -70,14 +80,15 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_INTEGER_LITERAL
             | RSyntaxKind::R_DOUBLE_LITERAL
             | RSyntaxKind::R_COMPLEX_LITERAL
+            | RSyntaxKind::R_SINGLE_QUOTED_STRING_LITERAL
+            | RSyntaxKind::R_DOUBLE_QUOTED_STRING_LITERAL
+            | RSyntaxKind::R_RAW_STRING_LITERAL
             | RSyntaxKind::NEWLINE
             | RSyntaxKind::WHITESPACE
             | RSyntaxKind::IDENT
             | RSyntaxKind::COMMENT
             | RSyntaxKind::BACKSLASH
-            | RSyntaxKind::STRING_OPEN
-            | RSyntaxKind::STRING_CONTENT
-            | RSyntaxKind::STRING_CLOSE
+            | RSyntaxKind::ERROR_TOKEN
             | RSyntaxKind::R_ROOT
             | RSyntaxKind::R_DOTS
             | RSyntaxKind::R_DOT_DOT_I
@@ -96,7 +107,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_FOR_STATEMENT
             | RSyntaxKind::R_WHILE_STATEMENT
             | RSyntaxKind::R_REPEAT_STATEMENT
-            | RSyntaxKind::R_BRACED_EXPRESSIONS
+            | RSyntaxKind::R_BRACED_STATEMENTS
             | RSyntaxKind::R_PARENTHESIZED_EXPRESSION
             | RSyntaxKind::R_CALL
             | RSyntaxKind::R_CALL_ARGUMENTS
@@ -107,7 +118,9 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_ARGUMENT_LIST
             | RSyntaxKind::R_ARGUMENT
             | RSyntaxKind::R_ARGUMENT_NAME_CLAUSE
-            | RSyntaxKind::R_EXPRESSION_LIST
+            | RSyntaxKind::R_STATEMENT_LIST
+            | RSyntaxKind::R_EXPRESSION_STATEMENT
+            | RSyntaxKind::R_EMPTY_STATEMENT
             | RSyntaxKind::R_INTEGER_VALUE
             | RSyntaxKind::R_DOUBLE_VALUE
             | RSyntaxKind::R_COMPLEX_VALUE
@@ -172,6 +185,15 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_NAMESPACE_EXPRESSION
             | RSyntaxKind::R_BOGUS_EXPRESSION => RSyntaxKind::R_BOGUS_EXPRESSION,
 
+            // Bogus selector
+            RSyntaxKind::R_BOGUS_SELECTOR => RSyntaxKind::R_BOGUS_SELECTOR,
+
+            // Bogus parameter name
+            RSyntaxKind::R_BOGUS_PARAMETER_NAME => RSyntaxKind::R_BOGUS_PARAMETER_NAME,
+
+            // Bogus for variable
+            RSyntaxKind::R_BOGUS_FOR_VARIABLE => RSyntaxKind::R_BOGUS_FOR_VARIABLE,
+
             // Bogus
             RSyntaxKind::TOMBSTONE
             | RSyntaxKind::EOF
@@ -210,6 +232,9 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_INTEGER_LITERAL
             | RSyntaxKind::R_DOUBLE_LITERAL
             | RSyntaxKind::R_COMPLEX_LITERAL
+            | RSyntaxKind::R_SINGLE_QUOTED_STRING_LITERAL
+            | RSyntaxKind::R_DOUBLE_QUOTED_STRING_LITERAL
+            | RSyntaxKind::R_RAW_STRING_LITERAL
             | RSyntaxKind::R_NEXT_EXPRESSION
             | RSyntaxKind::R_BREAK_EXPRESSION
             | RSyntaxKind::R_TRUE_EXPRESSION
@@ -223,9 +248,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::IDENT
             | RSyntaxKind::COMMENT
             | RSyntaxKind::BACKSLASH
-            | RSyntaxKind::STRING_OPEN
-            | RSyntaxKind::STRING_CONTENT
-            | RSyntaxKind::STRING_CLOSE
+            | RSyntaxKind::ERROR_TOKEN
             | RSyntaxKind::R_ROOT
             | RSyntaxKind::R_IDENTIFIER
             | RSyntaxKind::R_DOTS
@@ -240,7 +263,7 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_FOR_STATEMENT
             | RSyntaxKind::R_WHILE_STATEMENT
             | RSyntaxKind::R_REPEAT_STATEMENT
-            | RSyntaxKind::R_BRACED_EXPRESSIONS
+            | RSyntaxKind::R_BRACED_STATEMENTS
             | RSyntaxKind::R_PARENTHESIZED_EXPRESSION
             | RSyntaxKind::R_CALL
             | RSyntaxKind::R_CALL_ARGUMENTS
@@ -251,7 +274,9 @@ impl biome_rowan::SyntaxKind for RSyntaxKind {
             | RSyntaxKind::R_ARGUMENT_LIST
             | RSyntaxKind::R_ARGUMENT
             | RSyntaxKind::R_ARGUMENT_NAME_CLAUSE
-            | RSyntaxKind::R_EXPRESSION_LIST
+            | RSyntaxKind::R_STATEMENT_LIST
+            | RSyntaxKind::R_EXPRESSION_STATEMENT
+            | RSyntaxKind::R_EMPTY_STATEMENT
             | RSyntaxKind::TILDE
             | RSyntaxKind::ASSIGN
             | RSyntaxKind::SUPER_ASSIGN
@@ -333,65 +358,5 @@ impl TryFrom<RSyntaxKind> for TriviaPieceKind {
         } else {
             Err(())
         }
-    }
-}
-
-/// See [tree-sitter-r](https://github.com/r-lib/tree-sitter-r/blob/main/grammar.js)
-#[derive(Debug, Eq, Ord, PartialOrd, PartialEq, Copy, Clone, Hash)]
-pub enum OperatorPrecedence {
-    Help = 0,
-    LeftAssignment = 1,
-    EqualsAssignment = 2,
-    RightAssignment = 3,
-    Tilde = 4,
-    LogicalOr = 5,
-    LogicalAnd = 6,
-    UnaryNot = 7,
-    Relational = 8,
-    Additive = 9,
-    Multiplicative = 10,
-    Special = 11,
-    Colon = 12,
-    UnaryPlusMinus = 13,
-    Exponential = 14,
-    Extract = 15,
-    Namespace = 16,
-}
-
-impl OperatorPrecedence {
-    /// Returns the precedence for a binary operator token or [None] if the token isn't a binary operator
-    ///
-    /// We don't treat namespace operators `::` and `:::` or extraction operators
-    /// `$` and `@` as binary.
-    pub fn try_from_binary_operator(kind: RSyntaxKind) -> Option<OperatorPrecedence> {
-        Some(match kind {
-            T![?] => OperatorPrecedence::Help,
-            T![<-] => OperatorPrecedence::LeftAssignment,
-            T![<<-] => OperatorPrecedence::LeftAssignment,
-            T![:=] => OperatorPrecedence::LeftAssignment,
-            T![=] => OperatorPrecedence::EqualsAssignment,
-            T![->] => OperatorPrecedence::RightAssignment,
-            T![->>] => OperatorPrecedence::RightAssignment,
-            T![~] => OperatorPrecedence::Tilde,
-            T![|] => OperatorPrecedence::LogicalOr,
-            T![||] => OperatorPrecedence::LogicalOr,
-            T![&] => OperatorPrecedence::LogicalAnd,
-            T![&&] => OperatorPrecedence::LogicalAnd,
-            T![==] => OperatorPrecedence::Relational,
-            T![>] => OperatorPrecedence::Relational,
-            T![>=] => OperatorPrecedence::Relational,
-            T![<] => OperatorPrecedence::Relational,
-            T![<=] => OperatorPrecedence::Relational,
-            T![+] => OperatorPrecedence::Additive,
-            T![-] => OperatorPrecedence::Additive,
-            T![*] => OperatorPrecedence::Multiplicative,
-            T![/] => OperatorPrecedence::Multiplicative,
-            T![|>] => OperatorPrecedence::Special,
-            RSyntaxKind::SPECIAL => OperatorPrecedence::Special,
-            T![:] => OperatorPrecedence::Colon,
-            T![^] => OperatorPrecedence::Exponential,
-            T![**] => OperatorPrecedence::Exponential,
-            _ => return None,
-        })
     }
 }

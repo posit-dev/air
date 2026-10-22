@@ -7,7 +7,7 @@ use air_r_syntax::AnyRExpression;
 use air_r_syntax::RBinaryExpression;
 use air_r_syntax::RBinaryExpressionFields;
 use air_r_syntax::RElseClause;
-use air_r_syntax::RExpressionList;
+use air_r_syntax::RExpressionStatement;
 use air_r_syntax::RForStatement;
 use air_r_syntax::RFunctionDefinition;
 use air_r_syntax::RIfStatement;
@@ -337,15 +337,17 @@ fn can_normalize_to_equal(node: &RBinaryExpression) -> bool {
     let node = node.syntax();
 
     let Some(parent) = node.parent() else {
-        // Should not happen, should always be at least contained in an RRoot's
-        // RExpressionList. We return the conservative `false` if we somehow get here.
+        // Should not happen, should always be at least contained in an
+        // `RExpressionStatement`, i.e. owned by the `RStatementList` of an
+        // `RRoot` or an `RBracedStatements`. We return the conservative `false`
+        // if we somehow get here.
         return false;
     };
     let parent_kind = parent.kind();
 
     // i.e. top level `x <- 1` to `x = 1`
     // i.e. `{ x <- 1 }` to `{ x = 1 }`
-    if RExpressionList::can_cast(parent_kind) {
+    if RExpressionStatement::can_cast(parent_kind) {
         return true;
     }
 

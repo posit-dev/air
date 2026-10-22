@@ -78,15 +78,16 @@ pub enum RSyntaxKind {
     R_INTEGER_LITERAL,
     R_DOUBLE_LITERAL,
     R_COMPLEX_LITERAL,
+    R_SINGLE_QUOTED_STRING_LITERAL,
+    R_DOUBLE_QUOTED_STRING_LITERAL,
+    R_RAW_STRING_LITERAL,
     NEWLINE,
     WHITESPACE,
     IDENT,
     COMMENT,
     DOTDOTI,
     SPECIAL,
-    STRING_OPEN,
-    STRING_CONTENT,
-    STRING_CLOSE,
+    ERROR_TOKEN,
     R_ROOT,
     R_IDENTIFIER,
     R_DOTS,
@@ -105,7 +106,7 @@ pub enum RSyntaxKind {
     R_FOR_STATEMENT,
     R_WHILE_STATEMENT,
     R_REPEAT_STATEMENT,
-    R_BRACED_EXPRESSIONS,
+    R_BRACED_STATEMENTS,
     R_PARENTHESIZED_EXPRESSION,
     R_CALL,
     R_CALL_ARGUMENTS,
@@ -116,7 +117,9 @@ pub enum RSyntaxKind {
     R_ARGUMENT_LIST,
     R_ARGUMENT,
     R_ARGUMENT_NAME_CLAUSE,
-    R_EXPRESSION_LIST,
+    R_STATEMENT_LIST,
+    R_EXPRESSION_STATEMENT,
+    R_EMPTY_STATEMENT,
     R_INTEGER_VALUE,
     R_DOUBLE_VALUE,
     R_COMPLEX_VALUE,
@@ -132,6 +135,9 @@ pub enum RSyntaxKind {
     R_BOGUS,
     R_BOGUS_VALUE,
     R_BOGUS_EXPRESSION,
+    R_BOGUS_SELECTOR,
+    R_BOGUS_PARAMETER_NAME,
+    R_BOGUS_FOR_VARIABLE,
     #[doc(hidden)]
     __LAST,
 }
@@ -187,13 +193,18 @@ impl RSyntaxKind {
     }
     pub const fn is_literal(self) -> bool {
         match self {
-            R_INTEGER_LITERAL | R_DOUBLE_LITERAL | R_COMPLEX_LITERAL => true,
+            R_INTEGER_LITERAL
+            | R_DOUBLE_LITERAL
+            | R_COMPLEX_LITERAL
+            | R_SINGLE_QUOTED_STRING_LITERAL
+            | R_DOUBLE_QUOTED_STRING_LITERAL
+            | R_RAW_STRING_LITERAL => true,
             _ => false,
         }
     }
     pub const fn is_list(self) -> bool {
         match self {
-            R_PARAMETER_LIST | R_ARGUMENT_LIST | R_EXPRESSION_LIST => true,
+            R_PARAMETER_LIST | R_ARGUMENT_LIST | R_STATEMENT_LIST => true,
             _ => false,
         }
     }

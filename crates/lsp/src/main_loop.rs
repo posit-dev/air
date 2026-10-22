@@ -8,6 +8,7 @@
 use std::future;
 use std::pin::Pin;
 
+use aether_lsp_utils::proto::PositionEncoding;
 use anyhow::anyhow;
 use biome_line_index::WideEncoding;
 use futures::StreamExt;
@@ -26,7 +27,6 @@ use crate::handlers_state::ConsoleInputs;
 use crate::logging;
 use crate::logging::LogMessageSender;
 use crate::logging::LogThreadState;
-use aether_lsp_utils::proto::PositionEncoding;
 use crate::settings::GlobalSettings;
 use crate::state::WorldState;
 use crate::tower_lsp::LspMessage;
@@ -126,9 +126,8 @@ pub(crate) struct GlobalState {
     /// (clones) to handlers.
     world: WorldState,
 
-    /// The state containing LSP configuration and tree-sitter parsers for
-    /// documents contained in the `WorldState`. Only used in exclusive ref
-    /// handlers, and is not cloneable.
+    /// The state containing LSP configuration for documents contained in the
+    /// `WorldState`. Only used in exclusive ref handlers, and is not cloneable.
     lsp_state: LspState,
 
     /// Event receiver channel for the main loop. The tower-lsp methods forward

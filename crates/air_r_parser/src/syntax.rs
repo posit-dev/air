@@ -1,0 +1,20 @@
+mod associativity;
+mod binary;
+mod binding_power;
+mod body;
+mod braced_statements;
+mod call;
+mod expr;
+mod extract;
+mod function;
+mod if_statement;
+mod literal;
+mod loop_statements;
+mod namespace;
+mod parenthesized_expression;
+mod root;
+mod selector;
+mod statement_list;
+mod unary;
+
+pub(crate) use crate::syntax::root::parse_root;

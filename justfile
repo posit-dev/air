@@ -20,13 +20,22 @@ test *ARGS:
 test-verbose *ARGS:
   cargo nextest run --no-capture {{ARGS}}
 
-# Run the insta tests in update mode
+# Run the formatter's insta tests in update mode
 test-insta *ARGS:
   cargo insta test --test-runner nextest {{ARGS}}
 
+# Regenerate the parser's markdown snapshots, then verify they are stable
+test-snapshot-accept:
+  cargo run -p xtask_accept
+  cargo nextest run --workspace
+
 # Run the quick formatter test
-test-quick:
+test-quick-formatter:
   cargo test --package air_r_formatter --test quick_test -- quick_test --exact --show-output --ignored
+
+# Run the quick parser test
+test-quick-parser:
+  cargo nextest run -p air_r_parser_tests --run-ignored all -E 'test(quick_test)' --no-capture
 
 # Install the air binary to `~/.cargo/bin/air`.
 # Note that a `~/.local/bin/air` installed another way may shadow this.

@@ -2,6 +2,38 @@
 
 # Development version
 
+- Air no longer utilizes [tree-sitter-r](https://github.com/r-lib/tree-sitter-r) for parsing R files. Instead, Air now ships with a completely custom R parser written entirely in Rust. This comes with a number of benefits!
+
+  - Air is now roughly 2x faster. Formatting all of dplyr has gone from 300ms to 150ms on an M2 Mac. The actual parsing stage is around 7x faster.
+
+  - Air now emits precise error messages when a file fails to parse due to syntax errors.
+
+  - Air no longer has C in its dependency chain. This means that we'll be able to add WASM support for Air much easier now.
+
+  If you are building a Rust based project that needs to parse R files, we encourage you to use our `air_r_parser` crate (pinned to a git SHA since we haven't put it on crates.io yet).
+
+- We've fixed a number of minor issues through the new parser:
+
+  - Air more accurately accepts certain syntax:
+
+    - `r"|...|"`, which are raw strings using the undocumented `|` delimiter
+
+    - `%a\b%` where previously the `\` failed to parse
+
+    - `for` loops with `...` or `..1` as the loop variable, like `for (... in x)`
+
+  - Air more accurately rejects certain syntax errors:
+
+    - `1 2`, which are two expressions side by side without a semicolon or newline
+
+    - Stray top-level `;`
+
+    - `pkg::` without a right-hand side
+
+    - `x$1` where the right-hand side is not an identifier
+
+- Air no longer emits colored output when stderr is not a terminal, such as when stderr is redirected to a file.
+
 # 0.12.0
 
 - New `--no-configuration` flag to format with Air's built-in defaults without loading a project or user configuration file (#479, @LeonidasZhak).

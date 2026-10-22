@@ -1,0 +1,28 @@
+[package]
+name = "air_r_parser_tests"
+version = "0.0.0"
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "The markdown tests and the harness that runs them"
+homepage.workspace = true
+repository.workspace = true
+license.workspace = true
+keywords.workspace = true
+categories.workspace = true
+publish = false
+
+[dependencies]
+air_r_parser = { workspace = true }
+air_r_syntax = { workspace = true }
+biome_console = { workspace = true }
+biome_diagnostics = { workspace = true }
+biome_parser = { workspace = true }
+biome_rowan = { workspace = true }
+similar = { workspace = true }
+
+[dev-dependencies]
+air_r_test_macros = { workspace = true }
+
+[lints]
+workspace = true

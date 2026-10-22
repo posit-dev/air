@@ -1,10 +1,12 @@
 use crate::prelude::*;
 use crate::r::auxiliary::else_clause::FormatRElseClauseOptions;
 use air_r_syntax::AnyRExpression;
-use air_r_syntax::RExpressionList;
+use air_r_syntax::AnyRStatement;
+use air_r_syntax::RExpressionStatement;
 use air_r_syntax::RIfStatement;
 use air_r_syntax::RIfStatementFields;
 use air_r_syntax::RRoot;
+use air_r_syntax::RStatementList;
 use air_r_syntax::RSyntaxNode;
 use biome_formatter::FormatRuleWithOptions;
 use biome_formatter::format_args;
@@ -13,19 +15,19 @@ use biome_rowan::SyntaxResult;
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct FormatRIfStatement {
-    pub(crate) braced_expressions: Option<BracedExpressions>,
+    pub(crate) braced_statements: Option<BracedStatements>,
 }
 
 #[derive(Debug)]
 pub(crate) struct FormatRIfStatementOptions {
-    pub(crate) braced_expressions: Option<BracedExpressions>,
+    pub(crate) braced_statements: Option<BracedStatements>,
 }
 
 impl FormatRuleWithOptions<RIfStatement> for FormatRIfStatement {
     type Options = FormatRIfStatementOptions;
 
     fn with_options(mut self, options: Self::Options) -> Self {
-        self.braced_expressions = options.braced_expressions;
+        self.braced_statements = options.braced_statements;
         self
     }
 }
@@ -41,12 +43,12 @@ impl FormatNodeRule<RIfStatement> for FormatRIfStatement {
             else_clause,
         } = node.as_fields();
 
-        // Compute `braced_expressions` if we are on a top level if statement,
-        // otherwise use the passed through `braced_expressions`, like if we are on the
+        // Compute `braced_statements` if we are on a top level if statement,
+        // otherwise use the passed through `braced_statements`, like if we are on the
         // 2nd `if` statement of `if (condition) 1 else if (condition) 2`.
-        let braced_expressions = match self.braced_expressions {
-            Some(braced_expressions) => braced_expressions,
-            None => compute_braced_expressions(node)?,
+        let braced_statements = match self.braced_statements {
+            Some(braced_statements) => braced_statements,
+            None => compute_braced_statements(node)?,
         };
 
         // It's important that the `else_clause` end up in the same `group()` as the rest
@@ -60,7 +62,7 @@ impl FormatNodeRule<RIfStatement> for FormatRIfStatement {
                         space(),
                         else_clause
                             .format()
-                            .with_options(FormatRElseClauseOptions { braced_expressions })
+                            .with_options(FormatRElseClauseOptions { braced_statements })
                     ]
                 )?;
             }
@@ -77,7 +79,7 @@ impl FormatNodeRule<RIfStatement> for FormatRIfStatement {
                 group(&soft_block_indent(&condition.format())),
                 r_paren_token.format(),
                 space(),
-                FormatIfBody::new_consequence(&consequence?, braced_expressions),
+                FormatIfBody::new_consequence(&consequence?, braced_statements),
                 else_clause
             ])]
         )
@@ -190,84 +192,84 @@ impl FormatNodeRule<RIfStatement> for FormatRIfStatement {
 ///   consequence2
 /// }
 /// ```
-fn compute_braced_expressions(node: &RIfStatement) -> SyntaxResult<BracedExpressions> {
+fn compute_braced_statements(node: &RIfStatement) -> SyntaxResult<BracedStatements> {
     if node.syntax().position() != SyntaxPosition::Value {
-        return Ok(BracedExpressions::Force);
+        return Ok(BracedStatements::Force);
     }
 
     let consequence = node.consequence()?;
 
     if consequence.syntax().has_leading_newline() {
-        return Ok(BracedExpressions::Force);
+        return Ok(BracedStatements::Force);
     }
-    if matches!(consequence, AnyRExpression::RBracedExpressions(_)) {
-        return Ok(BracedExpressions::Force);
+    if matches!(consequence, AnyRExpression::RBracedStatements(_)) {
+        return Ok(BracedStatements::Force);
     }
     if matches!(consequence, AnyRExpression::RIfStatement(_)) {
         // Disallow `if (condition) if (condition) 1` as that is too complex.
         // Also shortcircuits recursion nicely.
         // Notably we don't pass through `Force` to the inner if statement as well,
-        // it gets to compute its own `BracedExpressions` value.
-        return Ok(BracedExpressions::Force);
+        // it gets to compute its own `BracedStatements` value.
+        return Ok(BracedStatements::Force);
     }
 
     if let Some(else_clause) = node.else_clause() {
         let else_token = else_clause.else_token()?;
 
         if else_token.has_leading_newline() {
-            return Ok(BracedExpressions::Force);
+            return Ok(BracedStatements::Force);
         }
 
         let alternative = else_clause.alternative()?;
 
         if alternative.syntax().has_leading_newline() {
-            return Ok(BracedExpressions::Force);
+            return Ok(BracedStatements::Force);
         }
-        if matches!(alternative, AnyRExpression::RBracedExpressions(_)) {
-            return Ok(BracedExpressions::Force);
+        if matches!(alternative, AnyRExpression::RBracedStatements(_)) {
+            return Ok(BracedStatements::Force);
         }
         if matches!(alternative, AnyRExpression::RIfStatement(_)) {
             // Disallow `if (condition) 1 else if (condition) 2 else 3` as that is too complex.
             // Also shortcircuits recursion nicely.
-            return Ok(BracedExpressions::Force);
+            return Ok(BracedStatements::Force);
         }
     };
 
-    Ok(BracedExpressions::IfGroupBreaks)
+    Ok(BracedStatements::IfGroupBreaks)
 }
 
 pub(crate) struct FormatIfBody<'a> {
     node: &'a AnyRExpression,
-    braced_expressions: BracedExpressions,
+    braced_statements: BracedStatements,
     if_body_kind: IfBodyKind,
 }
 
 impl<'a> FormatIfBody<'a> {
     pub(crate) fn new_consequence(
         node: &'a AnyRExpression,
-        braced_expressions: BracedExpressions,
+        braced_statements: BracedStatements,
     ) -> Self {
         Self {
             node,
-            braced_expressions,
+            braced_statements,
             if_body_kind: IfBodyKind::Consequence,
         }
     }
 
     pub(crate) fn new_alternative(
         node: &'a AnyRExpression,
-        braced_expressions: BracedExpressions,
+        braced_statements: BracedStatements,
     ) -> Self {
         Self {
             node,
-            braced_expressions,
+            braced_statements,
             if_body_kind: IfBodyKind::Alternative,
         }
     }
 }
 
 #[derive(Debug, Copy, Clone, Default)]
-pub(crate) enum BracedExpressions {
+pub(crate) enum BracedStatements {
     Force,
     #[default]
     IfGroupBreaks,
@@ -284,11 +286,11 @@ impl Format<RFormatContext> for FormatIfBody<'_> {
     fn fmt(&self, f: &mut Formatter<RFormatContext>) -> FormatResult<()> {
         match self.node {
             // Body already has braces, just format it
-            AnyRExpression::RBracedExpressions(node) => {
+            AnyRExpression::RBracedStatements(node) => {
                 write!(f, [node.format()])
             }
             // Body is an `alternative` that is another if statement, pass through
-            // pre computed `braced_expressions` (will be `BracedExpressions::Force`)
+            // pre computed `braced_statements` (will be `BracedStatements::Force`)
             //
             // ```r
             // if (TRUE) 1 else if (TRUE) 2
@@ -297,17 +299,17 @@ impl Format<RFormatContext> for FormatIfBody<'_> {
             AnyRExpression::RIfStatement(node)
                 if matches!(self.if_body_kind, IfBodyKind::Alternative) =>
             {
-                debug_assert!(matches!(self.braced_expressions, BracedExpressions::Force));
+                debug_assert!(matches!(self.braced_statements, BracedStatements::Force));
                 write!(
                     f,
                     [node.format().with_options(FormatRIfStatementOptions {
-                        braced_expressions: Some(self.braced_expressions)
+                        braced_statements: Some(self.braced_statements)
                     })]
                 )
             }
             // Body does not have braces yet
-            node => match self.braced_expressions {
-                BracedExpressions::Force => write!(
+            node => match self.braced_statements {
+                BracedStatements::Force => write!(
                     f,
                     [
                         text("{"),
@@ -315,7 +317,7 @@ impl Format<RFormatContext> for FormatIfBody<'_> {
                         text("}")
                     ]
                 ),
-                BracedExpressions::IfGroupBreaks => write!(
+                BracedStatements::IfGroupBreaks => write!(
                     f,
                     [
                         if_group_breaks(&text("{")),
@@ -337,17 +339,17 @@ trait SyntaxPositionExt {
     /// determine whether a node is in a _value_ or an _effect_ position.
     ///
     /// - [SyntaxPosition::Value]s are assigned, are used as inputs to functions, and
-    ///   are returned from `RBracedExpression` scopes.
+    ///   are returned from `RBracedStatements` scopes.
     ///
     /// - [SyntaxPosition::Effect]s are statements that are typically used for their side
     ///   effects, such as calling `cat()`, or performing an assignment like `x <- 5`.
     ///
     /// An [SyntaxPosition::Effect] is either:
     ///
-    /// - A direct child of `RRoot`
-    /// - A direct child of `RBracedExpression`, with the exception of the last child,
-    ///   which is considered a [SyntaxPosition::Value], as it is the returned value
-    ///   of the braced expression
+    /// - A statement of `RRoot`
+    /// - A statement of `RBracedStatements`, with the exception of the last
+    ///   expression statement, which is considered a [SyntaxPosition::Value],
+    ///   as it is the returned value of the braced expression
     ///
     /// Everything else is considered a [SyntaxPosition::Value].
     ///
@@ -388,26 +390,50 @@ enum SyntaxPosition {
 
 impl SyntaxPositionExt for RSyntaxNode {
     fn position(&self) -> SyntaxPosition {
-        let Some(expressions) = self.parent().and_then(RExpressionList::cast) else {
-            // If our direct parent isn't an `RExpressionList`, we are definitely a `Value`
+        let Some(statement) = self.parent().and_then(RExpressionStatement::cast) else {
+            // If our direct parent isn't an `RExpressionStatement`, we are
+            // definitely a `Value`
             return SyntaxPosition::Value;
         };
 
-        // Direct child of `RRoot`, this is an `Effect`
-        if expressions.parent::<RRoot>().is_some() {
+        let Some(statements) = statement.parent::<RStatementList>() else {
+            // Would be unexpected since an `RExpressionStatement` always lives in an
+            // `RStatementList`, but we'd rather not crash if we are wrong
+            return SyntaxPosition::Value;
+        };
+
+        // Statement of `RRoot`, this is an `Effect`
+        if statements.parent::<RRoot>().is_some() {
             return SyntaxPosition::Effect;
         }
 
-        // Otherwise, direct child of `RBracedExpressions`. If this is the last
-        // expression, it is a `Value` (the value returned from a scope), otherwise it is
-        // an `Effect`.
-        let Some(last) = expressions.last() else {
-            // Would be unexpected since we just checked that `self` is a child of this,
-            // but we'd rather not crash if we are wrong
+        // Otherwise, statement of `RBracedStatements`. If this is the last
+        // expression statement, it is a `Value`, otherwise it is an `Effect`.
+        //
+        // Note that we have to skip over trailing `REmptyStatement`s that we
+        // expect will be removed, such as:
+        //
+        // ```r
+        // {
+        //   if (a) 1
+        //   ;
+        // }
+        // ```
+        let Some(last) = statements
+            .iter()
+            .rev()
+            .find_map(|statement| match statement {
+                AnyRStatement::REmptyStatement(_) => None,
+                AnyRStatement::RExpressionStatement(statement) => Some(statement),
+            })
+        else {
+            // Would be unexpected to not find any expression statements, since
+            // we just checked that `statement` is a child of this, but we'd
+            // rather not crash if we are wrong
             return SyntaxPosition::Value;
         };
 
-        if self == last.syntax() {
+        if statement == last {
             SyntaxPosition::Value
         } else {
             SyntaxPosition::Effect

@@ -1,17 +1,18 @@
 use std::cell::Cell;
 
+use crate::call_ext::RCallExt;
 use crate::comments::RComments;
 use crate::context::RFormatOptions;
 use crate::either::Either;
 use crate::prelude::*;
-use crate::r::auxiliary::braced_expressions::BracedExpressionsVariant;
-use crate::r::auxiliary::braced_expressions::braced_expressions_variant;
+use crate::r::auxiliary::braced_statements::BracedStatementsVariant;
+use crate::r::auxiliary::braced_statements::braced_statements_variant;
 use crate::r::auxiliary::function_definition::FormatFunctionOptions;
 use crate::separated::FormatAstSeparatedListExtension;
 use air_r_syntax::AnyRExpression;
 use air_r_syntax::RArgument;
 use air_r_syntax::RArgumentList;
-use air_r_syntax::RBracedExpressions;
+use air_r_syntax::RBracedStatements;
 use air_r_syntax::RCall;
 use air_r_syntax::RCallArguments;
 use air_r_syntax::RLanguage;
@@ -1182,7 +1183,7 @@ fn argument_is_groupable(argument: &AnyRExpression, comments: &RComments) -> Syn
         // ```r
         // group_by(df, {{ vars }})
         // ```
-        RBracedExpressions(node) => braced_expressions_is_groupable(node, comments),
+        RBracedStatements(node) => braced_statements_is_groupable(node, comments),
 
         // Almost every kind of function definition can benefit from grouping:
         //
@@ -1192,7 +1193,7 @@ fn argument_is_groupable(argument: &AnyRExpression, comments: &RComments) -> Syn
         //   it were to break, it would benefit from grouping, so we always consider
         //   this case a candidate for grouping.
         //
-        // - If the body has `{}`, we treat it like `RBracedExpressions` above. It's only
+        // - If the body has `{}`, we treat it like `RBracedStatements` above. It's only
         //   ever not groupable if the body is a totally empty `{}`, because that would
         //   never spread across multiple lines.
         //
@@ -1263,7 +1264,7 @@ fn argument_is_groupable(argument: &AnyRExpression, comments: &RComments) -> Syn
         // )
         // ```
         RFunctionDefinition(node) => node.body().is_ok_and(|body| match body {
-            RBracedExpressions(ref body) => braced_expressions_is_groupable(body, comments),
+            RBracedStatements(ref body) => braced_statements_is_groupable(body, comments),
             _ => true,
         }),
 
@@ -1274,13 +1275,13 @@ fn argument_is_groupable(argument: &AnyRExpression, comments: &RComments) -> Syn
     Ok(result)
 }
 
-fn braced_expressions_is_groupable(node: &RBracedExpressions, comments: &RComments) -> bool {
-    match braced_expressions_variant(node, comments) {
+fn braced_statements_is_groupable(node: &RBracedStatements, comments: &RComments) -> bool {
+    match braced_statements_variant(node, comments) {
         // These two stay collapsed as `{}` or `{{ x }}`, and don't benefit from grouping
-        BracedExpressionsVariant::Empty => false,
-        BracedExpressionsVariant::CurlyCurly(_) => false,
+        BracedStatementsVariant::Empty => false,
+        BracedStatementsVariant::CurlyCurly(_) => false,
         // These two expand across multiple lines, and benefit from grouping
-        BracedExpressionsVariant::EmptyWithDanglingComments => true,
-        BracedExpressionsVariant::NotEmpty => true,
+        BracedStatementsVariant::EmptyWithDanglingComments => true,
+        BracedStatementsVariant::NotEmpty => true,
     }
 }

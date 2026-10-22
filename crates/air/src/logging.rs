@@ -1,11 +1,10 @@
 use std::fmt::Display;
 use std::str::FromStr;
 use tracing_subscriber::Layer;
-use tracing_subscriber::Registry;
 use tracing_subscriber::filter;
 use tracing_subscriber::layer::SubscriberExt;
 
-pub(crate) fn init_logging(log_level: LogLevel, no_color: bool) {
+pub(crate) fn init_logging(log_level: LogLevel, color: bool) {
     let log_level = log_level.tracing_level();
 
     // Apply the log level to each air crate.
@@ -15,13 +14,9 @@ pub(crate) fn init_logging(log_level: LogLevel, no_color: bool) {
         filter = filter.with_target(*target, log_level);
     }
 
-    let mut layer = tracing_subscriber::fmt::layer();
-
-    if no_color {
-        layer = turn_off_colors(layer);
-    };
-
-    let layer = layer
+    let layer = tracing_subscriber::fmt::layer()
+        // Apply coloring decision
+        .with_ansi(color)
         // i.e. Displaying `ERROR` or `WARN`
         .with_level(true)
         // Don't show the module name, not useful in a cli
@@ -38,24 +33,6 @@ pub(crate) fn init_logging(log_level: LogLevel, no_color: bool) {
 
     // Emit message after subscriber is set up, so we actually see it
     tracing::trace!("Initialized logging");
-}
-
-/// Explicitly turn off ANSI colored / styled output
-///
-/// We use colored output in two places:
-/// - Level labels in tracing-subscriber, like `ERROR` , which shows up in red
-/// - Usage of the `colored` crate
-///
-/// Both respect the `NO_COLOR` environment variable if we don't specify anything.
-///
-/// We explicitly call `set_override()` and `with_ansi()` ONLY when turning colors off.
-/// `set_override(true)` and `with_ansi(true)` override the `NO_COLOR` environment
-/// variable, and we don't want to do that.
-fn turn_off_colors(
-    layer: tracing_subscriber::fmt::Layer<Registry>,
-) -> tracing_subscriber::fmt::Layer<Registry> {
-    colored::control::set_override(false);
-    layer.with_ansi(false)
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, clap::ValueEnum)]

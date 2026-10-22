@@ -19,6 +19,7 @@ use crate::context::RFormatOptions;
 use crate::cst::FormatRSyntaxNode;
 
 pub(crate) mod call_arguments_table;
+pub(crate) mod call_ext;
 pub mod comments;
 pub mod comments_ext;
 pub mod context;
@@ -30,7 +31,7 @@ pub mod loop_body;
 mod prelude;
 mod r;
 pub(crate) mod separated;
-mod string_content;
+mod string_literal;
 
 #[rustfmt::skip]
 mod generated;

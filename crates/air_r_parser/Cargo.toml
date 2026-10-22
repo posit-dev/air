@@ -12,24 +12,15 @@ keywords.workspace = true
 categories.workspace = true
 publish = false
 
-# cargo-workspaces metadata
-[package.metadata.workspaces]
-independent = true
-
 [dependencies]
 air_r_factory = { workspace = true }
 air_r_syntax = { workspace = true }
 biome_parser = { workspace = true }
 biome_rowan = { workspace = true }
-biome_unicode_table = { workspace = true }
-serde = { workspace = true, features = ["derive"] }
-tracing = { workspace = true }
-tree-sitter = { workspace = true }
-tree-sitter-r = { workspace = true }
+unicode-ident = { workspace = true }
 
 [dev-dependencies]
-insta = { workspace = true }
-tests_macros = { workspace = true }
+biome_diagnostics = { workspace = true }
 
 [lints]
 workspace = true

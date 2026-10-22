@@ -10,7 +10,7 @@ import { Ctx, Cmd } from "../context";
 import { activeREditor, isRDocument, isREditor } from "../r-files";
 import { sleep } from "../utils";
 
-export type ViewFileKind = "TreeSitter" | "SyntaxTree" | "FormatTree";
+export type ViewFileKind = "SyntaxTree" | "FormatTree";
 
 export const VIEW_FILE = new lc.RequestType<
 	lc.TextDocumentPositionParams & { kind: ViewFileKind },

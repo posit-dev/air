@@ -7,6 +7,8 @@
 string"
 r"("some raw string
 business")"
+r"|some raw string|"
+r"-|some raw string|-"
 
 # ------------------------------------------------------------------------
 # Comments

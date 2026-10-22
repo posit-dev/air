@@ -63,16 +63,16 @@ pub fn r_binary_expression(
         ],
     ))
 }
-pub fn r_braced_expressions(
+pub fn r_braced_statements(
     l_curly_token: SyntaxToken,
-    expressions: RExpressionList,
+    statements: RStatementList,
     r_curly_token: SyntaxToken,
-) -> RBracedExpressions {
-    RBracedExpressions::unwrap_cast(SyntaxNode::new_detached(
-        RSyntaxKind::R_BRACED_EXPRESSIONS,
+) -> RBracedStatements {
+    RBracedStatements::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_BRACED_STATEMENTS,
         [
             Some(SyntaxElement::Token(l_curly_token)),
-            Some(SyntaxElement::Node(expressions.into_syntax())),
+            Some(SyntaxElement::Node(statements.into_syntax())),
             Some(SyntaxElement::Token(r_curly_token)),
         ],
     ))
@@ -139,6 +139,38 @@ pub fn r_else_clause(else_token: SyntaxToken, alternative: AnyRExpression) -> RE
         ],
     ))
 }
+pub fn r_empty_statement(semicolon_token: SyntaxToken) -> REmptyStatement {
+    REmptyStatement::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_EMPTY_STATEMENT,
+        [Some(SyntaxElement::Token(semicolon_token))],
+    ))
+}
+pub fn r_expression_statement(expression: AnyRExpression) -> RExpressionStatementBuilder {
+    RExpressionStatementBuilder {
+        expression,
+        semicolon_token: None,
+    }
+}
+pub struct RExpressionStatementBuilder {
+    expression: AnyRExpression,
+    semicolon_token: Option<SyntaxToken>,
+}
+impl RExpressionStatementBuilder {
+    pub fn with_semicolon_token(mut self, semicolon_token: SyntaxToken) -> Self {
+        self.semicolon_token = Some(semicolon_token);
+        self
+    }
+    pub fn build(self) -> RExpressionStatement {
+        RExpressionStatement::unwrap_cast(SyntaxNode::new_detached(
+            RSyntaxKind::R_EXPRESSION_STATEMENT,
+            [
+                Some(SyntaxElement::Node(self.expression.into_syntax())),
+                self.semicolon_token
+                    .map(|token| SyntaxElement::Token(token)),
+            ],
+        ))
+    }
+}
 pub fn r_extract_expression(
     left: AnyRExpression,
     operator_token: SyntaxToken,
@@ -162,7 +194,7 @@ pub fn r_false_expression(false_token: SyntaxToken) -> RFalseExpression {
 pub fn r_for_statement(
     for_token: SyntaxToken,
     l_paren_token: SyntaxToken,
-    variable: RIdentifier,
+    variable: AnyRForVariable,
     in_token: SyntaxToken,
     sequence: AnyRExpression,
     r_paren_token: SyntaxToken,
@@ -367,15 +399,15 @@ pub fn r_repeat_statement(repeat_token: SyntaxToken, body: AnyRExpression) -> RR
         ],
     ))
 }
-pub fn r_root(expressions: RExpressionList, eof_token: SyntaxToken) -> RRootBuilder {
+pub fn r_root(statements: RStatementList, eof_token: SyntaxToken) -> RRootBuilder {
     RRootBuilder {
-        expressions,
+        statements,
         eof_token,
         bom_token: None,
     }
 }
 pub struct RRootBuilder {
-    expressions: RExpressionList,
+    statements: RStatementList,
     eof_token: SyntaxToken,
     bom_token: Option<SyntaxToken>,
 }
@@ -389,39 +421,17 @@ impl RRootBuilder {
             RSyntaxKind::R_ROOT,
             [
                 self.bom_token.map(|token| SyntaxElement::Token(token)),
-                Some(SyntaxElement::Node(self.expressions.into_syntax())),
+                Some(SyntaxElement::Node(self.statements.into_syntax())),
                 Some(SyntaxElement::Token(self.eof_token)),
             ],
         ))
     }
 }
-pub fn r_string_value(open_token: SyntaxToken, close_token: SyntaxToken) -> RStringValueBuilder {
-    RStringValueBuilder {
-        open_token,
-        close_token,
-        content_token: None,
-    }
-}
-pub struct RStringValueBuilder {
-    open_token: SyntaxToken,
-    close_token: SyntaxToken,
-    content_token: Option<SyntaxToken>,
-}
-impl RStringValueBuilder {
-    pub fn with_content_token(mut self, content_token: SyntaxToken) -> Self {
-        self.content_token = Some(content_token);
-        self
-    }
-    pub fn build(self) -> RStringValue {
-        RStringValue::unwrap_cast(SyntaxNode::new_detached(
-            RSyntaxKind::R_STRING_VALUE,
-            [
-                Some(SyntaxElement::Token(self.open_token)),
-                self.content_token.map(|token| SyntaxElement::Token(token)),
-                Some(SyntaxElement::Token(self.close_token)),
-            ],
-        ))
-    }
+pub fn r_string_value(value_token: SyntaxToken) -> RStringValue {
+    RStringValue::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_STRING_VALUE,
+        [Some(SyntaxElement::Token(value_token))],
+    ))
 }
 pub fn r_subset(function: AnyRExpression, arguments: RSubsetArguments) -> RSubset {
     RSubset::unwrap_cast(SyntaxNode::new_detached(
@@ -526,18 +536,6 @@ where
         }),
     ))
 }
-pub fn r_expression_list<I>(items: I) -> RExpressionList
-where
-    I: IntoIterator<Item = AnyRExpression>,
-    I::IntoIter: ExactSizeIterator,
-{
-    RExpressionList::unwrap_cast(SyntaxNode::new_detached(
-        RSyntaxKind::R_EXPRESSION_LIST,
-        items
-            .into_iter()
-            .map(|item| Some(item.into_syntax().into())),
-    ))
-}
 pub fn r_parameter_list<I, S>(items: I, separators: S) -> RParameterList
 where
     I: IntoIterator<Item = RParameter>,
@@ -559,6 +557,18 @@ where
         }),
     ))
 }
+pub fn r_statement_list<I>(items: I) -> RStatementList
+where
+    I: IntoIterator<Item = AnyRStatement>,
+    I::IntoIter: ExactSizeIterator,
+{
+    RStatementList::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_STATEMENT_LIST,
+        items
+            .into_iter()
+            .map(|item| Some(item.into_syntax().into())),
+    ))
+}
 pub fn r_bogus<I>(slots: I) -> RBogus
 where
     I: IntoIterator<Item = Option<SyntaxElement>>,
@@ -573,6 +583,36 @@ where
 {
     RBogusExpression::unwrap_cast(SyntaxNode::new_detached(
         RSyntaxKind::R_BOGUS_EXPRESSION,
+        slots,
+    ))
+}
+pub fn r_bogus_for_variable<I>(slots: I) -> RBogusForVariable
+where
+    I: IntoIterator<Item = Option<SyntaxElement>>,
+    I::IntoIter: ExactSizeIterator,
+{
+    RBogusForVariable::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_BOGUS_FOR_VARIABLE,
+        slots,
+    ))
+}
+pub fn r_bogus_parameter_name<I>(slots: I) -> RBogusParameterName
+where
+    I: IntoIterator<Item = Option<SyntaxElement>>,
+    I::IntoIter: ExactSizeIterator,
+{
+    RBogusParameterName::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_BOGUS_PARAMETER_NAME,
+        slots,
+    ))
+}
+pub fn r_bogus_selector<I>(slots: I) -> RBogusSelector
+where
+    I: IntoIterator<Item = Option<SyntaxElement>>,
+    I::IntoIter: ExactSizeIterator,
+{
+    RBogusSelector::unwrap_cast(SyntaxNode::new_detached(
+        RSyntaxKind::R_BOGUS_SELECTOR,
         slots,
     ))
 }

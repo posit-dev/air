@@ -3,4 +3,7 @@
 #[allow(clippy::module_inception)]
 pub(crate) mod bogus;
 pub(crate) mod bogus_expression;
+pub(crate) mod bogus_for_variable;
+pub(crate) mod bogus_parameter_name;
+pub(crate) mod bogus_selector;
 pub(crate) mod bogus_value;
