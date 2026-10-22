@@ -33,6 +33,7 @@ biome_string_case = { git = "https://github.com/lionel-/biome", rev = "a1296ea6b
 biome_text_size = { git = "https://github.com/lionel-/biome", rev = "a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9" }
 biome_ungrammar = { path = "./crates/biome_ungrammar" }
 biome_unicode_table = { git = "https://github.com/lionel-/biome", rev = "a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9" }
+bpaf = { version = "0.9.15", features = ["derive"] }
 bytes = "1.8.0"
 cargo_metadata = "0.20.0"
 case = "1.0.0"

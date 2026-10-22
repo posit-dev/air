@@ -2,7 +2,7 @@
 
 This crate contains local commands used to auto-generate source code.
 
-## `cargo codegen grammar`
+## `just gen-grammar`
 
 This command transforms the `*.ungram` files into the `air_*_syntax` and `air_*_factory` crates.
 

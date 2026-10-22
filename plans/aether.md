@@ -120,7 +120,7 @@ it needs, so every commit builds.
   (`xtask_accept`), mirroring `xtask/codegen` and `xtask/json_schema`. Add
   `"xtask/accept"` to workspace `members`.
 
-- [ ] `xtask/codegen`: start from aether's crate, then re-add air's
+- [x] `xtask/codegen`: start from aether's crate, then re-add air's
   `formatter.rs` unchanged (`git2` included), the `Formatter` and `All`
   commands, and `formatter_crate_name()`. Add `bpaf` to the workspace
   dependencies, as aether's codegen uses it from there. Run `just gen-grammar`
