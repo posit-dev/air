@@ -19,13 +19,18 @@ pub enum Mode {
 }
 
 pub fn project_root() -> PathBuf {
-    Path::new(
-        &env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| env!("CARGO_MANIFEST_DIR").to_owned()),
-    )
-    .ancestors()
-    .nth(2)
-    .unwrap()
-    .to_path_buf()
+    let manifest_dir =
+        env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| env!("CARGO_MANIFEST_DIR").to_owned());
+
+    // Searched rather than counted, so it holds wherever the calling crate sits
+    Path::new(&manifest_dir)
+        .ancestors()
+        .find(|directory| {
+            std::fs::read_to_string(directory.join("Cargo.toml"))
+                .is_ok_and(|manifest| manifest.contains("[workspace]"))
+        })
+        .expect("a crate in this workspace runs this")
+        .to_path_buf()
 }
 
 pub fn reformat(text: impl Display) -> Result<String> {

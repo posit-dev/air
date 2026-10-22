@@ -2,4 +2,3 @@
 
 # Windows specific test files where we need CRLF endings
 crates/air/fixtures/crlf/*.R text eol=crlf
-crates/air_r_parser/tests/snapshots/ok/crlf/*.R text eol=crlf

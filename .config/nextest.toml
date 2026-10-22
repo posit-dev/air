@@ -1,11 +1,14 @@
-[profile.ci]
+[profile.default]
+fail-fast = false
+# Try up to 3 times with 10 second timeout each time.
+# Helps detect deadlocks without hanging infinitely.
+slow-timeout = { period = "10s", terminate-after = 3 }
 # Print out output for failing tests as soon as they fail, and also at the end
 # of the run (for easy scrollability).
 failure-output = "immediate-final"
+status-level = "fail"
 
-# Do not cancel the test run on the first failure.
-fail-fast = false
-
-# Mark tests that take longer than 60s as slow.
-# Terminate after 60s as a stop-gap measure to terminate on deadlock.
-slow-timeout = { period = "60s", terminate-after = 1 }
+[profile.ci]
+inherits = "default"
+retries = 0
+final-status-level = "slow"

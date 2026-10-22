@@ -1,0 +1,12 @@
+[package]
+name = "xtask_accept"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+air_r_parser_tests = { workspace = true }
+xtask = { version = "0.0", path = "../" }
+
+[lints]
+workspace = true

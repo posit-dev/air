@@ -8,8 +8,8 @@ publish = false
 anyhow = { workspace = true }
 biome_string_case = { workspace = true }
 biome_ungrammar = { workspace = true }
-bpaf = { version = "0.9.15", features = ["derive"] }
-git2 = { version = "0.21.0", default-features = false }
+bpaf = { workspace = true }
+git2 = { workspace = true }
 proc-macro2 = { workspace = true, features = ["span-locations"] }
 quote = { workspace = true }
 xtask = { version = "0.0", path = "../" }
