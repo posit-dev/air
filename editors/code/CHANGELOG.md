@@ -7,6 +7,8 @@
 
 ## Development version
 
+- Removed the `Air: View Tree Sitter` command, as tree-sitter is no longer the underlying parser.
+
 
 ## 0.30.0
 

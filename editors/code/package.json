@@ -133,11 +133,6 @@
 				"command": "air.workspaceFolderFormatting"
 			},
 			{
-				"title": "View Tree Sitter",
-				"category": "Air",
-				"command": "air.viewTreeSitter"
-			},
-			{
 				"title": "View Syntax Tree",
 				"category": "Air",
 				"command": "air.viewSyntaxTree"

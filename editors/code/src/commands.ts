@@ -32,13 +32,6 @@ export function registerCommands(ctx: Ctx) {
 
 	ctx.extension.subscriptions.push(
 		vscode.commands.registerCommand(
-			"air.viewTreeSitter",
-			viewTreeSitter(ctx),
-		),
-	);
-
-	ctx.extension.subscriptions.push(
-		vscode.commands.registerCommand(
 			"air.viewSyntaxTree",
 			viewSyntaxTree(ctx),
 		),
@@ -55,7 +48,6 @@ export function registerCommands(ctx: Ctx) {
 		vscode.commands.registerCommand(
 			"air.viewFileRepresentations",
 			async () => {
-				await vscode.commands.executeCommand("air.viewTreeSitter");
 				await vscode.commands.executeCommand("air.viewSyntaxTree");
 				await vscode.commands.executeCommand("air.viewFormatTree");
 			},
@@ -72,20 +64,6 @@ export function registerCommands(ctx: Ctx) {
 				zipFileRepresentations();
 			},
 		),
-	);
-}
-
-function viewTreeSitter(ctx: Ctx): Cmd {
-	const uri = "air-tree-sitter://syntax/treesitter";
-	const scheme = "air-tree-sitter";
-
-	return viewFileUsingTextDocumentContentProvider(
-		ctx,
-		VIEW_FILE,
-		"TreeSitter",
-		uri,
-		scheme,
-		true,
 	);
 }
 
@@ -120,7 +98,6 @@ function viewFormatTree(ctx: Ctx): Cmd {
 async function zipFileRepresentations() {
 	const docs = vscode.workspace.textDocuments.filter((doc) => {
 		switch (doc.uri.scheme) {
-			case "air-tree-sitter":
 			case "air-syntax-tree":
 			case "air-format-tree":
 				return true;

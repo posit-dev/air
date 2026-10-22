@@ -126,9 +126,8 @@ pub(crate) struct GlobalState {
     /// (clones) to handlers.
     world: WorldState,
 
-    /// The state containing LSP configuration and tree-sitter parsers for
-    /// documents contained in the `WorldState`. Only used in exclusive ref
-    /// handlers, and is not cloneable.
+    /// The state containing LSP configuration for documents contained in the
+    /// `WorldState`. Only used in exclusive ref handlers, and is not cloneable.
     lsp_state: LspState,
 
     /// Event receiver channel for the main loop. The tower-lsp methods forward
