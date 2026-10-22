@@ -23,6 +23,7 @@ expression: AIR_CRATE_NAMES
     "tests_macros",
     "workspace",
     "xtask",
+    "xtask_accept",
     "xtask_codegen",
     "xtask_json_schema",
     "zed_air",
