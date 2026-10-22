@@ -71,14 +71,18 @@ pub fn run(test_case: &str, _snapshot_name: &str, test_directory: &str, outcome_
     )
     .unwrap();
 
-    if let Some(error) = parsed.error() {
+    let diagnostics = parsed.diagnostics();
+
+    if !diagnostics.is_empty() {
         if matches!(outcome, ExpectedOutcome::Pass) {
             panic!(
-                "Expected no errors to be present in a test case that is expected to pass but the following errors are present:\n{error}"
+                "Expected no errors to be present in a test case that is expected to pass but the following errors are present:\n{diagnostics:#?}"
             )
         }
         writeln!(snapshot, "## Errors\n\n```").unwrap();
-        writeln!(snapshot, "{error}").unwrap();
+        for diagnostic in diagnostics {
+            writeln!(snapshot, "{}", diagnostic.message).unwrap();
+        }
         writeln!(snapshot, "```\n").unwrap();
     }
 
@@ -102,7 +106,7 @@ pub fn run(test_case: &str, _snapshot_name: &str, test_directory: &str, outcome_
             }
         }
         ExpectedOutcome::Fail => {
-            if !parsed.has_error() {
+            if !parsed.has_errors() {
                 panic!("Failing test must have an error");
             }
         }

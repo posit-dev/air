@@ -171,8 +171,9 @@ mod test {
             return Ok(output);
         }
 
-        let reparsed = air_r_parser::parse(&output, RParserOptions::default()).into_result()?;
-        let reformatted = format_node(RFormatOptions::default(), &reparsed)?
+        let reparsed = air_r_parser::parse(&output, RParserOptions::default());
+        assert!(!reparsed.has_errors());
+        let reformatted = format_node(RFormatOptions::default(), &reparsed.syntax())?
             .print()?
             .into_code();
         assert_eq!(output, reformatted);
