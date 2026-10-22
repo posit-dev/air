@@ -3,6 +3,7 @@ use crate::args::Command;
 use crate::status::ExitStatus;
 
 pub mod args;
+mod color;
 mod commands;
 mod logging;
 pub mod status;
@@ -10,10 +11,8 @@ pub mod status;
 pub fn run(args: Args) -> anyhow::Result<ExitStatus> {
     if !matches!(args.command, Command::LanguageServer(_)) {
         // The language server sets up its own logging
-        logging::init_logging(
-            args.global_options.log_level.unwrap_or_default(),
-            args.global_options.no_color,
-        );
+        let color = color::init_color(args.global_options.no_color);
+        logging::init_logging(args.global_options.log_level.unwrap_or_default(), color);
     }
 
     match args.command {

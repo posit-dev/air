@@ -24,7 +24,7 @@ lsp = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
-tracing-subscriber = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["ansi"] }
 workspace = { workspace = true }
 
 [dev-dependencies]
