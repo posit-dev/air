@@ -16,6 +16,8 @@ use air_r_syntax::RBracedStatements;
 use air_r_syntax::RCall;
 use air_r_syntax::RCallArguments;
 use air_r_syntax::RLanguage;
+use air_r_syntax::RStringValue;
+use air_r_syntax::RStringValueFields;
 use air_r_syntax::RSubset2Arguments;
 use air_r_syntax::RSubsetArguments;
 use air_r_syntax::RSyntaxNode;
@@ -1150,6 +1152,12 @@ fn should_group_last_argument(list: &RArgumentList, comments: &RComments) -> Syn
     argument_is_groupable(&last, comments)
 }
 
+fn is_multiline_string(node: &RStringValue) -> SyntaxResult<bool> {
+    let RStringValueFields { value } = node.as_fields();
+
+    Ok(value?.text_trimmed().contains(['\n', '\r']))
+}
+
 /// Checks if `argument` benefits from grouping in call arguments.
 fn argument_is_groupable(argument: &AnyRExpression, comments: &RComments) -> SyntaxResult<bool> {
     use air_r_syntax::AnyRExpression::*;
@@ -1267,6 +1275,18 @@ fn argument_is_groupable(argument: &AnyRExpression, comments: &RComments) -> Syn
             RBracedStatements(ref body) => braced_statements_is_groupable(body, comments),
             _ => true,
         }),
+
+        // Multiline strings are groupable so their opening and closing quotes
+        // can hug the surrounding call arguments without forcing all arguments
+        // to break out onto new lines
+        //
+        // ```r
+        // DBI::dbGetQuery(con, "
+        //   SELECT *
+        //   FROM table
+        // ")
+        // ```
+        AnyRValue(air_r_syntax::AnyRValue::RStringValue(node)) => is_multiline_string(node)?,
 
         // Nothing else benefits from grouping
         _ => false,
