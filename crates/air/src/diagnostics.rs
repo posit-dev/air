@@ -1,0 +1,306 @@
+use std::io;
+use std::path::Path;
+use std::path::PathBuf;
+
+use biome_console::Console;
+use biome_console::ConsoleExt;
+use biome_console::DebugDisplay;
+use biome_console::markup;
+use biome_diagnostics::Diagnostic;
+use biome_diagnostics::DiagnosticExt;
+use biome_diagnostics::Error;
+use biome_diagnostics::MessageAndDescription;
+use biome_diagnostics::PrintDiagnostic;
+use biome_diagnostics::Resource;
+use biome_diagnostics::Severity;
+use biome_parser::diagnostic::ParseDiagnostic;
+use fs::relativize_path;
+
+/// Prints `diagnostics` sorted by path, followed by a count of the errors
+pub(crate) fn print_diagnostics(console: &mut dyn Console, mut diagnostics: Vec<Error>) {
+    // Discovery runs in parallel so order isn't deterministic. The sort is stable
+    // to keep each file's diagnostics in source order.
+    diagnostics.sort_by(|lhs, rhs| diagnostic_path(lhs).cmp(&diagnostic_path(rhs)));
+
+    for diagnostic in &diagnostics {
+        console.error(markup! {{PrintDiagnostic::simple(diagnostic)}});
+    }
+
+    let errors = diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.severity() >= Severity::Error)
+        .count();
+
+    if errors > 0 {
+        let summary = ErrorsSummaryDiagnostic::new(errors);
+        console.error(markup! {{PrintDiagnostic::simple(&summary)}});
+    }
+}
+
+fn diagnostic_path(diagnostic: &Error) -> Option<&Path> {
+    match diagnostic.location().resource {
+        Some(Resource::File(path)) => Some(Path::new(path)),
+        Some(Resource::Argv) => None,
+        Some(Resource::Memory) => None,
+        None => None,
+    }
+}
+
+/// Attaches `path` and `source` to each syntax error, so they render as code frames
+pub(crate) fn from_parse_diagnostics(
+    path: &Path,
+    source: &str,
+    diagnostics: Vec<ParseDiagnostic>,
+) -> Vec<Error> {
+    let path = relativize_path(path);
+
+    diagnostics
+        .into_iter()
+        .map(|diagnostic| {
+            diagnostic
+                .with_file_path(path.clone())
+                .with_file_source_code(source.to_string())
+        })
+        .collect()
+}
+
+#[derive(Debug, Diagnostic)]
+#[diagnostic(
+    category = "internalError/io",
+    severity = Error,
+    message(
+        description = "Failed to read file: {error}",
+        message("Failed to read file: "{DebugDisplay(&self.error)})
+    )
+)]
+pub(crate) struct ReadDiagnostic {
+    #[location(resource)]
+    path: String,
+    error: io::Error,
+}
+
+impl ReadDiagnostic {
+    pub(crate) fn new(path: &Path, error: io::Error) -> Self {
+        Self {
+            path: relativize_path(path),
+            error,
+        }
+    }
+}
+
+#[derive(Debug, Diagnostic)]
+#[diagnostic(
+    category = "internalError/io",
+    severity = Error,
+    message(
+        description = "Failed to write file: {error}",
+        message("Failed to write file: "{DebugDisplay(&self.error)})
+    )
+)]
+pub(crate) struct WriteDiagnostic {
+    #[location(resource)]
+    path: String,
+    error: io::Error,
+}
+
+impl WriteDiagnostic {
+    pub(crate) fn new(path: &Path, error: io::Error) -> Self {
+        Self {
+            path: relativize_path(path),
+            error,
+        }
+    }
+}
+
+/// A [biome_formatter::FormatError] or [biome_formatter::PrintError], which only
+/// happen when Air's formatter has a bug
+#[derive(Debug, Diagnostic)]
+#[diagnostic(
+    category = "format",
+    severity = Error,
+    tags(INTERNAL),
+    message(
+        description = "Failed to format file: {error}",
+        message("Failed to format file: "{DebugDisplay(&self.error)})
+    )
+)]
+pub(crate) struct FormatDiagnostic {
+    #[location(resource)]
+    path: String,
+    error: Box<dyn std::error::Error + Send + Sync>,
+}
+
+impl FormatDiagnostic {
+    pub(crate) fn new(
+        path: &Path,
+        error: impl Into<Box<dyn std::error::Error + Send + Sync>>,
+    ) -> Self {
+        Self {
+            path: relativize_path(path),
+            error: error.into(),
+        }
+    }
+}
+
+/// An error from walking the requested paths, like a missing file or an
+/// unreadable directory
+#[derive(Debug, Diagnostic)]
+#[diagnostic(
+    category = "internalError/fs",
+    severity = Error,
+    message(
+        description = "{error}",
+        message({DebugDisplay(&self.error)})
+    )
+)]
+pub(crate) struct WalkDiagnostic {
+    #[location(resource)]
+    path: Option<String>,
+    error: ignore::Error,
+}
+
+impl WalkDiagnostic {
+    pub(crate) fn new(error: ignore::Error) -> Self {
+        let (path, error) = unwrap_walk_error(error, None);
+
+        Self {
+            path: path.map(relativize_path),
+            error,
+        }
+    }
+}
+
+/// Peels the path and depth that `ignore` wraps around an error
+fn unwrap_walk_error(
+    error: ignore::Error,
+    path: Option<PathBuf>,
+) -> (Option<PathBuf>, ignore::Error) {
+    match error {
+        ignore::Error::WithPath { path: inner, err } => {
+            unwrap_walk_error(*err, path.or(Some(inner)))
+        }
+        ignore::Error::WithDepth { err, .. } => unwrap_walk_error(*err, path),
+        ignore::Error::Partial(..) => (path, error),
+        ignore::Error::WithLineNumber { .. } => (path, error),
+        ignore::Error::Loop { .. } => (path, error),
+        ignore::Error::Io(..) => (path, error),
+        ignore::Error::Glob { .. } => (path, error),
+        ignore::Error::UnrecognizedFileType(..) => (path, error),
+        ignore::Error::InvalidDefinition => (path, error),
+    }
+}
+
+#[derive(Debug, Diagnostic)]
+#[diagnostic(
+    category = "stdin",
+    severity = Error,
+    message(
+        description = "Failed to read from stdin: {error}",
+        message("Failed to read from stdin: "{DebugDisplay(&self.error)})
+    )
+)]
+pub(crate) struct StdinReadDiagnostic {
+    error: io::Error,
+}
+
+impl StdinReadDiagnostic {
+    pub(crate) fn new(error: io::Error) -> Self {
+        Self { error }
+    }
+}
+
+#[derive(Debug, Diagnostic)]
+#[diagnostic(
+    category = "stdin",
+    severity = Error,
+    message(
+        description = "Failed to write to stdout: {error}",
+        message("Failed to write to stdout: "{DebugDisplay(&self.error)})
+    )
+)]
+pub(crate) struct StdoutWriteDiagnostic {
+    error: io::Error,
+}
+
+impl StdoutWriteDiagnostic {
+    pub(crate) fn new(error: io::Error) -> Self {
+        Self { error }
+    }
+}
+
+#[derive(Debug, Diagnostic)]
+#[diagnostic(
+    category = "flags/invalid",
+    severity = Error,
+    message(
+        description = "Can't supply paths when reading from stdin: {paths}",
+        message("Can't supply paths when reading from stdin: "{self.paths})
+    )
+)]
+pub(crate) struct StdinWithPathsDiagnostic {
+    paths: String,
+}
+
+impl StdinWithPathsDiagnostic {
+    pub(crate) fn new(paths: &[PathBuf]) -> Self {
+        let paths = paths
+            .iter()
+            .map(|path| format!("'{path}'", path = path.display()))
+            .collect::<Vec<String>>()
+            .join(",");
+
+        Self { paths }
+    }
+}
+
+/// Closes a run that reported errors, like biome's closing `format` section
+#[derive(Debug, Diagnostic)]
+#[diagnostic(category = "format", severity = Error)]
+struct ErrorsSummaryDiagnostic {
+    #[message]
+    #[description]
+    message: MessageAndDescription,
+}
+
+impl ErrorsSummaryDiagnostic {
+    fn new(count: usize) -> Self {
+        let message = match count {
+            1 => String::from("Found 1 error."),
+            count => format!("Found {count} errors."),
+        };
+
+        Self {
+            message: MessageAndDescription::from(message),
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::io;
+    use std::path::Path;
+    use std::path::PathBuf;
+
+    use biome_diagnostics::PrintDescription;
+
+    use crate::diagnostics::ReadDiagnostic;
+    use crate::diagnostics::StdinWithPathsDiagnostic;
+
+    #[test]
+    fn test_description_is_rendered_from_message() {
+        let diagnostic = ReadDiagnostic::new(
+            Path::new("test.R"),
+            io::Error::new(io::ErrorKind::InvalidData, "bad bytes"),
+        );
+        assert_eq!(
+            PrintDescription(&diagnostic).to_string(),
+            "Failed to read file: bad bytes"
+        );
+
+        let diagnostic = StdinWithPathsDiagnostic::new(&[PathBuf::from("a.R")]);
+        assert_eq!(
+            PrintDescription(&diagnostic).to_string(),
+            "Can't supply paths when reading from stdin: 'a.R'"
+        );
+    }
+}

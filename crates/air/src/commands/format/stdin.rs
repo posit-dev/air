@@ -1,27 +1,28 @@
-use std::fmt::Display;
-use std::fmt::Formatter;
 use std::io;
 use std::io::Read;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
-use thiserror::Error;
+use biome_console::Console;
+use biome_diagnostics::Error;
 use workspace::discovery;
 use workspace::resolve::PathResolver;
 use workspace::settings::FormatSettings;
 use workspace::settings::Settings;
 
 use crate::ExitStatus;
-use crate::color;
 use crate::commands::format::ConfigurationMode;
 use crate::commands::format::FormatMode;
-use crate::commands::format::diagnostics::ParseFailure;
-use crate::commands::format::diagnostics::print_parse_failures;
 use crate::commands::format::resolve_settings;
 use crate::commands::format::source;
 use crate::commands::format::source::FormatSourceError;
 use crate::commands::format::source::FormattedSource;
+use crate::diagnostics::FormatDiagnostic;
+use crate::diagnostics::StdinReadDiagnostic;
+use crate::diagnostics::StdoutWriteDiagnostic;
+use crate::diagnostics::from_parse_diagnostics;
+use crate::diagnostics::print_diagnostics;
 
 #[derive(Debug)]
 enum FormattedStdin {
@@ -31,21 +32,13 @@ enum FormattedStdin {
     Unchanged(String),
 }
 
-#[derive(Error, Debug)]
-enum FormatStdinError {
-    Parse(ParseFailure),
-    Format(biome_formatter::FormatError),
-    Print(biome_formatter::PrintError),
-    Read(io::Error),
-    Write(io::Error),
-}
-
 pub(crate) fn format(
     path: PathBuf,
     mode: FormatMode,
     configuration: ConfigurationMode,
     exclude: discovery::Exclude,
     include: discovery::Include,
+    console: &mut dyn Console,
 ) -> anyhow::Result<ExitStatus> {
     // Normalize up front, relative to current working directory
     let path = fs::normalize_path(path);
@@ -56,8 +49,8 @@ pub(crate) fn format(
         FormatMode::Write => {
             match format_stdin_write(&path, &resolver, &default_settings, exclude, include) {
                 Ok(()) => Ok(ExitStatus::Success),
-                Err(error) => {
-                    report_error(error)?;
+                Err(diagnostics) => {
+                    print_diagnostics(console, diagnostics);
                     Ok(ExitStatus::Error)
                 }
             }
@@ -71,29 +64,13 @@ pub(crate) fn format(
                         Ok(ExitStatus::Success)
                     }
                 }
-                Err(error) => {
-                    report_error(error)?;
+                Err(diagnostics) => {
+                    print_diagnostics(console, diagnostics);
                     Ok(ExitStatus::Error)
                 }
             }
         }
     }
-}
-
-/// Renders a parse failure as code frames, or logs any other error
-fn report_error(error: FormatStdinError) -> io::Result<()> {
-    match error {
-        FormatStdinError::Parse(failure) => {
-            print_parse_failures(&[failure], &mut color::stderr().lock())?;
-            tracing::error!("Failed to parse 1 file.");
-        }
-        FormatStdinError::Format(_) => tracing::error!("{error}"),
-        FormatStdinError::Print(_) => tracing::error!("{error}"),
-        FormatStdinError::Read(_) => tracing::error!("{error}"),
-        FormatStdinError::Write(_) => tracing::error!("{error}"),
-    }
-
-    Ok(())
 }
 
 fn format_stdin_write<P: AsRef<Path>>(
@@ -102,7 +79,7 @@ fn format_stdin_write<P: AsRef<Path>>(
     default_settings: &Settings,
     exclude: discovery::Exclude,
     include: discovery::Include,
-) -> Result<(), FormatStdinError> {
+) -> Result<(), Vec<Error>> {
     let settings = resolver
         .resolve(&path)
         .map_or(default_settings, |item| item.value());
@@ -118,10 +95,11 @@ fn format_stdin_write<P: AsRef<Path>>(
         FormattedStdin::Unchanged(unchanged) => unchanged,
     };
 
+    // Never through the `console`, which would "sanitize" the formatted code
     std::io::stdout()
         .lock()
         .write_all(buffer.as_bytes())
-        .map_err(FormatStdinError::Write)
+        .map_err(|error| vec![StdoutWriteDiagnostic::new(error).into()])
 }
 
 fn format_stdin_check<P: AsRef<Path>>(
@@ -130,7 +108,7 @@ fn format_stdin_check<P: AsRef<Path>>(
     default_settings: &Settings,
     exclude: discovery::Exclude,
     include: discovery::Include,
-) -> Result<bool, FormatStdinError> {
+) -> Result<bool, Vec<Error>> {
     let settings = resolver
         .resolve(&path)
         .map_or(default_settings, |item| item.value());
@@ -151,30 +129,34 @@ fn format_stdin_check<P: AsRef<Path>>(
 fn format_stdin<P: AsRef<Path>>(
     path: P,
     settings: &FormatSettings,
-) -> Result<FormattedStdin, FormatStdinError> {
+) -> Result<FormattedStdin, Vec<Error>> {
     tracing::trace!("Formatting stdin");
 
-    let source = read_stdin().map_err(FormatStdinError::Read)?;
+    let path = path.as_ref();
+
+    let source = read_stdin().map_err(|error| vec![StdinReadDiagnostic::new(error).into()])?;
 
     let options = settings.to_format_options(&source);
 
     match source::format_source(&source, options) {
         Ok(FormattedSource::Changed(formatted)) => Ok(FormattedStdin::Changed(formatted)),
         Ok(FormattedSource::Unchanged) => Ok(FormattedStdin::Unchanged(source)),
-        Err(FormatSourceError::Parse(diagnostics)) => Err(FormatStdinError::Parse(ParseFailure {
-            path: path.as_ref().to_path_buf(),
-            source,
-            diagnostics,
-        })),
-        Err(FormatSourceError::Format(error)) => Err(FormatStdinError::Format(error)),
-        Err(FormatSourceError::Print(error)) => Err(FormatStdinError::Print(error)),
+        Err(FormatSourceError::Parse(diagnostics)) => {
+            Err(from_parse_diagnostics(path, &source, diagnostics))
+        }
+        Err(FormatSourceError::Format(error)) => {
+            Err(vec![FormatDiagnostic::new(path, error).into()])
+        }
+        Err(FormatSourceError::Print(error)) => {
+            Err(vec![FormatDiagnostic::new(path, error).into()])
+        }
     }
 }
 
-fn asis_stdin() -> Result<FormattedStdin, FormatStdinError> {
+fn asis_stdin() -> Result<FormattedStdin, Vec<Error>> {
     tracing::trace!("Passing stdin through unformatted");
 
-    let old = read_stdin().map_err(FormatStdinError::Read)?;
+    let old = read_stdin().map_err(|error| vec![StdinReadDiagnostic::new(error).into()])?;
 
     Ok(FormattedStdin::Unchanged(old))
 }
@@ -264,19 +246,6 @@ fn is_stdin_formattable<P: AsRef<Path>>(
                 path = path.display()
             );
             true
-        }
-    }
-}
-
-impl Display for FormatStdinError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            // TODO(diagnostics): This is not actually used, and is a code smell!
-            Self::Parse(..) => write!(f, "Failed to parse stdin"),
-            Self::Format(error) => write!(f, "Failed to format stdin: {error}"),
-            Self::Print(error) => write!(f, "Failed to format stdin: {error}"),
-            Self::Read(error) => write!(f, "Failed to read from stdin: {error}"),
-            Self::Write(error) => write!(f, "Failed to write to stdout: {error}"),
         }
     }
 }

@@ -7,7 +7,16 @@ exit_code: 255
 ----- stdout -----
 
 ----- stderr -----
-ERROR Can't supply paths when reading from stdin: '.'
+flags/invalid ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Can't supply paths when reading from stdin: '.'
+  
+
+format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Found 1 error.
+  
+
 
 ----- args -----
 format . --stdin-file-path test.R --no-color

@@ -21,7 +21,12 @@ parse-error.R:1:3 parse ━━━━━━━━━━━━━━━━━━�
       │ ^
     2 │ 
   
-ERROR Failed to parse 1 file.
+
+format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Found 1 error.
+  
+
 Would reformat: needs-formatting.R
 
 ----- args -----

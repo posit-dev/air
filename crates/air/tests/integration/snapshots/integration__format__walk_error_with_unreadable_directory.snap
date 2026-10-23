@@ -1,0 +1,22 @@
+---
+source: crates/air/tests/integration/format.rs
+expression: output
+---
+success: false
+exit_code: 255
+----- stdout -----
+
+----- stderr -----
+locked internalError/fs ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Permission denied (os error 13)
+  
+
+format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Found 1 error.
+  
+
+
+----- args -----
+format . --no-color

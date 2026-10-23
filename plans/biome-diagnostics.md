@@ -475,54 +475,56 @@ whitespace included.
 
 ### PR 1: the console, and diagnostics for the format command
 
-- [ ] Ask before creating or rewriting any branch. Never commit, rebase, or
+- [x] Ask before creating or rewriting any branch. Never commit, rebase, or
       open a PR.
 
-- [ ] Add the `std` feature to `biome_diagnostics` in `crates/air/Cargo.toml`.
+- [x] Add the `std` feature to `biome_diagnostics` in `crates/air/Cargo.toml`.
+      Skipped, since nothing uses `StdError` or `IoError`.
 
-- [ ] Build `EnvConsole` in `run()` from `color::init_color()`, mapping the
+- [x] Build `EnvConsole` in `run()` from `color::init_color()`, mapping the
       `bool` to `ColorMode::Enabled` or `ColorMode::Disabled`.
 
-- [ ] Pass `&mut dyn Console` from `run()` into `commands::format::format()`,
+- [x] Pass `&mut dyn Console` from `run()` into `commands::format::format()`,
       then into `paths::format()` and `stdin::format()`.
 
-- [ ] Delete `color::stderr()`, and update the `init_color()` doc comment.
+- [x] Delete `color::stderr()`, and update the `init_color()` doc comment.
 
-- [ ] Move `commands/format/diagnostics.rs` to `crates/air/src/diagnostics.rs`.
+- [x] Move `commands/format/diagnostics.rs` to `crates/air/src/diagnostics.rs`.
 
-- [ ] Add the diagnostic types from the table for read, write, format, print,
+- [x] Add the diagnostic types from the table for read, write, format, print,
       walk, stdin, and argument errors.
 
-- [ ] Make `format_path()` and `format_stdin()` return
+- [x] Make `format_path()` and `format_stdin()` return
       `biome_diagnostics::Error`, and delete `FormatPathError`,
-      `FormatStdinError`, and `ParseFailure`.
+      `FormatStdinError`, and `ParseFailure`. They return `Vec<Error>`
+      instead, since a file can have many syntax errors.
 
-- [ ] Turn `check_argument_consistency()` into a `flags/invalid` diagnostic.
+- [x] Turn `check_argument_consistency()` into a `flags/invalid` diagnostic.
 
-- [ ] Add the stable sort by path, pathless first.
+- [x] Add the stable sort by path, pathless first.
 
-- [ ] Print every diagnostic with
+- [x] Print every diagnostic with
       `console.error(markup! {{PrintDiagnostic::simple(&diagnostic)}})`.
 
-- [ ] Add the summary diagnostic type: `format` category, no location,
+- [x] Add the summary diagnostic type: `format` category, no location,
       `severity = Error`.
 
-- [ ] After the sorted diagnostics, print a `Found 1 error.` or
+- [x] After the sorted diagnostics, print a `Found 1 error.` or
       `Found N errors.` summary diagnostic when there are errors, in both
       paths and stdin mode.
 
-- [ ] Keep the exit code rules, and keep `Would reformat:` as it is.
+- [x] Keep the exit code rules, and keep `Would reformat:` as it is.
 
-- [ ] Confirm formatted stdin output still uses a raw `stdout()` write.
+- [x] Confirm formatted stdin output still uses a raw `stdout()` write.
 
-- [ ] Confirm no `tracing::error!` is left in `crates/air/src`.
+- [x] Confirm no `tracing::error!` is left in `crates/air/src`.
 
-- [ ] Add and update the PR 1 tests, then review every changed snapshot by
+- [x] Add and update the PR 1 tests, then review every changed snapshot by
       hand.
 
-- [ ] Update `CHANGELOG.md` and the project `CLAUDE.md`.
+- [x] Update `CHANGELOG.md` and the project `CLAUDE.md`.
 
-- [ ] Run `just test`, `cargo clippy --workspace --all-targets`, and
+- [x] Run `just test`, `cargo clippy --workspace --all-targets`, and
       `cargo fmt --all -- --check`.
 
 ### PR 2: `--check` diagnostics
