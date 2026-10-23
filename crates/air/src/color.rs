@@ -1,16 +1,22 @@
 use std::ffi::OsStr;
 use std::io::IsTerminal;
 
+use biome_diagnostics::termcolor::ColorChoice;
+use biome_diagnostics::termcolor::StandardStream;
+
 /// Decides whether the CLI colors its output
 ///
-/// We use colored output in two places:
+/// We use colored output in three places:
 /// - Level labels in `tracing-subscriber`, like `ERROR` , which shows up in red
 /// - Usage of the `colored` crate
+/// - Parse diagnostics rendered through `biome_diagnostics::termcolor`, see
+///   [stderr()]
 ///
-/// Both respect the `NO_COLOR` environment variable if we don't specify
-/// anything, but to avoid potential differences between the two crates we do a
-/// one time resolution of user overrides and `NO_COLOR` ourselves, then
-/// forcibly set the option for both `colored` and `tracing-subscriber`.
+/// `colored` and `tracing-subscriber` both respect the `NO_COLOR` environment
+/// variable if we don't specify anything, but to avoid potential differences
+/// between the two crates we do a one time resolution of user overrides and
+/// `NO_COLOR` ourselves, then forcibly set the option for both `colored` and
+/// `tracing-subscriber`.
 pub(crate) fn init_color(no_color: bool) -> bool {
     let color =
         // User override via `--no-color`
@@ -26,6 +32,17 @@ pub(crate) fn init_color(no_color: bool) -> bool {
 
     // Return our decision so we can apply it to `tracing-subscriber`
     color
+}
+
+/// Opens stderr for `biome_diagnostics::termcolor` writers, following the
+/// decision of [init_color()]
+pub(crate) fn stderr() -> StandardStream {
+    let choice = if colored::control::SHOULD_COLORIZE.should_colorize() {
+        ColorChoice::Always
+    } else {
+        ColorChoice::Never
+    };
+    StandardStream::stderr(choice)
 }
 
 /// Is `NO_COLOR` set to a non-empty, non-zero value?

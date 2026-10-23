@@ -1,0 +1,29 @@
+---
+source: crates/air/tests/integration/format.rs
+expression: "Command::new(binary_path()).current_dir(directory).arg(\"format\").arg(\"test.R\").arg(\"--no-color\").run()"
+---
+success: false
+exit_code: 255
+----- stdout -----
+
+----- stderr -----
+test.R:1:6 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unterminated string.
+  
+  > 1 │ x <- "abc
+      │      ^
+    2 │ 1 + 1
+    3 │ 
+  
+  i Reached the end of the file looking for a closing delimiter.
+  
+    1 │ x <- "abc
+    2 │ 1 + 1
+  > 3 │ 
+      │ 
+  
+ERROR Failed to parse 1 file.
+
+----- args -----
+format test.R --no-color

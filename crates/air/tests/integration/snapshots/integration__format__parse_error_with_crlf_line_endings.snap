@@ -1,0 +1,31 @@
+---
+source: crates/air/tests/integration/format.rs
+expression: output
+---
+success: false
+exit_code: 255
+----- stdout -----
+
+----- stderr -----
+test.R:2:3 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected a newline or a `;` between two expressions.
+  
+    1 │ f(x)
+  > 2 │ 1 2
+      │   ^
+    3 │ z
+    4 │ 
+  
+  i The first expression ends here.
+  
+    1 │ f(x)
+  > 2 │ 1 2
+      │ ^
+    3 │ z
+    4 │ 
+  
+ERROR Failed to parse 1 file.
+
+----- args -----
+format test.R --no-color

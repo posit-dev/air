@@ -1,0 +1,41 @@
+---
+source: crates/air/tests/integration/format.rs
+expression: "Command::new(binary_path()).current_dir(directory).arg(\"format\").arg(\"c.R\").arg(\"b.R\").arg(\"a.R\").arg(\"--no-color\").run()"
+---
+success: false
+exit_code: 255
+----- stdout -----
+
+----- stderr -----
+a.R:1:3 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected a newline or a `;` between two expressions.
+  
+  > 1 │ 1 2
+      │   ^
+    2 │ 
+  
+  i The first expression ends here.
+  
+  > 1 │ 1 2
+      │ ^
+    2 │ 
+  
+b.R:1:3 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected a newline or a `;` between two expressions.
+  
+  > 1 │ 3 4
+      │   ^
+    2 │ 
+  
+  i The first expression ends here.
+  
+  > 1 │ 3 4
+      │ ^
+    2 │ 
+  
+ERROR Failed to parse 2 files.
+
+----- args -----
+format c.R b.R a.R --no-color

@@ -44,7 +44,13 @@ dependencies = [
 name = "air"
 version = "0.12.0"
 dependencies = [
+ "air_r_formatter",
+ "air_r_parser",
  "anyhow",
+ "biome_console",
+ "biome_diagnostics",
+ "biome_formatter",
+ "biome_parser",
  "clap",
  "clap_complete",
  "colored",

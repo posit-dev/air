@@ -13,20 +13,26 @@ use itertools::Itertools;
 use thiserror::Error;
 use workspace::discovery;
 use workspace::discovery::discover_r_file_paths;
-use workspace::format::FormatSourceError;
-use workspace::format::FormattedSource;
 use workspace::resolve::PathResolver;
 use workspace::settings::FormatSettings;
 use workspace::settings::Settings;
 
 use crate::ExitStatus;
+use crate::color;
 use crate::commands::format::ConfigurationMode;
 use crate::commands::format::FormatMode;
+use crate::commands::format::diagnostics::ParseFailure;
+use crate::commands::format::diagnostics::print_parse_failures;
 use crate::commands::format::resolve_settings;
+use crate::commands::format::source;
+use crate::commands::format::source::FormatSourceError;
+use crate::commands::format::source::FormattedSource;
 
 #[derive(Error, Debug)]
 enum FormatPathError {
-    Format(PathBuf, FormatSourceError),
+    Parse(ParseFailure),
+    Format(PathBuf, biome_formatter::FormatError),
+    Print(PathBuf, biome_formatter::PrintError),
     Read(PathBuf, io::Error),
     Write(PathBuf, io::Error),
     Ignore(#[from] ignore::Error),
@@ -45,37 +51,65 @@ pub(crate) fn format(
         FormatMode::Write => {
             let errors = format_paths_write(&paths, &resolver, &default_settings, exclude, include);
 
-            for error in &errors {
-                tracing::error!("{error}");
-            }
+            let has_errors = !errors.is_empty();
+            report_errors(errors)?;
 
-            if errors.is_empty() {
-                Ok(ExitStatus::Success)
-            } else {
+            if has_errors {
                 Ok(ExitStatus::Error)
+            } else {
+                Ok(ExitStatus::Success)
             }
         }
         FormatMode::Check => {
             let (paths, errors) =
                 format_paths_check(&paths, &resolver, &default_settings, exclude, include);
 
-            for error in &errors {
-                tracing::error!("{error}");
-            }
+            let has_errors = !errors.is_empty();
+            report_errors(errors)?;
 
             inform_changed(&paths, &mut stderr().lock())?;
 
-            if errors.is_empty() {
+            if has_errors {
+                Ok(ExitStatus::Error)
+            } else {
                 if paths.is_empty() {
                     Ok(ExitStatus::Success)
                 } else {
                     Ok(ExitStatus::Failure)
                 }
-            } else {
-                Ok(ExitStatus::Error)
             }
         }
     }
+}
+
+/// Renders parse failures as code frames, then logs everything else
+fn report_errors(errors: Vec<FormatPathError>) -> io::Result<()> {
+    let (mut failures, errors): (Vec<ParseFailure>, Vec<FormatPathError>) =
+        errors.into_iter().partition_map(|error| match error {
+            FormatPathError::Parse(failure) => Either::Left(failure),
+            FormatPathError::Format(..) => Either::Right(error),
+            FormatPathError::Print(..) => Either::Right(error),
+            FormatPathError::Read(..) => Either::Right(error),
+            FormatPathError::Write(..) => Either::Right(error),
+            FormatPathError::Ignore(..) => Either::Right(error),
+        });
+
+    // Discovery runs in parallel so order isn't deterministic
+    failures.sort_unstable_by(|lhs, rhs| lhs.path.cmp(&rhs.path));
+
+    print_parse_failures(&failures, &mut color::stderr().lock())?;
+
+    match failures.len() {
+        0 => {}
+        1 => tracing::error!("Failed to parse 1 file."),
+        n => tracing::error!("Failed to parse {n} files."),
+    }
+
+    for error in &errors {
+        tracing::error!("{error}");
+    }
+
+    Ok(())
 }
 
 fn inform_changed(paths: &[PathBuf], f: &mut impl Write) -> io::Result<()> {
@@ -170,15 +204,25 @@ fn format_path<P: AsRef<Path>>(
     let path = path.as_ref();
     tracing::trace!("Formatting {path}", path = path.display());
 
-    let old = std::fs::read_to_string(path)
+    let source = std::fs::read_to_string(path)
         .map_err(|error| FormatPathError::Read(path.to_path_buf(), error))?;
 
-    let options = settings.to_format_options(&old);
+    let options = settings.to_format_options(&source);
 
-    let new = workspace::format::format_source(&old, options)
-        .map_err(|error| FormatPathError::Format(path.to_path_buf(), error))?;
-
-    Ok(new)
+    match source::format_source(&source, options) {
+        Ok(formatted) => Ok(formatted),
+        Err(FormatSourceError::Parse(diagnostics)) => Err(FormatPathError::Parse(ParseFailure {
+            path: path.to_path_buf(),
+            source,
+            diagnostics,
+        })),
+        Err(FormatSourceError::Format(error)) => {
+            Err(FormatPathError::Format(path.to_path_buf(), error))
+        }
+        Err(FormatSourceError::Print(error)) => {
+            Err(FormatPathError::Print(path.to_path_buf(), error))
+        }
+    }
 }
 
 /// Returns `Ok(())` if the format results were successfully written back, otherwise
@@ -201,7 +245,20 @@ fn check_path<P: AsRef<Path>>(path: P, formatted: FormattedSource) -> Option<Pat
 impl Display for FormatPathError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
+            // TODO(diagnostics): This is not actually used, and is a code smell!
+            Self::Parse(failure) => {
+                write!(
+                    f,
+                    "Failed to parse {path}",
+                    path = relativize_path(&failure.path).underline()
+                )
+            }
             Self::Format(path, err) => write!(
+                f,
+                "Failed to format {path}: {err}",
+                path = relativize_path(path).underline(),
+            ),
+            Self::Print(path, err) => write!(
                 f,
                 "Failed to format {path}: {err}",
                 path = relativize_path(path).underline(),

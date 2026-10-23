@@ -8,7 +8,9 @@ use workspace::settings::Settings;
 use crate::ExitStatus;
 use crate::args::FormatCommand;
 
+mod diagnostics;
 mod paths;
+mod source;
 mod stdin;
 
 #[derive(Copy, Clone, Debug)]

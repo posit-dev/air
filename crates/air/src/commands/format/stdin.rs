@@ -8,16 +8,20 @@ use std::path::PathBuf;
 
 use thiserror::Error;
 use workspace::discovery;
-use workspace::format::FormatSourceError;
-use workspace::format::FormattedSource;
 use workspace::resolve::PathResolver;
 use workspace::settings::FormatSettings;
 use workspace::settings::Settings;
 
 use crate::ExitStatus;
+use crate::color;
 use crate::commands::format::ConfigurationMode;
 use crate::commands::format::FormatMode;
+use crate::commands::format::diagnostics::ParseFailure;
+use crate::commands::format::diagnostics::print_parse_failures;
 use crate::commands::format::resolve_settings;
+use crate::commands::format::source;
+use crate::commands::format::source::FormatSourceError;
+use crate::commands::format::source::FormattedSource;
 
 #[derive(Debug)]
 enum FormattedStdin {
@@ -29,7 +33,9 @@ enum FormattedStdin {
 
 #[derive(Error, Debug)]
 enum FormatStdinError {
-    Format(FormatSourceError),
+    Parse(ParseFailure),
+    Format(biome_formatter::FormatError),
+    Print(biome_formatter::PrintError),
     Read(io::Error),
     Write(io::Error),
 }
@@ -51,7 +57,7 @@ pub(crate) fn format(
             match format_stdin_write(&path, &resolver, &default_settings, exclude, include) {
                 Ok(()) => Ok(ExitStatus::Success),
                 Err(error) => {
-                    tracing::error!("{error}");
+                    report_error(error)?;
                     Ok(ExitStatus::Error)
                 }
             }
@@ -66,12 +72,28 @@ pub(crate) fn format(
                     }
                 }
                 Err(error) => {
-                    tracing::error!("{error}");
+                    report_error(error)?;
                     Ok(ExitStatus::Error)
                 }
             }
         }
     }
+}
+
+/// Renders a parse failure as code frames, or logs any other error
+fn report_error(error: FormatStdinError) -> io::Result<()> {
+    match error {
+        FormatStdinError::Parse(failure) => {
+            print_parse_failures(&[failure], &mut color::stderr().lock())?;
+            tracing::error!("Failed to parse 1 file.");
+        }
+        FormatStdinError::Format(_) => tracing::error!("{error}"),
+        FormatStdinError::Print(_) => tracing::error!("{error}"),
+        FormatStdinError::Read(_) => tracing::error!("{error}"),
+        FormatStdinError::Write(_) => tracing::error!("{error}"),
+    }
+
+    Ok(())
 }
 
 fn format_stdin_write<P: AsRef<Path>>(
@@ -85,8 +107,8 @@ fn format_stdin_write<P: AsRef<Path>>(
         .resolve(&path)
         .map_or(default_settings, |item| item.value());
 
-    let formatted = if is_stdin_formattable(path, settings, exclude, include) {
-        format_stdin(&settings.format)?
+    let formatted = if is_stdin_formattable(&path, settings, exclude, include) {
+        format_stdin(&path, &settings.format)?
     } else {
         asis_stdin()?
     };
@@ -113,12 +135,12 @@ fn format_stdin_check<P: AsRef<Path>>(
         .resolve(&path)
         .map_or(default_settings, |item| item.value());
 
-    if !is_stdin_formattable(path, settings, exclude, include) {
+    if !is_stdin_formattable(&path, settings, exclude, include) {
         // Don't even attempt to read from stdin, we know nothing will change
         return Ok(false);
     }
 
-    let formatted = format_stdin(&settings.format)?;
+    let formatted = format_stdin(&path, &settings.format)?;
 
     match formatted {
         FormattedStdin::Changed(_) => Ok(true),
@@ -126,16 +148,26 @@ fn format_stdin_check<P: AsRef<Path>>(
     }
 }
 
-fn format_stdin(settings: &FormatSettings) -> Result<FormattedStdin, FormatStdinError> {
+fn format_stdin<P: AsRef<Path>>(
+    path: P,
+    settings: &FormatSettings,
+) -> Result<FormattedStdin, FormatStdinError> {
     tracing::trace!("Formatting stdin");
 
-    let old = read_stdin().map_err(FormatStdinError::Read)?;
-    let options = settings.to_format_options(&old);
-    let new = workspace::format::format_source(&old, options).map_err(FormatStdinError::Format)?;
+    let source = read_stdin().map_err(FormatStdinError::Read)?;
 
-    match new {
-        FormattedSource::Changed(new) => Ok(FormattedStdin::Changed(new)),
-        FormattedSource::Unchanged => Ok(FormattedStdin::Unchanged(old)),
+    let options = settings.to_format_options(&source);
+
+    match source::format_source(&source, options) {
+        Ok(FormattedSource::Changed(formatted)) => Ok(FormattedStdin::Changed(formatted)),
+        Ok(FormattedSource::Unchanged) => Ok(FormattedStdin::Unchanged(source)),
+        Err(FormatSourceError::Parse(diagnostics)) => Err(FormatStdinError::Parse(ParseFailure {
+            path: path.as_ref().to_path_buf(),
+            source,
+            diagnostics,
+        })),
+        Err(FormatSourceError::Format(error)) => Err(FormatStdinError::Format(error)),
+        Err(FormatSourceError::Print(error)) => Err(FormatStdinError::Print(error)),
     }
 }
 
@@ -239,7 +271,10 @@ fn is_stdin_formattable<P: AsRef<Path>>(
 impl Display for FormatStdinError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
+            // TODO(diagnostics): This is not actually used, and is a code smell!
+            Self::Parse(..) => write!(f, "Failed to parse stdin"),
             Self::Format(error) => write!(f, "Failed to format stdin: {error}"),
+            Self::Print(error) => write!(f, "Failed to format stdin: {error}"),
             Self::Read(error) => write!(f, "Failed to read from stdin: {error}"),
             Self::Write(error) => write!(f, "Failed to write to stdout: {error}"),
         }

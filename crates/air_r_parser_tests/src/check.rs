@@ -119,7 +119,7 @@ fn render_diagnostics(parse: &RParse, source: &str) -> String {
             .with_file_source_code(source);
 
         Formatter::new(&mut Termcolor(NoColor::new(&mut out)))
-            .write_markup(markup! { {PrintDiagnostic::verbose(&diagnostic)} })
+            .write_markup(markup! { {PrintDiagnostic::simple(&diagnostic)} })
             .expect("writing a diagnostic to a string cannot fail");
     }
 

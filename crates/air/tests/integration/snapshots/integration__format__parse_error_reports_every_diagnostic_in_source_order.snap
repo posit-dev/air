@@ -1,0 +1,50 @@
+---
+source: crates/air/tests/integration/format.rs
+expression: "Command::new(binary_path()).current_dir(directory).arg(\"format\").arg(\"test.R\").arg(\"--no-color\").run()"
+---
+success: false
+exit_code: 255
+----- stdout -----
+
+----- stderr -----
+test.R:1:6 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected an expression but instead found ')'.
+  
+  > 1 │ x <- )
+      │      ^
+    2 │ y <- 1 2
+    3 │ z <- ]
+  
+test.R:2:8 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected a newline or a `;` between two expressions.
+  
+    1 │ x <- )
+  > 2 │ y <- 1 2
+      │        ^
+    3 │ z <- ]
+    4 │ 
+  
+  i The first expression ends here.
+  
+    1 │ x <- )
+  > 2 │ y <- 1 2
+      │ ^^^^^^
+    3 │ z <- ]
+    4 │ 
+  
+test.R:3:6 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected an expression but instead found ']'.
+  
+    1 │ x <- )
+    2 │ y <- 1 2
+  > 3 │ z <- ]
+      │      ^
+    4 │ 
+  
+ERROR Failed to parse 1 file.
+
+----- args -----
+format test.R --no-color
