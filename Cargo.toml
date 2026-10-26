@@ -71,7 +71,6 @@ strum = "0.26"
 syn = "2.0.59"
 tempfile = "3.9.0"
 tests_macros = { path = "./crates/tests_macros" }
-thiserror = "2.0.5"
 tokio = "1.50.0"
 tokio-util = "0.7.18"
 toml = "0.8.19"
