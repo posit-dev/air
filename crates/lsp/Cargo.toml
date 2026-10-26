@@ -23,7 +23,6 @@ biome_line_index.workspace = true
 biome_rowan.workspace = true
 biome_text_size.workspace = true
 crates.workspace = true
-dissimilar.workspace = true
 futures.workspace = true
 itertools.workspace = true
 line_ending.workspace = true

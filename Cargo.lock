@@ -274,8 +274,6 @@ dependencies = [
  "biome_json_syntax",
  "biome_rowan",
  "enumflags2",
- "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -346,7 +344,6 @@ dependencies = [
  "drop_bomb",
  "indexmap",
  "rustc-hash",
- "serde",
  "tracing",
  "unicode-width",
 ]
@@ -1338,7 +1335,6 @@ dependencies = [
  "biome_rowan",
  "biome_text_size",
  "crates",
- "dissimilar",
  "futures",
  "insta",
  "itertools",
@@ -2750,10 +2746,7 @@ name = "workspace"
 version = "0.1.0"
 dependencies = [
  "air_r_formatter",
- "air_r_parser",
  "anyhow",
- "biome_formatter",
- "biome_parser",
  "etcetera",
  "fs",
  "ignore",
