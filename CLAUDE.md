@@ -19,7 +19,7 @@ Air is an R language server and formatter written in Rust. Workspace crate layou
 ### Error Handling
 
 - `thiserror::Error` for structured error enums; manual `Display` impls when messages need custom formatting (e.g. path underlining)
-- CLI-facing errors are `biome_diagnostics` diagnostics, defined in `crates/air/src/diagnostics.rs` and printed through the `Console`, then return `Ok(ExitStatus::Error)`. Never report them with `tracing::error!`, `tracing` is only for logs. Reserve `anyhow::Error` for truly unexpected errors.
+- CLI-facing errors are `biome_diagnostics` diagnostics, defined in `crates/air/src/diagnostics.rs` and printed through the `Console`, then return `ExitStatus::Error`. Never report them with `tracing::error!`, `tracing` is only for logs. Commands return `ExitStatus`, never `anyhow::Result`.
 - `tracing::trace!` for file inclusion/exclusion decisions
 
 ### Functions

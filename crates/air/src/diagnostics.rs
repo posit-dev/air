@@ -185,7 +185,6 @@ impl SettingsDiagnostic {
 #[diagnostic(
     category = "format",
     severity = Error,
-    tags(INTERNAL),
     message(
         description = "Failed to format file: {error}",
         message("Failed to format file: "{DebugDisplay(&self.error)})

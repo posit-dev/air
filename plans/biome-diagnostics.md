@@ -126,6 +126,10 @@ On `feature/diagnostics`, after the draft commit `e4d5e67f`:
   user's problem, not an Air bug, so we don't use that adapter for read and
   write errors.
 
+- `DiagnosticTags::INTERNAL` also adds the advice "This diagnostic was derived
+  from an internal Biome error. Potential bug, please report it if necessary."
+  That names Biome in Air's output, so we never use the tag.
+
 - `biome_diagnostics::StdError` is behind the crate's `std` feature.
 
 - `toml::de::Error` (toml 0.8) has `span()` and `message()`, so TOML syntax
@@ -193,7 +197,7 @@ Each failure becomes a `biome_diagnostics::Error`, which is a boxed
 | Syntax error in an R file | `parse` | path and span | yes | none |
 | Can't read an R file | `internalError/io` | path | no | none |
 | Can't write an R file | `internalError/io` | path | no | none |
-| `FormatError` or `PrintError` | `format` | path | no | `INTERNAL` |
+| `FormatError` or `PrintError` | `format` | path | no | none |
 | Walk error with a path | `internalError/fs` | path | no | none |
 | Walk error without a path | `internalError/fs` | none | no | none |
 | Paths passed with `--stdin-file-path` | `flags/invalid` | none | no | none |
@@ -201,13 +205,9 @@ Each failure becomes a `biome_diagnostics::Error`, which is a boxed
 | Can't read `air.toml` | `internalError/io` | path | no | none |
 | Invalid `air.toml` syntax or value | `configuration` | path and span | yes | none |
 | Invalid setting, like a rooted `exclude` | `configuration` | path | no | none |
-| Unexpected error, from `main.rs` | none | none | no | `INTERNAL` |
 
 - Parse errors reuse `ParseDiagnostic` with `with_file_path()` and
   `with_file_source_code()`, as commit 2 does.
-
-- `FormatError` and `PrintError` only happen when Air's formatter has a bug, so
-  they carry `INTERNAL`.
 
 - The other types are small structs with `#[derive(Diagnostic)]`, with
   `severity = Error` written out, and messages that keep today's wording where
@@ -315,21 +315,22 @@ Each failure becomes a `biome_diagnostics::Error`, which is a boxed
 - A configuration error ends the command with `ExitStatus::Error`, after
   printing the diagnostic and the summary.
 
-### Unexpected errors
+### No unexpected errors
 
-- `run()` catches any `anyhow::Error` a command returns, and prints it as a
-  diagnostic through the same console, with the top-level message as the
-  message and each cause as a log advice. It returns `ExitStatus::Error`.
+- After the configuration PR, no command can return an `anyhow::Error`:
 
-- `main.rs` stops printing `air failed` and `Cause:`, and only maps the
-  `ExitStatus` to an `ExitCode`.
+  - `format()` reports every failure as a diagnostic.
 
-- After the configuration PR, nothing in the format command should reach this
-  path. It remains as a safety net.
+  - `generate_shell_completion()` never fails, since `clap_complete` panics
+    on a failed write.
 
-- `language-server` has no console, so it can't go through this path.
-  `lsp::start_lsp()` returns `()`, so `language_server()` can't fail today,
-  and its signature drops `anyhow::Result` and returns `ExitStatus` directly.
+  - `language_server()` never fails, since `lsp::start_lsp()` returns `()`.
+
+- So there's no safety net. `run()` and every command return `ExitStatus`
+  directly, and `main.rs` only maps it to an `ExitCode`, without
+  `air failed` and `Cause:`.
+
+- A new failure gets its own diagnostic, not a path through `anyhow`.
 
 ## Pull requests
 
@@ -356,8 +357,8 @@ draft on `feature/diagnostics`. Branch names are proposals.
    `DiscoverSettingsError` in `workspace`, and configuration diagnostics with
    frames into `air.toml`.
 
-4. `feature/diagnostics-fatal`: unexpected errors become a diagnostic, and
-   `main.rs` loses `air failed`.
+4. `feature/diagnostics-fatal`: commands return `ExitStatus` instead of
+   `anyhow::Result`, and `main.rs` loses `air failed`.
 
 Each PR updates `CHANGELOG.md`, its snapshots, and its tests, and passes
 `just test`, clippy, and `cargo fmt --check` on its own.
@@ -418,8 +419,7 @@ whitespace included.
 
 - PR 4:
 
-  - A unit test that renders an `anyhow` chain to a `BufferConsole`, since the
-    format command can no longer reach this path from the outside.
+  - None, since PR 4 adds no behavior. The existing tests cover `run()`.
 
 ## Documentation
 
@@ -468,8 +468,9 @@ whitespace included.
 - Would-be-reformatted files are a list advice on the reformatted summary, not
   one diagnostic each, to keep `--check` on an unformatted project short.
 
-- `FormatError` and `PrintError` carry `INTERNAL`, since they only happen when
-  Air's formatter has a bug.
+- No diagnostic carries `INTERNAL`, since its advice names Biome.
+
+- No `anyhow` safety net in `run()`, since nothing can reach it.
 
 - Stdin `--check` stays silent when the input needs formatting. Editors and
   scripts use the exit code.
@@ -586,16 +587,17 @@ whitespace included.
 
 - [x] Run `just test`, clippy, and `cargo fmt --check`.
 
-### PR 4: unexpected errors
+### PR 4: no unexpected errors
 
-- [ ] Catch command errors in `run()` and print them as an `INTERNAL`
-      diagnostic, with each cause as an advice.
+- [x] Drop the safety net. `run()`, `generate_shell_completion()`, and
+      `language_server()` return `ExitStatus` instead of
+      `anyhow::Result<ExitStatus>`.
 
-- [ ] Reduce `main.rs` to mapping `ExitStatus` to `ExitCode`.
+- [x] Reduce `main.rs` to mapping `ExitStatus` to `ExitCode`.
 
-- [ ] Change `language_server()` to return `ExitStatus` instead of
-      `anyhow::Result<ExitStatus>`, since it has no console to report through.
+- [x] Remove `tags(INTERNAL)` from `FormatDiagnostic`.
 
-- [ ] Add the `BufferConsole` unit test.
+- [x] Update the project `CLAUDE.md`, since commands no longer return
+      `anyhow::Result`.
 
-- [ ] Run `just test`, clippy, and `cargo fmt --check`.
+- [x] Run `just test`, clippy, and `cargo fmt --check`.

@@ -12,7 +12,7 @@ mod diagnostics;
 mod logging;
 pub mod status;
 
-pub fn run(args: Args) -> anyhow::Result<ExitStatus> {
+pub fn run(args: Args) -> ExitStatus {
     // The language server sets up its own logging
     if let Command::LanguageServer(command) = args.command {
         return commands::language_server::language_server(command);
@@ -34,7 +34,7 @@ pub fn run(args: Args) -> anyhow::Result<ExitStatus> {
         Command::GenerateShellCompletion(command) => {
             commands::generate_shell_completion::generate_shell_completion(command)
         }
-        Command::Format(command) => Ok(commands::format::format(command, &mut console)),
+        Command::Format(command) => commands::format::format(command, &mut console),
         Command::LanguageServer(_) => unreachable!("Handled above"),
     }
 }

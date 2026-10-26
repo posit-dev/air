@@ -1,15 +1,15 @@
-use crate::args::{Args, GenerateShellCompletionCommand};
-use crate::status::ExitStatus;
 use clap::CommandFactory;
 
-pub(crate) fn generate_shell_completion(
-    command: GenerateShellCompletionCommand,
-) -> anyhow::Result<ExitStatus> {
+use crate::args::Args;
+use crate::args::GenerateShellCompletionCommand;
+use crate::status::ExitStatus;
+
+pub(crate) fn generate_shell_completion(command: GenerateShellCompletionCommand) -> ExitStatus {
     clap_complete::generate(
         command.shell,
         &mut Args::command(),
         "air",
         &mut std::io::stdout(),
     );
-    Ok(ExitStatus::Success)
+    ExitStatus::Success
 }
