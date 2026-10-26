@@ -59,6 +59,8 @@ pub(crate) fn format(
             match format_stdin_check(&path, &resolver, &default_settings, exclude, include) {
                 Ok(changed) => {
                     if changed {
+                        // Don't use `print_reformatted_diagnostic()`, it
+                        // doesn't add any information in stdin mode
                         Ok(ExitStatus::Failure)
                     } else {
                         Ok(ExitStatus::Success)

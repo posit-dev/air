@@ -21,11 +21,9 @@ biome_formatter = { workspace = true }
 biome_parser = { workspace = true }
 clap = { workspace = true, features = ["wrap_help"] }
 clap_complete = { workspace = true }
-colored = { workspace = true }
 crates = { workspace = true }
 fs = { workspace = true }
 ignore = { workspace = true }
-itertools = { workspace = true }
 lsp = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }

@@ -1,14 +1,9 @@
 use std::io;
-use std::io::Write;
-use std::io::stderr;
 use std::path::Path;
 use std::path::PathBuf;
 
 use biome_console::Console;
 use biome_diagnostics::Error;
-use colored::Colorize;
-use fs::relativize_path;
-use itertools::Itertools;
 use workspace::discovery;
 use workspace::discovery::discover_r_file_paths;
 use workspace::resolve::PathResolver;
@@ -28,6 +23,7 @@ use crate::diagnostics::WalkDiagnostic;
 use crate::diagnostics::WriteDiagnostic;
 use crate::diagnostics::from_parse_diagnostics;
 use crate::diagnostics::print_diagnostics;
+use crate::diagnostics::print_reformatted_diagnostic;
 
 pub(crate) fn format(
     paths: Vec<PathBuf>,
@@ -44,46 +40,34 @@ pub(crate) fn format(
             let diagnostics =
                 format_paths_write(&paths, &resolver, &default_settings, exclude, include);
 
-            let has_diagnostics = !diagnostics.is_empty();
+            let status = if !diagnostics.is_empty() {
+                ExitStatus::Error
+            } else {
+                ExitStatus::Success
+            };
+
             print_diagnostics(console, diagnostics);
 
-            if has_diagnostics {
-                Ok(ExitStatus::Error)
-            } else {
-                Ok(ExitStatus::Success)
-            }
+            Ok(status)
         }
         FormatMode::Check => {
             let (paths, diagnostics) =
                 format_paths_check(&paths, &resolver, &default_settings, exclude, include);
 
-            let has_diagnostics = !diagnostics.is_empty();
-            print_diagnostics(console, diagnostics);
-
-            inform_changed(&paths, &mut stderr().lock())?;
-
-            if has_diagnostics {
-                Ok(ExitStatus::Error)
+            let status = if !diagnostics.is_empty() {
+                ExitStatus::Error
+            } else if !paths.is_empty() {
+                ExitStatus::Failure
             } else {
-                if paths.is_empty() {
-                    Ok(ExitStatus::Success)
-                } else {
-                    Ok(ExitStatus::Failure)
-                }
-            }
+                ExitStatus::Success
+            };
+
+            print_diagnostics(console, diagnostics);
+            print_reformatted_diagnostic(console, &paths);
+
+            Ok(status)
         }
     }
-}
-
-fn inform_changed(paths: &[PathBuf], f: &mut impl Write) -> io::Result<()> {
-    for path in paths.iter().sorted_unstable() {
-        writeln!(
-            f,
-            "Would reformat: {path}",
-            path = relativize_path(path).underline()
-        )?;
-    }
-    Ok(())
 }
 
 fn format_paths_write<P: AsRef<Path>>(

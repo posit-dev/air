@@ -25,11 +25,6 @@ TOML parse error at line 2, column 14
 After, for `air format --check .`:
 
 ```
-R/bar.R format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × File would be reformatted.
-
-
 R/foo.R internalError/io ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   × Failed to read file: stream did not contain valid UTF-8
@@ -43,6 +38,8 @@ format ━━━━━━━━━━━━━━━━━━━━━━━━�
 format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   × 1 file would be reformatted.
+
+  - R/bar.R
 
 ```
 
@@ -199,7 +196,6 @@ Each failure becomes a `biome_diagnostics::Error`, which is a boxed
 | `FormatError` or `PrintError` | `format` | path | no | `INTERNAL` |
 | Walk error with a path | `internalError/fs` | path | no | none |
 | Walk error without a path | `internalError/fs` | none | no | none |
-| File would be reformatted, under `--check` | `format` | path | no | none |
 | Paths passed with `--stdin-file-path` | `flags/invalid` | none | no | none |
 | Can't read stdin, or write stdout | `stdin` | none | no | none |
 | Can't read `air.toml` | `internalError/io` | path | no | none |
@@ -221,6 +217,9 @@ Each failure becomes a `biome_diagnostics::Error`, which is a boxed
   directory, such as a user-level `air.toml`, keeps its absolute path, and gets
   an OSC 8 link when color is on. That's accepted, as in the original plan.
 
+- Files that would be reformatted under `--check` aren't diagnostics of their
+  own. They're listed in the reformatted summary, described below.
+
 - `FormatPathError`, `FormatStdinError`, `ParseFailure`, and the dead `Parse`
   `Display` arms are deleted. The functions return `biome_diagnostics::Error`.
 
@@ -241,13 +240,14 @@ Each failure becomes a `biome_diagnostics::Error`, which is a boxed
   - `Found 1 error.` or `Found N errors.`, if any diagnostic is an error.
 
   - `1 file would be reformatted.` or `N files would be reformatted.`, if any
-    file would be reformatted under `--check`.
+    file would be reformatted under `--check`, followed by a list advice of
+    their paths, sorted and relativized, with no hyperlinks.
 
 - When both apply, both sections print, errors first.
 
 - N counts diagnostics, not files. A file with three syntax errors adds three.
 
-- Would-be-reformatted diagnostics don't count toward `Found N errors.`, so
+- Would-be-reformatted files don't count toward `Found N errors.`, so
   the summary matches the exit code: a run that exits with `1` never says it
   found errors.
 
@@ -259,11 +259,12 @@ Each failure becomes a `biome_diagnostics::Error`, which is a boxed
 
 - Exit codes don't change:
 
-  - `ExitStatus::Error` if any diagnostic is not a would-be-reformatted one.
+  - `ExitStatus::Error` if there are any diagnostics.
 
-  - `ExitStatus::Failure` if every diagnostic is a would-be-reformatted one.
+  - `ExitStatus::Failure` if there are none, but some file would be
+    reformatted.
 
-  - `ExitStatus::Success` if there are no diagnostics.
+  - `ExitStatus::Success` otherwise.
 
 ### Stdin
 
@@ -341,8 +342,8 @@ draft on `feature/diagnostics`. Branch names are proposals.
 
    - Keeps `Would reformat:` as it is, printed with `writeln!` to stderr.
 
-2. `feature/diagnostics-check`: `--check` reports would-be-reformatted files as
-   `format` diagnostics, and `colored` is removed.
+2. `feature/diagnostics-check`: `--check` lists would-be-reformatted files in a
+   `format` summary diagnostic, and `colored` is removed.
 
 3. `feature/diagnostics-config`: structured `ConfigurationError` in
    `workspace`, and configuration diagnostics with frames into `air.toml`.
@@ -386,11 +387,12 @@ whitespace included.
 - PR 2:
 
   - `test_check_output_format` and the other `--check` snapshots, moved to
-    `format` diagnostics.
+    the reformatted summary.
 
-  - `--check` with a broken file and a file that needs formatting: both
-    diagnostics, sorted, then both summary sections, errors first, and exit
-    code 255.
+  - `--check` with a broken file and a file that needs formatting: the parse
+    diagnostic, then both summary sections, errors first, and exit code 255.
+
+  - `--check` with files passed in reverse order, to check the list is sorted.
 
   - `--check` where every file only needs formatting: exit code 1, a
     `N files would be reformatted.` section, and no `Found N errors.` section.
@@ -453,7 +455,10 @@ whitespace included.
   location: `Found N errors.`, then `N files would be reformatted.`, each only
   when it applies.
 
-- Would-be-reformatted diagnostics don't count toward `Found N errors.`
+- Would-be-reformatted files don't count toward `Found N errors.`
+
+- Would-be-reformatted files are a list advice on the reformatted summary, not
+  one diagnostic each, to keep `--check` on an unformatted project short.
 
 - `FormatError` and `PrintError` carry `INTERNAL`, since they only happen when
   Air's formatter has a bug.
@@ -529,24 +534,26 @@ whitespace included.
 
 ### PR 2: `--check` diagnostics
 
-- [ ] Add the `format` "File would be reformatted." diagnostic, and replace
-      `inform_changed()` with it.
+- [x] Replace `inform_changed()` with a list advice on the reformatted summary
+      diagnostic, instead of a `format` "File would be reformatted." diagnostic
+      per file. Paths are sorted and plain, with no hyperlinks, as on `main`.
 
-- [ ] Fold the changed paths into the same sorted diagnostics list, and keep
-      `ExitStatus::Failure` when they are the only diagnostics.
+- [x] Keep `ExitStatus::Failure` when reformatted files are the only problem.
 
-- [ ] Leave them out of `Found N errors.`, and print a `1 file would be
+- [x] Leave them out of `Found N errors.`, and print a `1 file would be
       reformatted.` or `N files would be reformatted.` summary diagnostic
-      after the errors section.
+      after the errors section. `print_diagnostics()` takes the reformatted paths
+      as a second argument.
 
-- [ ] Remove `colored` from `crates/air/Cargo.toml`, and its `set_override()`
-      call.
+- [x] Remove `colored` from `crates/air/Cargo.toml`, and its `set_override()`
+      call. `itertools` goes too, along with `colored` in the workspace
+      `Cargo.toml`.
 
-- [ ] Add and update the PR 2 tests.
+- [x] Add and update the PR 2 tests.
 
-- [ ] Update `CHANGELOG.md`.
+- [x] Update `CHANGELOG.md`. Skipped.
 
-- [ ] Run `just test`, clippy, and `cargo fmt --check`.
+- [x] Run `just test`, clippy, and `cargo fmt --check`.
 
 ### PR 3: configuration diagnostics
 

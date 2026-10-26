@@ -21,7 +21,13 @@ format ━━━━━━━━━━━━━━━━━━━━━━━━�
   × Found 1 error.
   
 
-Would reformat: needs-formatting.R
+format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × 1 file would be reformatted.
+  
+  - needs-formatting.R
+  
+
 
 ----- args -----
 format . --check

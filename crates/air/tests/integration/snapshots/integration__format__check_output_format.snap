@@ -7,8 +7,14 @@ exit_code: 1
 ----- stdout -----
 
 ----- stderr -----
-Would reformat: fixtures/needs-formatting-1.R
-Would reformat: fixtures/needs-formatting-2.R
+format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × 2 files would be reformatted.
+  
+  - fixtures/needs-formatting-1.R
+  - fixtures/needs-formatting-2.R
+  
+
 
 ----- args -----
 format fixtures/needs-formatting-1.R fixtures/needs-formatting-2.R --check

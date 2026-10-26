@@ -5,7 +5,9 @@ use std::path::PathBuf;
 use biome_console::Console;
 use biome_console::ConsoleExt;
 use biome_console::DebugDisplay;
+use biome_console::fmt::Display;
 use biome_console::markup;
+use biome_diagnostics::Advices;
 use biome_diagnostics::Diagnostic;
 use biome_diagnostics::DiagnosticExt;
 use biome_diagnostics::Error;
@@ -13,6 +15,7 @@ use biome_diagnostics::MessageAndDescription;
 use biome_diagnostics::PrintDiagnostic;
 use biome_diagnostics::Resource;
 use biome_diagnostics::Severity;
+use biome_diagnostics::Visit;
 use biome_parser::diagnostic::ParseDiagnostic;
 use fs::relativize_path;
 
@@ -35,6 +38,16 @@ pub(crate) fn print_diagnostics(console: &mut dyn Console, mut diagnostics: Vec<
         let summary = ErrorsSummaryDiagnostic::new(errors);
         console.error(markup! {{PrintDiagnostic::simple(&summary)}});
     }
+}
+
+/// Prints a single reformat diagnostic, listing all `paths`, sorted.
+/// For use with `--check` when files would change.
+pub(crate) fn print_reformatted_diagnostic(console: &mut dyn Console, paths: &[PathBuf]) {
+    if paths.is_empty() {
+        return;
+    }
+    let summary = ReformatSummaryDiagnostic::new(paths);
+    console.error(markup! {{PrintDiagnostic::simple(&summary)}});
 }
 
 fn diagnostic_path(diagnostic: &Error) -> Option<&Path> {
@@ -272,6 +285,52 @@ impl ErrorsSummaryDiagnostic {
         Self {
             message: MessageAndDescription::from(message),
         }
+    }
+}
+
+#[derive(Debug, Diagnostic)]
+#[diagnostic(category = "format", severity = Error)]
+struct ReformatSummaryDiagnostic {
+    #[message]
+    #[description]
+    message: MessageAndDescription,
+    #[advice]
+    paths: ReformattedPaths,
+}
+
+impl ReformatSummaryDiagnostic {
+    fn new(paths: &[PathBuf]) -> Self {
+        let message = match paths.len() {
+            1 => String::from("1 file would be reformatted."),
+            count => format!("{count} files would be reformatted."),
+        };
+
+        // Relativize and sort since discovery runs in parallel and isn't stable
+        let mut paths: Vec<String> = paths.iter().map(relativize_path).collect();
+        paths.sort_by(|lhs, rhs| Path::new(lhs).cmp(Path::new(rhs)));
+
+        Self {
+            message: MessageAndDescription::from(message),
+            paths: ReformattedPaths(paths),
+        }
+    }
+}
+
+#[derive(Debug)]
+struct ReformattedPaths(Vec<String>);
+
+impl Advices for ReformattedPaths {
+    fn record(&self, visitor: &mut dyn Visit) -> io::Result<()> {
+        // Emits the bullets of the reformatted list, like:
+        //
+        // ```
+        // x 2 files would be reformatted.
+        //
+        // - a.R
+        // - b.R
+        // ```
+        let paths: Vec<&dyn Display> = self.0.iter().map(|path| path as &dyn Display).collect();
+        visitor.record_list(&paths)
     }
 }
 

@@ -18,7 +18,7 @@ pub fn run(args: Args) -> anyhow::Result<ExitStatus> {
         return commands::language_server::language_server(command);
     }
 
-    let color = color::init_color(args.global_options.no_color);
+    let color = color::resolve_color(args.global_options.no_color);
 
     logging::init_logging(args.global_options.log_level.unwrap_or_default(), color);
 

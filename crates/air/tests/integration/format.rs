@@ -348,6 +348,30 @@ fn test_check_output_format() {
 }
 
 #[test]
+fn test_check_reformatted_files_are_sorted_by_path() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    std::fs::write(directory.join("a.R"), "1+1\n")?;
+    std::fs::write(directory.join("b.R"), "2+2\n")?;
+    std::fs::write(directory.join("c.R"), "3+3\n")?;
+
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .arg("format")
+            .arg("c.R")
+            .arg("b.R")
+            .arg("a.R")
+            .arg("--check")
+            .arg("--no-color")
+            .run()
+    );
+
+    Ok(())
+}
+
+#[test]
 fn test_no_color_when_stderr_is_not_a_terminal() -> anyhow::Result<()> {
     let directory = TempDir::new()?;
     let directory = directory.path();
@@ -467,7 +491,7 @@ fn test_parse_error_with_check() -> anyhow::Result<()> {
     std::fs::write(directory.join("needs-formatting.R"), "1+1\n")?;
     std::fs::write(directory.join("parse-error.R"), "1 2\n")?;
 
-    // Diagnostics come before `Would reformat:`
+    // The parse error, then the errors summary, then the reformatted summary
     insta::assert_snapshot!(
         Command::new(binary_path())
             .current_dir(directory)
