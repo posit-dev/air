@@ -21,6 +21,7 @@ use biome_formatter::comments::CommentTextPosition;
 use biome_formatter::comments::Comments;
 use biome_formatter::comments::DecoratedComment;
 use biome_formatter::comments::SourceComment;
+use biome_formatter::format_args;
 use biome_formatter::write;
 use biome_rowan::AstNode;
 use biome_rowan::Direction;
@@ -41,10 +42,39 @@ impl FormatRule<SourceComment<RLanguage>> for FormatRLeadingComment {
         comment: &SourceComment<RLanguage>,
         f: &mut Formatter<Self::Context>,
     ) -> FormatResult<()> {
+        // A `#line` directive is only read as one when it is the first thing on
+        // its line, so it is written at the start of the line whatever the
+        // indentation around it. The line break inside the dedent doesn't add a
+        // line, it only resets the indentation of the line the comment starts.
+        if is_line_directive(comment) {
+            return write!(
+                f,
+                [dedent_to_root(&format_args![
+                    hard_line_break(),
+                    comment.piece().as_piece()
+                ])]
+            );
+        }
+
         // It seems like this is only worth customizing for multi-line comments
         // that need to be aligned together
         write!(f, [comment.piece().as_piece()])
     }
+}
+
+/// Whether the comment is a `#line` directive, which maps source references in
+/// generated code back to another file. R reads `#line` followed by a line
+/// number as one, but only at the start of a line.
+fn is_line_directive(comment: &SourceComment<RLanguage>) -> bool {
+    comment.lines_before() > 0
+        && comment
+            .piece()
+            .text()
+            .strip_prefix("#line")
+            .is_some_and(|rest| {
+                rest.trim_start_matches([' ', '\t'])
+                    .starts_with(|c: char| c.is_ascii_digit())
+            })
 }
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug, Default)]
