@@ -21,6 +21,7 @@ use crate::diagnostics::FormatDiagnostic;
 use crate::diagnostics::ReadDiagnostic;
 use crate::diagnostics::WalkDiagnostic;
 use crate::diagnostics::WriteDiagnostic;
+use crate::diagnostics::from_discover_settings_error;
 use crate::diagnostics::from_parse_diagnostics;
 use crate::diagnostics::print_diagnostics;
 use crate::diagnostics::print_reformatted_diagnostic;
@@ -32,8 +33,14 @@ pub(crate) fn format(
     exclude: discovery::Exclude,
     include: discovery::Include,
     console: &mut dyn Console,
-) -> anyhow::Result<ExitStatus> {
-    let (resolver, default_settings) = resolve_settings(&paths, configuration)?;
+) -> ExitStatus {
+    let (resolver, default_settings) = match resolve_settings(&paths, configuration) {
+        Ok((resolver, default_settings)) => (resolver, default_settings),
+        Err(error) => {
+            print_diagnostics(console, vec![from_discover_settings_error(error)]);
+            return ExitStatus::Error;
+        }
+    };
 
     match mode {
         FormatMode::Write => {
@@ -48,7 +55,7 @@ pub(crate) fn format(
 
             print_diagnostics(console, diagnostics);
 
-            Ok(status)
+            status
         }
         FormatMode::Check => {
             let (paths, diagnostics) =
@@ -65,7 +72,7 @@ pub(crate) fn format(
             print_diagnostics(console, diagnostics);
             print_reformatted_diagnostic(console, &paths);
 
-            Ok(status)
+            status
         }
     }
 }

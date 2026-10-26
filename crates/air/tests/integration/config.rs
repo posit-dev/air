@@ -231,10 +231,7 @@ fn test_user_config_rooted_exclude_is_a_hard_error() -> anyhow::Result<()> {
             .arg("--no-color")
             .run()
             .remove_arguments()
-            .replace_stderr(
-                &user_air_toml(user_config_directory).display().to_string(),
-                "[AIR_TOML]"
-            )
+            .replace_air_toml_path(&user_air_toml(user_config_directory))
     );
 
     Ok(())
@@ -259,10 +256,111 @@ fn test_user_config_broken_toml_is_a_hard_error() -> anyhow::Result<()> {
             .arg(".")
             .arg("--no-color")
             .run()
-            .replace_stderr(
-                &user_air_toml(user_config_directory).display().to_string(),
-                "[AIR_TOML]"
-            )
+            .replace_air_toml_path(&user_air_toml(user_config_directory))
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_project_air_toml_syntax_error() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+    std::fs::write(directory.join("air.toml"), "[format]\nline-width 80\n")?;
+    std::fs::write(directory.join("test.R"), "1+1")?;
+
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .arg("format")
+            .arg(".")
+            .arg("--no-color")
+            .run()
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_project_air_toml_type_error() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+    std::fs::write(directory.join("air.toml"), "[format]\nline-width = \"a\"\n")?;
+    std::fs::write(directory.join("test.R"), "1+1")?;
+
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .arg("format")
+            .arg(".")
+            .arg("--no-color")
+            .run()
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_project_air_toml_error_spanning_line_ending() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    // toml's provided span covers the `\n` itself, so the frame marks two lines
+    // with no caret
+    std::fs::write(directory.join("air.toml"), "[format\n")?;
+    std::fs::write(directory.join("test.R"), "1+1")?;
+
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .arg("format")
+            .arg(".")
+            .arg("--no-color")
+            .run()
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_project_air_toml_read_error() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    // Invalid UTF-8 fails `read_to_string()`
+    std::fs::write(directory.join("air.toml"), b"\xff\xfe")?;
+    std::fs::write(directory.join("test.R"), "1+1")?;
+
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .arg("format")
+            .arg(".")
+            .arg("--no-color")
+            .run()
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_project_air_toml_error_with_stdin() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+    std::fs::write(directory.join("air.toml"), "[format]\nline-width = \"a\"\n")?;
+
+    // Nothing is written to stdout, not even the unformatted input
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .arg("format")
+            .arg("--stdin-file-path")
+            .arg("test.R")
+            .arg("--no-color")
+            .run_with_stdin("1+1".to_string())
     );
 
     Ok(())

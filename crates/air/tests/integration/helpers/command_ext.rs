@@ -1,5 +1,6 @@
 use std::fmt::Display;
 use std::io::Write;
+use std::path::Path;
 use std::process::Command;
 use std::process::ExitStatus;
 
@@ -55,11 +56,34 @@ impl Output {
         }
     }
 
-    pub fn replace_stderr(self, from: &str, to: &str) -> Self {
+    /// Replace an `air.toml` path in stderr with `[AIR_TOML]`, and redraw the `━` rule
+    /// of its diagnostic header, whose length depends on the length of the path
+    pub fn replace_air_toml_path(self, path: &Path) -> Self {
+        // Biome fills the header with `━` up to this width, with at least `MIN_RULE`
+        const HEADER_WIDTH: usize = 100;
+        const MIN_RULE: usize = 10;
+
+        let stderr = self
+            .stderr
+            .replace(&path.display().to_string(), "[AIR_TOML]")
+            .split_inclusive('\n')
+            .map(|line| {
+                let header = line.trim_end_matches('\n');
+                if !header.starts_with("[AIR_TOML]") || !header.ends_with('━') {
+                    return line.to_string();
+                }
+                let text = header.trim_end_matches('━');
+                let rule = HEADER_WIDTH
+                    .saturating_sub(text.chars().count())
+                    .max(MIN_RULE);
+                format!("{text}{}\n", "━".repeat(rule))
+            })
+            .collect();
+
         Self {
             status: self.status,
             stdout: self.stdout,
-            stderr: self.stderr.replace(from, to),
+            stderr,
             arguments: self.arguments,
         }
     }

@@ -284,25 +284,32 @@ Each failure becomes a `biome_diagnostics::Error`, which is a boxed
 ### Configuration errors
 
 - `workspace` replaces `anyhow` in `discover_settings()`,
-  `discover_user_settings()`, and `parse_settings()` with a structured error.
-  `ParseTomlError` in `crates/workspace/src/toml.rs` grows into it, roughly:
+  `discover_user_settings()`, and `parse_settings()` with structured errors.
+  `ParseTomlError` in `crates/workspace/src/toml.rs` becomes `TomlError`,
+  and `crates/workspace/src/discovery.rs` owns `DiscoverSettingsError`, with a
+  manual `From<TomlError>` conversion:
 
   ```rust
-  pub enum ConfigurationError {
-      Read(PathBuf, io::Error),
-      Deserialize { path: PathBuf, source: String, error: toml::de::Error },
-      Settings(PathBuf, anyhow::Error),
+  pub enum TomlError {
+      Read { path: PathBuf, error: io::Error },
+      Deserialize { path: PathBuf, contents: String, error: Box<toml::de::Error> },
+  }
+
+  pub enum DiscoverSettingsError {
+      Read { path: PathBuf, error: io::Error },
+      Deserialize { path: PathBuf, contents: String, error: Box<toml::de::Error> },
+      Logic { path: PathBuf, error: anyhow::Error },
   }
   ```
 
 - `Display` prints exactly what the `anyhow` chain prints today, so the LSP
   compiles and logs unchanged. Its call sites only use `{error}`.
 
-- The CLI turns `Deserialize` into a `configuration` diagnostic, with
+- The CLI turns `Deserialize` into a `configuration` `SettingsDiagnostic`, with
   `error.message()` as the message and `error.span()` as the location over the
   `air.toml` source.
 
-- `Settings` keeps `anyhow::Error` inside, since `ExcludePatterns` returns it.
+- `Logic` keeps `anyhow::Error` inside, since `ExcludePatterns` returns it.
   Giving it spans, for example with `toml::Spanned`, is out of scope.
 
 - A configuration error ends the command with `ExitStatus::Error`, after
@@ -345,8 +352,9 @@ draft on `feature/diagnostics`. Branch names are proposals.
 2. `feature/diagnostics-check`: `--check` lists would-be-reformatted files in a
    `format` summary diagnostic, and `colored` is removed.
 
-3. `feature/diagnostics-config`: structured `ConfigurationError` in
-   `workspace`, and configuration diagnostics with frames into `air.toml`.
+3. `feature/diagnostics-config`: structured `TomlError` and
+   `DiscoverSettingsError` in `workspace`, and configuration diagnostics with
+   frames into `air.toml`.
 
 4. `feature/diagnostics-fatal`: unexpected errors become a diagnostic, and
    `main.rs` loses `air failed`.
@@ -557,25 +565,26 @@ whitespace included.
 
 ### PR 3: configuration diagnostics
 
-- [ ] Replace `anyhow` in `discover_settings()`, `discover_user_settings()`,
-      and `parse_settings()` with `ConfigurationError`, growing it from
-      `ParseTomlError`.
+- [x] Replace `anyhow` in `discover_settings()`, `discover_user_settings()`,
+      and `parse_settings()` with `DiscoverSettingsError`, and replace
+      `ParseTomlError` with `TomlError`.
 
-- [ ] Keep the source text of `air.toml` in the `Deserialize` variant.
+- [x] Keep the source text of `air.toml` in the `Deserialize` variant.
 
-- [ ] Keep `Display` byte-for-byte identical to today's messages.
+- [x] Keep `Display` byte-for-byte identical to today's messages.
 
-- [ ] Check that every LSP call site in `crates/lsp/src/workspaces.rs`
-      compiles unchanged and logs the same text.
+- [x] Check that every LSP call site in `crates/lsp/src/workspaces.rs`
+      compiles unchanged and logs the same text. One needs `error.into()`,
+      since its closure also takes the `anyhow::Error` from `url_to_path()`.
 
-- [ ] Make `resolve_settings()` return `ConfigurationError`, and turn it into
-      diagnostics in the format command.
+- [x] Make `resolve_settings()` return `DiscoverSettingsError`, and turn it
+      into diagnostics with `from_discover_settings_error()`.
 
-- [ ] Add the PR 3 tests.
+- [x] Add the PR 3 tests.
 
 - [ ] Update `CHANGELOG.md`.
 
-- [ ] Run `just test`, clippy, and `cargo fmt --check`.
+- [x] Run `just test`, clippy, and `cargo fmt --check`.
 
 ### PR 4: unexpected errors
 

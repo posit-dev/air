@@ -1,0 +1,22 @@
+---
+source: crates/air/tests/integration/config.rs
+expression: "Command::new(binary_path()).current_dir(directory).arg(\"format\").arg(\".\").arg(\"--no-color\").run()"
+---
+success: false
+exit_code: 255
+----- stdout -----
+
+----- stderr -----
+air.toml internalError/io ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Failed to read file: stream did not contain valid UTF-8
+  
+
+format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Found 1 error.
+  
+
+
+----- args -----
+format . --no-color

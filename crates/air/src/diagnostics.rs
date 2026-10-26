@@ -1,4 +1,5 @@
 use std::io;
+use std::ops::Range;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -18,6 +19,7 @@ use biome_diagnostics::Severity;
 use biome_diagnostics::Visit;
 use biome_parser::diagnostic::ParseDiagnostic;
 use fs::relativize_path;
+use workspace::discovery::DiscoverSettingsError;
 
 /// Prints `diagnostics` sorted by path, followed by a count of the errors
 pub(crate) fn print_diagnostics(console: &mut dyn Console, mut diagnostics: Vec<Error>) {
@@ -77,6 +79,28 @@ pub(crate) fn from_parse_diagnostics(
         .collect()
 }
 
+/// Turns an `air.toml` error into a diagnostic, with a code frame when the TOML
+/// error has a span (like with a syntax error)
+pub(crate) fn from_discover_settings_error(error: DiscoverSettingsError) -> Error {
+    match error {
+        DiscoverSettingsError::Read { path, error } => ReadDiagnostic::new(&path, error).into(),
+        DiscoverSettingsError::Deserialize {
+            path,
+            contents,
+            error,
+        } => SettingsDiagnostic::new(
+            &path,
+            error.message().to_string(),
+            error.span(),
+            Some(contents),
+        )
+        .into(),
+        DiscoverSettingsError::Logic { path, error } => {
+            SettingsDiagnostic::new(&path, error.to_string(), None, None).into()
+        }
+    }
+}
+
 #[derive(Debug, Diagnostic)]
 #[diagnostic(
     category = "internalError/io",
@@ -121,6 +145,36 @@ impl WriteDiagnostic {
         Self {
             path: relativize_path(path),
             error,
+        }
+    }
+}
+
+#[derive(Debug, Diagnostic)]
+#[diagnostic(category = "configuration", severity = Error)]
+struct SettingsDiagnostic {
+    #[location(resource)]
+    path: String,
+    #[message]
+    #[description]
+    message: MessageAndDescription,
+    #[location(span)]
+    span: Option<Range<usize>>,
+    #[location(source_code)]
+    contents: Option<String>,
+}
+
+impl SettingsDiagnostic {
+    fn new(
+        path: &Path,
+        description: String,
+        span: Option<Range<usize>>,
+        contents: Option<String>,
+    ) -> Self {
+        Self {
+            path: relativize_path(path),
+            message: MessageAndDescription::from(description),
+            span,
+            contents,
         }
     }
 }

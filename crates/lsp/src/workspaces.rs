@@ -86,10 +86,6 @@ impl WorkspaceSettingsResolver {
     /// TODO: We should hook up `showMessage` so we can show the user a toast notification
     /// when something fails here, as failure means we can't load their TOML settings.
     pub(crate) fn open_workspace_folder(&mut self, url: &Url) {
-        let failed_to_open_workspace_folder = |url, error| {
-            tracing::error!("Failed to open workspace folder for '{url}':\n{error}");
-        };
-
         let path = match Self::url_to_path(url) {
             Ok(Some(path)) => path,
             Ok(None) => {
@@ -97,7 +93,7 @@ impl WorkspaceSettingsResolver {
                 return;
             }
             Err(error) => {
-                failed_to_open_workspace_folder(url, error);
+                tracing::error!("Failed to open workspace folder for '{url}':\n{error}");
                 return;
             }
         };
@@ -105,7 +101,7 @@ impl WorkspaceSettingsResolver {
         let discovered_settings = match discover_settings(&[&path]) {
             Ok(discovered_settings) => discovered_settings,
             Err(error) => {
-                failed_to_open_workspace_folder(url, error);
+                tracing::error!("Failed to open workspace folder for '{url}':\n{error}");
                 return;
             }
         };

@@ -1,0 +1,27 @@
+---
+source: crates/air/tests/integration/config.rs
+expression: "Command::new(binary_path()).current_dir(directory).arg(\"format\").arg(\".\").arg(\"--no-color\").run()"
+---
+success: false
+exit_code: 255
+----- stdout -----
+
+----- stderr -----
+air.toml:2:14 configuration ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × invalid type: string "a", expected u16
+  
+    1 │ [format]
+  > 2 │ line-width = "a"
+      │              ^^^
+    3 │ 
+  
+
+format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Found 1 error.
+  
+
+
+----- args -----
+format . --no-color

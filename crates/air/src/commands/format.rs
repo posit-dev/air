@@ -2,6 +2,7 @@ use std::path::Path;
 
 use biome_console::Console;
 use workspace::discovery;
+use workspace::discovery::DiscoverSettingsError;
 use workspace::discovery::DiscoveredSettings;
 use workspace::resolve::PathResolver;
 use workspace::settings::Settings;
@@ -27,12 +28,9 @@ enum ConfigurationMode {
     Disabled,
 }
 
-pub(crate) fn format(
-    command: FormatCommand,
-    console: &mut dyn Console,
-) -> anyhow::Result<ExitStatus> {
+pub(crate) fn format(command: FormatCommand, console: &mut dyn Console) -> ExitStatus {
     if let Some(status) = check_argument_consistency(&command, console) {
-        return Ok(status);
+        return status;
     }
 
     let mode = FormatMode::from_command(&command);
@@ -60,7 +58,7 @@ pub(crate) fn format(
 fn resolve_settings<P: AsRef<Path>>(
     paths: &[P],
     configuration: ConfigurationMode,
-) -> anyhow::Result<(PathResolver<Settings>, Settings)> {
+) -> Result<(PathResolver<Settings>, Settings), DiscoverSettingsError> {
     match configuration {
         ConfigurationMode::Discover => {
             let mut resolver = PathResolver::new();

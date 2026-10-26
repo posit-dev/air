@@ -34,7 +34,7 @@ pub fn run(args: Args) -> anyhow::Result<ExitStatus> {
         Command::GenerateShellCompletion(command) => {
             commands::generate_shell_completion::generate_shell_completion(command)
         }
-        Command::Format(command) => commands::format::format(command, &mut console),
+        Command::Format(command) => Ok(commands::format::format(command, &mut console)),
         Command::LanguageServer(_) => unreachable!("Handled above"),
     }
 }

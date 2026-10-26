@@ -21,6 +21,7 @@ use crate::commands::format::source::FormattedSource;
 use crate::diagnostics::FormatDiagnostic;
 use crate::diagnostics::StdinReadDiagnostic;
 use crate::diagnostics::StdoutWriteDiagnostic;
+use crate::diagnostics::from_discover_settings_error;
 use crate::diagnostics::from_parse_diagnostics;
 use crate::diagnostics::print_diagnostics;
 
@@ -39,19 +40,25 @@ pub(crate) fn format(
     exclude: discovery::Exclude,
     include: discovery::Include,
     console: &mut dyn Console,
-) -> anyhow::Result<ExitStatus> {
+) -> ExitStatus {
     // Normalize up front, relative to current working directory
     let path = fs::normalize_path(path);
 
-    let (resolver, default_settings) = resolve_settings(&[&path], configuration)?;
+    let (resolver, default_settings) = match resolve_settings(&[&path], configuration) {
+        Ok((resolver, default_settings)) => (resolver, default_settings),
+        Err(error) => {
+            print_diagnostics(console, vec![from_discover_settings_error(error)]);
+            return ExitStatus::Error;
+        }
+    };
 
     match mode {
         FormatMode::Write => {
             match format_stdin_write(&path, &resolver, &default_settings, exclude, include) {
-                Ok(()) => Ok(ExitStatus::Success),
+                Ok(()) => ExitStatus::Success,
                 Err(diagnostics) => {
                     print_diagnostics(console, diagnostics);
-                    Ok(ExitStatus::Error)
+                    ExitStatus::Error
                 }
             }
         }
@@ -61,14 +68,14 @@ pub(crate) fn format(
                     if changed {
                         // Don't use `print_reformatted_diagnostic()`, it
                         // doesn't add any information in stdin mode
-                        Ok(ExitStatus::Failure)
+                        ExitStatus::Failure
                     } else {
-                        Ok(ExitStatus::Success)
+                        ExitStatus::Success
                     }
                 }
                 Err(diagnostics) => {
                     print_diagnostics(console, diagnostics);
-                    Ok(ExitStatus::Error)
+                    ExitStatus::Error
                 }
             }
         }

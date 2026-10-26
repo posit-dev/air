@@ -8,6 +8,9 @@
 use ignore::DirEntry;
 use ignore::gitignore::Glob;
 use rustc_hash::FxHashSet;
+use std::fmt::Display;
+use std::fmt::Formatter;
+use std::io;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -17,6 +20,7 @@ use crate::settings::DefaultExcludePatterns;
 use crate::settings::DefaultIncludePatterns;
 use crate::settings::ExcludePatterns;
 use crate::settings::Settings;
+use crate::toml::ParseTomlError;
 use crate::toml::find_air_toml_in_directory;
 use crate::toml::parse_air_toml;
 
@@ -26,6 +30,52 @@ pub struct DiscoveredSettings {
     pub settings: Settings,
 }
 
+#[derive(Debug)]
+pub enum DiscoverSettingsError {
+    Read {
+        path: PathBuf,
+        error: io::Error,
+    },
+
+    /// Keeps `contents` since [toml::de::Error::span()] points into them,
+    /// which is used by the CLI for reporting code frames in errors
+    Deserialize {
+        path: PathBuf,
+        contents: String,
+        error: Box<toml::de::Error>,
+    },
+
+    /// Valid TOML with a logic error in the settings, preventing conversion
+    /// from parsed TOML to [Settings], like a rooted `exclude` in a user level
+    /// `air.toml`
+    Logic {
+        path: PathBuf,
+        error: anyhow::Error,
+    },
+}
+
+/// We implement `Display` and `std::error::Error` for [DiscoverSettingsError]
+/// solely for the LSP, since it needs to log the error. The CLI converts this
+/// error into a biome `Diagnostic` instead, with a full code frame where
+/// applicable.
+impl Display for DiscoverSettingsError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Read { path, error } => {
+                write!(f, "Failed to read {path}:\n{error}", path = path.display())
+            }
+            Self::Deserialize { path, error, .. } => {
+                write!(f, "Failed to parse {path}:\n{error}", path = path.display())
+            }
+            Self::Logic { path, error } => {
+                write!(f, "Failed to parse {path}:\n{error}", path = path.display())
+            }
+        }
+    }
+}
+
+impl std::error::Error for DiscoverSettingsError {}
+
 /// This is the core function for walking a set of `paths` looking for `air.toml`s.
 ///
 /// You typically follow this function up by loading the set of returned path into a
@@ -34,7 +84,9 @@ pub struct DiscoveredSettings {
 /// For each `path`, we:
 /// - Walk up its ancestors, looking for an `air.toml`
 /// - TODO(hierarchical): Walk down its children, looking for nested `air.toml`s
-pub fn discover_settings<P: AsRef<Path>>(paths: &[P]) -> anyhow::Result<Vec<DiscoveredSettings>> {
+pub fn discover_settings<P: AsRef<Path>>(
+    paths: &[P],
+) -> Result<Vec<DiscoveredSettings>, DiscoverSettingsError> {
     let paths: Vec<PathBuf> = paths.iter().map(fs::normalize_path).collect();
 
     let mut seen = FxHashSet::default();
@@ -82,7 +134,7 @@ pub fn discover_settings<P: AsRef<Path>>(paths: &[P]) -> anyhow::Result<Vec<Disc
 /// The user level config has no project directory to root against, so its `exclude`
 /// patterns are parsed as unrooted (a `root` of `None`), and a rooted pattern is a
 /// propagated error.
-pub fn discover_user_settings() -> anyhow::Result<Option<Settings>> {
+pub fn discover_user_settings() -> Result<Option<Settings>, DiscoverSettingsError> {
     let Some(directory) = user_config_directory() else {
         return Ok(None);
     };
@@ -105,16 +157,29 @@ pub fn discover_user_settings() -> anyhow::Result<Option<Settings>> {
 // TODO(hierarchical): Allow for an `extends` option in `air.toml`, which will make things
 // more complex, but will be very useful once we support hierarchical configuration as a
 // way of "inheriting" most top level configuration while slightly tweaking it in a nested directory.
-fn parse_settings(toml: &Path, root: Option<&Path>) -> anyhow::Result<Settings> {
-    // TOML parsing errors nicely report the `toml` path in the error for context
-    let options = parse_air_toml(toml)?;
-
-    // We add the `toml` path as context if conversion to `Settings` fails
-    let settings = options.into_settings(root).map_err(|error| {
-        anyhow::anyhow!("Failed to parse {toml}:\n{error}", toml = toml.display())
+fn parse_settings(toml: &Path, root: Option<&Path>) -> Result<Settings, DiscoverSettingsError> {
+    // Parse, mapping `ParseTomlError`s into `DiscoverSettingsError`s
+    let options = parse_air_toml(toml).map_err(|error| match error {
+        ParseTomlError::Read { path, error } => DiscoverSettingsError::Read { path, error },
+        ParseTomlError::Deserialize {
+            path,
+            contents,
+            error,
+        } => DiscoverSettingsError::Deserialize {
+            path,
+            contents,
+            error,
+        },
     })?;
 
-    Ok(settings)
+    // Convert `TomlOptions` into `Settings`, mapping issues in the conversion
+    // to `Logic` errors
+    options
+        .into_settings(root)
+        .map_err(|error| DiscoverSettingsError::Logic {
+            path: toml.to_path_buf(),
+            error,
+        })
 }
 
 type DiscoveredFiles = Vec<Result<PathBuf, ignore::Error>>;
