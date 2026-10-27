@@ -23,7 +23,7 @@ pub enum ParseTomlError {
     Deserialize {
         path: PathBuf,
         contents: String,
-        // Clippy warned this this was a big `Error` object
+        // Clippy warned this was a big `Error` object
         error: Box<toml::de::Error>,
     },
 }
