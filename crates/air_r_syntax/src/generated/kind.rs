@@ -297,6 +297,7 @@ impl RSyntaxKind {
             NA_DOUBLE_KW => "na_double",
             NA_COMPLEX_KW => "na_complex",
             NA_CHARACTER_KW => "na_character",
+            EOF => "EOF",
             R_STRING_VALUE => "string value",
             _ => return None,
         };
