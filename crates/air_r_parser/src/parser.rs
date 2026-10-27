@@ -1,3 +1,4 @@
+use crate::diagnostics::expected_token;
 use crate::lexer::RReLexContext;
 use crate::options::RParserOptions;
 use crate::token_source::RTokenSource;
@@ -113,6 +114,21 @@ impl<'src> Parser for RParser<'src> {
         // Joins an adjacent `] ]` into the `]]` the lexer never emits
         if self.scope == Scope::Bracket2 && self.cur() == T![']'] {
             self.re_lex(RReLexContext::JoinBrackets);
+        }
+    }
+
+    /// Overridden to use our own [expected_token()], but otherwise the exact
+    /// same as the original [Parser::expect()] default method.
+    ///
+    /// We don't use [Parser::expect_with_context()] anywhere, but we would need
+    /// to override that as well if we ever use it, since it is the other user
+    /// of [biome_parser::diagnostic::expected_token()].
+    fn expect(&mut self, kind: Self::Kind) -> bool {
+        if self.eat(kind) {
+            true
+        } else {
+            self.error(expected_token(self, kind));
+            false
         }
     }
 }

@@ -1759,18 +1759,16 @@ RRoot {
 ```diagnostics
 test.R:1:5 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `,` but instead found `y`
+  × Expected `,` but instead found `y`.
 
   > 1 │ f(x y)
       │     ^
     2 │ foo[x y]
     3 │ foo[[x y]]
 
-  i Remove y
-
 test.R:2:7 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `,` but instead found `y`
+  × Expected `,` but instead found `y`.
 
     1 │ f(x y)
   > 2 │ foo[x y]
@@ -1778,11 +1776,9 @@ test.R:2:7 parse ━━━━━━━━━━━━━━━━━━━━━
     3 │ foo[[x y]]
     4 │
 
-  i Remove y
-
 test.R:3:8 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `,` but instead found `y`
+  × Expected `,` but instead found `y`.
 
     1 │ f(x y)
     2 │ foo[x y]
@@ -1791,11 +1787,9 @@ test.R:3:8 parse ━━━━━━━━━━━━━━━━━━━━━
     4 │
     5 │ f(x, y z)
 
-  i Remove y
-
 test.R:5:8 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `,` but instead found `z`
+  × Expected `,` but instead found `z`.
 
     3 │ foo[[x y]]
     4 │
@@ -1804,11 +1798,9 @@ test.R:5:8 parse ━━━━━━━━━━━━━━━━━━━━━
     6 │ foo[x, y z]
     7 │ foo[[x, y z]]
 
-  i Remove z
-
 test.R:6:10 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `,` but instead found `z`
+  × Expected `,` but instead found `z`.
 
     5 │ f(x, y z)
   > 6 │ foo[x, y z]
@@ -1816,11 +1808,9 @@ test.R:6:10 parse ━━━━━━━━━━━━━━━━━━━━�
     7 │ foo[[x, y z]]
     8 │
 
-  i Remove z
-
 test.R:7:11 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `,` but instead found `z`
+  × Expected `,` but instead found `z`.
 
     5 │ f(x, y z)
     6 │ foo[x, y z]
@@ -1829,11 +1819,9 @@ test.R:7:11 parse ━━━━━━━━━━━━━━━━━━━━�
     8 │
     9 │ f(, x y)
 
-  i Remove z
-
 test.R:9:7 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `,` but instead found `y`
+  × Expected `,` but instead found `y`.
 
      7 │ foo[[x, y z]]
      8 │
@@ -1842,11 +1830,9 @@ test.R:9:7 parse ━━━━━━━━━━━━━━━━━━━━━
     10 │ foo[, x y]
     11 │ foo[[, x y]]
 
-  i Remove y
-
 test.R:10:9 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `,` but instead found `y`
+  × Expected `,` but instead found `y`.
 
      9 │ f(, x y)
   > 10 │ foo[, x y]
@@ -1854,19 +1840,15 @@ test.R:10:9 parse ━━━━━━━━━━━━━━━━━━━━�
     11 │ foo[[, x y]]
     12 │
 
-  i Remove y
-
 test.R:11:10 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `,` but instead found `y`
+  × Expected `,` but instead found `y`.
 
      9 │ f(, x y)
     10 │ foo[, x y]
   > 11 │ foo[[, x y]]
        │          ^
     12 │
-
-  i Remove y
 ```
 
 ## Call arguments
@@ -2723,36 +2705,30 @@ RRoot {
 ```diagnostics
 test.R:1:6 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `,` but instead found `b`
+  × Expected `,` but instead found `b`.
 
   > 1 │ fn(a b)
       │      ^
     2 │ fn(a b c)
     3 │
 
-  i Remove b
-
 test.R:2:6 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `,` but instead found `b`
+  × Expected `,` but instead found `b`.
 
     1 │ fn(a b)
   > 2 │ fn(a b c)
       │      ^
     3 │
 
-  i Remove b
-
 test.R:2:8 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `,` but instead found `c`
+  × Expected `,` but instead found `c`.
 
     1 │ fn(a b)
   > 2 │ fn(a b c)
       │        ^
     3 │
-
-  i Remove c
 ```
 
 ## An argument value that starts no expression [error]
@@ -3057,13 +3033,11 @@ RRoot {
 ```diagnostics
 test.R:1:4 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `)` but instead found `}`
+  × Expected `)` but instead found `}`.
 
   > 1 │ fn(}
       │    ^
     2 │
-
-  i Remove }
 ```
 
 ```r
@@ -3110,13 +3084,11 @@ RRoot {
 ```diagnostics
 test.R:1:5 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `)` but instead found `}`
+  × Expected `)` but instead found `}`.
 
   > 1 │ fn(a}
       │     ^
     2 │
-
-  i Remove }
 ```
 
 ## A newline or comment between a name and its `=`

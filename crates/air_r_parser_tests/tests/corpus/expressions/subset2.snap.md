@@ -464,14 +464,12 @@ RRoot {
 ```diagnostics
 test.R:1:7 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `]]` but instead found `]`
+  × Expected `]]` but instead found `]`.
 
   > 1 │ x[["a"]
       │       ^
     2 │ ]
     3 │
-
-  i Remove ]
 
 test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -559,13 +557,11 @@ RRoot {
 ```diagnostics
 test.R:1:6 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `,` but instead found `b`
+  × Expected `,` but instead found `b`.
 
   > 1 │ x[[a b]]
       │      ^
     2 │
-
-  i Remove b
 ```
 
 ## Lookahead for `=` survives the `]]` join

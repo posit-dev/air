@@ -2,6 +2,8 @@
 
 use crate::parser::RParser;
 use air_r_syntax::RSyntaxKind;
+use air_r_syntax::T;
+use biome_parser::EOF_STR;
 use biome_parser::Parser;
 use biome_parser::diagnostic::ParseDiagnostic;
 use biome_parser::token_source::TokenSource;
@@ -152,6 +154,38 @@ pub(crate) fn expected_statement_separator(
 pub(crate) fn unexpected_semicolon(range: TextRange) -> ParseDiagnostic {
     ParseDiagnostic::new("Unexpected `;`.", range)
         .with_hint("At top level, a `;` must directly follow an expression.")
+}
+
+/// Like [biome_parser::diagnostic::expected_token()], but without the `Remove
+/// xyz` hint, and in sentence case like all other messages.
+pub(crate) fn expected_token(p: &RParser, kind: RSyntaxKind) -> ParseDiagnostic {
+    let expected = kind
+        .to_string()
+        .expect("Expected token to be a punctuation or keyword.");
+
+    if p.cur() == T![EOF] {
+        ParseDiagnostic::new(
+            format!("Expected `{expected}` but instead found the end of the file."),
+            p.cur_range(),
+        )
+        .with_detail(p.cur_range(), "The file ends here.")
+    } else if expected == EOF_STR {
+        ParseDiagnostic::new(
+            format!(
+                "Expected the end of the file but instead found `{}`.",
+                p.cur_text()
+            ),
+            p.cur_range(),
+        )
+    } else {
+        ParseDiagnostic::new(
+            format!(
+                "Expected `{expected}` but instead found `{}`.",
+                p.cur_text()
+            ),
+            p.cur_range(),
+        )
+    }
 }
 
 /// Like [biome_parser::diagnostic::expected_node()], but without the duplicative hint
