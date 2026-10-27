@@ -2,10 +2,12 @@
 
 ## Project Overview
 
-Air is an R language server and formatter written in Rust. Workspace crate layout under `crates/` with a CLI binary in `crates/air/`.
+Air is an R language server and formatter written in Rust. Workspace crate
+layout under `crates/` with a CLI binary in `crates/air/`.
 
 - Rust edition and version are reported in workspace level `Cargo.toml`
-- Uses `biome_formatter` for the formatting engine and `ignore` crate for file walking
+- Uses `biome_formatter` for the formatting engine and `ignore` crate for file
+  walking
 - Config file: `air.toml` discovered by walking up directory ancestors
 - Snapshot testing with `insta`
 
@@ -14,18 +16,25 @@ Air is an R language server and formatter written in Rust. Workspace crate layou
 ### Imports
 
 - One item per `use` line, no `{}` grouping
-- Grouped in order: `std`, external crates, `crate`/`super`, with groups separated by blank lines
+- Grouped in order: `std`, external crates, `crate`/`super`, with groups
+  separated by blank lines
 
 ### Error Handling
 
-- `thiserror::Error` for structured error enums; manual `Display` impls when messages need custom formatting (e.g. path underlining)
-- CLI-facing errors are `biome_diagnostics` diagnostics, defined in `crates/air/src/diagnostics.rs` and printed through the `Console`, then return `ExitStatus::Error`. Never report them with `tracing::error!`, `tracing` is only for logs. Commands return `ExitStatus`, never `anyhow::Result`.
+- Structured error enums are plain `#[derive(Debug)]` enums. Implement `Display`
+  and `std::error::Error` by hand only when something needs to display the
+  error.
+- CLI-facing errors are `biome_diagnostics` diagnostics, defined in
+  `crates/air/src/diagnostics.rs` and printed through the `Console`, then return
+  `ExitStatus::Error`. Never report them with `tracing::error!`, `tracing` is
+  only for logs. Commands return `ExitStatus`, never `anyhow::Result`.
 - `tracing::trace!` for file inclusion/exclusion decisions
 
 ### Functions
 
 - Normalize paths with `fs::normalize_path` at function boundaries
-- Prefer returning structured enums (e.g. `FormattedSource::Changed`/`Unchanged`) over booleans
+- Prefer returning structured enums (e.g.
+  `FormattedSource::Changed`/`Unchanged`) over booleans
 
 ### Comments
 
@@ -37,16 +46,19 @@ Air is an R language server and formatter written in Rust. Workspace crate layou
 ### Running Tests
 
 - Use `just test` to run tests via nextest, NOT `cargo test`
-    - Example: `just test -p workspace --lib discovery::test`
-    - Passes arguments through to `cargo nextest run`
+  - Example: `just test -p workspace --lib discovery::test`
+  - Passes arguments through to `cargo nextest run`
 - `just test-snapshot-accept` regenerates the parser's markdown snapshots
-- `just test-insta` regenerates the formatter's insta snapshots, `cargo insta review` to accept them
-- `just test-quick-parser` and `just test-quick-formatter` run the `quick_test.rs` scratchpads
+- `just test-insta` regenerates the formatter's insta snapshots,
+  `cargo insta review` to accept them
+- `just test-quick-parser` and `just test-quick-formatter` run the
+  `quick_test.rs` scratchpads
 
 ### Unit Tests
 
 - `#[cfg(test)] mod test` at the bottom of the source file
-- Use `tempfile::TempDir`, immediately shadow: `let tempdir = TempDir::new()?; let tempdir = tempdir.path();`
+- Use `tempfile::TempDir`, immediately shadow:
+  `let tempdir = TempDir::new()?; let tempdir = tempdir.path();`
 - Use `anyhow::Result<()>` as test return type
 - Write files into temp dirs to set up test fixtures inline
 
@@ -54,7 +66,9 @@ Air is an R language server and formatter written in Rust. Workspace crate layou
 
 - Live in `crates/air/tests/integration/`
 - `insta::assert_snapshot!` for CLI output assertions
-- Build `Command` with method chaining: `.current_dir()`, `.arg()`, `.run()` or `.run_with_stdin()`
-- `.remove_arguments()` when snapshot would contain machine-specific absolute paths
+- Build `Command` with method chaining: `.current_dir()`, `.arg()`, `.run()` or
+  `.run_with_stdin()`
+- `.remove_arguments()` when snapshot would contain machine-specific absolute
+  paths
 - `.normalize_os_path_separator()` for cross-platform path assertions
 - Test both the happy path and the exclusion/rejection path
