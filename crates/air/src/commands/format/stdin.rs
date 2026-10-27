@@ -1,15 +1,12 @@
-use std::fmt::Display;
-use std::fmt::Formatter;
 use std::io;
 use std::io::Read;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
-use thiserror::Error;
+use biome_console::Console;
+use biome_diagnostics::Error;
 use workspace::discovery;
-use workspace::format::FormatSourceError;
-use workspace::format::FormattedSource;
 use workspace::resolve::PathResolver;
 use workspace::settings::FormatSettings;
 use workspace::settings::Settings;
@@ -18,6 +15,15 @@ use crate::ExitStatus;
 use crate::commands::format::ConfigurationMode;
 use crate::commands::format::FormatMode;
 use crate::commands::format::resolve_settings;
+use crate::commands::format::source;
+use crate::commands::format::source::FormatSourceError;
+use crate::commands::format::source::FormattedSource;
+use crate::diagnostics::FormatDiagnostic;
+use crate::diagnostics::StdinReadDiagnostic;
+use crate::diagnostics::StdoutWriteDiagnostic;
+use crate::diagnostics::from_discover_settings_error;
+use crate::diagnostics::from_parse_diagnostics;
+use crate::diagnostics::print_format_diagnostics;
 
 #[derive(Debug)]
 enum FormattedStdin {
@@ -27,32 +33,32 @@ enum FormattedStdin {
     Unchanged(String),
 }
 
-#[derive(Error, Debug)]
-enum FormatStdinError {
-    Format(FormatSourceError),
-    Read(io::Error),
-    Write(io::Error),
-}
-
 pub(crate) fn format(
     path: PathBuf,
     mode: FormatMode,
     configuration: ConfigurationMode,
     exclude: discovery::Exclude,
     include: discovery::Include,
-) -> anyhow::Result<ExitStatus> {
+    console: &mut dyn Console,
+) -> ExitStatus {
     // Normalize up front, relative to current working directory
     let path = fs::normalize_path(path);
 
-    let (resolver, default_settings) = resolve_settings(&[&path], configuration)?;
+    let (resolver, default_settings) = match resolve_settings(&[&path], configuration) {
+        Ok((resolver, default_settings)) => (resolver, default_settings),
+        Err(error) => {
+            print_format_diagnostics(console, vec![from_discover_settings_error(error)]);
+            return ExitStatus::Error;
+        }
+    };
 
     match mode {
         FormatMode::Write => {
             match format_stdin_write(&path, &resolver, &default_settings, exclude, include) {
-                Ok(()) => Ok(ExitStatus::Success),
-                Err(error) => {
-                    tracing::error!("{error}");
-                    Ok(ExitStatus::Error)
+                Ok(()) => ExitStatus::Success,
+                Err(diagnostics) => {
+                    print_format_diagnostics(console, diagnostics);
+                    ExitStatus::Error
                 }
             }
         }
@@ -60,14 +66,16 @@ pub(crate) fn format(
             match format_stdin_check(&path, &resolver, &default_settings, exclude, include) {
                 Ok(changed) => {
                     if changed {
-                        Ok(ExitStatus::Failure)
+                        // Don't use `print_format_check_diagnostic()`, it
+                        // doesn't add any information in stdin mode
+                        ExitStatus::Failure
                     } else {
-                        Ok(ExitStatus::Success)
+                        ExitStatus::Success
                     }
                 }
-                Err(error) => {
-                    tracing::error!("{error}");
-                    Ok(ExitStatus::Error)
+                Err(diagnostics) => {
+                    print_format_diagnostics(console, diagnostics);
+                    ExitStatus::Error
                 }
             }
         }
@@ -80,13 +88,13 @@ fn format_stdin_write<P: AsRef<Path>>(
     default_settings: &Settings,
     exclude: discovery::Exclude,
     include: discovery::Include,
-) -> Result<(), FormatStdinError> {
+) -> Result<(), Vec<Error>> {
     let settings = resolver
         .resolve(&path)
         .map_or(default_settings, |item| item.value());
 
-    let formatted = if is_stdin_formattable(path, settings, exclude, include) {
-        format_stdin(&settings.format)?
+    let formatted = if is_stdin_formattable(&path, settings, exclude, include) {
+        format_stdin(&path, &settings.format)?
     } else {
         asis_stdin()?
     };
@@ -96,10 +104,11 @@ fn format_stdin_write<P: AsRef<Path>>(
         FormattedStdin::Unchanged(unchanged) => unchanged,
     };
 
+    // Never through the `console`, which would "sanitize" the formatted code
     std::io::stdout()
         .lock()
         .write_all(buffer.as_bytes())
-        .map_err(FormatStdinError::Write)
+        .map_err(|error| vec![StdoutWriteDiagnostic::new(error).into()])
 }
 
 fn format_stdin_check<P: AsRef<Path>>(
@@ -108,17 +117,17 @@ fn format_stdin_check<P: AsRef<Path>>(
     default_settings: &Settings,
     exclude: discovery::Exclude,
     include: discovery::Include,
-) -> Result<bool, FormatStdinError> {
+) -> Result<bool, Vec<Error>> {
     let settings = resolver
         .resolve(&path)
         .map_or(default_settings, |item| item.value());
 
-    if !is_stdin_formattable(path, settings, exclude, include) {
+    if !is_stdin_formattable(&path, settings, exclude, include) {
         // Don't even attempt to read from stdin, we know nothing will change
         return Ok(false);
     }
 
-    let formatted = format_stdin(&settings.format)?;
+    let formatted = format_stdin(&path, &settings.format)?;
 
     match formatted {
         FormattedStdin::Changed(_) => Ok(true),
@@ -126,23 +135,37 @@ fn format_stdin_check<P: AsRef<Path>>(
     }
 }
 
-fn format_stdin(settings: &FormatSettings) -> Result<FormattedStdin, FormatStdinError> {
+fn format_stdin<P: AsRef<Path>>(
+    path: P,
+    settings: &FormatSettings,
+) -> Result<FormattedStdin, Vec<Error>> {
     tracing::trace!("Formatting stdin");
 
-    let old = read_stdin().map_err(FormatStdinError::Read)?;
-    let options = settings.to_format_options(&old);
-    let new = workspace::format::format_source(&old, options).map_err(FormatStdinError::Format)?;
+    let path = path.as_ref();
 
-    match new {
-        FormattedSource::Changed(new) => Ok(FormattedStdin::Changed(new)),
-        FormattedSource::Unchanged => Ok(FormattedStdin::Unchanged(old)),
+    let source = read_stdin().map_err(|error| vec![StdinReadDiagnostic::new(error).into()])?;
+
+    let options = settings.to_format_options(&source);
+
+    match source::format_source(&source, options) {
+        Ok(FormattedSource::Changed(formatted)) => Ok(FormattedStdin::Changed(formatted)),
+        Ok(FormattedSource::Unchanged) => Ok(FormattedStdin::Unchanged(source)),
+        Err(FormatSourceError::Parse(diagnostics)) => {
+            Err(from_parse_diagnostics(path, &source, diagnostics))
+        }
+        Err(FormatSourceError::Format(error)) => {
+            Err(vec![FormatDiagnostic::new(path, error).into()])
+        }
+        Err(FormatSourceError::Print(error)) => {
+            Err(vec![FormatDiagnostic::new(path, error).into()])
+        }
     }
 }
 
-fn asis_stdin() -> Result<FormattedStdin, FormatStdinError> {
+fn asis_stdin() -> Result<FormattedStdin, Vec<Error>> {
     tracing::trace!("Passing stdin through unformatted");
 
-    let old = read_stdin().map_err(FormatStdinError::Read)?;
+    let old = read_stdin().map_err(|error| vec![StdinReadDiagnostic::new(error).into()])?;
 
     Ok(FormattedStdin::Unchanged(old))
 }
@@ -232,16 +255,6 @@ fn is_stdin_formattable<P: AsRef<Path>>(
                 path = path.display()
             );
             true
-        }
-    }
-}
-
-impl Display for FormatStdinError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Format(error) => write!(f, "Failed to format stdin: {error}"),
-            Self::Read(error) => write!(f, "Failed to read from stdin: {error}"),
-            Self::Write(error) => write!(f, "Failed to write to stdout: {error}"),
         }
     }
 }

@@ -1,0 +1,21 @@
+---
+source: crates/air/tests/integration/format.rs
+expression: "Command::new(binary_path()).current_dir(directory).arg(\"format\").arg(\"c.R\").arg(\"b.R\").arg(\"a.R\").arg(\"--check\").arg(\"--no-color\").run()"
+---
+success: false
+exit_code: 1
+----- stdout -----
+
+----- stderr -----
+format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × 3 files would be reformatted.
+  
+  - a.R
+  - b.R
+  - c.R
+  
+
+
+----- args -----
+format c.R b.R a.R --check --no-color

@@ -3,8 +3,6 @@ use air_r_syntax::{RStatementList, RSyntaxKind, RSyntaxNode, WalkEvent};
 use biome_rowan::{AstNode, Language, SyntaxElement};
 use biome_text_size::{TextRange, TextSize};
 use tower_lsp::lsp_types;
-use workspace::format::FormattedSource;
-use workspace::format::format_source_with_parse;
 
 use crate::file_patterns::is_document_excluded_from_formatting;
 use crate::main_loop::LspState;
@@ -46,26 +44,30 @@ pub(crate) fn document_formatting(
 
     let format_options = workspace_settings.to_format_options(&doc.contents, &doc.settings);
 
-    match format_source_with_parse(&doc.contents, &doc.parse, format_options)? {
-        FormattedSource::Changed(mut formatted) => {
-            // For notebook cells, remove the trailing newline that the formatter adds.
-            // The formatter always adds a trailing newline for R files (which is correct
-            // for standalone files), but notebook cells should not have this trailing newline
-            // to avoid an empty line at the end of the chunk.
-            if uri.scheme() == "vscode-notebook-cell" && formatted.ends_with('\n') {
-                formatted.pop();
-            }
+    let formatted = air_r_formatter::format_node(format_options, &doc.parse.syntax())?;
+    let formatted = formatted.print()?;
+    let mut formatted = formatted.into_code();
 
-            Ok(Some(to_proto::replace_all_edit(
-                &doc.contents,
-                &formatted,
-                &doc.line_index,
-                doc.position_encoding,
-                doc.endings,
-            )?))
-        }
-        FormattedSource::Unchanged => Ok(None),
+    if doc.contents == formatted {
+        // Nothing changed!
+        return Ok(None);
     }
+
+    // For notebook cells, remove the trailing newline that the formatter adds.
+    // The formatter always adds a trailing newline for R files (which is correct
+    // for standalone files), but notebook cells should not have this trailing newline
+    // to avoid an empty line at the end of the chunk.
+    if uri.scheme() == "vscode-notebook-cell" && formatted.ends_with('\n') {
+        formatted.pop();
+    }
+
+    Ok(Some(to_proto::replace_all_edit(
+        &doc.contents,
+        &formatted,
+        &doc.line_index,
+        doc.position_encoding,
+        doc.endings,
+    )?))
 }
 
 #[tracing::instrument(level = "info", skip_all)]

@@ -1,13 +1,26 @@
 ---
 source: crates/air/tests/integration/format.rs
-expression: "Command::new(binary_path()).current_dir(directory).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped()).arg(\"format\").arg(\"--stdin-file-path\").arg(test_path).arg(\"--no-color\").run_with_stdin(test_contents.to_string()).remove_arguments()"
+expression: "Command::new(binary_path()).current_dir(directory).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped()).arg(\"format\").arg(\"--stdin-file-path\").arg(test_path).arg(\"--no-color\").run_with_stdin(test_contents.to_string()).normalize_os_path_separator()"
 ---
 success: false
 exit_code: 255
 ----- stdout -----
 
 ----- stderr -----
-ERROR Failed to format stdin: Failed to parse due to syntax errors.
+R/foo.R:1:3 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected an expression but instead found '/'.
+  
+  > 1 │ 1+/1
+      │   ^
+    2 │ 
+  
+
+format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Found 1 error.
+  
+
 
 ----- args -----
-<removed>
+format --stdin-file-path R/foo.R --no-color

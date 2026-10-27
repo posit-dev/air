@@ -8,46 +8,47 @@
 //! Utilities for locating (and extracting configuration from) an air.toml.
 
 use crate::toml_options::TomlOptions;
-use std::fmt::Display;
-use std::fmt::Formatter;
 use std::io;
 use std::path::{Path, PathBuf};
 
+// No need to derive `Error`, we really just use this as a passthrough enum
+// into `DiscoverSettingsError`
+#[derive(Debug)]
+pub enum ParseTomlError {
+    Read {
+        path: PathBuf,
+        error: io::Error,
+    },
+
+    Deserialize {
+        path: PathBuf,
+        contents: String,
+        // Clippy warned this was a big `Error` object
+        error: Box<toml::de::Error>,
+    },
+}
+
 /// Parse an air configuration file.
 pub fn parse_air_toml<P: AsRef<Path>>(path: P) -> Result<TomlOptions, ParseTomlError> {
-    let contents = std::fs::read_to_string(path.as_ref())
-        .map_err(|err| ParseTomlError::Read(path.as_ref().to_path_buf(), err))?;
+    let path = path.as_ref();
 
-    parse_air_inline_toml(&contents)
-        .map_err(|err| ParseTomlError::Deserialize(path.as_ref().to_path_buf(), err))
+    let contents = std::fs::read_to_string(path).map_err(|error| ParseTomlError::Read {
+        path: path.to_path_buf(),
+        error,
+    })?;
+
+    parse_air_inline_toml(&contents).map_err(|error| ParseTomlError::Deserialize {
+        path: path.to_path_buf(),
+        contents,
+        error: Box::new(error),
+    })
 }
 
 /// Parse inline toml
+///
+/// `pub` only for usage in tests
 pub fn parse_air_inline_toml(contents: &str) -> Result<TomlOptions, toml::de::Error> {
     toml::from_str(contents)
-}
-
-#[derive(Debug)]
-pub enum ParseTomlError {
-    Read(PathBuf, io::Error),
-    Deserialize(PathBuf, toml::de::Error),
-}
-
-impl std::error::Error for ParseTomlError {}
-
-impl Display for ParseTomlError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            // It's nicer if we don't make these paths relative, so we can quickly
-            // jump to the TOML file to see what is wrong
-            Self::Read(path, err) => {
-                write!(f, "Failed to read {path}:\n{err}", path = path.display())
-            }
-            Self::Deserialize(path, err) => {
-                write!(f, "Failed to parse {path}:\n{err}", path = path.display())
-            }
-        }
-    }
 }
 
 /// Return the path to the `air.toml` or `.air.toml` file in a given directory.
@@ -121,7 +122,7 @@ line-ending = "auto"
         )?;
 
         let toml = find_air_toml(tempdir.path()).context("Failed to find air.toml")?;
-        let options = parse_air_toml(toml)?;
+        let options = parse_air_toml(toml).expect("Parses");
 
         let line_width = options
             .format
@@ -156,7 +157,7 @@ persistent-line-breaks = false
         )?;
 
         let toml = find_air_toml(tempdir.path()).context("Failed to find air.toml")?;
-        let options = parse_air_toml(toml)?;
+        let options = parse_air_toml(toml).expect("Parses");
 
         let persistent_line_breaks = options
             .format

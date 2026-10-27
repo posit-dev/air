@@ -1,20 +1,11 @@
-use std::fmt::Display;
-use std::fmt::Formatter;
 use std::io;
-use std::io::Write;
-use std::io::stderr;
 use std::path::Path;
 use std::path::PathBuf;
 
-use colored::Colorize;
-use fs::relativize_path;
-use itertools::Either;
-use itertools::Itertools;
-use thiserror::Error;
+use biome_console::Console;
+use biome_diagnostics::Error;
 use workspace::discovery;
 use workspace::discovery::discover_r_file_paths;
-use workspace::format::FormatSourceError;
-use workspace::format::FormattedSource;
 use workspace::resolve::PathResolver;
 use workspace::settings::FormatSettings;
 use workspace::settings::Settings;
@@ -23,14 +14,17 @@ use crate::ExitStatus;
 use crate::commands::format::ConfigurationMode;
 use crate::commands::format::FormatMode;
 use crate::commands::format::resolve_settings;
-
-#[derive(Error, Debug)]
-enum FormatPathError {
-    Format(PathBuf, FormatSourceError),
-    Read(PathBuf, io::Error),
-    Write(PathBuf, io::Error),
-    Ignore(#[from] ignore::Error),
-}
+use crate::commands::format::source;
+use crate::commands::format::source::FormatSourceError;
+use crate::commands::format::source::FormattedSource;
+use crate::diagnostics::FormatDiagnostic;
+use crate::diagnostics::ReadDiagnostic;
+use crate::diagnostics::WalkDiagnostic;
+use crate::diagnostics::WriteDiagnostic;
+use crate::diagnostics::from_discover_settings_error;
+use crate::diagnostics::from_parse_diagnostics;
+use crate::diagnostics::print_format_check_diagnostic;
+use crate::diagnostics::print_format_diagnostics;
 
 pub(crate) fn format(
     paths: Vec<PathBuf>,
@@ -38,55 +32,49 @@ pub(crate) fn format(
     configuration: ConfigurationMode,
     exclude: discovery::Exclude,
     include: discovery::Include,
-) -> anyhow::Result<ExitStatus> {
-    let (resolver, default_settings) = resolve_settings(&paths, configuration)?;
+    console: &mut dyn Console,
+) -> ExitStatus {
+    let (resolver, default_settings) = match resolve_settings(&paths, configuration) {
+        Ok((resolver, default_settings)) => (resolver, default_settings),
+        Err(error) => {
+            print_format_diagnostics(console, vec![from_discover_settings_error(error)]);
+            return ExitStatus::Error;
+        }
+    };
 
     match mode {
         FormatMode::Write => {
-            let errors = format_paths_write(&paths, &resolver, &default_settings, exclude, include);
+            let diagnostics =
+                format_paths_write(&paths, &resolver, &default_settings, exclude, include);
 
-            for error in &errors {
-                tracing::error!("{error}");
-            }
-
-            if errors.is_empty() {
-                Ok(ExitStatus::Success)
+            let status = if !diagnostics.is_empty() {
+                ExitStatus::Error
             } else {
-                Ok(ExitStatus::Error)
-            }
+                ExitStatus::Success
+            };
+
+            print_format_diagnostics(console, diagnostics);
+
+            status
         }
         FormatMode::Check => {
-            let (paths, errors) =
+            let (paths, diagnostics) =
                 format_paths_check(&paths, &resolver, &default_settings, exclude, include);
 
-            for error in &errors {
-                tracing::error!("{error}");
-            }
-
-            inform_changed(&paths, &mut stderr().lock())?;
-
-            if errors.is_empty() {
-                if paths.is_empty() {
-                    Ok(ExitStatus::Success)
-                } else {
-                    Ok(ExitStatus::Failure)
-                }
+            let status = if !diagnostics.is_empty() {
+                ExitStatus::Error
+            } else if !paths.is_empty() {
+                ExitStatus::Failure
             } else {
-                Ok(ExitStatus::Error)
-            }
+                ExitStatus::Success
+            };
+
+            print_format_diagnostics(console, diagnostics);
+            print_format_check_diagnostic(console, &paths);
+
+            status
         }
     }
-}
-
-fn inform_changed(paths: &[PathBuf], f: &mut impl Write) -> io::Result<()> {
-    for path in paths.iter().sorted_unstable() {
-        writeln!(
-            f,
-            "Would reformat: {path}",
-            path = relativize_path(path).underline()
-        )?;
-    }
-    Ok(())
 }
 
 fn format_paths_write<P: AsRef<Path>>(
@@ -95,7 +83,7 @@ fn format_paths_write<P: AsRef<Path>>(
     default_settings: &Settings,
     exclude: discovery::Exclude,
     include: discovery::Include,
-) -> Vec<FormatPathError> {
+) -> Vec<Error> {
     let paths = discover_r_file_paths(
         paths,
         resolver,
@@ -105,25 +93,35 @@ fn format_paths_write<P: AsRef<Path>>(
         include,
     );
 
-    paths
-        .into_iter()
-        .filter_map(|path| match path {
-            Ok(path) => {
-                let settings = resolver
-                    .resolve(&path)
-                    .map_or(default_settings, |item| item.value());
+    let mut diagnostics = Vec::new();
 
-                match format_path(&path, &settings.format) {
-                    Ok(formatted) => match write_path(&path, formatted) {
-                        Ok(()) => None,
-                        Err(err) => Some(FormatPathError::Write(path, err)),
-                    },
-                    Err(err) => Some(err),
-                }
+    for path in paths {
+        let path = match path {
+            Ok(path) => path,
+            Err(error) => {
+                diagnostics.push(WalkDiagnostic::new(error).into());
+                continue;
             }
-            Err(err) => Some(err.into()),
-        })
-        .collect()
+        };
+
+        let settings = resolver
+            .resolve(&path)
+            .map_or(default_settings, |item| item.value());
+
+        let formatted = match format_path(&path, &settings.format) {
+            Ok(formatted) => formatted,
+            Err(errors) => {
+                diagnostics.extend(errors);
+                continue;
+            }
+        };
+
+        if let Err(error) = write_path(&path, formatted) {
+            diagnostics.push(WriteDiagnostic::new(&path, error).into());
+        }
+    }
+
+    diagnostics
 }
 
 fn format_paths_check<P: AsRef<Path>>(
@@ -132,7 +130,7 @@ fn format_paths_check<P: AsRef<Path>>(
     default_settings: &Settings,
     exclude: discovery::Exclude,
     include: discovery::Include,
-) -> (Vec<PathBuf>, Vec<FormatPathError>) {
+) -> (Vec<PathBuf>, Vec<Error>) {
     let paths = discover_r_file_paths(
         paths,
         resolver,
@@ -142,43 +140,62 @@ fn format_paths_check<P: AsRef<Path>>(
         include,
     );
 
-    paths
-        .into_iter()
-        .filter_map(|path| match path {
-            Ok(path) => {
-                let settings = resolver
-                    .resolve(&path)
-                    .map_or(default_settings, |item| item.value());
+    let mut changed = Vec::new();
+    let mut diagnostics = Vec::new();
 
-                match format_path(&path, &settings.format) {
-                    Ok(file) => check_path(&path, file).map(Ok),
-                    Err(err) => Some(Err(err)),
-                }
+    for path in paths {
+        let path = match path {
+            Ok(path) => path,
+            Err(error) => {
+                diagnostics.push(WalkDiagnostic::new(error).into());
+                continue;
             }
-            Err(err) => Some(Err(err.into())),
-        })
-        .partition_map(|result| match result {
-            Ok(result) => Either::Left(result),
-            Err(err) => Either::Right(err),
-        })
+        };
+
+        let settings = resolver
+            .resolve(&path)
+            .map_or(default_settings, |item| item.value());
+
+        let formatted = match format_path(&path, &settings.format) {
+            Ok(formatted) => formatted,
+            Err(errors) => {
+                diagnostics.extend(errors);
+                continue;
+            }
+        };
+
+        if let Some(path) = check_path(&path, formatted) {
+            changed.push(path);
+        }
+    }
+
+    (changed, diagnostics)
 }
 
 fn format_path<P: AsRef<Path>>(
     path: P,
     settings: &FormatSettings,
-) -> std::result::Result<FormattedSource, FormatPathError> {
+) -> std::result::Result<FormattedSource, Vec<Error>> {
     let path = path.as_ref();
     tracing::trace!("Formatting {path}", path = path.display());
 
-    let old = std::fs::read_to_string(path)
-        .map_err(|error| FormatPathError::Read(path.to_path_buf(), error))?;
+    let source = std::fs::read_to_string(path)
+        .map_err(|error| vec![ReadDiagnostic::new(path, error).into()])?;
 
-    let options = settings.to_format_options(&old);
+    let options = settings.to_format_options(&source);
 
-    let new = workspace::format::format_source(&old, options)
-        .map_err(|error| FormatPathError::Format(path.to_path_buf(), error))?;
-
-    Ok(new)
+    match source::format_source(&source, options) {
+        Ok(formatted) => Ok(formatted),
+        Err(FormatSourceError::Parse(diagnostics)) => {
+            Err(from_parse_diagnostics(path, &source, diagnostics))
+        }
+        Err(FormatSourceError::Format(error)) => {
+            Err(vec![FormatDiagnostic::new(path, error).into()])
+        }
+        Err(FormatSourceError::Print(error)) => {
+            Err(vec![FormatDiagnostic::new(path, error).into()])
+        }
+    }
 }
 
 /// Returns `Ok(())` if the format results were successfully written back, otherwise
@@ -195,47 +212,5 @@ fn check_path<P: AsRef<Path>>(path: P, formatted: FormattedSource) -> Option<Pat
     match formatted {
         FormattedSource::Changed(_) => Some(path.as_ref().to_path_buf()),
         FormattedSource::Unchanged => None,
-    }
-}
-
-impl Display for FormatPathError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Format(path, err) => write!(
-                f,
-                "Failed to format {path}: {err}",
-                path = relativize_path(path).underline(),
-            ),
-            Self::Read(path, err) => write!(
-                f,
-                "Failed to read {path}: {err}",
-                path = relativize_path(path).underline(),
-            ),
-            Self::Ignore(err) => {
-                if let ignore::Error::WithPath { path, .. } = err {
-                    write!(
-                        f,
-                        "Failed to format {path}: {err}",
-                        path = relativize_path(path).underline(),
-                        err = err
-                            .io_error()
-                            .map_or_else(|| err.to_string(), std::string::ToString::to_string)
-                    )
-                } else {
-                    write!(
-                        f,
-                        "Encountered error: {err}",
-                        err = err
-                            .io_error()
-                            .map_or_else(|| err.to_string(), std::string::ToString::to_string)
-                    )
-                }
-            }
-            Self::Write(path, err) => write!(
-                f,
-                "Failed to write {path}: {err}",
-                path = relativize_path(path).underline(),
-            ),
-        }
     }
 }

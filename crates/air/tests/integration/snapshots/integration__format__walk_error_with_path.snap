@@ -1,0 +1,22 @@
+---
+source: crates/air/tests/integration/format.rs
+expression: "Command::new(binary_path()).current_dir(directory).arg(\"format\").arg(\"missing.R\").arg(\"--no-color\").run().replace_stderr(\"The system cannot find the file specified.\",\n\"No such file or directory\")"
+---
+success: false
+exit_code: 255
+----- stdout -----
+
+----- stderr -----
+missing.R internalError/fs ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × No such file or directory (os error 2)
+  
+
+format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Found 1 error.
+  
+
+
+----- args -----
+format missing.R --no-color

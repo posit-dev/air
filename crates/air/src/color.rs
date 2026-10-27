@@ -5,27 +5,19 @@ use std::io::IsTerminal;
 ///
 /// We use colored output in two places:
 /// - Level labels in `tracing-subscriber`, like `ERROR` , which shows up in red
-/// - Usage of the `colored` crate
+/// - Diagnostics printed through `biome_console::EnvConsole`
 ///
-/// Both respect the `NO_COLOR` environment variable if we don't specify
-/// anything, but to avoid potential differences between the two crates we do a
-/// one time resolution of user overrides and `NO_COLOR` ourselves, then
-/// forcibly set the option for both `colored` and `tracing-subscriber`.
-pub(crate) fn init_color(no_color: bool) -> bool {
-    let color =
-        // User override via `--no-color`
-        !no_color
+/// To avoid potential differences between the tools we do a one time resolution
+/// of user overrides and `NO_COLOR` ourselves, then forcibly set the option for
+/// each of them.
+pub(crate) fn resolve_color(no_color: bool) -> bool {
+    // User override via `--no-color`
+    !no_color
         // User override via `NO_COLOR` env var
         && !no_color_env_var_is_set()
         // Only emit colors if the target is a terminal. We only emit colored
         // output to stderr, so we don't need to check stdout.
-        && std::io::stderr().is_terminal();
-
-    // Apply our decision globally to `colored`
-    colored::control::set_override(color);
-
-    // Return our decision so we can apply it to `tracing-subscriber`
-    color
+        && std::io::stderr().is_terminal()
 }
 
 /// Is `NO_COLOR` set to a non-empty, non-zero value?

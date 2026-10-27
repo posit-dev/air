@@ -1,14 +1,19 @@
 use std::path::Path;
 
+use biome_console::Console;
 use workspace::discovery;
+use workspace::discovery::DiscoverSettingsError;
 use workspace::discovery::DiscoveredSettings;
 use workspace::resolve::PathResolver;
 use workspace::settings::Settings;
 
 use crate::ExitStatus;
 use crate::args::FormatCommand;
+use crate::diagnostics::StdinWithPathsDiagnostic;
+use crate::diagnostics::print_format_diagnostics;
 
 mod paths;
+mod source;
 mod stdin;
 
 #[derive(Copy, Clone, Debug)]
@@ -23,9 +28,9 @@ enum ConfigurationMode {
     Disabled,
 }
 
-pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
-    if let Some(status) = check_argument_consistency(&command) {
-        return Ok(status);
+pub(crate) fn format(command: FormatCommand, console: &mut dyn Console) -> ExitStatus {
+    if let Some(status) = check_argument_consistency(&command, console) {
+        return status;
     }
 
     let mode = FormatMode::from_command(&command);
@@ -38,15 +43,22 @@ pub(crate) fn format(command: FormatCommand) -> anyhow::Result<ExitStatus> {
     };
 
     match command.stdin_file_path {
-        Some(path) => stdin::format(path, mode, configuration, exclude, include),
-        None => paths::format(command.paths, mode, configuration, exclude, include),
+        Some(path) => stdin::format(path, mode, configuration, exclude, include, console),
+        None => paths::format(
+            command.paths,
+            mode,
+            configuration,
+            exclude,
+            include,
+            console,
+        ),
     }
 }
 
 fn resolve_settings<P: AsRef<Path>>(
     paths: &[P],
     configuration: ConfigurationMode,
-) -> anyhow::Result<(PathResolver<Settings>, Settings)> {
+) -> Result<(PathResolver<Settings>, Settings), DiscoverSettingsError> {
     match configuration {
         ConfigurationMode::Discover => {
             let mut resolver = PathResolver::new();
@@ -69,17 +81,13 @@ fn resolve_settings<P: AsRef<Path>>(
     }
 }
 
-fn check_argument_consistency(command: &FormatCommand) -> Option<ExitStatus> {
+fn check_argument_consistency(
+    command: &FormatCommand,
+    console: &mut dyn Console,
+) -> Option<ExitStatus> {
     if command.stdin_file_path.is_some() && !command.paths.is_empty() {
-        tracing::error!(
-            "Can't supply paths when reading from stdin: {paths}",
-            paths = command
-                .paths
-                .iter()
-                .map(|path| format!("'{path}'", path = path.display()))
-                .collect::<Vec<String>>()
-                .join(",")
-        );
+        let diagnostic = StdinWithPathsDiagnostic::new(&command.paths);
+        print_format_diagnostics(console, vec![diagnostic.into()]);
         return Some(ExitStatus::Error);
     }
 

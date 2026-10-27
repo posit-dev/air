@@ -348,6 +348,30 @@ fn test_check_output_format() {
 }
 
 #[test]
+fn test_check_reformatted_files_are_sorted_by_path() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    std::fs::write(directory.join("a.R"), "1+1\n")?;
+    std::fs::write(directory.join("b.R"), "2+2\n")?;
+    std::fs::write(directory.join("c.R"), "3+3\n")?;
+
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .arg("format")
+            .arg("c.R")
+            .arg("b.R")
+            .arg("a.R")
+            .arg("--check")
+            .arg("--no-color")
+            .run()
+    );
+
+    Ok(())
+}
+
+#[test]
 fn test_no_color_when_stderr_is_not_a_terminal() -> anyhow::Result<()> {
     let directory = TempDir::new()?;
     let directory = directory.path();
@@ -369,6 +393,293 @@ fn test_no_color_when_stderr_is_not_a_terminal() -> anyhow::Result<()> {
 
     assert!(!output.stderr.contains('\x1b'));
     insta::assert_snapshot!(output);
+
+    Ok(())
+}
+
+#[test]
+fn test_parse_error() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    std::fs::create_dir(directory.join("R"))?;
+    std::fs::write(
+        directory.join("R").join("foo.R"),
+        "f <- function(x) {\n  y <- 1\n  g(x) 2\n}\n",
+    )?;
+
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .arg("format")
+            .arg(".")
+            .arg("--no-color")
+            .run()
+            .normalize_os_path_separator()
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_parse_error_reports_every_diagnostic_in_source_order() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    std::fs::write(directory.join("test.R"), "x <- )\ny <- 1 2\nz <- ]\n")?;
+
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .arg("format")
+            .arg("test.R")
+            .arg("--no-color")
+            .run()
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_parse_error_with_detail() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    // The detail points at the end of the file
+    std::fs::write(directory.join("test.R"), "x <- \"abc\n1 + 1\n")?;
+
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .arg("format")
+            .arg("test.R")
+            .arg("--no-color")
+            .run()
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_parse_errors_are_sorted_by_path() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    std::fs::write(directory.join("a.R"), "1 2\n")?;
+    std::fs::write(directory.join("b.R"), "3 4\n")?;
+    std::fs::write(directory.join("c.R"), "1 + 1\n")?;
+
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .arg("format")
+            .arg("c.R")
+            .arg("b.R")
+            .arg("a.R")
+            .arg("--no-color")
+            .run()
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_parse_error_with_check() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    std::fs::write(directory.join("needs-formatting.R"), "1+1\n")?;
+    std::fs::write(directory.join("parse-error.R"), "1 2\n")?;
+
+    // The parse error, then the errors summary, then the reformatted summary
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .arg("format")
+            .arg(".")
+            .arg("--check")
+            .arg("--no-color")
+            .run()
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_parse_error_with_crlf_line_endings() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    std::fs::write(directory.join("test.R"), "f(x)\r\n1 2\r\nz\r\n")?;
+
+    let output = Command::new(binary_path())
+        .current_dir(directory)
+        .arg("format")
+        .arg("test.R")
+        .arg("--no-color")
+        .run();
+
+    assert!(!output.stderr.contains('\r'));
+    insta::assert_snapshot!(output);
+
+    Ok(())
+}
+
+#[test]
+fn test_parse_error_column_counts_characters() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    // `2` is at character 7 but byte 9
+    std::fs::write(directory.join("test.R"), "\"\u{e9}t\u{e9}\" 2\n")?;
+
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .arg("format")
+            .arg("test.R")
+            .arg("--no-color")
+            .run()
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_file_read_error() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    std::fs::write(directory.join("test.R"), b"x <- \"\xff\"\n")?;
+
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .arg("format")
+            .arg("test.R")
+            .arg("--no-color")
+            .run()
+    );
+
+    Ok(())
+}
+
+// The OS error text differs on Windows
+#[cfg(unix)]
+#[test]
+fn test_walk_error_with_path() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .arg("format")
+            .arg("missing.R")
+            .arg("--no-color")
+            .run()
+    );
+
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn test_walk_error_with_unreadable_directory() -> anyhow::Result<()> {
+    use std::os::unix::fs::PermissionsExt;
+
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    // `ignore` wraps the path in a depth, which we unwrap to find the path
+    let locked = directory.join("locked");
+    std::fs::create_dir(&locked)?;
+    std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o000))?;
+
+    let output = Command::new(binary_path())
+        .current_dir(directory)
+        .arg("format")
+        .arg(".")
+        .arg("--no-color")
+        .run();
+
+    std::fs::set_permissions(&locked, std::fs::Permissions::from_mode(0o755))?;
+
+    insta::assert_snapshot!(output);
+
+    Ok(())
+}
+
+#[test]
+fn test_diagnostics_are_sorted_by_path_and_counted() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    std::fs::write(directory.join("a.R"), "1 2\n3 4\n")?;
+    std::fs::write(directory.join("b.R"), b"x <- \"\xff\"\n")?;
+    std::fs::write(directory.join("c.R"), "5 6\n")?;
+
+    // Two parse errors in `a.R`, a read error in `b.R`, and a parse error in `c.R`
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .arg("format")
+            .arg("c.R")
+            .arg("b.R")
+            .arg("a.R")
+            .arg("--no-color")
+            .run()
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_diagnostics_are_sorted_by_path_components() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    std::fs::create_dir(directory.join("R"))?;
+    std::fs::write(directory.join("R").join("foo.R"), "1 2\n")?;
+    std::fs::write(directory.join("R.R"), "3 4\n")?;
+
+    // `R/foo.R` comes first, as `R` sorts before `R.R`. Sorting as strings would put
+    // `R.R` first, since `.` sorts before `/`.
+    insta::assert_snapshot!(
+        Command::new(binary_path())
+            .current_dir(directory)
+            .arg("format")
+            .arg(".")
+            .arg("--no-color")
+            .run()
+            .normalize_os_path_separator()
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_stdin_output_is_not_sanitized() -> anyhow::Result<()> {
+    let directory = TempDir::new()?;
+    let directory = directory.path();
+
+    // A zero width space, which `biome_console` would replace with U+FFFD.
+    // Probably not a big deal, but we prefer to emit formatted output directly
+    // to stdout ourselves.
+    let test_contents = "x <- \"a\u{200B}b\"\n";
+
+    let output = Command::new(binary_path())
+        .current_dir(directory)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .arg("format")
+        .arg("--stdin-file-path")
+        .arg("test.R")
+        .run_with_stdin(test_contents.to_string());
+
+    assert!(output.status.success());
+    assert_eq!(output.stdout, test_contents);
 
     Ok(())
 }
@@ -609,9 +920,9 @@ fn test_stdin_errors_on_parse_error() -> anyhow::Result<()> {
     let directory = TempDir::new()?;
     let directory = directory.path();
 
-    let test_path = "test.R";
-    let test_contents = "1+/1";
-    std::fs::write(directory.join(test_path), test_contents)?;
+    // The header shows the `--stdin-file-path`
+    let test_path = Path::new("R").join("foo.R");
+    let test_contents = "1+/1\n";
 
     insta::assert_snapshot!(
         Command::new(binary_path())
@@ -624,7 +935,7 @@ fn test_stdin_errors_on_parse_error() -> anyhow::Result<()> {
             .arg(test_path)
             .arg("--no-color")
             .run_with_stdin(test_contents.to_string())
-            .remove_arguments()
+            .normalize_os_path_separator()
     );
 
     Ok(())

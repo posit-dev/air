@@ -1,0 +1,32 @@
+---
+source: crates/air/tests/integration/format.rs
+expression: "Command::new(binary_path()).current_dir(directory).arg(\"format\").arg(\"test.R\").arg(\"--no-color\").run()"
+---
+success: false
+exit_code: 255
+----- stdout -----
+
+----- stderr -----
+test.R:1:7 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected a newline or a `;` between two expressions.
+  
+  > 1 │ "été" 2
+      │       ^
+    2 │ 
+  
+  i The first expression ends here.
+  
+  > 1 │ "été" 2
+      │ ^^^^^
+    2 │ 
+  
+
+format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Found 1 error.
+  
+
+
+----- args -----
+format test.R --no-color
