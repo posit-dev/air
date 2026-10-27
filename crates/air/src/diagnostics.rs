@@ -72,7 +72,7 @@ pub(crate) fn from_parse_diagnostics(
         .map(|diagnostic| {
             diagnostic
                 .with_file_path(path.clone())
-                .with_file_source_code(source.to_string())
+                .with_file_source_code(source)
         })
         .collect()
 }
