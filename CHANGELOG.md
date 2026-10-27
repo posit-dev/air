@@ -41,6 +41,61 @@
 
     - `x$1` where the right-hand side is not an identifier
 
+- Air now emits much improved diagnostics at the command line. In particular,
+  syntax errors in both R files and your `air.toml` are reported with a *code
+  frame* that shows the exact location of the issue (#558):
+
+  ```
+  > air format .
+
+  R/arrange.R:137:13 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    ✖ Expected a loop sequence but instead found ')'.
+
+      135 │   names(cols) <- as.character(seq_dots)
+      136 │
+    > 137 │   for (i in ) {
+          │             ^
+      138 │     name <- vec_paste0("..", i)
+      139 │     dot <- dots[[i]]
+
+
+  R/case-when.R:301:5 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    ✖ expected `,` but instead found `values`
+
+      299 │   .size <- case_when_size_common(
+      300 │     conditions = conditions
+    > 301 │     values = values,
+          │     ^^^^^^
+      302 │     size = .size
+      303 │   )
+
+
+  format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    ✖ Found 2 errors.
+  ```
+
+  And for an `air.toml` issue:
+
+  ```
+  > air format . --check
+
+  air.toml:2:15 configuration ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    ✖ unknown variant `aut`, expected one of `auto`, `lf`, `crlf`, `native`
+
+      1 │ [format]
+    > 2 │ line-ending = "aut"
+        │               ^^^^^
+
+
+  format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    ✖ Found 1 error.
+  ```
+
 - Air no longer emits colored output when stderr is not a terminal, such as when
   stderr is redirected to a file.
 
