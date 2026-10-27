@@ -5,14 +5,15 @@
 //
 //
 
-use ignore::DirEntry;
-use ignore::gitignore::Glob;
-use rustc_hash::FxHashSet;
 use std::fmt::Display;
 use std::fmt::Formatter;
 use std::io;
 use std::path::Path;
 use std::path::PathBuf;
+
+use ignore::DirEntry;
+use ignore::gitignore::Glob;
+use rustc_hash::FxHashSet;
 
 use crate::config::user_config_directory;
 use crate::resolve::PathResolver;
