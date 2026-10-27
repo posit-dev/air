@@ -10,7 +10,7 @@ use workspace::settings::Settings;
 use crate::ExitStatus;
 use crate::args::FormatCommand;
 use crate::diagnostics::StdinWithPathsDiagnostic;
-use crate::diagnostics::print_diagnostics;
+use crate::diagnostics::print_format_diagnostics;
 
 mod paths;
 mod source;
@@ -87,7 +87,7 @@ fn check_argument_consistency(
 ) -> Option<ExitStatus> {
     if command.stdin_file_path.is_some() && !command.paths.is_empty() {
         let diagnostic = StdinWithPathsDiagnostic::new(&command.paths);
-        print_diagnostics(console, vec![diagnostic.into()]);
+        print_format_diagnostics(console, vec![diagnostic.into()]);
         return Some(ExitStatus::Error);
     }
 

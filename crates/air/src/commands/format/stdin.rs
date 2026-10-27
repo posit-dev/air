@@ -23,7 +23,7 @@ use crate::diagnostics::StdinReadDiagnostic;
 use crate::diagnostics::StdoutWriteDiagnostic;
 use crate::diagnostics::from_discover_settings_error;
 use crate::diagnostics::from_parse_diagnostics;
-use crate::diagnostics::print_diagnostics;
+use crate::diagnostics::print_format_diagnostics;
 
 #[derive(Debug)]
 enum FormattedStdin {
@@ -47,7 +47,7 @@ pub(crate) fn format(
     let (resolver, default_settings) = match resolve_settings(&[&path], configuration) {
         Ok((resolver, default_settings)) => (resolver, default_settings),
         Err(error) => {
-            print_diagnostics(console, vec![from_discover_settings_error(error)]);
+            print_format_diagnostics(console, vec![from_discover_settings_error(error)]);
             return ExitStatus::Error;
         }
     };
@@ -57,7 +57,7 @@ pub(crate) fn format(
             match format_stdin_write(&path, &resolver, &default_settings, exclude, include) {
                 Ok(()) => ExitStatus::Success,
                 Err(diagnostics) => {
-                    print_diagnostics(console, diagnostics);
+                    print_format_diagnostics(console, diagnostics);
                     ExitStatus::Error
                 }
             }
@@ -66,7 +66,7 @@ pub(crate) fn format(
             match format_stdin_check(&path, &resolver, &default_settings, exclude, include) {
                 Ok(changed) => {
                     if changed {
-                        // Don't use `print_reformatted_diagnostic()`, it
+                        // Don't use `print_format_check_diagnostic()`, it
                         // doesn't add any information in stdin mode
                         ExitStatus::Failure
                     } else {
@@ -74,7 +74,7 @@ pub(crate) fn format(
                     }
                 }
                 Err(diagnostics) => {
-                    print_diagnostics(console, diagnostics);
+                    print_format_diagnostics(console, diagnostics);
                     ExitStatus::Error
                 }
             }

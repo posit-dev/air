@@ -23,8 +23,8 @@ use crate::diagnostics::WalkDiagnostic;
 use crate::diagnostics::WriteDiagnostic;
 use crate::diagnostics::from_discover_settings_error;
 use crate::diagnostics::from_parse_diagnostics;
-use crate::diagnostics::print_diagnostics;
-use crate::diagnostics::print_reformatted_diagnostic;
+use crate::diagnostics::print_format_check_diagnostic;
+use crate::diagnostics::print_format_diagnostics;
 
 pub(crate) fn format(
     paths: Vec<PathBuf>,
@@ -37,7 +37,7 @@ pub(crate) fn format(
     let (resolver, default_settings) = match resolve_settings(&paths, configuration) {
         Ok((resolver, default_settings)) => (resolver, default_settings),
         Err(error) => {
-            print_diagnostics(console, vec![from_discover_settings_error(error)]);
+            print_format_diagnostics(console, vec![from_discover_settings_error(error)]);
             return ExitStatus::Error;
         }
     };
@@ -53,7 +53,7 @@ pub(crate) fn format(
                 ExitStatus::Success
             };
 
-            print_diagnostics(console, diagnostics);
+            print_format_diagnostics(console, diagnostics);
 
             status
         }
@@ -69,8 +69,8 @@ pub(crate) fn format(
                 ExitStatus::Success
             };
 
-            print_diagnostics(console, diagnostics);
-            print_reformatted_diagnostic(console, &paths);
+            print_format_diagnostics(console, diagnostics);
+            print_format_check_diagnostic(console, &paths);
 
             status
         }

@@ -22,7 +22,7 @@ use fs::relativize_path;
 use workspace::discovery::DiscoverSettingsError;
 
 /// Prints `diagnostics` sorted by path, followed by a count of the errors
-pub(crate) fn print_diagnostics(console: &mut dyn Console, mut diagnostics: Vec<Error>) {
+pub(crate) fn print_format_diagnostics(console: &mut dyn Console, mut diagnostics: Vec<Error>) {
     // Discovery runs in parallel so order isn't deterministic. The sort is stable
     // to keep each file's diagnostics in source order.
     diagnostics.sort_by(|lhs, rhs| diagnostic_path(lhs).cmp(&diagnostic_path(rhs)));
@@ -37,19 +37,17 @@ pub(crate) fn print_diagnostics(console: &mut dyn Console, mut diagnostics: Vec<
         .count();
 
     if errors > 0 {
-        let summary = ErrorsSummaryDiagnostic::new(errors);
+        let summary = FormatSummaryDiagnostic::new(errors);
         console.error(markup! {{PrintDiagnostic::simple(&summary)}});
     }
 }
 
-/// Prints a single reformat diagnostic, listing all `paths`, sorted.
-/// For use with `--check` when files would change.
-pub(crate) fn print_reformatted_diagnostic(console: &mut dyn Console, paths: &[PathBuf]) {
-    if paths.is_empty() {
-        return;
+/// Prints a single `format --check` diagnostic, listing all `paths`, sorted
+pub(crate) fn print_format_check_diagnostic(console: &mut dyn Console, paths: &[PathBuf]) {
+    if !paths.is_empty() {
+        let summary = FormatCheckSummaryDiagnostic::new(paths);
+        console.error(markup! {{PrintDiagnostic::simple(&summary)}});
     }
-    let summary = ReformatSummaryDiagnostic::new(paths);
-    console.error(markup! {{PrintDiagnostic::simple(&summary)}});
 }
 
 fn diagnostic_path(diagnostic: &Error) -> Option<&Path> {
@@ -319,16 +317,16 @@ impl StdinWithPathsDiagnostic {
     }
 }
 
-/// Closes a run that reported errors, like biome's closing `format` section
+/// Summary report of `format` errors
 #[derive(Debug, Diagnostic)]
 #[diagnostic(category = "format", severity = Error)]
-struct ErrorsSummaryDiagnostic {
+struct FormatSummaryDiagnostic {
     #[message]
     #[description]
     message: MessageAndDescription,
 }
 
-impl ErrorsSummaryDiagnostic {
+impl FormatSummaryDiagnostic {
     fn new(count: usize) -> Self {
         let message = match count {
             1 => String::from("Found 1 error."),
@@ -341,17 +339,18 @@ impl ErrorsSummaryDiagnostic {
     }
 }
 
+/// Summary report of `format --check` files that would be reformatted
 #[derive(Debug, Diagnostic)]
 #[diagnostic(category = "format", severity = Error)]
-struct ReformatSummaryDiagnostic {
+struct FormatCheckSummaryDiagnostic {
     #[message]
     #[description]
     message: MessageAndDescription,
     #[advice]
-    paths: ReformattedPaths,
+    paths: FormatCheckPaths,
 }
 
-impl ReformatSummaryDiagnostic {
+impl FormatCheckSummaryDiagnostic {
     fn new(paths: &[PathBuf]) -> Self {
         let message = match paths.len() {
             1 => String::from("1 file would be reformatted."),
@@ -364,22 +363,22 @@ impl ReformatSummaryDiagnostic {
 
         Self {
             message: MessageAndDescription::from(message),
-            paths: ReformattedPaths(paths),
+            paths: FormatCheckPaths(paths),
         }
     }
 }
 
 #[derive(Debug)]
-struct ReformattedPaths(Vec<String>);
+struct FormatCheckPaths(Vec<String>);
 
-impl Advices for ReformattedPaths {
+impl Advices for FormatCheckPaths {
     fn record(&self, visitor: &mut dyn Visit) -> io::Result<()> {
-        // Emits the bullets of the reformatted list, like:
+        // Emits the bullets of the paths that would be reformatted, like:
         //
         // ```
         // x 2 files would be reformatted.
         //
-        // - a.R
+        // - a.R <- these
         // - b.R
         // ```
         let paths: Vec<&dyn Display> = self.0.iter().map(|path| path as &dyn Display).collect();
