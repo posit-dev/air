@@ -662,7 +662,7 @@ test.R:4:5 parse ━━━━━━━━━━━━━━━━━━━━━
 
 test.R:5:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `(` but instead found `foo`
+  × Expected `(` but instead found `foo`.
 
     3 │ # because it doesn't have a `(`. This is actually pretty decent behavior.
     4 │ foo$if
@@ -670,8 +670,6 @@ test.R:5:1 parse ━━━━━━━━━━━━━━━━━━━━━
       │ ^^^
     6 │ foo::if
     7 │ foo:::if
-
-  i Remove foo
 
 test.R:5:5 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -695,7 +693,7 @@ test.R:5:5 parse ━━━━━━━━━━━━━━━━━━━━━
 
 test.R:6:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `(` but instead found `foo`
+  × Expected `(` but instead found `foo`.
 
     4 │ foo$if
     5 │ foo@if
@@ -703,8 +701,6 @@ test.R:6:1 parse ━━━━━━━━━━━━━━━━━━━━━
       │ ^^^
     7 │ foo:::if
     8 │
-
-  i Remove foo
 
 test.R:6:6 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -728,15 +724,13 @@ test.R:6:6 parse ━━━━━━━━━━━━━━━━━━━━━
 
 test.R:7:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `(` but instead found `foo`
+  × Expected `(` but instead found `foo`.
 
     5 │ foo@if
     6 │ foo::if
   > 7 │ foo:::if
       │ ^^^
     8 │
-
-  i Remove foo
 
 test.R:7:7 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -758,14 +752,14 @@ test.R:7:7 parse ━━━━━━━━━━━━━━━━━━━━━
 
 test.R:8:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `(` but instead the file ends
+  × Expected `(` but instead found the end of the file.
 
     6 │ foo::if
     7 │ foo:::if
   > 8 │
       │
 
-  i the file ends here
+  i The file ends here.
 
     6 │ foo::if
     7 │ foo:::if

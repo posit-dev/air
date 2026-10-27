@@ -144,14 +144,14 @@ test.R:2:2 parse ━━━━━━━━━━━━━━━━━━━━━
 
 test.R:3:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `}` but instead the file ends
+  × Expected `}` but instead found the end of the file.
 
     1 │ # Parenthesis is "not valid" so it isn't matched as a closer for the `{`
     2 │ {)
   > 3 │
       │
 
-  i the file ends here
+  i The file ends here.
 
     1 │ # Parenthesis is "not valid" so it isn't matched as a closer for the `{`
     2 │ {)
@@ -287,13 +287,11 @@ RRoot {
 ```diagnostics
 test.R:1:5 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `]]` but instead found `]`
+  × Expected `]]` but instead found `]`.
 
   > 1 │ x[[2]
       │     ^
     2 │
-
-  i Remove ]
 ```
 
 ## Opening bracket and bracket2, unmatched closing bracket [error]
@@ -348,13 +346,11 @@ RRoot {
 ```diagnostics
 test.R:1:7 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `]]` but instead found `]`
+  × Expected `]]` but instead found `]`.
 
   > 1 │ x[y[[2]
       │       ^
     2 │
-
-  i Remove ]
 ```
 
 ## Opening bracket2 and bracket, matched closing bracket [error]
@@ -409,13 +405,13 @@ RRoot {
 ```diagnostics
 test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `]]` but instead the file ends
+  × Expected `]]` but instead found the end of the file.
 
     1 │ x[[y[2]
   > 2 │
       │
 
-  i the file ends here
+  i The file ends here.
 
     1 │ x[[y[2]
   > 2 │
@@ -482,13 +478,11 @@ RRoot {
 ```diagnostics
 test.R:1:8 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `]]` but instead found `]`
+  × Expected `]]` but instead found `]`.
 
   > 1 │ x[[y[2]]
       │        ^
     2 │
-
-  i Remove ]
 ```
 
 ## An argument name cut off by the end of the file [error]
@@ -529,13 +523,13 @@ RRoot {
 ```diagnostics
 test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `)` but instead the file ends
+  × Expected `)` but instead found the end of the file.
 
     1 │ f(a
   > 2 │
       │
 
-  i the file ends here
+  i The file ends here.
 
     1 │ f(a
   > 2 │
@@ -581,13 +575,13 @@ RRoot {
 ```diagnostics
 test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `)` but instead the file ends
+  × Expected `)` but instead found the end of the file.
 
     1 │ f(a=
   > 2 │
       │
 
-  i the file ends here
+  i The file ends here.
 
     1 │ f(a=
   > 2 │

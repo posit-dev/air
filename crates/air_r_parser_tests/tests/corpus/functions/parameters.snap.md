@@ -614,15 +614,13 @@ test.R:2:10 parse ━━━━━━━━━━━━━━━━━━━━�
 
 test.R:3:11 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `,` but instead found `$`
+  × Expected `,` but instead found `$`.
 
     1 │ function(1) x
     2 │ function("a") x
   > 3 │ function(a$b) x
       │           ^
     4 │
-
-  i Remove $
 ```
 
 Recovery stops at the `=`, so a bad name costs the name and nothing else.
@@ -856,13 +854,11 @@ RRoot {
 ```diagnostics
 test.R:1:12 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `,` but instead found `b`
+  × Expected `,` but instead found `b`.
 
   > 1 │ function(a b) x
       │            ^
     2 │
-
-  i Remove b
 ```
 
 ## A default with no value [error]
@@ -956,13 +952,13 @@ RRoot {
 ```diagnostics
 test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `)` but instead the file ends
+  × Expected `)` but instead found the end of the file.
 
     1 │ function(a
   > 2 │
       │
 
-  i the file ends here
+  i The file ends here.
 
     1 │ function(a
   > 2 │
@@ -1004,13 +1000,13 @@ RRoot {
 ```diagnostics
 test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `)` but instead the file ends
+  × Expected `)` but instead found the end of the file.
 
     1 │ \(x
   > 2 │
       │
 
-  i the file ends here
+  i The file ends here.
 
     1 │ \(x
   > 2 │
@@ -1092,23 +1088,19 @@ RRoot {
 ```diagnostics
 test.R:1:11 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `)` but instead found `}`
+  × Expected `)` but instead found `}`.
 
   > 1 │ function(a} 1
       │           ^
     2 │ function(a] 1
     3 │
 
-  i Remove }
-
 test.R:2:11 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `)` but instead found `]`
+  × Expected `)` but instead found `]`.
 
     1 │ function(a} 1
   > 2 │ function(a] 1
       │           ^
     3 │
-
-  i Remove ]
 ```
