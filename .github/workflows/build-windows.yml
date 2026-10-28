@@ -18,7 +18,7 @@ jobs:
             runner: windows-11-arm
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: "Install rust toolchain (rust-toolchain.toml)"
         run: |
@@ -34,7 +34,7 @@ jobs:
         run: cargo build --release --locked --target ${{ matrix.this.target }} -p air
 
       - name: "Upload unsigned"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: unsigned-${{ matrix.this.target }}
           path: target/${{ matrix.this.target }}/release/air.exe
@@ -68,7 +68,7 @@ jobs:
 
     steps:
       - name: "Download signed"
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: signed-${{ matrix.this.target }}
           path: signed
@@ -88,7 +88,7 @@ jobs:
           sha256sum $ARCHIVE_FILE > $ARCHIVE_FILE.sha256
 
       - name: "Upload"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: artifacts-${{ matrix.this.target }}
           path: |
