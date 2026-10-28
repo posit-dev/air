@@ -170,25 +170,25 @@
 		"adm-zip": "^0.6.1",
 		"fs-extra": "^11.1.1",
 		"p-queue": "npm:@esm2cjs/p-queue@^7.3.0",
-		"vscode-languageclient": "^9.0.1",
-		"which": "^4.0.0"
+		"vscode-languageclient": "^11.0.0",
+		"which": "^7.0.0"
 	},
 	"devDependencies": {
 		"@types/adm-zip": "^0.5.6",
 		"@types/fs-extra": "^11.0.4",
 		"@types/mocha": "^10.0.9",
-		"@types/node": "20.x",
+		"@types/node": "26.x",
 		"@types/vscode": "^1.90.0",
 		"@types/which": "^3.0.4",
 		"@typescript-eslint/eslint-plugin": "^8.10.0",
 		"@typescript-eslint/parser": "^8.7.0",
 		"@vscode/test-cli": "^0.0.10",
-		"@vscode/test-electron": "^2.4.1",
-		"eslint": "^9.13.0",
+		"@vscode/test-electron": "^3.1.0",
+		"eslint": "^10.13.0",
 		"prettier": "^3.4.2",
 		"ts-loader": "^9.5.1",
-		"typescript": "^5.6.3",
+		"typescript": "^7.0.2",
 		"webpack": "^5.95.0",
-		"webpack-cli": "^5.1.4"
+		"webpack-cli": "^7.2.3"
 	}
 }
