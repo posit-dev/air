@@ -30,6 +30,9 @@
     - `for` loops with `...` or `..1` as the loop variable, like
       `for (... in x)`
 
+    - Unary `?` and `~` now have correct precedence when mixed with their binary
+      counterparts (#565).
+
   - Air more accurately rejects certain syntax errors:
 
     - `1 2`, which are two expressions side by side without a semicolon or
