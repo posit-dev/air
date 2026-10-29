@@ -466,18 +466,18 @@ RRoot {
         },
         RExpressionStatement {
             expression: RBinaryExpression {
-                left: RTrueExpression {
-                    true_token: TRUE_KW@157..163 "TRUE" [Newline("\n")] [Whitespace(" ")],
-                },
-                operator: ASSIGN@163..166 "<-" [] [Whitespace(" ")],
-                right: RBinaryExpression {
-                    left: RFalseExpression {
+                left: RBinaryExpression {
+                    left: RTrueExpression {
+                        true_token: TRUE_KW@157..163 "TRUE" [Newline("\n")] [Whitespace(" ")],
+                    },
+                    operator: ASSIGN@163..166 "<-" [] [Whitespace(" ")],
+                    right: RFalseExpression {
                         false_token: FALSE_KW@166..172 "FALSE" [] [Whitespace(" ")],
                     },
-                    operator: EQUAL@172..174 "=" [] [Whitespace(" ")],
-                    right: RNaExpression {
-                        value: NA_LOGICAL_KW@174..176 "NA" [] [],
-                    },
+                },
+                operator: EQUAL@172..174 "=" [] [Whitespace(" ")],
+                right: RNaExpression {
+                    value: NA_LOGICAL_KW@174..176 "NA" [] [],
                 },
             },
             semicolon_token: missing (optional),
