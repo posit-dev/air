@@ -365,7 +365,8 @@ fn can_normalize_to_equal(node: &RBinaryExpression) -> bool {
     }
 
     // i.e. `x <- y <- 1` to `x = y = 1`
-    // i.e. `x = y <- 1` to `x = y = 1`, but notably `x <- y = 1` is a parse error.
+    // i.e. `x <- y = 1` to `x = y = 1`, but notably the original is a runtime error
+    // i.e. `x = y <- 1` to `x = y = 1`
     // i.e. `x <- 1 ? y` to `x = 1 ? y`
     // i.e. `y ? x <- 1` to `y ? x = 1`
     //

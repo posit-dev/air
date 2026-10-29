@@ -26,8 +26,13 @@ f(? x <- 1)
 # Inside binary `<-` (both convert)
 x <- y <- 1
 
-# Inside binary `=` (notably `x <- y = 1` is an R syntax error)
+# Parses in R as `x = (y <- 1)`, and does run.
+# We safely convert to `=`.
 x = y <- 1
+
+# Parses in R as `(x <- y) = 1`, but is a runtime error.
+# For simplicity we convert anyways, this is unlikely to affect anything.
+x <- y = 1
 
 # Inside binary `?`
 x <- 1 ? y

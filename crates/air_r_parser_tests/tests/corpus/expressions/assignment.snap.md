@@ -145,3 +145,162 @@ RRoot {
     eof_token: EOF@62..63 "" [Newline("\n")] [],
 }
 ```
+
+## Equals assignment binds looser than left assignment
+
+`x <- y = 1` is a runtime error in R, but does technically parse like `(x <- y) = 1`.
+`x = y <- 1` parses and runs as `x = (y <- 1)`.
+
+```r
+x <- y = 1
+x = y <- 1
+```
+
+```cst
+RRoot {
+    bom_token: missing (optional),
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RBinaryExpression {
+                left: RBinaryExpression {
+                    left: RIdentifier {
+                        name_token: IDENT@0..2 "x" [] [Whitespace(" ")],
+                    },
+                    operator: ASSIGN@2..5 "<-" [] [Whitespace(" ")],
+                    right: RIdentifier {
+                        name_token: IDENT@5..7 "y" [] [Whitespace(" ")],
+                    },
+                },
+                operator: EQUAL@7..9 "=" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@9..10 "1" [] [],
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+        RExpressionStatement {
+            expression: RBinaryExpression {
+                left: RIdentifier {
+                    name_token: IDENT@10..13 "x" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: EQUAL@13..15 "=" [] [Whitespace(" ")],
+                right: RBinaryExpression {
+                    left: RIdentifier {
+                        name_token: IDENT@15..17 "y" [] [Whitespace(" ")],
+                    },
+                    operator: ASSIGN@17..20 "<-" [] [Whitespace(" ")],
+                    right: RDoubleValue {
+                        value_token: R_DOUBLE_LITERAL@20..21 "1" [] [],
+                    },
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@21..22 "" [Newline("\n")] [],
+}
+```
+
+## Equals assignment binds looser than right assignment
+
+```r
+x -> y = 1
+x = y -> z
+```
+
+```cst
+RRoot {
+    bom_token: missing (optional),
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RBinaryExpression {
+                left: RBinaryExpression {
+                    left: RIdentifier {
+                        name_token: IDENT@0..2 "x" [] [Whitespace(" ")],
+                    },
+                    operator: ASSIGN_RIGHT@2..5 "->" [] [Whitespace(" ")],
+                    right: RIdentifier {
+                        name_token: IDENT@5..7 "y" [] [Whitespace(" ")],
+                    },
+                },
+                operator: EQUAL@7..9 "=" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@9..10 "1" [] [],
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+        RExpressionStatement {
+            expression: RBinaryExpression {
+                left: RIdentifier {
+                    name_token: IDENT@10..13 "x" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: EQUAL@13..15 "=" [] [Whitespace(" ")],
+                right: RBinaryExpression {
+                    left: RIdentifier {
+                        name_token: IDENT@15..17 "y" [] [Whitespace(" ")],
+                    },
+                    operator: ASSIGN_RIGHT@17..20 "->" [] [Whitespace(" ")],
+                    right: RIdentifier {
+                        name_token: IDENT@20..21 "z" [] [],
+                    },
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@21..22 "" [Newline("\n")] [],
+}
+```
+
+## Equals assignment binds tighter than help
+
+```r
+x = y ? z
+x ? y = z
+```
+
+```cst
+RRoot {
+    bom_token: missing (optional),
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RBinaryExpression {
+                left: RBinaryExpression {
+                    left: RIdentifier {
+                        name_token: IDENT@0..2 "x" [] [Whitespace(" ")],
+                    },
+                    operator: EQUAL@2..4 "=" [] [Whitespace(" ")],
+                    right: RIdentifier {
+                        name_token: IDENT@4..6 "y" [] [Whitespace(" ")],
+                    },
+                },
+                operator: WAT@6..8 "?" [] [Whitespace(" ")],
+                right: RIdentifier {
+                    name_token: IDENT@8..9 "z" [] [],
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+        RExpressionStatement {
+            expression: RBinaryExpression {
+                left: RIdentifier {
+                    name_token: IDENT@9..12 "x" [Newline("\n")] [Whitespace(" ")],
+                },
+                operator: WAT@12..14 "?" [] [Whitespace(" ")],
+                right: RBinaryExpression {
+                    left: RIdentifier {
+                        name_token: IDENT@14..16 "y" [] [Whitespace(" ")],
+                    },
+                    operator: EQUAL@16..18 "=" [] [Whitespace(" ")],
+                    right: RIdentifier {
+                        name_token: IDENT@18..19 "z" [] [],
+                    },
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@19..20 "" [Newline("\n")] [],
+}
+```

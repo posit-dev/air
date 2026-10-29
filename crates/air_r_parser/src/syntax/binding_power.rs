@@ -6,11 +6,22 @@ impl BindingPower {
     pub(crate) const LOWEST: Self = Self(0);
 
     // Taken from R's `gram.y` and `?Syntax`
+    //
+    // Confusingly `gram.y` declares `LEFT_ASSIGN` before `EQ_ASSIGN`,
+    // which suggests `=` binds tighter than `<-`, but that is misleading!
+    // Due to how `expr`, `expr_or_help`, and `expr_or_assign_or_help` are
+    // used, in practice `=` binds looser than `<-`. `?Syntax` actually
+    // documents this correctly.
+    //
+    // ```
+    // x <- y = 1 # Parses as `(x <- y) = 1`, but is a runtime error
+    // x = y <- 1 # Parses as `x = (y <- 1)`, and runs
+    // ```
     pub(crate) const BINARY_HELP: Self = Self(1);
     pub(crate) const UNARY_HELP: Self = Self(2);
     pub(crate) const FUNCTION_OR_LOOP_OR_IF: Self = Self(3);
-    pub(crate) const BINARY_LEFT_ASSIGN: Self = Self(4);
-    pub(crate) const BINARY_EQUALS_ASSIGN: Self = Self(5);
+    pub(crate) const BINARY_EQUALS_ASSIGN: Self = Self(4);
+    pub(crate) const BINARY_LEFT_ASSIGN: Self = Self(5);
     pub(crate) const BINARY_RIGHT_ASSIGN: Self = Self(6);
     pub(crate) const BINARY_TILDE: Self = Self(7);
     pub(crate) const UNARY_TILDE: Self = Self(8);
