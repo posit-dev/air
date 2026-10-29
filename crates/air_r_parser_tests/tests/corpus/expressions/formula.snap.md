@@ -36,3 +36,150 @@ RRoot {
     eof_token: EOF@6..7 "" [Newline("\n")] [],
 }
 ```
+
+## Unary tilde doesn't absorb binary tilde
+
+```r
+~x ~ y
+~ ~x ~ y
+a ~ ~b ~ c
+```
+
+```cst
+RRoot {
+    bom_token: missing (optional),
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RBinaryExpression {
+                left: RUnaryExpression {
+                    operator: TILDE@0..1 "~" [] [],
+                    argument: RIdentifier {
+                        name_token: IDENT@1..3 "x" [] [Whitespace(" ")],
+                    },
+                },
+                operator: TILDE@3..5 "~" [] [Whitespace(" ")],
+                right: RIdentifier {
+                    name_token: IDENT@5..6 "y" [] [],
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+        RExpressionStatement {
+            expression: RBinaryExpression {
+                left: RUnaryExpression {
+                    operator: TILDE@6..9 "~" [Newline("\n")] [Whitespace(" ")],
+                    argument: RUnaryExpression {
+                        operator: TILDE@9..10 "~" [] [],
+                        argument: RIdentifier {
+                            name_token: IDENT@10..12 "x" [] [Whitespace(" ")],
+                        },
+                    },
+                },
+                operator: TILDE@12..14 "~" [] [Whitespace(" ")],
+                right: RIdentifier {
+                    name_token: IDENT@14..15 "y" [] [],
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+        RExpressionStatement {
+            expression: RBinaryExpression {
+                left: RBinaryExpression {
+                    left: RIdentifier {
+                        name_token: IDENT@15..18 "a" [Newline("\n")] [Whitespace(" ")],
+                    },
+                    operator: TILDE@18..20 "~" [] [Whitespace(" ")],
+                    right: RUnaryExpression {
+                        operator: TILDE@20..21 "~" [] [],
+                        argument: RIdentifier {
+                            name_token: IDENT@21..23 "b" [] [Whitespace(" ")],
+                        },
+                    },
+                },
+                operator: TILDE@23..25 "~" [] [Whitespace(" ")],
+                right: RIdentifier {
+                    name_token: IDENT@25..26 "c" [] [],
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@26..27 "" [Newline("\n")] [],
+}
+```
+
+## Unary tilde absorbs tighter operators
+
+```r
+~x | y
+```
+
+```cst
+RRoot {
+    bom_token: missing (optional),
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RUnaryExpression {
+                operator: TILDE@0..1 "~" [] [],
+                argument: RBinaryExpression {
+                    left: RIdentifier {
+                        name_token: IDENT@1..3 "x" [] [Whitespace(" ")],
+                    },
+                    operator: OR@3..5 "|" [] [Whitespace(" ")],
+                    right: RIdentifier {
+                        name_token: IDENT@5..6 "y" [] [],
+                    },
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@6..7 "" [Newline("\n")] [],
+}
+```
+
+## Unary tilde doesn't absorb assignment
+
+```r
+~x <- 1
+~x -> y
+```
+
+```cst
+RRoot {
+    bom_token: missing (optional),
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RBinaryExpression {
+                left: RUnaryExpression {
+                    operator: TILDE@0..1 "~" [] [],
+                    argument: RIdentifier {
+                        name_token: IDENT@1..3 "x" [] [Whitespace(" ")],
+                    },
+                },
+                operator: ASSIGN@3..6 "<-" [] [Whitespace(" ")],
+                right: RDoubleValue {
+                    value_token: R_DOUBLE_LITERAL@6..7 "1" [] [],
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+        RExpressionStatement {
+            expression: RBinaryExpression {
+                left: RUnaryExpression {
+                    operator: TILDE@7..9 "~" [Newline("\n")] [],
+                    argument: RIdentifier {
+                        name_token: IDENT@9..11 "x" [] [Whitespace(" ")],
+                    },
+                },
+                operator: ASSIGN_RIGHT@11..14 "->" [] [Whitespace(" ")],
+                right: RIdentifier {
+                    name_token: IDENT@14..15 "y" [] [],
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@15..16 "" [Newline("\n")] [],
+}
+```

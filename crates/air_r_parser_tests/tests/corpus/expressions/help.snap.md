@@ -55,3 +55,154 @@ RRoot {
     eof_token: EOF@19..20 "" [Newline("\n")] [],
 }
 ```
+
+## Unary help doesn't absorb binary help
+
+```r
+?x ? y
+?x ? y ? z
+a ? ?b ? c
+?function(x) x ? y
+```
+
+```cst
+RRoot {
+    bom_token: missing (optional),
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RBinaryExpression {
+                left: RUnaryExpression {
+                    operator: WAT@0..1 "?" [] [],
+                    argument: RIdentifier {
+                        name_token: IDENT@1..3 "x" [] [Whitespace(" ")],
+                    },
+                },
+                operator: WAT@3..5 "?" [] [Whitespace(" ")],
+                right: RIdentifier {
+                    name_token: IDENT@5..6 "y" [] [],
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+        RExpressionStatement {
+            expression: RBinaryExpression {
+                left: RBinaryExpression {
+                    left: RUnaryExpression {
+                        operator: WAT@6..8 "?" [Newline("\n")] [],
+                        argument: RIdentifier {
+                            name_token: IDENT@8..10 "x" [] [Whitespace(" ")],
+                        },
+                    },
+                    operator: WAT@10..12 "?" [] [Whitespace(" ")],
+                    right: RIdentifier {
+                        name_token: IDENT@12..14 "y" [] [Whitespace(" ")],
+                    },
+                },
+                operator: WAT@14..16 "?" [] [Whitespace(" ")],
+                right: RIdentifier {
+                    name_token: IDENT@16..17 "z" [] [],
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+        RExpressionStatement {
+            expression: RBinaryExpression {
+                left: RBinaryExpression {
+                    left: RIdentifier {
+                        name_token: IDENT@17..20 "a" [Newline("\n")] [Whitespace(" ")],
+                    },
+                    operator: WAT@20..22 "?" [] [Whitespace(" ")],
+                    right: RUnaryExpression {
+                        operator: WAT@22..23 "?" [] [],
+                        argument: RIdentifier {
+                            name_token: IDENT@23..25 "b" [] [Whitespace(" ")],
+                        },
+                    },
+                },
+                operator: WAT@25..27 "?" [] [Whitespace(" ")],
+                right: RIdentifier {
+                    name_token: IDENT@27..28 "c" [] [],
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+        RExpressionStatement {
+            expression: RBinaryExpression {
+                left: RUnaryExpression {
+                    operator: WAT@28..30 "?" [Newline("\n")] [],
+                    argument: RFunctionDefinition {
+                        name: FUNCTION_KW@30..38 "function" [] [],
+                        parameters: RParameters {
+                            l_paren_token: L_PAREN@38..39 "(" [] [],
+                            items: RParameterList [
+                                RParameter {
+                                    name: RIdentifier {
+                                        name_token: IDENT@39..40 "x" [] [],
+                                    },
+                                    default: missing (optional),
+                                },
+                            ],
+                            r_paren_token: R_PAREN@40..42 ")" [] [Whitespace(" ")],
+                        },
+                        body: RIdentifier {
+                            name_token: IDENT@42..44 "x" [] [Whitespace(" ")],
+                        },
+                    },
+                },
+                operator: WAT@44..46 "?" [] [Whitespace(" ")],
+                right: RIdentifier {
+                    name_token: IDENT@46..47 "y" [] [],
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@47..48 "" [Newline("\n")] [],
+}
+```
+
+## Unary help absorbs assignment
+
+```r
+?x = 1
+?x <- 1
+```
+
+```cst
+RRoot {
+    bom_token: missing (optional),
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RUnaryExpression {
+                operator: WAT@0..1 "?" [] [],
+                argument: RBinaryExpression {
+                    left: RIdentifier {
+                        name_token: IDENT@1..3 "x" [] [Whitespace(" ")],
+                    },
+                    operator: EQUAL@3..5 "=" [] [Whitespace(" ")],
+                    right: RDoubleValue {
+                        value_token: R_DOUBLE_LITERAL@5..6 "1" [] [],
+                    },
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+        RExpressionStatement {
+            expression: RUnaryExpression {
+                operator: WAT@6..8 "?" [Newline("\n")] [],
+                argument: RBinaryExpression {
+                    left: RIdentifier {
+                        name_token: IDENT@8..10 "x" [] [Whitespace(" ")],
+                    },
+                    operator: ASSIGN@10..13 "<-" [] [Whitespace(" ")],
+                    right: RDoubleValue {
+                        value_token: R_DOUBLE_LITERAL@13..14 "1" [] [],
+                    },
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@14..15 "" [Newline("\n")] [],
+}
+```

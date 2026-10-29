@@ -69,3 +69,21 @@ foo
 1~2
 1~~2
 1~~foo
+
+# ----------------------------------------------------------------------------
+# Mixing unary and binary formulas / help
+
+# `~x ~ y` is `(~x) ~ y`, not `~(x ~ y)`
+# `~x <- 1` is `(~x) <- 1`, not `~(x <- 1)`
+~x ~ y
+~ ~x ~ y
+a ~ ~b ~ c
+~x <- 1
+
+# `?x ? y` is `(?x) ? y`, not `?(x ? y)`
+# `?x <- 1` is `?(x <- 1)`, not `(?x) <- 1` (assign binds tighter!)
+?x ? y
+?x ? y ? z
+a ? ?b ? c
+?x <- 1
+
