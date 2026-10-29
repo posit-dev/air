@@ -18,7 +18,7 @@ jobs:
             runner: macos-14
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: "Install rust toolchain (rust-toolchain.toml)"
         run: |
@@ -45,7 +45,7 @@ jobs:
           shasum -a 256 $ARCHIVE_FILE > $ARCHIVE_FILE.sha256
 
       - name: "Upload"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: artifacts-${{ matrix.this.target }}
           path: |
