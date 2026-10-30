@@ -22,6 +22,9 @@ updates:
     directory: "/editors/code"
     schedule:
       interval: "weekly"
+    ignore:
+      # Updated only when `engines.vscode` changes
+      - dependency-name: "@types/vscode"
     groups:
       # Major updates are intentionally ungrouped so each gets its own PR
       npm-minor-and-patch:
