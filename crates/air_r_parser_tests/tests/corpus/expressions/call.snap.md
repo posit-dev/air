@@ -1330,12 +1330,13 @@ RRoot {
                     items: RArgumentList [
                         RArgument {
                             name_clause: missing (optional),
-                            value: RBinaryExpression {
-                                left: RNaExpression {
-                                    value: NA_LOGICAL_KW@65..68 "NA" [] [Whitespace(" ")],
-                                },
-                                operator: EQUAL@68..70 "=" [] [Whitespace(" ")],
-                                right: missing (required),
+                            value: RBogusExpression {
+                                items: [
+                                    RNaExpression {
+                                        value: NA_LOGICAL_KW@65..68 "NA" [] [Whitespace(" ")],
+                                    },
+                                    EQUAL@68..70 "=" [] [Whitespace(" ")],
+                                ],
                             },
                         },
                     ],
@@ -1350,6 +1351,15 @@ RRoot {
 ```
 
 ```diagnostics
+test.R:2:7 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected `=`.
+
+    1 │ # Unlike `NULL`, other keywords like `NA` aren't allowed here
+  > 2 │ fn(NA = )
+      │       ^
+    3 │
+
 test.R:2:9 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   × Expected an expression but instead found ')'.
@@ -1875,6 +1885,10 @@ fn(..1 =)
 fn("arg" = 1)
 fn("arg" =)
 
+fn(`arg` = 1)
+fn('arg' = 1)
+fn(r"(arg)" = 1)
+
 # Comma tests
 fn(,)
 fn(,,,)
@@ -1904,7 +1918,7 @@ fn(
   NULL = 1
 )
 fn(
-  NULL = 
+  NULL =
 )
 fn(
   NULL = ,
@@ -2299,22 +2313,24 @@ RRoot {
         RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
-                    name_token: IDENT@168..186 "fn" [Newline("\n"), Newline("\n"), Comments("# Comma tests"), Newline("\n")] [],
+                    name_token: IDENT@168..172 "fn" [Newline("\n"), Newline("\n")] [],
                 },
                 arguments: RCallArguments {
-                    l_paren_token: L_PAREN@186..187 "(" [] [],
+                    l_paren_token: L_PAREN@172..173 "(" [] [],
                     items: RArgumentList [
                         RArgument {
-                            name_clause: missing (optional),
-                            value: missing (optional),
-                        },
-                        COMMA@187..188 "," [] [],
-                        RArgument {
-                            name_clause: missing (optional),
-                            value: missing (optional),
+                            name_clause: RArgumentNameClause {
+                                name: RIdentifier {
+                                    name_token: IDENT@173..179 "`arg`" [] [Whitespace(" ")],
+                                },
+                                eq_token: EQUAL@179..181 "=" [] [Whitespace(" ")],
+                            },
+                            value: RDoubleValue {
+                                value_token: R_DOUBLE_LITERAL@181..182 "1" [] [],
+                            },
                         },
                     ],
-                    r_paren_token: R_PAREN@188..189 ")" [] [],
+                    r_paren_token: R_PAREN@182..183 ")" [] [],
                 },
             },
             semicolon_token: missing (optional),
@@ -2322,29 +2338,21 @@ RRoot {
         RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
-                    name_token: IDENT@189..192 "fn" [Newline("\n")] [],
+                    name_token: IDENT@183..186 "fn" [Newline("\n")] [],
                 },
                 arguments: RCallArguments {
-                    l_paren_token: L_PAREN@192..193 "(" [] [],
+                    l_paren_token: L_PAREN@186..187 "(" [] [],
                     items: RArgumentList [
                         RArgument {
-                            name_clause: missing (optional),
-                            value: missing (optional),
-                        },
-                        COMMA@193..194 "," [] [],
-                        RArgument {
-                            name_clause: missing (optional),
-                            value: missing (optional),
-                        },
-                        COMMA@194..195 "," [] [],
-                        RArgument {
-                            name_clause: missing (optional),
-                            value: missing (optional),
-                        },
-                        COMMA@195..196 "," [] [],
-                        RArgument {
-                            name_clause: missing (optional),
-                            value: missing (optional),
+                            name_clause: RArgumentNameClause {
+                                name: RStringValue {
+                                    value: R_SINGLE_QUOTED_STRING_LITERAL@187..193 "'arg'" [] [Whitespace(" ")],
+                                },
+                                eq_token: EQUAL@193..195 "=" [] [Whitespace(" ")],
+                            },
+                            value: RDoubleValue {
+                                value_token: R_DOUBLE_LITERAL@195..196 "1" [] [],
+                            },
                         },
                     ],
                     r_paren_token: R_PAREN@196..197 ")" [] [],
@@ -2361,45 +2369,18 @@ RRoot {
                     l_paren_token: L_PAREN@200..201 "(" [] [],
                     items: RArgumentList [
                         RArgument {
-                            name_clause: missing (optional),
-                            value: missing (optional),
-                        },
-                        COMMA@201..202 "," [] [],
-                        RArgument {
-                            name_clause: missing (optional),
-                            value: missing (optional),
-                        },
-                        COMMA@202..203 "," [] [],
-                        RArgument {
-                            name_clause: missing (optional),
-                            value: RIdentifier {
-                                name_token: IDENT@203..204 "a" [] [],
+                            name_clause: RArgumentNameClause {
+                                name: RStringValue {
+                                    value: R_RAW_STRING_LITERAL@201..210 "r\"(arg)\"" [] [Whitespace(" ")],
+                                },
+                                eq_token: EQUAL@210..212 "=" [] [Whitespace(" ")],
                             },
-                        },
-                        COMMA@204..205 "," [] [],
-                        RArgument {
-                            name_clause: missing (optional),
-                            value: missing (optional),
-                        },
-                        COMMA@205..206 "," [] [],
-                        RArgument {
-                            name_clause: missing (optional),
-                            value: RIdentifier {
-                                name_token: IDENT@206..207 "b" [] [],
+                            value: RDoubleValue {
+                                value_token: R_DOUBLE_LITERAL@212..213 "1" [] [],
                             },
-                        },
-                        COMMA@207..208 "," [] [],
-                        RArgument {
-                            name_clause: missing (optional),
-                            value: missing (optional),
-                        },
-                        COMMA@208..209 "," [] [],
-                        RArgument {
-                            name_clause: missing (optional),
-                            value: missing (optional),
                         },
                     ],
-                    r_paren_token: R_PAREN@209..210 ")" [] [],
+                    r_paren_token: R_PAREN@213..214 ")" [] [],
                 },
             },
             semicolon_token: missing (optional),
@@ -2407,12 +2388,120 @@ RRoot {
         RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
-                    name_token: IDENT@210..230 "fn" [Newline("\n"), Newline("\n"), Comments("# Comment tests"), Newline("\n")] [],
+                    name_token: IDENT@214..232 "fn" [Newline("\n"), Newline("\n"), Comments("# Comma tests"), Newline("\n")] [],
                 },
                 arguments: RCallArguments {
-                    l_paren_token: L_PAREN@230..231 "(" [] [],
+                    l_paren_token: L_PAREN@232..233 "(" [] [],
+                    items: RArgumentList [
+                        RArgument {
+                            name_clause: missing (optional),
+                            value: missing (optional),
+                        },
+                        COMMA@233..234 "," [] [],
+                        RArgument {
+                            name_clause: missing (optional),
+                            value: missing (optional),
+                        },
+                    ],
+                    r_paren_token: R_PAREN@234..235 ")" [] [],
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+        RExpressionStatement {
+            expression: RCall {
+                function: RIdentifier {
+                    name_token: IDENT@235..238 "fn" [Newline("\n")] [],
+                },
+                arguments: RCallArguments {
+                    l_paren_token: L_PAREN@238..239 "(" [] [],
+                    items: RArgumentList [
+                        RArgument {
+                            name_clause: missing (optional),
+                            value: missing (optional),
+                        },
+                        COMMA@239..240 "," [] [],
+                        RArgument {
+                            name_clause: missing (optional),
+                            value: missing (optional),
+                        },
+                        COMMA@240..241 "," [] [],
+                        RArgument {
+                            name_clause: missing (optional),
+                            value: missing (optional),
+                        },
+                        COMMA@241..242 "," [] [],
+                        RArgument {
+                            name_clause: missing (optional),
+                            value: missing (optional),
+                        },
+                    ],
+                    r_paren_token: R_PAREN@242..243 ")" [] [],
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+        RExpressionStatement {
+            expression: RCall {
+                function: RIdentifier {
+                    name_token: IDENT@243..246 "fn" [Newline("\n")] [],
+                },
+                arguments: RCallArguments {
+                    l_paren_token: L_PAREN@246..247 "(" [] [],
+                    items: RArgumentList [
+                        RArgument {
+                            name_clause: missing (optional),
+                            value: missing (optional),
+                        },
+                        COMMA@247..248 "," [] [],
+                        RArgument {
+                            name_clause: missing (optional),
+                            value: missing (optional),
+                        },
+                        COMMA@248..249 "," [] [],
+                        RArgument {
+                            name_clause: missing (optional),
+                            value: RIdentifier {
+                                name_token: IDENT@249..250 "a" [] [],
+                            },
+                        },
+                        COMMA@250..251 "," [] [],
+                        RArgument {
+                            name_clause: missing (optional),
+                            value: missing (optional),
+                        },
+                        COMMA@251..252 "," [] [],
+                        RArgument {
+                            name_clause: missing (optional),
+                            value: RIdentifier {
+                                name_token: IDENT@252..253 "b" [] [],
+                            },
+                        },
+                        COMMA@253..254 "," [] [],
+                        RArgument {
+                            name_clause: missing (optional),
+                            value: missing (optional),
+                        },
+                        COMMA@254..255 "," [] [],
+                        RArgument {
+                            name_clause: missing (optional),
+                            value: missing (optional),
+                        },
+                    ],
+                    r_paren_token: R_PAREN@255..256 ")" [] [],
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+        RExpressionStatement {
+            expression: RCall {
+                function: RIdentifier {
+                    name_token: IDENT@256..276 "fn" [Newline("\n"), Newline("\n"), Comments("# Comment tests"), Newline("\n")] [],
+                },
+                arguments: RCallArguments {
+                    l_paren_token: L_PAREN@276..277 "(" [] [],
                     items: RArgumentList [],
-                    r_paren_token: R_PAREN@231..245 ")" [Newline("\n"), Whitespace("  "), Comments("# comment"), Newline("\n")] [],
+                    r_paren_token: R_PAREN@277..291 ")" [Newline("\n"), Whitespace("  "), Comments("# comment"), Newline("\n")] [],
                 },
             },
             semicolon_token: missing (optional),
@@ -2420,27 +2509,27 @@ RRoot {
         RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
-                    name_token: IDENT@245..248 "fn" [Newline("\n")] [],
+                    name_token: IDENT@291..294 "fn" [Newline("\n")] [],
                 },
                 arguments: RCallArguments {
-                    l_paren_token: L_PAREN@248..249 "(" [] [],
+                    l_paren_token: L_PAREN@294..295 "(" [] [],
                     items: RArgumentList [
                         RArgument {
                             name_clause: missing (optional),
                             value: missing (optional),
                         },
-                        COMMA@249..250 "," [] [],
+                        COMMA@295..296 "," [] [],
                         RArgument {
                             name_clause: missing (optional),
                             value: missing (optional),
                         },
-                        COMMA@250..264 "," [Newline("\n"), Whitespace("  "), Comments("# comment"), Newline("\n")] [],
+                        COMMA@296..310 "," [Newline("\n"), Whitespace("  "), Comments("# comment"), Newline("\n")] [],
                         RArgument {
                             name_clause: missing (optional),
                             value: missing (optional),
                         },
                     ],
-                    r_paren_token: R_PAREN@264..265 ")" [] [],
+                    r_paren_token: R_PAREN@310..311 ")" [] [],
                 },
             },
             semicolon_token: missing (optional),
@@ -2448,26 +2537,26 @@ RRoot {
         RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
-                    name_token: IDENT@265..268 "fn" [Newline("\n")] [],
+                    name_token: IDENT@311..314 "fn" [Newline("\n")] [],
                 },
                 arguments: RCallArguments {
-                    l_paren_token: L_PAREN@268..269 "(" [] [],
+                    l_paren_token: L_PAREN@314..315 "(" [] [],
                     items: RArgumentList [
                         RArgument {
                             name_clause: missing (optional),
                             value: RIdentifier {
-                                name_token: IDENT@269..273 "a" [Newline("\n"), Whitespace("  ")] [],
+                                name_token: IDENT@315..319 "a" [Newline("\n"), Whitespace("  ")] [],
                             },
                         },
-                        COMMA@273..285 "," [] [Whitespace(" "), Comments("# comment1")],
+                        COMMA@319..331 "," [] [Whitespace(" "), Comments("# comment1")],
                         RArgument {
                             name_clause: missing (optional),
                             value: RIdentifier {
-                                name_token: IDENT@285..300 "b" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")],
+                                name_token: IDENT@331..346 "b" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")],
                             },
                         },
                     ],
-                    r_paren_token: R_PAREN@300..302 ")" [Newline("\n")] [],
+                    r_paren_token: R_PAREN@346..348 ")" [Newline("\n")] [],
                 },
             },
             semicolon_token: missing (optional),
@@ -2475,24 +2564,24 @@ RRoot {
         RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
-                    name_token: IDENT@302..305 "fn" [Newline("\n")] [],
+                    name_token: IDENT@348..351 "fn" [Newline("\n")] [],
                 },
                 arguments: RCallArguments {
-                    l_paren_token: L_PAREN@305..306 "(" [] [],
+                    l_paren_token: L_PAREN@351..352 "(" [] [],
                     items: RArgumentList [
                         RArgument {
                             name_clause: RArgumentNameClause {
                                 name: RIdentifier {
-                                    name_token: IDENT@306..321 "a" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment1")],
+                                    name_token: IDENT@352..367 "a" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment1")],
                                 },
-                                eq_token: EQUAL@321..336 "=" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")],
+                                eq_token: EQUAL@367..382 "=" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment2")],
                             },
                             value: RDoubleValue {
-                                value_token: R_DOUBLE_LITERAL@336..351 "1" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment3")],
+                                value_token: R_DOUBLE_LITERAL@382..397 "1" [Newline("\n"), Whitespace("  ")] [Whitespace(" "), Comments("# comment3")],
                             },
                         },
                     ],
-                    r_paren_token: R_PAREN@351..353 ")" [Newline("\n")] [],
+                    r_paren_token: R_PAREN@397..399 ")" [Newline("\n")] [],
                 },
             },
             semicolon_token: missing (optional),
@@ -2500,33 +2589,33 @@ RRoot {
         RExpressionStatement {
             expression: RCall {
                 function: RBracedStatements {
-                    l_curly_token: L_CURLY@353..356 "{" [Newline("\n"), Newline("\n")] [],
+                    l_curly_token: L_CURLY@399..402 "{" [Newline("\n"), Newline("\n")] [],
                     statements: RStatementList [
                         RExpressionStatement {
                             expression: RIdentifier {
-                                name_token: IDENT@356..360 "expr" [] [],
+                                name_token: IDENT@402..406 "expr" [] [],
                             },
                             semicolon_token: missing (optional),
                         },
                     ],
-                    r_curly_token: R_CURLY@360..361 "}" [] [],
+                    r_curly_token: R_CURLY@406..407 "}" [] [],
                 },
                 arguments: RCallArguments {
-                    l_paren_token: L_PAREN@361..362 "(" [] [],
+                    l_paren_token: L_PAREN@407..408 "(" [] [],
                     items: RArgumentList [
                         RArgument {
                             name_clause: RArgumentNameClause {
                                 name: RIdentifier {
-                                    name_token: IDENT@362..364 "a" [] [Whitespace(" ")],
+                                    name_token: IDENT@408..410 "a" [] [Whitespace(" ")],
                                 },
-                                eq_token: EQUAL@364..366 "=" [] [Whitespace(" ")],
+                                eq_token: EQUAL@410..412 "=" [] [Whitespace(" ")],
                             },
                             value: RDoubleValue {
-                                value_token: R_DOUBLE_LITERAL@366..367 "1" [] [],
+                                value_token: R_DOUBLE_LITERAL@412..413 "1" [] [],
                             },
                         },
                     ],
-                    r_paren_token: R_PAREN@367..368 ")" [] [],
+                    r_paren_token: R_PAREN@413..414 ")" [] [],
                 },
             },
             semicolon_token: missing (optional),
@@ -2534,24 +2623,24 @@ RRoot {
         RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
-                    name_token: IDENT@368..421 "fn" [Newline("\n"), Newline("\n"), Comments("# `NULL` argument nam ..."), Newline("\n")] [],
+                    name_token: IDENT@414..467 "fn" [Newline("\n"), Newline("\n"), Comments("# `NULL` argument nam ..."), Newline("\n")] [],
                 },
                 arguments: RCallArguments {
-                    l_paren_token: L_PAREN@421..422 "(" [] [],
+                    l_paren_token: L_PAREN@467..468 "(" [] [],
                     items: RArgumentList [
                         RArgument {
                             name_clause: RArgumentNameClause {
                                 name: RNullExpression {
-                                    null_token: NULL_KW@422..430 "NULL" [Newline("\n"), Whitespace("  ")] [Whitespace(" ")],
+                                    null_token: NULL_KW@468..476 "NULL" [Newline("\n"), Whitespace("  ")] [Whitespace(" ")],
                                 },
-                                eq_token: EQUAL@430..432 "=" [] [Whitespace(" ")],
+                                eq_token: EQUAL@476..478 "=" [] [Whitespace(" ")],
                             },
                             value: RDoubleValue {
-                                value_token: R_DOUBLE_LITERAL@432..433 "1" [] [],
+                                value_token: R_DOUBLE_LITERAL@478..479 "1" [] [],
                             },
                         },
                     ],
-                    r_paren_token: R_PAREN@433..435 ")" [Newline("\n")] [],
+                    r_paren_token: R_PAREN@479..481 ")" [Newline("\n")] [],
                 },
             },
             semicolon_token: missing (optional),
@@ -2559,22 +2648,22 @@ RRoot {
         RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
-                    name_token: IDENT@435..438 "fn" [Newline("\n")] [],
+                    name_token: IDENT@481..484 "fn" [Newline("\n")] [],
                 },
                 arguments: RCallArguments {
-                    l_paren_token: L_PAREN@438..439 "(" [] [],
+                    l_paren_token: L_PAREN@484..485 "(" [] [],
                     items: RArgumentList [
                         RArgument {
                             name_clause: RArgumentNameClause {
                                 name: RNullExpression {
-                                    null_token: NULL_KW@439..447 "NULL" [Newline("\n"), Whitespace("  ")] [Whitespace(" ")],
+                                    null_token: NULL_KW@485..493 "NULL" [Newline("\n"), Whitespace("  ")] [Whitespace(" ")],
                                 },
-                                eq_token: EQUAL@447..449 "=" [] [Whitespace(" ")],
+                                eq_token: EQUAL@493..494 "=" [] [],
                             },
                             value: missing (optional),
                         },
                     ],
-                    r_paren_token: R_PAREN@449..451 ")" [Newline("\n")] [],
+                    r_paren_token: R_PAREN@494..496 ")" [Newline("\n")] [],
                 },
             },
             semicolon_token: missing (optional),
@@ -2582,27 +2671,27 @@ RRoot {
         RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
-                    name_token: IDENT@451..454 "fn" [Newline("\n")] [],
+                    name_token: IDENT@496..499 "fn" [Newline("\n")] [],
                 },
                 arguments: RCallArguments {
-                    l_paren_token: L_PAREN@454..455 "(" [] [],
+                    l_paren_token: L_PAREN@499..500 "(" [] [],
                     items: RArgumentList [
                         RArgument {
                             name_clause: RArgumentNameClause {
                                 name: RNullExpression {
-                                    null_token: NULL_KW@455..463 "NULL" [Newline("\n"), Whitespace("  ")] [Whitespace(" ")],
+                                    null_token: NULL_KW@500..508 "NULL" [Newline("\n"), Whitespace("  ")] [Whitespace(" ")],
                                 },
-                                eq_token: EQUAL@463..465 "=" [] [Whitespace(" ")],
+                                eq_token: EQUAL@508..510 "=" [] [Whitespace(" ")],
                             },
                             value: missing (optional),
                         },
-                        COMMA@465..466 "," [] [],
+                        COMMA@510..511 "," [] [],
                         RArgument {
                             name_clause: missing (optional),
                             value: missing (optional),
                         },
                     ],
-                    r_paren_token: R_PAREN@466..468 ")" [Newline("\n")] [],
+                    r_paren_token: R_PAREN@511..513 ")" [Newline("\n")] [],
                 },
             },
             semicolon_token: missing (optional),
@@ -2610,18 +2699,18 @@ RRoot {
         RExpressionStatement {
             expression: RCall {
                 function: RIdentifier {
-                    name_token: IDENT@468..540 "return" [Newline("\n"), Newline("\n"), Comments("# A standard call, no ..."), Newline("\n")] [],
+                    name_token: IDENT@513..585 "return" [Newline("\n"), Newline("\n"), Comments("# A standard call, no ..."), Newline("\n")] [],
                 },
                 arguments: RCallArguments {
-                    l_paren_token: L_PAREN@540..541 "(" [] [],
+                    l_paren_token: L_PAREN@585..586 "(" [] [],
                     items: RArgumentList [],
-                    r_paren_token: R_PAREN@541..542 ")" [] [],
+                    r_paren_token: R_PAREN@586..587 ")" [] [],
                 },
             },
             semicolon_token: missing (optional),
         },
     ],
-    eof_token: EOF@542..543 "" [Newline("\n")] [],
+    eof_token: EOF@587..588 "" [Newline("\n")] [],
 }
 ```
 

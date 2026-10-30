@@ -1,9 +1,11 @@
 use crate::diagnostics;
 use crate::parser::RParser;
 use crate::parser::Scope;
+use crate::syntax::binding_power::BindingPower;
 use crate::syntax::body::parse_body_expression;
 use crate::syntax::expr::parse_expression;
 use crate::syntax::literal::parse_literal_expression;
+use crate::syntax::restrictions::BinaryEqualsAssign;
 use air_r_syntax::RSyntaxKind;
 use air_r_syntax::RSyntaxKind::DOTDOTI;
 use air_r_syntax::RSyntaxKind::DOTS;
@@ -46,7 +48,8 @@ pub(crate) fn parse_for_statement(p: &mut RParser) -> CompletedMarker {
             )
             .ok();
         p.expect(T![in]);
-        parse_expression(p).or_add_diagnostic(p, diagnostics::expected_for_sequence);
+        parse_expression(p, BindingPower::LOWEST, BinaryEqualsAssign::Deny)
+            .or_add_diagnostic(p, diagnostics::expected_for_sequence);
     });
     p.expect(T![')']);
 
@@ -71,7 +74,8 @@ pub(crate) fn parse_while_statement(p: &mut RParser) -> CompletedMarker {
 
     p.with_scope(Scope::Parenthesis, |p| {
         p.expect(T!['(']);
-        parse_expression(p).or_add_diagnostic(p, diagnostics::expected_condition);
+        parse_expression(p, BindingPower::LOWEST, BinaryEqualsAssign::Deny)
+            .or_add_diagnostic(p, diagnostics::expected_condition);
     });
     p.expect(T![')']);
 

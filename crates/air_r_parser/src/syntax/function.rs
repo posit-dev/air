@@ -1,9 +1,11 @@
 use crate::diagnostics;
 use crate::parser::RParser;
 use crate::parser::Scope;
+use crate::syntax::binding_power::BindingPower;
 use crate::syntax::body::parse_body_expression;
 use crate::syntax::expr::parse_expression;
 use crate::syntax::literal::parse_literal_expression;
+use crate::syntax::restrictions::BinaryEqualsAssign;
 use air_r_syntax::RSyntaxKind;
 use air_r_syntax::RSyntaxKind::DOTDOTI;
 use air_r_syntax::RSyntaxKind::DOTS;
@@ -120,6 +122,7 @@ fn parse_parameter_name(p: &mut RParser) -> ParsedSyntax {
 fn parse_parameter_default(p: &mut RParser) {
     let m = p.start();
     p.bump(T![=]);
-    parse_expression(p).or_add_diagnostic(p, diagnostics::expected_expression);
+    parse_expression(p, BindingPower::LOWEST, BinaryEqualsAssign::Deny)
+        .or_add_diagnostic(p, diagnostics::expected_expression);
     m.complete(p, R_PARAMETER_DEFAULT);
 }

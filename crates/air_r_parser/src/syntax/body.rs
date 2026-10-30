@@ -1,6 +1,7 @@
 use crate::parser::RParser;
 use crate::syntax::binding_power::BindingPower;
-use crate::syntax::expr::parse_expression_with_binding_power;
+use crate::syntax::expr::parse_expression;
+use crate::syntax::restrictions::BinaryEqualsAssign;
 use biome_parser::parsed_syntax::ParsedSyntax;
 
 /// Parse a function, loop, or if body
@@ -11,5 +12,5 @@ use biome_parser::parsed_syntax::ParsedSyntax;
 pub(crate) fn parse_body_expression(p: &mut RParser) -> ParsedSyntax {
     // Treated as left associative
     let binding_power = BindingPower::FUNCTION_OR_LOOP_OR_IF.increment();
-    parse_expression_with_binding_power(p, binding_power)
+    parse_expression(p, binding_power, BinaryEqualsAssign::Allow)
 }

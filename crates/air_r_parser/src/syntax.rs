@@ -12,6 +12,7 @@ mod literal;
 mod loop_statements;
 mod namespace;
 mod parenthesized_expression;
+mod restrictions;
 mod root;
 mod selector;
 mod statement_list;

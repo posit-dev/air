@@ -1,8 +1,10 @@
 use crate::diagnostics;
 use crate::parser::RParser;
 use crate::parser::Scope;
+use crate::syntax::binding_power::BindingPower;
 use crate::syntax::expr::parse_expression;
 use crate::syntax::literal::parse_literal_expression;
+use crate::syntax::restrictions::BinaryEqualsAssign;
 use air_r_syntax::RSyntaxKind;
 use air_r_syntax::RSyntaxKind::DOTDOTI;
 use air_r_syntax::RSyntaxKind::DOTS;
@@ -142,7 +144,7 @@ fn parse_argument_value(p: &mut RParser) {
         return;
     }
 
-    parse_expression(p)
+    parse_expression(p, BindingPower::LOWEST, BinaryEqualsAssign::Deny)
         .or_recover_with_token_set(
             p,
             &ParseRecoveryTokenSet::new(R_BOGUS_EXPRESSION, ARGUMENT_LIST_BOUNDARIES),
