@@ -21,7 +21,7 @@ air_r_parser = { path = "./crates/air_r_parser" }
 air_r_parser_tests = { path = "./crates/air_r_parser_tests" }
 air_r_syntax = { path = "./crates/air_r_syntax" }
 air_r_test_macros = { path = "./crates/air_r_test_macros" }
-anyhow = "1.0.89"
+anyhow = "1.0.104"
 assert_matches = "1.5.0"
 biome_console = { git = "https://github.com/lionel-/biome", rev = "a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9" }
 biome_diagnostics = { git = "https://github.com/lionel-/biome", rev = "a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9" }
@@ -33,7 +33,7 @@ biome_string_case = { git = "https://github.com/lionel-/biome", rev = "a1296ea6b
 biome_text_size = { git = "https://github.com/lionel-/biome", rev = "a1296ea6ba363d8b8d8f02181b2a4ce9315c5ef9" }
 biome_ungrammar = { path = "./crates/biome_ungrammar" }
 bpaf = { version = "0.9.15", features = ["derive"] }
-bytes = "1.8.0"
+bytes = "1.12.1"
 cargo_metadata = "0.23.1"
 case = "1.0.0"
 clap = { version = "4.5.20", features = ["derive"] }
@@ -71,13 +71,13 @@ strum = "0.28"
 syn = "3.0.9"
 tempfile = "3.9.0"
 tests_macros = { path = "./crates/tests_macros" }
-tokio = "1.50.0"
-tokio-util = "0.7.18"
+tokio = "1.54.1"
+tokio-util = "0.7.20"
 toml = "0.8.19"
 # For https://github.com/ebkalderon/tower-lsp/pull/428
 tower-lsp = { branch = "bugfix/patches", git = "https://github.com/lionel-/tower-lsp" }
 tracing = { version = "0.1.40", default-features = false, features = ["std"] }
-tracing-subscriber = "0.3.19"
+tracing-subscriber = "0.3.23"
 unicode-ident = "1.0"
 url = "2.5.3"
 uuid = { version = "1.11.0", features = ["v4"] }
