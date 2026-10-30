@@ -8,7 +8,11 @@
 		"inlineSourceMap": false,
 		"rootDir": "src",
 		"isolatedModules": true /* esbuild transpiles files one at a time, so reject code that can't be */,
-		"strict": true /* enable all strict type-checking options */
+		"strict": true /* enable all strict type-checking options */,
+		/* `@esm2cjs/p-queue`'s `exports` map has no `types` condition, so point at a local shim */
+		"paths": {
+			"p-queue": ["./types/p-queue.d.ts"]
+		}
 		/* Additional Checks */
 		// "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
 		// "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
