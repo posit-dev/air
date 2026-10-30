@@ -865,3 +865,117 @@ foo( bar[
   2
 ]
 )
+
+# ------------------------------------------------------------------------
+# Break after `=` - https://github.com/posit-dev/air/issues/527
+
+foo(
+  x,
+  long_argument_name = "a_very_long_string_value_that_exceeds_eighty_columns_when_on_one_line"
+)
+
+# Already broken after `=` remains idempotent
+foo(
+  x,
+  long_argument_name =
+    "a_very_long_string_value_that_exceeds_eighty_columns_when_on_one_line"
+)
+
+# Fits on one line once enclosing call expands (does not break after `=`)
+foo(medium_name = "a_string_that_fits_on_indented_line_once_foo_call_expands_ok")
+
+# Collapses newline after `=` when `name = value` fits on one line
+foo(
+  x =
+    "short_value"
+)
+
+# Short name with a long call expands call arguments rather than breaking at `=`
+foo(
+  x = another_function(
+    long_argument_one,
+    long_argument_two,
+    long_argument_three
+  )
+)
+
+# Pipe chain where `name = <lhs> |>` fits on the line stays on the `=` line
+process_data(
+  data = starwars |>
+    filter(species == "Human") |>
+    select(name, height, mass)
+)
+
+# Pipe chain where `name = <lhs> |>` exceeds 80 columns breaks after `=`
+process_data(
+  filtered_human_character_subset_from_starwars_dataset = starwars_character_data |>
+    filter(species == "Human") |>
+    select(name, height, mass)
+)
+
+# Formulas (`~`):
+# 1. Short name + multi-line formula keeps `lhs ~` on the `=` line
+# 2. Long name + single-line formula breaks after `=` and keeps formula flat
+# 3. Long name + multi-line formula where `name = <lhs> ~` > 80 breaks after `=`
+# 4. Long name + formula with RHS chain where `name = <lhs> ~ <rhs1> +` > 80
+fit_models(
+  short_formula = Surv(dm_py, diabetes) ~
+    AGE +
+    SEX,
+  proportional_hazards_regression_model_formula = Surv(dm_py, diabetes) ~ AGE + SEX,
+  proportional_hazards_regression_model_formula_specification = Surv(dm_py, diabetes) ~
+    AGE +
+    SEX,
+  proportional_hazards_regression_rhs_chain_formula = Surv(dm_py, diabetes) ~ AGE +
+    SEX
+)
+
+# Braced expressions, functions, and control flow never break after `=`
+foo(
+  long_argument_name_that_never_breaks_before_braces = {
+    x + 1
+  },
+  long_argument_name_that_never_breaks_before_anon_fn = function(a, b) a + b,
+  long_argument_name_that_never_breaks_before_lambda = \(a, b) a + b,
+  long_argument_name_that_never_breaks_before_if_stmt = if (cond) a else b,
+  long_argument_name_that_never_breaks_before_for_stmt = for (i in xs) print(i)
+)
+
+# Comments around `=` and argument value
+foo(
+  long_argument_name = # trailing comment on `=`
+    "a_very_long_string_value_that_exceeds_eighty_columns_when_on_one_line",
+  another_long_name =
+    # leading comment before value
+    "a_very_long_string_value_that_exceeds_eighty_columns_when_on_one_line"
+)
+
+check_inputs <- function(x, y, n, level, min.level, max.level, file_path, lookup_table, allow_null = FALSE) {
+  stopifnot(
+    is.character(x),
+    `Provide equal-length x and y vectors, or a single y value` = lengths_match(x, y) || length(y) == 1L,
+    "wait_done should be a logical scalar" =
+      IsScalarLogical(wait_done) && !is.na(wait_done),
+    "min.level must be an integer in [0, 30]." = length(min.level) == 1 && .IsValidLevel(min.level),
+    `n must be a non-missing numeric scalar (length 1) or Inf` = is.numeric(n) &&
+      length(n) == 1L &&
+      !is.na(n),
+    `Expected a custom_error condition with a matching diagnostic message` = inherits(x, "custom_error") &&
+      grepl("expected diagnostic message", x$message),
+    `file_path should be a single file name or an open connection` = is_character_or_connection(file_path),
+    "Level must be an integer between 0 and 30 inclusive." = .IsValidLevel(level),
+    "Level must not be an invalid integer outside 0 and 30." = !.IsValidLevel(level),
+    "Level bounds must be ordered and within valid range" = (min.level <= max.level && max.level <= 30L),
+    "Configuration object for file_path must have is_valid flag" = get_configuration(file_path)$is_valid,
+    `Configuration options must be valid for both x and y inputs` = is_valid_configuration(
+      x,
+      y,
+      allow_null = allow_null,
+      strict_mode = TRUE
+    ),
+    "file_path entry in lookup_table must be marked valid" = lookup_table[file_path, "valid", drop = TRUE],
+    `file_path must exist as an entry in the provided lookup_table` = lookup_table[[file_path]],
+    `allow_null is not supported; provide a non-null input value` = !allow_null,
+    `allow_null is not supported; please provide a non-null input value` = !allow_null
+  )
+}
