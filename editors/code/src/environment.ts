@@ -1,9 +1,9 @@
-import * as vscode from "vscode";
 import * as path from "path";
+import * as vscode from "vscode";
 
+import { State, StateChange } from "./lsp";
 import * as output from "./output";
 import { getWorkspaceSettings } from "./settings";
-import { State, StateChange } from "./lsp";
 
 // Manages the `PATH` environment variable contribution we make to integrated
 // terminals.

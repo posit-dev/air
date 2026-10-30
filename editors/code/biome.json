@@ -1,0 +1,66 @@
+{
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"root": false,
+	"extends": "//",
+	"files": {
+		"includes": ["src/**/*.ts", "*.js", "*.mjs"]
+	},
+	"formatter": {
+		"indentStyle": "tab",
+		"indentWidth": 4
+	},
+	"javascript": {
+		"formatter": {
+			"semicolons": "always",
+			"trailingCommas": "all"
+		}
+	},
+	"assist": {
+		"actions": {
+			"preset": "none",
+			"source": {
+				"organizeImports": {
+					"level": "on",
+					"options": {
+						"groups": [[":NODE:", ":PACKAGE:"], ":BLANK_LINE:", ":PATH:"]
+					}
+				}
+			}
+		}
+	},
+	"linter": {
+		"rules": {
+			"preset": "none",
+			"style": {
+				"useBlockStatements": "error",
+				"useThrowOnlyError": "error",
+				"useNamingConvention": {
+					"level": "error",
+					"options": {
+						"strictCase": false,
+						"conventions": [
+							{
+								"selector": { "kind": "importNamespace" },
+								"formats": ["camelCase", "PascalCase"]
+							},
+							{
+								"selector": { "kind": "importAlias" },
+								"formats": ["camelCase", "PascalCase"]
+							},
+							{
+								"selector": { "kind": "any" },
+								"match": ".*"
+							}
+						]
+					}
+				}
+			},
+			"suspicious": {
+				"noDoubleEquals": {
+					"level": "error",
+					"options": { "ignoreNull": false }
+				}
+			}
+		}
+	}
+}

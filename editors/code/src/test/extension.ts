@@ -1,6 +1,6 @@
-import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
+import * as vscode from "vscode";
 
 import { AIR_EXTENSION_ID, EXTENSION_ROOT_DIR } from "../constants";
 

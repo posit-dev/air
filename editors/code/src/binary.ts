@@ -1,9 +1,9 @@
-import * as vscode from "vscode";
 import * as fs from "fs";
+import * as vscode from "vscode";
 import which from "which";
 
-import * as output from "./output";
 import { AIR_BINARY_NAME, BUNDLED_AIR_EXECUTABLE } from "./constants";
+import * as output from "./output";
 
 export type ExecutableStrategy = "bundled" | "environment" | "path";
 

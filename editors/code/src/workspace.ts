@@ -1,6 +1,7 @@
+import * as fs from "fs-extra";
 import path from "path";
 import * as vscode from "vscode";
-import * as fs from "fs-extra";
+
 import * as output from "./output";
 
 /*

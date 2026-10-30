@@ -6,7 +6,7 @@
     },
     "[typescript]": {
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+        "editor.defaultFormatter": "biomejs.biome"
     },
     "[python]": {
         "editor.formatOnSave": true,
@@ -19,5 +19,9 @@
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true,
-    "diffEditor.ignoreTrimWhitespace": false
+    "diffEditor.ignoreTrimWhitespace": false,
+    // The Biome extension only searches `node_modules` at the workspace root,
+    // so we have to point it at the ont in `editors/code/node_modules`, put
+    // there by calling `npm i -D -E @biomejs/biome` after `cd editors/code`
+    "biome.lsp.bin": "editors/code/node_modules/@biomejs/biome/bin/biome",
 }

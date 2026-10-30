@@ -1,6 +1,6 @@
-import * as vscode from "vscode";
-import * as url from "url";
 import * as path from "path";
+import * as url from "url";
+import * as vscode from "vscode";
 
 export function sleep(ms: number) {
 	return new Promise((resolve) => setTimeout(resolve, ms));

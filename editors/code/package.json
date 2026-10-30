@@ -162,7 +162,8 @@
 		"compile-tests": "tsc -p . --outDir out",
 		"watch-tests": "tsc -p . -w --outDir out",
 		"pretest": "npm run compile-tests && npm run compile && npm run lint",
-		"lint": "eslint src",
+		"lint": "biome check",
+		"format": "biome check --write --linter-enabled=false",
 		"test": "vscode-test"
 	},
 	"dependencies": {
@@ -174,18 +175,15 @@
 		"which": "^5.0.0"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "2.6.4",
 		"@types/adm-zip": "^0.5.6",
 		"@types/fs-extra": "^11.0.4",
 		"@types/mocha": "^10.0.9",
 		"@types/node": "20.x",
 		"@types/vscode": "~1.91.0",
 		"@types/which": "^3.0.4",
-		"@typescript-eslint/eslint-plugin": "^8.10.0",
-		"@typescript-eslint/parser": "^8.7.0",
 		"@vscode/test-cli": "^0.0.10",
 		"@vscode/test-electron": "^3.1.0",
-		"eslint": "^9.13.0",
-		"prettier": "^3.4.2",
 		"ts-loader": "^9.5.1",
 		"typescript": "^5.6.3",
 		"webpack": "^5.95.0",

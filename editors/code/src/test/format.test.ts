@@ -1,7 +1,7 @@
-import * as vscode from "vscode";
 import * as assert from "assert";
 import * as fs from "fs";
 import { before } from "mocha";
+import * as vscode from "vscode";
 
 import { stripWhitespace, withFileEditor } from "./editor-utils";
 import { snapshotPath, testPath, waitLsp, withToml } from "./extension";
