@@ -9,6 +9,8 @@ updates:
       # Pinned to forks on purpose, updated by hand
       - dependency-name: "biome_*"
       - dependency-name: "tower-lsp"
+      # Updated only when we send in a new Zed extension
+      - dependency-name: "zed_extension_api"
     groups:
       # Major updates are intentionally ungrouped so each gets its own PR
       cargo-minor-and-patch:
