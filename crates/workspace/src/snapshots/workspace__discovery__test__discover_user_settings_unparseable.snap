@@ -7,4 +7,4 @@ TOML parse error at line 1, column 6
   |
 1 | this is not valid toml
   |      ^
-expected `.`, `=`
+key with no value, expected `=`

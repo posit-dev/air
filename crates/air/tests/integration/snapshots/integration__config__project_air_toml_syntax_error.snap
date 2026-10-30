@@ -9,11 +9,11 @@ exit_code: 255
 ----- stderr -----
 air.toml:2:12 configuration ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × expected `.`, `=`
+  × key with no value, expected `=`
   
     1 │ [format]
   > 2 │ line-width 80
-      │            ^
+      │            
     3 │ 
   
 
