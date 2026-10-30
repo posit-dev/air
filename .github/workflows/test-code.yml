@@ -34,6 +34,12 @@ jobs:
         run: |
           cargo install --path "crates/air"
 
+      # `@vscode/test-electron` requires Node 22+, so don't rely on the runner's default
+      - name: Install Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
       - name: Install X Virtual Framebuffer
         run: |
           sudo apt-get install xvfb
