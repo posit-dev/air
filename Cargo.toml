@@ -68,7 +68,7 @@ similar = "3.2"
 similar-asserts = "1.6.0"
 struct-field-names-as-array = "0.3.0"
 strum = "0.28"
-syn = "2.0.59"
+syn = "3.0.9"
 tempfile = "3.9.0"
 tests_macros = { path = "./crates/tests_macros" }
 tokio = "1.50.0"
