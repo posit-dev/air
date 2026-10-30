@@ -69,7 +69,7 @@ _arguments "${_arguments_options[@]}" : \
 ;;
 (help)
 _arguments "${_arguments_options[@]}" : \
-":: :_air__help_commands" \
+":: :_air__subcmd__help_commands" \
 "*::: :->help" \
 && ret=0
 
@@ -114,18 +114,18 @@ _air_commands() {
     )
     _describe -t commands 'air commands' commands "$@"
 }
-(( $+functions[_air__format_commands] )) ||
-_air__format_commands() {
+(( $+functions[_air__subcmd__format_commands] )) ||
+_air__subcmd__format_commands() {
     local commands; commands=()
     _describe -t commands 'air format commands' commands "$@"
 }
-(( $+functions[_air__generate-shell-completion_commands] )) ||
-_air__generate-shell-completion_commands() {
+(( $+functions[_air__subcmd__generate-shell-completion_commands] )) ||
+_air__subcmd__generate-shell-completion_commands() {
     local commands; commands=()
     _describe -t commands 'air generate-shell-completion commands' commands "$@"
 }
-(( $+functions[_air__help_commands] )) ||
-_air__help_commands() {
+(( $+functions[_air__subcmd__help_commands] )) ||
+_air__subcmd__help_commands() {
     local commands; commands=(
 'format:Format a set of files or directories' \
 'language-server:Start a language server' \
@@ -134,28 +134,28 @@ _air__help_commands() {
     )
     _describe -t commands 'air help commands' commands "$@"
 }
-(( $+functions[_air__help__format_commands] )) ||
-_air__help__format_commands() {
+(( $+functions[_air__subcmd__help__subcmd__format_commands] )) ||
+_air__subcmd__help__subcmd__format_commands() {
     local commands; commands=()
     _describe -t commands 'air help format commands' commands "$@"
 }
-(( $+functions[_air__help__generate-shell-completion_commands] )) ||
-_air__help__generate-shell-completion_commands() {
+(( $+functions[_air__subcmd__help__subcmd__generate-shell-completion_commands] )) ||
+_air__subcmd__help__subcmd__generate-shell-completion_commands() {
     local commands; commands=()
     _describe -t commands 'air help generate-shell-completion commands' commands "$@"
 }
-(( $+functions[_air__help__help_commands] )) ||
-_air__help__help_commands() {
+(( $+functions[_air__subcmd__help__subcmd__help_commands] )) ||
+_air__subcmd__help__subcmd__help_commands() {
     local commands; commands=()
     _describe -t commands 'air help help commands' commands "$@"
 }
-(( $+functions[_air__help__language-server_commands] )) ||
-_air__help__language-server_commands() {
+(( $+functions[_air__subcmd__help__subcmd__language-server_commands] )) ||
+_air__subcmd__help__subcmd__language-server_commands() {
     local commands; commands=()
     _describe -t commands 'air help language-server commands' commands "$@"
 }
-(( $+functions[_air__language-server_commands] )) ||
-_air__language-server_commands() {
+(( $+functions[_air__subcmd__language-server_commands] )) ||
+_air__subcmd__language-server_commands() {
     local commands; commands=()
     _describe -t commands 'air language-server commands' commands "$@"
 }

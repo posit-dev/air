@@ -24,28 +24,28 @@ _air() {
                 cmd="air"
                 ;;
             air,format)
-                cmd="air__format"
+                cmd="air__subcmd__format"
                 ;;
             air,generate-shell-completion)
-                cmd="air__generate__shell__completion"
+                cmd="air__subcmd__generate__subcmd__shell__subcmd__completion"
                 ;;
             air,help)
-                cmd="air__help"
+                cmd="air__subcmd__help"
                 ;;
             air,language-server)
-                cmd="air__language__server"
+                cmd="air__subcmd__language__subcmd__server"
                 ;;
-            air__help,format)
-                cmd="air__help__format"
+            air__subcmd__help,format)
+                cmd="air__subcmd__help__subcmd__format"
                 ;;
-            air__help,generate-shell-completion)
-                cmd="air__help__generate__shell__completion"
+            air__subcmd__help,generate-shell-completion)
+                cmd="air__subcmd__help__subcmd__generate__subcmd__shell__subcmd__completion"
                 ;;
-            air__help,help)
-                cmd="air__help__help"
+            air__subcmd__help,help)
+                cmd="air__subcmd__help__subcmd__help"
                 ;;
-            air__help,language-server)
-                cmd="air__help__language__server"
+            air__subcmd__help,language-server)
+                cmd="air__subcmd__help__subcmd__language__subcmd__server"
                 ;;
             *)
                 ;;
@@ -71,8 +71,8 @@ _air() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        air__format)
-            opts="-h --check --force --no-configuration --stdin-file-path --log-level --no-color --help [PATHS]..."
+        air__subcmd__format)
+            opts="-h --check --force --no-configuration --stdin-file-path --log-level --no-color --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -93,7 +93,7 @@ _air() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        air__generate__shell__completion)
+        air__subcmd__generate__subcmd__shell__subcmd__completion)
             opts="-h --log-level --no-color --help bash elvish fish powershell zsh"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -111,7 +111,7 @@ _air() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        air__help)
+        air__subcmd__help)
             opts="format language-server generate-shell-completion help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -125,7 +125,7 @@ _air() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        air__help__format)
+        air__subcmd__help__subcmd__format)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -139,7 +139,7 @@ _air() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        air__help__generate__shell__completion)
+        air__subcmd__help__subcmd__generate__subcmd__shell__subcmd__completion)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -153,7 +153,7 @@ _air() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        air__help__help)
+        air__subcmd__help__subcmd__help)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -167,7 +167,7 @@ _air() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        air__help__language__server)
+        air__subcmd__help__subcmd__language__subcmd__server)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -181,7 +181,7 @@ _air() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        air__language__server)
+        air__subcmd__language__subcmd__server)
             opts="-h --log-level --no-color --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
