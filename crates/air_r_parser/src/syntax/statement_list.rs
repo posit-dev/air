@@ -1,7 +1,9 @@
 use crate::diagnostics;
 use crate::parser::RParser;
 use crate::parser::Scope;
+use crate::syntax::binding_power::BindingPower;
 use crate::syntax::expr::parse_expression;
+use crate::syntax::restrictions::BinaryEqualsAssign;
 use air_r_syntax::RSyntaxKind;
 use air_r_syntax::RSyntaxKind::R_BOGUS_EXPRESSION;
 use air_r_syntax::RSyntaxKind::R_EMPTY_STATEMENT;
@@ -40,7 +42,7 @@ pub(crate) fn parse_statement_list(p: &mut RParser, close: RSyntaxKind) {
                 statement.complete(p, R_EMPTY_STATEMENT);
             }
             _ => {
-                match parse_expression(p) {
+                match parse_expression(p, BindingPower::LOWEST, BinaryEqualsAssign::Allow) {
                     Present(expression) => {
                         if !p.at(T![EOF])
                             && !p.at(close)

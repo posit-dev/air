@@ -6,6 +6,7 @@
 use crate::parser::RParser;
 use crate::syntax::associativity::Associativity;
 use crate::syntax::binary::parse_binary_expression;
+use crate::syntax::binary::parse_binary_expression_unexpected_binary_equals_assign;
 use crate::syntax::binding_power::BindingPower;
 use crate::syntax::braced_statements::parse_braced_statements;
 use crate::syntax::call::parse_call_expression;
@@ -20,6 +21,7 @@ use crate::syntax::loop_statements::parse_repeat_statement;
 use crate::syntax::loop_statements::parse_while_statement;
 use crate::syntax::namespace::parse_namespace_expression;
 use crate::syntax::parenthesized_expression::parse_parenthesized_expression;
+use crate::syntax::restrictions::BinaryEqualsAssign;
 use crate::syntax::unary::parse_unary_expression;
 use air_r_syntax::RSyntaxKind::*;
 use air_r_syntax::T;
@@ -29,14 +31,11 @@ use biome_parser::parsed_syntax::ParsedSyntax;
 use biome_parser::parsed_syntax::ParsedSyntax::Absent;
 use biome_parser::parsed_syntax::ParsedSyntax::Present;
 
-pub(crate) fn parse_expression(p: &mut RParser) -> ParsedSyntax {
-    parse_expression_with_binding_power(p, BindingPower::LOWEST)
-}
-
 /// The Pratt loop
-pub(crate) fn parse_expression_with_binding_power(
+pub(crate) fn parse_expression(
     p: &mut RParser,
     current_binding_power: BindingPower,
+    binary_equals_assign: BinaryEqualsAssign,
 ) -> ParsedSyntax {
     debug_assert!(
         current_binding_power <= BindingPower::HIGHEST,
@@ -45,10 +44,21 @@ pub(crate) fn parse_expression_with_binding_power(
     );
 
     let mut lhs = match p.cur() {
-        kind @ T![?] => parse_unary_expression(p, kind, BindingPower::UNARY_HELP),
-        kind @ T![~] => parse_unary_expression(p, kind, BindingPower::UNARY_TILDE),
-        kind @ T![!] => parse_unary_expression(p, kind, BindingPower::UNARY_NOT),
-        kind @ (T![+] | T![-]) => parse_unary_expression(p, kind, BindingPower::UNARY_PLUS_MINUS),
+        kind @ T![?] => {
+            parse_unary_expression(p, kind, BindingPower::UNARY_HELP, BinaryEqualsAssign::Allow)
+        }
+        kind @ T![~] => {
+            parse_unary_expression(p, kind, BindingPower::UNARY_TILDE, binary_equals_assign)
+        }
+        kind @ T![!] => {
+            parse_unary_expression(p, kind, BindingPower::UNARY_NOT, binary_equals_assign)
+        }
+        kind @ (T![+] | T![-]) => parse_unary_expression(
+            p,
+            kind,
+            BindingPower::UNARY_PLUS_MINUS,
+            binary_equals_assign,
+        ),
         R_INTEGER_LITERAL => parse_literal_expression(p, R_INTEGER_LITERAL, R_INTEGER_VALUE),
         R_DOUBLE_LITERAL => parse_literal_expression(p, R_DOUBLE_LITERAL, R_DOUBLE_VALUE),
         R_COMPLEX_LITERAL => parse_literal_expression(p, R_COMPLEX_LITERAL, R_COMPLEX_VALUE),
@@ -107,6 +117,7 @@ pub(crate) fn parse_expression_with_binding_power(
                     kind,
                     BindingPower::BINARY_HELP,
                     Associativity::BINARY_HELP,
+                    binary_equals_assign,
                 )
             }
             kind @ (T![<-] | T![<<-] | T![:=])
@@ -118,16 +129,30 @@ pub(crate) fn parse_expression_with_binding_power(
                     kind,
                     BindingPower::BINARY_LEFT_ASSIGN,
                     Associativity::BINARY_LEFT_ASSIGN,
+                    binary_equals_assign,
                 )
             }
             kind @ T![=] if BindingPower::BINARY_EQUALS_ASSIGN >= current_binding_power => {
-                parse_binary_expression(
-                    p,
-                    lhs,
-                    kind,
-                    BindingPower::BINARY_EQUALS_ASSIGN,
-                    Associativity::BINARY_EQUALS_ASSIGN,
-                )
+                match binary_equals_assign {
+                    BinaryEqualsAssign::Allow => parse_binary_expression(
+                        p,
+                        lhs,
+                        kind,
+                        BindingPower::BINARY_EQUALS_ASSIGN,
+                        Associativity::BINARY_EQUALS_ASSIGN,
+                        binary_equals_assign,
+                    ),
+                    BinaryEqualsAssign::Deny => {
+                        parse_binary_expression_unexpected_binary_equals_assign(
+                            p,
+                            lhs,
+                            kind,
+                            BindingPower::BINARY_EQUALS_ASSIGN,
+                            Associativity::BINARY_EQUALS_ASSIGN,
+                            BinaryEqualsAssign::Allow,
+                        )
+                    }
+                }
             }
             kind @ (T![->] | T![->>])
                 if BindingPower::BINARY_RIGHT_ASSIGN >= current_binding_power =>
@@ -138,6 +163,7 @@ pub(crate) fn parse_expression_with_binding_power(
                     kind,
                     BindingPower::BINARY_RIGHT_ASSIGN,
                     Associativity::BINARY_RIGHT_ASSIGN,
+                    binary_equals_assign,
                 )
             }
             kind @ T![~] if BindingPower::BINARY_TILDE >= current_binding_power => {
@@ -147,6 +173,7 @@ pub(crate) fn parse_expression_with_binding_power(
                     kind,
                     BindingPower::BINARY_TILDE,
                     Associativity::BINARY_TILDE,
+                    binary_equals_assign,
                 )
             }
             kind @ (T![|] | T![||]) if BindingPower::BINARY_OR >= current_binding_power => {
@@ -156,6 +183,7 @@ pub(crate) fn parse_expression_with_binding_power(
                     kind,
                     BindingPower::BINARY_OR,
                     Associativity::BINARY_OR,
+                    binary_equals_assign,
                 )
             }
             kind @ (T![&] | T![&&]) if BindingPower::BINARY_AND >= current_binding_power => {
@@ -165,6 +193,7 @@ pub(crate) fn parse_expression_with_binding_power(
                     kind,
                     BindingPower::BINARY_AND,
                     Associativity::BINARY_AND,
+                    binary_equals_assign,
                 )
             }
             kind @ (T![<] | T![<=] | T![>] | T![>=] | T![==] | T![!=])
@@ -176,6 +205,7 @@ pub(crate) fn parse_expression_with_binding_power(
                     kind,
                     BindingPower::BINARY_COMPARISON,
                     Associativity::BINARY_COMPARISON,
+                    binary_equals_assign,
                 )
             }
             kind @ (T![+] | T![-]) if BindingPower::BINARY_PLUS_MINUS >= current_binding_power => {
@@ -185,6 +215,7 @@ pub(crate) fn parse_expression_with_binding_power(
                     kind,
                     BindingPower::BINARY_PLUS_MINUS,
                     Associativity::BINARY_PLUS_MINUS,
+                    binary_equals_assign,
                 )
             }
             kind @ (T![*] | T![/])
@@ -196,6 +227,7 @@ pub(crate) fn parse_expression_with_binding_power(
                     kind,
                     BindingPower::BINARY_MULTIPLY_DIVIDE,
                     Associativity::BINARY_MULTIPLY_DIVIDE,
+                    binary_equals_assign,
                 )
             }
             kind @ (SPECIAL | T![|>])
@@ -207,6 +239,7 @@ pub(crate) fn parse_expression_with_binding_power(
                     kind,
                     BindingPower::BINARY_SPECIAL_OR_PIPE,
                     Associativity::BINARY_SPECIAL_OR_PIPE,
+                    binary_equals_assign,
                 )
             }
             kind @ T![:] if BindingPower::BINARY_COLON >= current_binding_power => {
@@ -216,6 +249,7 @@ pub(crate) fn parse_expression_with_binding_power(
                     kind,
                     BindingPower::BINARY_COLON,
                     Associativity::BINARY_COLON,
+                    binary_equals_assign,
                 )
             }
             kind @ (T![^] | T![**])
@@ -227,6 +261,7 @@ pub(crate) fn parse_expression_with_binding_power(
                     kind,
                     BindingPower::BINARY_EXPONENTIATE,
                     Associativity::BINARY_EXPONENTIATE,
+                    binary_equals_assign,
                 )
             }
             // No expression to continue, or upcoming one binds looser than

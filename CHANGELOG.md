@@ -44,6 +44,10 @@
 
     - `x$1` where the right-hand side is not an identifier
 
+    - `=` assignment where R doesn't allow it, i.e. in argument values,
+      parameter defaults, `if` and `while` conditions, and `for` loop sequences
+      (#563)
+
 - Air now emits much improved diagnostics at the command line. In particular,
   syntax errors in both R files and your `air.toml` are reported with a *code
   frame* that shows the exact location of the issue (#558):

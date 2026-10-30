@@ -1,8 +1,10 @@
 use crate::diagnostics;
 use crate::parser::RParser;
 use crate::parser::Scope;
+use crate::syntax::binding_power::BindingPower;
 use crate::syntax::body::parse_body_expression;
 use crate::syntax::expr::parse_expression;
+use crate::syntax::restrictions::BinaryEqualsAssign;
 use air_r_syntax::RSyntaxKind::R_ELSE_CLAUSE;
 use air_r_syntax::RSyntaxKind::R_IF_STATEMENT;
 use air_r_syntax::T;
@@ -15,7 +17,8 @@ pub(crate) fn parse_if_statement(p: &mut RParser) -> CompletedMarker {
 
     p.with_scope(Scope::Parenthesis, |p| {
         p.expect(T!['(']);
-        parse_expression(p).or_add_diagnostic(p, diagnostics::expected_condition);
+        parse_expression(p, BindingPower::LOWEST, BinaryEqualsAssign::Deny)
+            .or_add_diagnostic(p, diagnostics::expected_condition);
     });
     p.expect(T![')']);
 

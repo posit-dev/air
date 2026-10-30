@@ -1,7 +1,9 @@
 use crate::diagnostics;
 use crate::parser::RParser;
 use crate::parser::Scope;
+use crate::syntax::binding_power::BindingPower;
 use crate::syntax::expr::parse_expression;
+use crate::syntax::restrictions::BinaryEqualsAssign;
 use air_r_syntax::RSyntaxKind::R_PARENTHESIZED_EXPRESSION;
 use air_r_syntax::T;
 use biome_parser::CompletedMarker;
@@ -13,7 +15,8 @@ pub(crate) fn parse_parenthesized_expression(p: &mut RParser) -> CompletedMarker
     let m = p.start();
     p.with_scope(Scope::Parenthesis, |p| {
         p.bump(T!['(']);
-        parse_expression(p).or_add_diagnostic(p, diagnostics::expected_expression);
+        parse_expression(p, BindingPower::LOWEST, BinaryEqualsAssign::Allow)
+            .or_add_diagnostic(p, diagnostics::expected_expression);
     });
     p.expect(T![')']);
 

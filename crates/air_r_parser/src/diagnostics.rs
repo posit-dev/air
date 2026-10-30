@@ -156,6 +156,11 @@ pub(crate) fn unexpected_semicolon(range: TextRange) -> ParseDiagnostic {
         .with_hint("At top level, a `;` must directly follow an expression.")
 }
 
+/// See [crate::syntax::restrictions::BinaryEqualsAssign]
+pub(crate) fn unexpected_binary_equals_assign(range: TextRange) -> ParseDiagnostic {
+    ParseDiagnostic::new("Unexpected `=`.", range)
+}
+
 /// Like [biome_parser::diagnostic::expected_token()], but without the `Remove
 /// xyz` hint, and in sentence case like all other messages.
 pub(crate) fn expected_token(p: &RParser, kind: RSyntaxKind) -> ParseDiagnostic {

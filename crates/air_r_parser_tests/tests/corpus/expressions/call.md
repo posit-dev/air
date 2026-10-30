@@ -148,6 +148,10 @@ fn(..1 =)
 fn("arg" = 1)
 fn("arg" =)
 
+fn(`arg` = 1)
+fn('arg' = 1)
+fn(r"(arg)" = 1)
+
 # Comma tests
 fn(,)
 fn(,,,)
@@ -177,7 +181,7 @@ fn(
   NULL = 1
 )
 fn(
-  NULL = 
+  NULL =
 )
 fn(
   NULL = ,
