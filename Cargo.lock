@@ -127,7 +127,7 @@ dependencies = [
  "biome_diagnostics",
  "biome_parser",
  "biome_rowan",
- "similar",
+ "similar 3.2.1",
 ]
 
 [[package]]
@@ -444,7 +444,7 @@ source = "git+https://github.com/lionel-/biome?rev=a1296ea6ba363d8b8d8f02181b2a4
 dependencies = [
  "biome_text_size",
  "serde",
- "similar",
+ "similar 2.7.0",
 ]
 
 [[package]]
@@ -1222,7 +1222,7 @@ dependencies = [
  "console 0.16.6",
  "globset",
  "once_cell",
- "similar",
+ "similar 2.7.0",
  "tempfile",
  "walkdir",
 ]
@@ -1925,13 +1925,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "similar"
+version = "3.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d2f8bec09ae8fae0f4f265a4559a9334be3929d8504e9b536df0a41302bd1733"
+dependencies = [
+ "bstr",
+]
+
+[[package]]
 name = "similar-asserts"
 version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cfe85670573cd6f0fa97940f26e7e6601213c3b0555246c24234131f88c5709e"
 dependencies = [
  "console 0.15.8",
- "similar",
+ "similar 2.7.0",
 ]
 
 [[package]]
