@@ -172,7 +172,7 @@
 		"fs-extra": "^11.1.1",
 		"p-queue": "npm:@esm2cjs/p-queue@^7.3.0",
 		"vscode-languageclient": "^11.0.0",
-		"which": "^5.0.0"
+		"which": "^7.0.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.6.4",
