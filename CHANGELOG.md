@@ -106,6 +106,8 @@
 - Air no longer emits colored output when stderr is not a terminal, such as when
   stderr is redirected to a file.
 
+- `#line` directives are no longer indented, since R only reads them as directives at the start of a line (#425).
+
 # 0.12.0
 
 - New `--no-configuration` flag to format with Air's built-in defaults without
