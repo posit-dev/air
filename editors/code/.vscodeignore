@@ -7,7 +7,7 @@ src/**
 .gitignore
 .yarnrc
 biome.json
-webpack.config.js
+esbuild.js
 vsc-extension-quickstart.md
 **/tsconfig.json
 **/*.map
