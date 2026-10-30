@@ -60,7 +60,7 @@ proc-macro2 = "1.0.86"
 proc-macro-error = "1.0.4"
 quote = "1.0.37"
 rustc-hash = "2.1.0"
-schemars = "0.9.0"
+schemars = "1.2.3"
 serde = "1.0.215"
 serde_json = "1.0.132"
 settings = { path = "./crates/settings" }
