@@ -10,9 +10,7 @@ updates:
       - dependency-name: "biome_*"
       - dependency-name: "tower-lsp"
     groups:
-      cargo-major:
-        update-types:
-          - "major"
+      # Major updates are intentionally ungrouped so each gets its own PR
       cargo-minor-and-patch:
         update-types:
           - "minor"
@@ -23,9 +21,7 @@ updates:
     schedule:
       interval: "weekly"
     groups:
-      npm-major:
-        update-types:
-          - "major"
+      # Major updates are intentionally ungrouped so each gets its own PR
       npm-minor-and-patch:
         update-types:
           - "minor"
