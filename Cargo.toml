@@ -73,7 +73,7 @@ tempfile = "3.9.0"
 tests_macros = { path = "./crates/tests_macros" }
 tokio = "1.54.1"
 tokio-util = "0.7.20"
-toml = "0.8.19"
+toml = "0.9.6"
 # For https://github.com/ebkalderon/tower-lsp/pull/428
 tower-lsp = { branch = "bugfix/patches", git = "https://github.com/lionel-/tower-lsp" }
 tracing = { version = "0.1.40", default-features = false, features = ["std"] }
