@@ -170,22 +170,22 @@
 		"test": "vscode-test"
 	},
 	"dependencies": {
-		"@types/p-queue": "^3.1.0",
+		"@types/p-queue": "^3.2.1",
 		"adm-zip": "^0.6.1",
-		"fs-extra": "^11.1.1",
+		"fs-extra": "^11.4.1",
 		"p-queue": "npm:@esm2cjs/p-queue@^7.3.0",
 		"vscode-languageclient": "^11.0.0",
 		"which": "^7.0.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.6.4",
-		"@types/adm-zip": "^0.5.6",
+		"@types/adm-zip": "^0.6.0",
 		"@types/fs-extra": "^11.0.4",
 		"@types/mocha": "^10.0.9",
 		"@types/node": "20.x",
 		"@types/vscode": "~1.91.0",
 		"@types/which": "^3.0.4",
-		"@vscode/test-cli": "^0.0.10",
+		"@vscode/test-cli": "^0.0.15",
 		"@vscode/test-electron": "^3.1.0",
 		"esbuild": "^0.28.2",
 		"npm-run-all": "^4.1.5",
