@@ -50,7 +50,7 @@ globwalk = "0.9.1"
 httparse = "1.9.5"
 ignore = "0.4.23"
 insta = "1.40.0"
-itertools = "0.13.0"
+itertools = "0.15.0"
 line_ending = { path = "./crates/line_ending" }
 lsp = { path = "./crates/lsp" }
 lsp_test = { path = "./crates/lsp_test" }
