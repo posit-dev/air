@@ -1,12 +1,12 @@
 import * as vscode from "vscode";
 
 import { Cmd, Ctx } from "../context";
+import { fileExists } from "../utils";
 import {
 	saveAllDirtyWorkspaceTextDocuments,
 	selectWorkspaceFolder,
 } from "../workspace";
 import { workspaceFolderFormatting } from "./workspace-folder-formatting";
-import { fileExists } from "../utils";
 
 /**
  * Initialize a workspace folder for use with Air

@@ -1,8 +1,9 @@
 import * as vscode from "vscode";
-import { Ctx } from "./context";
-import { Lsp } from "./lsp";
+
 import { registerCommands } from "./commands";
+import { Ctx } from "./context";
 import { PathEnvironmentVariableManager } from "./environment";
+import { Lsp } from "./lsp";
 
 let ctx: Ctx;
 

@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+
 import { ExecutableStrategy } from "./binary";
 
 type LogLevel = "error" | "warn" | "info" | "debug" | "trace";

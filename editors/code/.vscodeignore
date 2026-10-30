@@ -5,12 +5,11 @@ out/**
 node_modules/**
 src/**
 .gitignore
-.prettierrc
 .yarnrc
+biome.json
 webpack.config.js
 vsc-extension-quickstart.md
 **/tsconfig.json
-**/eslint.config.mjs
 **/*.map
 **/*.ts
 **/.vscode-test.*

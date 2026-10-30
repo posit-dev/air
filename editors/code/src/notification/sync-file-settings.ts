@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import * as lc from "vscode-languageclient/node";
+
 import { normalizePath } from "../utils";
 
 export interface SyncFileSettingsParams {

@@ -1,16 +1,16 @@
+import { default as PQueue } from "p-queue";
 import * as vscode from "vscode";
 import * as lc from "vscode-languageclient/node";
-import * as path from "path";
-import { default as PQueue } from "p-queue";
-import { getInitializationOptions, getWorkspaceSettings } from "./settings";
+import { Middleware, ResponseError } from "vscode-languageclient/node";
+
+import { resolveAirBinaryPath } from "./binary";
 import {
 	FileSettingsState,
+	SYNC_FILE_SETTINGS,
 	SyncFileSettingsParams,
 } from "./notification/sync-file-settings";
-import { Middleware, ResponseError } from "vscode-languageclient/node";
-import { SYNC_FILE_SETTINGS } from "./notification/sync-file-settings";
 import { registerLogger } from "./output";
-import { resolveAirBinaryPath } from "./binary";
+import { getInitializationOptions, getWorkspaceSettings } from "./settings";
 import { getRootWorkspaceFolder } from "./workspace";
 
 // All session management operations are put on a queue. They can't run

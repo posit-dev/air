@@ -6,7 +6,8 @@
 
 import * as vscode from "vscode";
 import * as lc from "vscode-languageclient/node";
-import { Ctx, Cmd } from "../context";
+
+import { Cmd, Ctx } from "../context";
 import { activeREditor, isRDocument, isREditor } from "../r-files";
 import { sleep } from "../utils";
 
