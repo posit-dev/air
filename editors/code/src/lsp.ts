@@ -46,7 +46,7 @@ export class Lsp {
 
 	// We use the same output channel for all LSP instances (e.g. a new instance
 	// after a restart) to avoid having multiple channels in the Output viewpane.
-	private channel: vscode.OutputChannel;
+	private channel: vscode.LogOutputChannel;
 
 	private state = State.Stopped;
 	private stateQueue: PQueue;
@@ -56,7 +56,12 @@ export class Lsp {
 	private onSettingsNotificationEmitter: vscode.EventEmitter<SyncFileSettingsParams>;
 
 	constructor(context: vscode.ExtensionContext) {
-		this.channel = vscode.window.createOutputChannel("Air Language Server");
+		this.channel = vscode.window.createOutputChannel(
+			"Air Language Server",
+			{
+				log: true,
+			},
+		);
 		context.subscriptions.push(this.channel, registerLogger(this.channel));
 
 		this.stateQueue = new PQueue({ concurrency: 1 });
