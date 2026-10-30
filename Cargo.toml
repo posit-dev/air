@@ -34,7 +34,7 @@ biome_text_size = { git = "https://github.com/lionel-/biome", rev = "a1296ea6ba3
 biome_ungrammar = { path = "./crates/biome_ungrammar" }
 bpaf = { version = "0.9.15", features = ["derive"] }
 bytes = "1.8.0"
-cargo_metadata = "0.20.0"
+cargo_metadata = "0.23.1"
 case = "1.0.0"
 clap = { version = "4.5.20", features = ["derive"] }
 clap_complete = "4.5.66"
