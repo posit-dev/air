@@ -106,6 +106,9 @@
 - Air no longer emits colored output when stderr is not a terminal, such as when
   stderr is redirected to a file.
 
+- Fixed an issue where formatting a curly-curly expression, like `{{ x }}`, with
+  a comment between its inner and outer braces wasn't idempotent (#541).
+
 # 0.12.0
 
 - New `--no-configuration` flag to format with Air's built-in defaults without
