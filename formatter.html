@@ -274,6 +274,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#comments" id="toc-comments" class="nav-link" data-scroll-target="#comments">Comments</a></li>
   </ul></li>
   <li><a href="#empty-braces" id="toc-empty-braces" class="nav-link" data-scroll-target="#empty-braces">Empty braces</a></li>
+  <li><a href="#flat-and-expanded-layout" id="toc-flat-and-expanded-layout" class="nav-link" data-scroll-target="#flat-and-expanded-layout">Flat and expanded layouts</a>
+  <ul class="collapse">
+  <li><a href="#trailing-braces" id="toc-trailing-braces" class="nav-link" data-scroll-target="#trailing-braces">Trailing braces</a>
+  <ul class="collapse">
+  <li><a href="#testthat" id="toc-testthat" class="nav-link" data-scroll-target="#testthat">testthat</a></li>
+  </ul></li>
+  <li><a href="#hugging-calls" id="toc-hugging-calls" class="nav-link" data-scroll-target="#hugging-calls">Hugging calls</a></li>
+  <li><a href="#hanging-indent" id="toc-hanging-indent" class="nav-link" data-scroll-target="#hanging-indent">Hanging indent</a></li>
+  </ul></li>
   <li><a href="#disabling-formatting" id="toc-disabling-formatting" class="nav-link" data-scroll-target="#disabling-formatting">Disabling formatting</a>
   <ul class="collapse">
   <li><a href="#skip-comments" id="toc-skip-comments" class="nav-link" data-scroll-target="#skip-comments">Skip comments</a></li>
@@ -655,66 +664,238 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>  expr</span>
 <span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
+<section id="flat-and-expanded-layout" class="level1">
+<h1>Flat and expanded layouts</h1>
+<p>Air purposefully only has two core layouts for function calls and function definitions, flat and expanded:</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Flat</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>fn <span class="ot">&lt;-</span> <span class="cf">function</span>(this, that, those) {</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  this <span class="sc">+</span> that <span class="sc">+</span> those</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a><span class="fu">fn</span>(this, that, those)</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Expanded</span></span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>fn <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>  this,</span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>  that,</span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>  those</span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>) {</span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>  this <span class="sc">+</span> that <span class="sc">+</span> those</span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a><span class="fu">fn</span>(</span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a>  this,</span>
+<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>  that,</span>
+<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a>  those</span>
+<span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>By only supporting two layouts, it is generally pretty easy to predict what code formatted by Air is going to look like. It also plays very nicely with <a href="#persistent-line-breaks">persistent line breaks</a> - if a user manually inserts a line break, it’s an explicit request for the expanded layout.</p>
+<p>There are two main exceptions to flat and expanded layouts, which we’ll discuss below: trailing braces and hugging calls.</p>
+<section id="trailing-braces" class="level2">
+<h2 class="anchored" data-anchor-id="trailing-braces">Trailing braces</h2>
+<p>It is common to end an <code>lapply()</code> or <code>purrr::map()</code> call with an inline anonymous function:</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(xs, <span class="cf">function</span>(x) {</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>It is also common to end function calls with a braced expression, like with <code>with()</code>:</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">with</span>(data, {</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Neither of these exactly match the flat or expanded forms. Instead, they are somewhere in between. When a function call ends with a braced anonymous function (<code>function() {}</code>) or a braced expression (<code>{}</code>), Air allows this hybrid form where every argument is flat <em>except</em> for the braces, which expand across multiple lines.</p>
+<p>Note that if you hit the line length, then this will still break into expanded form:</p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(this_list_that_has_a_very_long_name, <span class="cf">function</span>(this_object_is_long_too) {</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  this_object_is_long_too</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Becomes:</span></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>  this_list_that_has_a_very_long_name,</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(this_object_is_long_too) {</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>    this_object_is_long_too</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Additionally, a persistent line break before any argument will also force expanded form.</p>
+<section id="testthat" class="level3">
+<h3 class="anchored" data-anchor-id="testthat">testthat</h3>
+<p>testthat calls are a special form of trailing braces. They look very similar to the <code>with()</code> call from above:</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">"description"</span>, {</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="dv">1</span> <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The one difference is that testthat calls are never expanded, regardless of the description length:</p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">"description that is long and exceeds the line limit, but we don't expand!"</span>, {</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="dv">1</span> <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Internally, Air doesn’t look for the string <code>test_that</code>. Instead, it looks for the following structure:</p>
+<ul>
+<li><p>A function call</p></li>
+<li><p>With 2 arguments</p></li>
+<li><p>Where argument 1 is a string</p></li>
+<li><p>And argument 2 is a braced expression</p></li>
+</ul>
+<p>If a function call meets that criteria, then it won’t ever be expanded. This allows some package authors to write simple <code>test_that()</code> wrappers that still format the same way, such as furrr’s <code>furrr_test_that()</code> which runs each test under various parallel execution strategies:</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">furrr_test_that</span>(<span class="st">"named empty input makes named empty output"</span>, {</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> <span class="fu">set_names</span>(<span class="fu">list</span>(), <span class="fu">character</span>())</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">expect_named</span>(<span class="fu">future_map</span>(x, <span class="sc">~</span>.x), <span class="fu">character</span>())</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="hugging-calls" class="level2">
+<h2 class="anchored" data-anchor-id="hugging-calls">Hugging calls</h2>
+<p>When nesting one function call inside another, you’ll often see the outer set of parentheses “hug” the inner call:</p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">abort</span>(<span class="fu">glue</span>(</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Length implied by `n`, {n}, must match the length of `x`, {n_x}."</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This isn’t expanded form, which would instead be:</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">abort</span>(</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glue</span>(</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Length implied by `n`, {n}, must match the length of `x`, {n_x}."</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Rather than forcing expansion here, Air allows these nested function calls to “hug”, roughly resembling the expanded form you’d have if you’d merged the two function names together into <code>abort_glue()</code>. A persistent line break after <code>abort(</code> still forces expansion.</p>
+</section>
+<section id="hanging-indent" class="level2">
+<h2 class="anchored" data-anchor-id="hanging-indent">Hanging indent</h2>
+<p>If you are coming from RStudio, you are likely used to the following indentation for function calls and definitions:</p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>fn <span class="ot">&lt;-</span> <span class="cf">function</span>(this,</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>               that,</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>               those) {</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>  this <span class="sc">+</span> that <span class="sc">+</span> those</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a><span class="fu">fn</span>(this,</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>   that,</span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>   those)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>We call this <em>hanging indent</em>, and, perhaps surprisingly, it is not supported by Air. As a reminder, Air instead supports two core layouts, <a href="#flat-and-expanded-layout">flat and expanded</a>:</p>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Flat</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>fn <span class="ot">&lt;-</span> <span class="cf">function</span>(this, that, those) {</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  this <span class="sc">+</span> that <span class="sc">+</span> those</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a><span class="fu">fn</span>(this, that, those)</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Expanded</span></span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>fn <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>  this,</span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>  that,</span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>  those</span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>) {</span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>  this <span class="sc">+</span> that <span class="sc">+</span> those</span>
+<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-17"><a href="#cb46-17" aria-hidden="true" tabindex="-1"></a><span class="fu">fn</span>(</span>
+<span id="cb46-18"><a href="#cb46-18" aria-hidden="true" tabindex="-1"></a>  this,</span>
+<span id="cb46-19"><a href="#cb46-19" aria-hidden="true" tabindex="-1"></a>  that,</span>
+<span id="cb46-20"><a href="#cb46-20" aria-hidden="true" tabindex="-1"></a>  those</span>
+<span id="cb46-21"><a href="#cb46-21" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Before creating Air, we used hanging indent all throughout the tidyverse, particularly inside of <code>function</code> definitions, so we understand this may be a bit of a shift! But as we explored other languages and other formatters (in particular, Rust, Python, and TypeScript), we discovered that this was a pretty non-standard way to write code.</p>
+<p>As a motivating example of why we no longer believe in hanging indent, say you have the following function signature:</p>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>fn <span class="ot">&lt;-</span> <span class="cf">function</span>(this,</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>               that,</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>               those) {</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>  this <span class="sc">+</span> that <span class="sc">+</span> those</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>and you decide to change the function name to <code>my_fn</code>:</p>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>my_fn <span class="ot">&lt;-</span> <span class="cf">function</span>(this,   <span class="co"># This line changed</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>               that,</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>               those) {</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  this <span class="sc">+</span> that <span class="sc">+</span> those</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Oh, shoot, now the arguments are misaligned. Now you have to change that too:</p>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>my_fn <span class="ot">&lt;-</span> <span class="cf">function</span>(this,    <span class="co"># This line changed</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>                  that,    <span class="co"># This line changed</span></span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>                  those) { <span class="co"># This line changed</span></span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>  this <span class="sc">+</span> that <span class="sc">+</span> those</span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>And now all of a sudden a 3 character rename has become a multiline git diff, masking the intent of your change. This problem does not exist with the expanded layout!</p>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>fn <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  this,</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  that,</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>  those</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>) {</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>  this <span class="sc">+</span> that <span class="sc">+</span> those</span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a>my_fn <span class="ot">&lt;-</span> <span class="cf">function</span>( <span class="co"># This line is all that changes</span></span>
+<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a>  this,</span>
+<span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a>  that,</span>
+<span id="cb50-12"><a href="#cb50-12" aria-hidden="true" tabindex="-1"></a>  those</span>
+<span id="cb50-13"><a href="#cb50-13" aria-hidden="true" tabindex="-1"></a>) {</span>
+<span id="cb50-14"><a href="#cb50-14" aria-hidden="true" tabindex="-1"></a>  this <span class="sc">+</span> that <span class="sc">+</span> those</span>
+<span id="cb50-15"><a href="#cb50-15" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>For another example, let’s look back at the hanging indent form, paying close attention to the amount of leading whitespace:</p>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>fn <span class="ot">&lt;-</span> <span class="cf">function</span>(this,</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="ot">&lt;-</span><span class="sc">---</span>space<span class="sc">---</span><span class="ot">-&gt;</span>that,</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>               those) {</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>  this <span class="sc">+</span> that <span class="sc">+</span> those</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Notice how there are 15 whitespace characters before <code>that,</code>, which doesn’t divide evenly into any standard indent width, such as 2 or 4. For most programming languages, this is quite odd! And from a tooling perspective, many editors and plugins tend to have trouble with this. For example:</p>
+<ul>
+<li><p>You can’t easily swap between tabs and spaces. What does 15 spaces become? 7 tabs and 1 space? Mixed leading indentation of that form would be madness!</p></li>
+<li><p><a href="https://marketplace.visualstudio.com/items?itemName=oderwat.indent-rainbow">Indent-Rainbow</a> is a popular VS Code/Positron extension that requires consistent leading indentation to highlight correctly.</p></li>
+<li><p>We’ve <em>heard</em> that it can break some accessibility tools. We don’t use this as our sole argument because we don’t have experience with these tools, but if we can easily make Air more accessible, then we don’t see much of a reason not to.</p></li>
+</ul>
+<p>And most of all, it stands out! Air follows the general rule that from one line to the next, the amount of leading indentation will change by at most 1 multiple of the indent width (i.e.&nbsp;up or down by 2 spaces between lines). With hanging indent, that’s not possible to achieve.</p>
+</section>
+</section>
 <section id="disabling-formatting" class="level1">
 <h1>Disabling formatting</h1>
 <section id="skip-comments" class="level2">
 <h2 class="anchored" data-anchor-id="skip-comments">Skip comments</h2>
 <p>Air supports two special comments to disable formatting, <code># fmt: skip</code> and <code># fmt: skip file</code>.</p>
 <p><code># fmt: skip</code> skips formatting for the following syntax node (including all of its children).</p>
-<div class="sourceCode" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># This skips formatting for `list()` and its arguments, retaining the manual alignment</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="co"># fmt: skip</span></span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="fu">list</span>(</span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">dollar =</span> <span class="st">"USA"</span>,</span>
-<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">yen    =</span> <span class="st">"Japan"</span>,</span>
-<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">yuan   =</span> <span class="st">"China"</span></span>
-<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a><span class="co"># This skips formatting for `tribble()` and its arguments</span></span>
-<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a><span class="co"># fmt: skip</span></span>
-<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a><span class="fu">tribble</span>(</span>
-<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>  <span class="sc">~</span>x, <span class="sc">~</span>y,</span>
-<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>   <span class="dv">1</span>,  <span class="dv">2</span>,</span>
-<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a><span class="co"># This skips formatting for `graph_from_literal()` and its arguments,</span></span>
-<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a><span class="co"># retaining the formatting of the domain specific language</span></span>
-<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a><span class="co"># fmt: skip</span></span>
-<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>igraph<span class="sc">::</span><span class="fu">graph_from_literal</span>(Alice <span class="sc">+--+</span> Bob)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co"># This skips formatting for `list()` and its arguments, retaining the manual alignment</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="co"># fmt: skip</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a><span class="fu">list</span>(</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">dollar =</span> <span class="st">"USA"</span>,</span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">yen    =</span> <span class="st">"Japan"</span>,</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">yuan   =</span> <span class="st">"China"</span></span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a><span class="co"># This skips formatting for `tribble()` and its arguments</span></span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a><span class="co"># fmt: skip</span></span>
+<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a><span class="fu">tribble</span>(</span>
+<span id="cb52-12"><a href="#cb52-12" aria-hidden="true" tabindex="-1"></a>  <span class="sc">~</span>x, <span class="sc">~</span>y,</span>
+<span id="cb52-13"><a href="#cb52-13" aria-hidden="true" tabindex="-1"></a>   <span class="dv">1</span>,  <span class="dv">2</span>,</span>
+<span id="cb52-14"><a href="#cb52-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb52-15"><a href="#cb52-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-16"><a href="#cb52-16" aria-hidden="true" tabindex="-1"></a><span class="co"># This skips formatting for `graph_from_literal()` and its arguments,</span></span>
+<span id="cb52-17"><a href="#cb52-17" aria-hidden="true" tabindex="-1"></a><span class="co"># retaining the formatting of the domain specific language</span></span>
+<span id="cb52-18"><a href="#cb52-18" aria-hidden="true" tabindex="-1"></a><span class="co"># fmt: skip</span></span>
+<span id="cb52-19"><a href="#cb52-19" aria-hidden="true" tabindex="-1"></a>igraph<span class="sc">::</span><span class="fu">graph_from_literal</span>(Alice <span class="sc">+--+</span> Bob)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><code># fmt: skip file</code> skips the entire file. This must be placed at the top of the file before the first non-comment R code, otherwise the comment is ignored. This is useful for generated files, or as an alternative to <code>exclude</code> for individual files that you know you’d like to exclude from formatting.</p>
-<div class="sourceCode" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># This is a generated file. Don't modify by hand!</span></span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="co"># fmt: skip file</span></span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a><span class="co"># This won't be formatted</span></span>
-<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>generated_function_signature <span class="ot">&lt;-</span> <span class="cf">function</span>(which, might, overflow, the, line, width, but, we, dont, really, care) {</span>
-<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>    body</span>
-<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Neither will this</span></span>
-<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>another_generated_function_signature <span class="ot">&lt;-</span> <span class="cf">function</span>(which, might, overflow, the, line, width, but, we, dont, really, care) {</span>
-<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>    body</span>
-<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co"># This is a generated file. Don't modify by hand!</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="co"># fmt: skip file</span></span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a><span class="co"># This won't be formatted</span></span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>generated_function_signature <span class="ot">&lt;-</span> <span class="cf">function</span>(which, might, overflow, the, line, width, but, we, dont, really, care) {</span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>    body</span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Neither will this</span></span>
+<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>another_generated_function_signature <span class="ot">&lt;-</span> <span class="cf">function</span>(which, might, overflow, the, line, width, but, we, dont, really, care) {</span>
+<span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a>    body</span>
+<span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>For generated files we also support the convention of a comment starting with <code>Generated by</code> at the top of the file:</p>
 <pre><code># Generated by myPackage: don't modify by hand</code></pre>
 </section>
 <section id="skip-configuration" class="level2">
 <h2 class="anchored" data-anchor-id="skip-configuration">Skip configuration</h2>
 <p>Skip comments are useful for disabling formatting for one-off function calls, but sometimes you may find yourself repeatedly using functions from a domain specific language (DSL) that doesn’t follow conventional formatting rules. For example, the igraph package contains a DSL for constructing a graph from a literal representation:</p>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>igraph<span class="sc">::</span><span class="fu">graph_from_literal</span>(A <span class="sc">+-+</span> B <span class="sc">+---+</span> C <span class="sc">++</span> D <span class="sc">+</span> E)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>igraph<span class="sc">::</span><span class="fu">graph_from_literal</span>(A <span class="sc">+-+</span> B <span class="sc">+---+</span> C <span class="sc">++</span> D <span class="sc">+</span> E)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Air would format this as:</p>
-<div class="sourceCode" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>igraph<span class="sc">::</span><span class="fu">graph_from_literal</span>(A <span class="sc">+</span> <span class="sc">-+</span>B <span class="sc">+</span> <span class="sc">---+</span>C <span class="sc">+</span> <span class="sc">+</span>D <span class="sc">+</span> E)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>igraph<span class="sc">::</span><span class="fu">graph_from_literal</span>(A <span class="sc">+</span> <span class="sc">-+</span>B <span class="sc">+</span> <span class="sc">---+</span>C <span class="sc">+</span> <span class="sc">+</span>D <span class="sc">+</span> E)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>If you use <code>graph_from_literal()</code> often, it would be annoying to add <code># fmt: skip</code> comments at every call site. Instead, <code>air.toml</code> supports a <a href="./configuration.html#configuration-skip"><code>skip</code> field</a> that allows you to specify function names that you never want formatting for. Specifying this would retain the original formatting of the <code>graph_from_literal()</code> call, even without a <code># fmt: skip</code> comment:</p>
-<div class="sourceCode" id="cb41"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="dt">skip</span> <span class="op">=</span> <span class="op">[</span><span class="st">"graph_from_literal"</span><span class="op">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb57"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="dt">skip</span> <span class="op">=</span> <span class="op">[</span><span class="st">"graph_from_literal"</span><span class="op">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="line-endings" class="level2">
 <h2 class="anchored" data-anchor-id="line-endings">Line endings</h2>
 <p>When using <code># fmt: skip</code>, <code># fmt: skip file</code>, or <code>skip</code> in <code>air.toml</code>, line endings are never considered skipped.</p>
 <p>For example, if you’ve set <code>line-ending = "lf"</code> in <code>air.toml</code> and have the following file with (invisible) CRLF line endings:</p>
-<div class="sourceCode" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span><span class="sc">+</span><span class="dv">1</span></span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="co"># fmt: skip</span></span>
-<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a><span class="fu">fn</span>(</span>
-<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  a, b</span>
-<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span><span class="sc">+</span><span class="dv">1</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a><span class="co"># fmt: skip</span></span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a><span class="fu">fn</span>(</span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>  a, b</span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Then the visible text making up the multiline call to <code>fn()</code> will be left as is, but the invisible CRLF line endings following <code>fn(</code> and <code>b</code> will be converted to LF line endings, even though they belong to the skipped node. Without this, you’d end up with a file containing mixed line endings, which would be very confusing!</p>
 <p>The only place this may be surprisingly is with <code># fmt: skip file</code>, where the visible text within the file is untouched, but the line endings may be rewritten to match the <code>line-ending</code> option. Since <code># fmt: skip file</code> is an extension of <code># fmt: skip</code> to all nodes, we consider this behavior to be consistent. If you’d like Air to completely ignore a file, use an <code>air.toml</code> level <code>exclude</code> instead.</p>
 </section>
@@ -747,16 +928,16 @@ Note: This feature is experimental. We’d be grateful for any feedback!
 <li>Commas are aligned, creating column guides</li>
 <li>Numeric values are right-aligned, making them easier to read and compare</li>
 <li>Decimals are aligned, making it easier to distinguish integer and fractional parts</li>
-<li>Everything else is left-aligned, making it easier to read from left to right</li>
+<li>Everything else is left-aligned, making it easier tflato read from left to right</li>
 <li>Complex calls are formatted in a flat layout, avoiding line breaks where possible.</li>
 </ul>
-<div class="sourceCode" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tribble</span>(</span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="sc">~</span>customer   , <span class="sc">~</span>product   , <span class="sc">~</span>price  , <span class="sc">~</span>units_sold ,</span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ACME"</span>      , <span class="st">"Computer"</span> , <span class="fl">1499.99</span> ,          <span class="dv">25</span> ,</span>
-<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Globex"</span>    , <span class="st">"Monitor"</span>  ,  <span class="fl">889.5</span>  ,        <span class="dv">1005</span> ,</span>
-<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Stark"</span>     , <span class="st">"Tablet"</span>   ,   <span class="fl">99.99</span> ,         <span class="dv">304</span> ,</span>
-<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"WayneEnt."</span> , <span class="st">"Tablet"</span>   ,  <span class="dv">259</span>    ,          <span class="dv">40</span> ,</span>
-<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tribble</span>(</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>  <span class="sc">~</span>customer   , <span class="sc">~</span>product   , <span class="sc">~</span>price  , <span class="sc">~</span>units_sold ,</span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ACME"</span>      , <span class="st">"Computer"</span> , <span class="fl">1499.99</span> ,          <span class="dv">25</span> ,</span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Globex"</span>    , <span class="st">"Monitor"</span>  ,  <span class="fl">889.5</span>  ,        <span class="dv">1005</span> ,</span>
+<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Stark"</span>     , <span class="st">"Tablet"</span>   ,   <span class="fl">99.99</span> ,         <span class="dv">304</span> ,</span>
+<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"WayneEnt."</span> , <span class="st">"Tablet"</span>   ,  <span class="dv">259</span>    ,          <span class="dv">40</span> ,</span>
+<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>In addition:</p>
 <ul>
 <li>The layout of the table is never changed by the formatter. It never introduces line breaks that don’t already exist to avoid messing up the tabular data, which could be hard to recover from.</li>
