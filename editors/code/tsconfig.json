@@ -7,6 +7,9 @@
 		"noEmit": true,
 		"target": "ES2022",
 		"lib": ["ES2022"],
+		// Global declarations from `@types/*` (e.g. `process`, `suite()`) must
+		// be listed explicitly
+		"types": ["node", "mocha"],
 		// esbuild transpiles files one at a time, so reject code that can't be
 		"isolatedModules": true,
 		// Enable all strict type-checking options
