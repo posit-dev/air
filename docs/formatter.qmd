@@ -105,7 +105,7 @@ It makes it easy to reformat whole directories, such as an R project or package,
 Note that in both of these cases, the formatter will only run if your code is syntactically correct.
 If the formatter is seemingly no longer working, check your code for syntax errors.
 
-# Persistent line breaks
+# Persistent line breaks {#persistent-line-breaks}
 
 Air tries to strike a balance between enforcing rigid rules and allowing authors some control over the layout.
 Our main source of styling rules is the [Tidyverse style guide](https://style.tidyverse.org), but we occasionally deviate from these.
@@ -538,6 +538,268 @@ function(
 }
 ```
 
+# Flat and expanded layouts {#flat-and-expanded-layout}
+
+Air purposefully only has two core layouts for function calls and function definitions, flat and expanded:
+
+``` r
+# Flat
+fn <- function(this, that, those) {
+  this + that + those
+}
+
+fn(this, that, those)
+
+# Expanded
+fn <- function(
+  this,
+  that,
+  those
+) {
+  this + that + those
+}
+
+fn(
+  this,
+  that,
+  those
+)
+```
+
+By only supporting two layouts, it is generally pretty easy to predict what code formatted by Air is going to look like.
+It also plays very nicely with [persistent line breaks](#persistent-line-breaks) - if a user manually inserts a line break, it's an explicit request for the expanded layout.
+
+There are two main exceptions to flat and expanded layouts, which we'll discuss below: trailing braces and hugging calls.
+
+## Trailing braces
+
+It is common to end an `lapply()` or `purrr::map()` call with an inline anonymous function:
+
+``` r
+map(xs, function(x) {
+  x + 1
+})
+```
+
+It is also common to end function calls with a braced expression, like with `with()`:
+
+``` r
+with(data, {
+  x + 1
+})
+```
+
+Neither of these exactly match the flat or expanded forms.
+Instead, they are somewhere in between.
+When a function call ends with a braced anonymous function (`function() {}`) or a braced expression (`{}`), Air allows this hybrid form where every argument is flat *except* for the braces, which expand across multiple lines.
+
+Note that if you hit the line length, then this will still break into expanded form:
+
+``` r
+map(this_list_that_has_a_very_long_name, function(this_object_is_long_too) {
+  this_object_is_long_too
+})
+
+# Becomes:
+map(
+  this_list_that_has_a_very_long_name,
+  function(this_object_is_long_too) {
+    this_object_is_long_too
+  }
+)
+```
+
+Additionally, a persistent line break before any argument will also force expanded form.
+
+### testthat
+
+testthat calls are a special form of trailing braces.
+They look very similar to the `with()` call from above:
+
+``` r
+test_that("description", {
+  1 + 1
+})
+```
+
+The one difference is that testthat calls are never expanded, regardless of the description length:
+
+``` r
+test_that("description that is long and exceeds the line limit, but we don't expand!", {
+  1 + 1
+})
+```
+
+Internally, Air doesn't look for the string `test_that`.
+Instead, it looks for the following structure:
+
+-   A function call
+
+-   With 2 arguments
+
+-   Where argument 1 is a string
+
+-   And argument 2 is a braced expression
+
+If a function call meets that criteria, then it won't ever be expanded.
+This allows some package authors to write simple `test_that()` wrappers that still format the same way, such as furrr's `furrr_test_that()` which runs each test under various parallel execution strategies:
+
+``` r
+furrr_test_that("named empty input makes named empty output", {
+  x <- set_names(list(), character())
+  expect_named(future_map(x, ~.x), character())
+})
+```
+
+## Hugging calls
+
+When nesting one function call inside another, you'll often see the outer set of parentheses "hug" the inner call:
+
+``` r
+abort(glue(
+  "Length implied by `n`, {n}, must match the length of `x`, {n_x}."
+))
+```
+
+This isn't expanded form, which would instead be:
+
+``` r
+abort(
+  glue(
+    "Length implied by `n`, {n}, must match the length of `x`, {n_x}."
+  )
+)
+```
+
+Rather than forcing expansion here, Air allows these nested function calls to "hug", roughly resembling the expanded form you'd have if you'd merged the two function names together into `abort_glue()`.
+A persistent line break after `abort(` still forces expansion.
+
+## Hanging indent
+
+If you are coming from RStudio, you are likely used to the following indentation for function calls and definitions:
+
+``` r
+fn <- function(this,
+               that,
+               those) {
+  this + that + those
+}
+
+fn(this,
+   that,
+   those)
+```
+
+We call this *hanging indent*, and, perhaps surprisingly, it is not supported by Air.
+As a reminder, Air instead supports two core layouts, [flat and expanded](#flat-and-expanded-layout):
+
+``` r
+# Flat
+fn <- function(this, that, those) {
+  this + that + those
+}
+
+fn(this, that, those)
+
+# Expanded
+fn <- function(
+  this,
+  that,
+  those
+) {
+  this + that + those
+}
+
+fn(
+  this,
+  that,
+  those
+)
+```
+
+Before creating Air, we used hanging indent all throughout the tidyverse, particularly inside of `function` definitions, so we understand this may be a bit of a shift!
+But as we explored other languages and other formatters (in particular, Rust, Python, and TypeScript), we discovered that this was a pretty non-standard way to write code.
+
+As a motivating example of why we no longer believe in hanging indent, say you have the following function signature:
+
+``` r
+fn <- function(this,
+               that,
+               those) {
+  this + that + those
+}
+```
+
+and you decide to change the function name to `my_fn`:
+
+``` r
+my_fn <- function(this,   # This line changed
+               that,
+               those) {
+  this + that + those
+}
+```
+
+Oh, shoot, now the arguments are misaligned.
+Now you have to change that too:
+
+``` r
+my_fn <- function(this,    # This line changed
+                  that,    # This line changed
+                  those) { # This line changed
+  this + that + those
+}
+```
+
+And now all of a sudden a 3 character rename has become a multiline git diff, masking the intent of your change.
+This problem does not exist with the expanded layout!
+
+``` r
+fn <- function(
+  this,
+  that,
+  those
+) {
+  this + that + those
+}
+
+my_fn <- function( # This line is all that changes
+  this,
+  that,
+  those
+) {
+  this + that + those
+}
+```
+
+For another example, let's look back at the hanging indent form, paying close attention to the amount of leading whitespace:
+
+``` r
+fn <- function(this,
+<----space---->that,
+               those) {
+  this + that + those
+}
+```
+
+Notice how there are 15 whitespace characters before `that,`, which doesn't divide evenly into any standard indent width, such as 2 or 4. For most programming languages, this is quite odd!
+And from a tooling perspective, many editors and plugins tend to have trouble with this.
+For example:
+
+-   You can't easily swap between tabs and spaces.
+    What does 15 spaces become?
+    7 tabs and 1 space?
+    Mixed leading indentation of that form would be madness!
+
+-   [Indent-Rainbow](https://marketplace.visualstudio.com/items?itemName=oderwat.indent-rainbow) is a popular VS Code/Positron extension that requires consistent leading indentation to highlight correctly.
+
+-   We've *heard* that it can break some accessibility tools.
+    We don't use this as our sole argument because we don't have experience with these tools, but if we can easily make Air more accessible, then we don't see much of a reason not to.
+
+And most of all, it stands out!
+Air follows the general rule that from one line to the next, the amount of leading indentation will change by at most 1 multiple of the indent width (i.e. up or down by 2 spaces between lines).
+With hanging indent, that's not possible to achieve.
+
 # Disabling formatting
 
 ## Skip comments
@@ -660,7 +922,7 @@ It formats calls taking unnamed arguments via `...` in a tabular way.
 -   Commas are aligned, creating column guides
 -   Numeric values are right-aligned, making them easier to read and compare
 -   Decimals are aligned, making it easier to distinguish integer and fractional parts
--   Everything else is left-aligned, making it easier to read from left to right
+-   Everything else is left-aligned, making it easier tflato read from left to right
 -   Complex calls are formatted in a flat layout, avoiding line breaks where possible.
 
 ``` r
