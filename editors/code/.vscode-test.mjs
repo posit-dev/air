@@ -1,7 +1,8 @@
 import { defineConfig } from "@vscode/test-cli";
 
 export default defineConfig({
-	files: "out/test/**/*.test.js",
+	// Single bundle of all `src/test/**/*.test.ts` files, built by `esbuild.js`
+	files: "out/test.js",
 	// Changing the workspace folder dynamically causes the VS Code host to
 	// silently crash. So we set it only once here.
 	workspaceFolder: "./src/test",

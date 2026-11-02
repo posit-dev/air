@@ -2,19 +2,16 @@ import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
 
-import { AIR_EXTENSION_ID, EXTENSION_ROOT_DIR } from "../constants";
+import { AIR_EXTENSION_ID } from "../constants";
 
 // The test folder contains a default workspace configuration with formatting
 // settings that apply to our tests
-export const TEST_PATH = path.join(EXTENSION_ROOT_DIR, "src", "test");
-export const SNAPSHOT_PATH = path.join(TEST_PATH, "snapshots");
-
 export function testPath(file: string): string {
-	return path.join(TEST_PATH, file);
+	return path.join(extension().extensionPath, "src", "test", file);
 }
 
 export function snapshotPath(file: string): string {
-	return path.join(SNAPSHOT_PATH, file);
+	return testPath(path.join("snapshots", file));
 }
 
 export function extension() {
