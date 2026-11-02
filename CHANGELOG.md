@@ -69,7 +69,7 @@
 
   R/case-when.R:301:5 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    ✖ expected `,` but instead found `values`
+    ✖ Expected `,` but instead found `values`.
 
       299 │   .size <- case_when_size_common(
       300 │     conditions = conditions
