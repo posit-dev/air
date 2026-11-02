@@ -45,6 +45,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    exclude-paths:
+      # Generated and managed by cargo dist, regenerate with `dist generate`
+      - ".github/workflows/release.yml"
     groups:
       github-actions:
         patterns:
