@@ -1,6 +1,6 @@
-import * as vscode from "vscode";
 import * as assert from "assert";
 import { before } from "mocha";
+import * as vscode from "vscode";
 
 import { withUntitledEditor } from "./editor-utils";
 import { waitLsp } from "./extension";
