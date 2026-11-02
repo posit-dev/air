@@ -2,6 +2,8 @@
 
 # Development version
 
+# 0.13.0
+
 - Air no longer utilizes [tree-sitter-r](https://github.com/r-lib/tree-sitter-r)
   for parsing R files. Instead, Air now ships with a completely custom R parser
   written entirely in Rust. This comes with a number of benefits!
