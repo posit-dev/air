@@ -1,4 +1,4 @@
-import { default as PQueue } from "p-queue";
+import PQueue from "p-queue";
 import * as vscode from "vscode";
 import * as lc from "vscode-languageclient/node";
 import { Middleware, ResponseError } from "vscode-languageclient/node";

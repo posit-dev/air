@@ -29,6 +29,11 @@ updates:
       # but we still accept patch and minor updates
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+      # Updated only when `engines.vscode`'s bundled Node version changes,
+      # as p-queue v10 requires Node 22, but `engines.vscode` `^1.91.0` only
+      # requires Node 20
+      - dependency-name: "p-queue"
+        update-types: ["version-update:semver-major"]
     groups:
       # Major updates are intentionally ungrouped so each gets its own PR
       npm-minor-and-patch:
