@@ -9,6 +9,8 @@
 
 - Removed the `Air: View Tree Sitter` command, as tree-sitter is no longer the underlying parser.
 
+- The command `Air: View Syntax Tree` now works on unsaved files (#532).
+
 
 ## 0.30.0
 
