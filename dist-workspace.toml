@@ -4,7 +4,7 @@ members = ["cargo:crates/air"]
 # Config for 'dist'
 [dist]
 # The preferred dist version to use in CI (Cargo.toml SemVer syntax)
-cargo-dist-version = "0.28.0"
+cargo-dist-version = "0.34.0"
 # CI backends to support
 ci = "github"
 # Whether dist should create a Github Release or use an existing draft
@@ -27,13 +27,13 @@ targets = [
   "x86_64-unknown-linux-gnu",
   "aarch64-unknown-linux-gnu",
 ]
-# Tell dist not to build the binaries
+# Whether CI should include auto-generated code to build local artifacts
 build-local-artifacts = false
 # Local artifacts jobs to run in CI
 local-artifacts-jobs = ["./build"]
 # Whether to auto-include files like READMEs, LICENSEs, and CHANGELOGs (default true)
 auto-includes = false
-# Which actions to run on pull requests (use "upload" to force a build in CI for testing)
+# Which actions to run on pull requests
 pr-run-mode = "skip"
 # Whether CI should trigger releases with dispatches instead of tag pushes
 dispatch-releases = true
