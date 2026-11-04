@@ -16,11 +16,14 @@ use air_r_syntax::RBracedStatements;
 use air_r_syntax::RCall;
 use air_r_syntax::RCallArguments;
 use air_r_syntax::RLanguage;
+use air_r_syntax::RStringValue;
+use air_r_syntax::RStringValueFields;
 use air_r_syntax::RSubset2Arguments;
 use air_r_syntax::RSubsetArguments;
 use air_r_syntax::RSyntaxNode;
 use air_r_syntax::RSyntaxToken;
 
+use biome_formatter::FormatOptions;
 use biome_formatter::FormatRuleWithOptions;
 use biome_formatter::separated::TrailingSeparator;
 use biome_formatter::{VecBuffer, format_args, format_element, write};
@@ -276,7 +279,7 @@ impl RCallLikeArguments {
         group_layout: GroupedCallArgumentLayout,
         f: &mut RFormatter,
     ) -> FormatResult<()> {
-        let grouped_breaks = {
+        let (grouped_breaks, expand_other_args) = {
             let (grouped_arg, other_args) = match group_layout {
                 GroupedCallArgumentLayout::GroupedFirstArgument => {
                     let (first, tail) = arguments.split_at_mut(1);
@@ -291,23 +294,37 @@ impl RCallLikeArguments {
 
             let non_grouped_breaks = other_args.iter_mut().any(|arg| arg.will_break(f));
 
-            // If any of the not grouped elements break, then fall back to the variant where
-            // all arguments are printed in expanded mode.
-            if non_grouped_breaks {
-                return write!(
-                    f,
-                    [FormatAllArgsBrokenOut {
-                        call: self,
-                        l_token: &l_token.format(),
-                        leading_holes: &leading_holes,
-                        args: &arguments,
-                        r_token: &r_token.format(),
-                        expand: true,
-                    }]
-                );
+            match group_layout {
+                GroupedCallArgumentLayout::GroupedFirstArgument => {
+                    let expand_other_args = non_grouped_breaks
+                        || other_args.iter().any(|arg| arg.leading_lines() > 0)
+                        || first_argument_closing_line_exceeds_width(
+                            grouped_arg,
+                            other_args,
+                            &r_token,
+                            f.options(),
+                        );
+                    (grouped_arg.will_break(f), expand_other_args)
+                }
+                GroupedCallArgumentLayout::GroupedLastArgument => {
+                    // If any of the not grouped elements break, then fall back to the variant where
+                    // all arguments are printed in expanded mode.
+                    if non_grouped_breaks {
+                        return write!(
+                            f,
+                            [FormatAllArgsBrokenOut {
+                                call: self,
+                                l_token: &l_token.format(),
+                                leading_holes: &leading_holes,
+                                args: &arguments,
+                                r_token: &r_token.format(),
+                                expand: true,
+                            }]
+                        );
+                    }
+                    (grouped_arg.will_break(f), false)
+                }
             }
-
-            grouped_arg.will_break(f)
         };
 
         // We now cache the delimiters tokens. This is needed because `[biome_formatter::best_fitting]` will try to
@@ -426,21 +443,32 @@ impl RCallLikeArguments {
                     l_token,
                     format_with(|f| { f.join().entries(leading_holes.iter()).finish() }),
                     maybe_space(!leading_holes.is_empty() && !grouped.is_empty()),
-                    format_with(|f| {
-                        let mut joiner = f.join_with(soft_line_break_or_space());
-
-                        match group_layout {
-                            GroupedCallArgumentLayout::GroupedFirstArgument => {
-                                joiner.entry(&group(&grouped[0]).should_expand(true));
-                                joiner.entries(&grouped[1..]).finish()
-                            }
-                            GroupedCallArgumentLayout::GroupedLastArgument => {
-                                let last_index = grouped.len() - 1;
-                                joiner.entries(&grouped[..last_index]);
-                                joiner
-                                    .entry(&group(&grouped[last_index]).should_expand(true))
-                                    .finish()
-                            }
+                    format_with(|f| match group_layout {
+                        GroupedCallArgumentLayout::GroupedFirstArgument if expand_other_args => {
+                            write!(
+                                f,
+                                [
+                                    &group(&grouped[0]).should_expand(true),
+                                    block_indent(&format_with(|f| {
+                                        f.join_with(hard_line_break())
+                                            .entries(&grouped[1..])
+                                            .finish()
+                                    }))
+                                ]
+                            )
+                        }
+                        GroupedCallArgumentLayout::GroupedFirstArgument => {
+                            let mut joiner = f.join_with(soft_line_break_or_space());
+                            joiner.entry(&group(&grouped[0]).should_expand(true));
+                            joiner.entries(&grouped[1..]).finish()
+                        }
+                        GroupedCallArgumentLayout::GroupedLastArgument => {
+                            let mut joiner = f.join_with(soft_line_break_or_space());
+                            let last_index = grouped.len() - 1;
+                            joiner.entries(&grouped[..last_index]);
+                            joiner
+                                .entry(&group(&grouped[last_index]).should_expand(true))
+                                .finish()
                         }
                     }),
                     r_token
@@ -1114,9 +1142,63 @@ fn arguments_grouped_layout(
 }
 
 /// Checks if the first argument requires grouping
-fn should_group_first_argument(_list: &RArgumentList, _comments: &RComments) -> SyntaxResult<bool> {
-    // TODO: Do we ever have cases where we'd want special behavior in the first argument?
-    Ok(false)
+fn should_group_first_argument(list: &RArgumentList, comments: &RComments) -> SyntaxResult<bool> {
+    if list.len() <= 1 || list.iter().any(|arg| arg.as_ref().is_ok_and(|arg| arg.is_hole())) {
+        return Ok(false);
+    }
+
+    let Some(first) = list.first() else {
+        return Ok(false);
+    };
+    let first = first?;
+
+    // If the entire argument node has comments attached, not groupable
+    if comments.has_comments(first.syntax()) {
+        return Ok(false);
+    }
+
+    // If this is a named argument and the `name_clause` has comments, not
+    // groupable.
+    if let Some(name_clause) = first.name_clause()
+        && comments.has_comments(name_clause.syntax())
+    {
+        return Ok(false);
+    }
+
+    let Some(first) = first.value() else {
+        return Ok(false);
+    };
+
+    match first {
+        AnyRExpression::AnyRValue(air_r_syntax::AnyRValue::RStringValue(ref node)) => {
+            is_multiline_string(node)
+        }
+        _ => Ok(false),
+    }
+}
+
+fn first_argument_closing_line_exceeds_width(
+    grouped_arg: &FormatCallArgument,
+    other_args: &[FormatCallArgument],
+    r_token: &RSyntaxToken,
+    options: &RFormatOptions,
+) -> bool {
+    let Ok(first_node) = grouped_arg.element().node() else {
+        return false;
+    };
+    let first_text = first_node.syntax().text_trimmed().to_string();
+    let closing_line = first_text.rsplit(['\n', '\r']).next().unwrap_or(&first_text);
+    let mut width = closing_line.chars().count();
+
+    for arg in other_args {
+        let Ok(node) = arg.element().node() else {
+            return false;
+        };
+        width += 2 + usize::from(node.syntax().text_trimmed().len());
+    }
+
+    width += usize::from(r_token.text_trimmed().len());
+    width > usize::from(options.line_width().value())
 }
 
 /// Checks if the last argument should be grouped.
@@ -1148,6 +1230,12 @@ fn should_group_last_argument(list: &RArgumentList, comments: &RComments) -> Syn
     };
 
     argument_is_groupable(&last, comments)
+}
+
+fn is_multiline_string(node: &RStringValue) -> SyntaxResult<bool> {
+    let RStringValueFields { value } = node.as_fields();
+
+    Ok(value?.text_trimmed().contains(['\n', '\r']))
 }
 
 /// Checks if `argument` benefits from grouping in call arguments.
@@ -1267,6 +1355,18 @@ fn argument_is_groupable(argument: &AnyRExpression, comments: &RComments) -> Syn
             RBracedStatements(ref body) => braced_statements_is_groupable(body, comments),
             _ => true,
         }),
+
+        // Multiline strings are groupable so their opening and closing quotes
+        // can hug the surrounding call arguments without forcing all arguments
+        // to break out onto new lines
+        //
+        // ```r
+        // DBI::dbGetQuery(con, "
+        //   SELECT *
+        //   FROM table
+        // ")
+        // ```
+        AnyRValue(air_r_syntax::AnyRValue::RStringValue(node)) => is_multiline_string(node)?,
 
         // Nothing else benefits from grouping
         _ => false,
