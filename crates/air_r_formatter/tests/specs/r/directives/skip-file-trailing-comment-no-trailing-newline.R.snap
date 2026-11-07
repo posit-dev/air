@@ -1,0 +1,37 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/directives/skip-file-trailing-comment-no-trailing-newline.R
+---
+# Input
+
+```R
+# fmt: skip file
+
+1+1
+
+# trailing comment
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Space
+Indent width: 2
+Line ending: LF
+Line width: 80
+Persistent line breaks: Respect
+Assignment style: Arrow
+Table: fcase, rowwiseDT, tribble
+-----
+
+```R
+# fmt: skip file
+
+1+1
+
+# trailing comment```
