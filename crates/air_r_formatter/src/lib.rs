@@ -17,6 +17,8 @@ use crate::comments_ext::CommentsExt;
 use crate::context::RFormatContext;
 use crate::context::RFormatOptions;
 use crate::cst::FormatRSyntaxNode;
+use crate::verbatim::format_bogus_node;
+use crate::verbatim::format_suppressed_node;
 
 pub(crate) mod call_arguments_table;
 pub(crate) mod call_ext;
@@ -32,6 +34,7 @@ mod prelude;
 mod r;
 pub(crate) mod separated;
 mod string_literal;
+mod verbatim;
 
 #[rustfmt::skip]
 mod generated;

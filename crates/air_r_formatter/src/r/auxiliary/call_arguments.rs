@@ -59,7 +59,7 @@ impl FormatNodeRule<RCallArguments> for FormatRCallArguments {
                 // Table formatting failed, fall back to verbatim. Ideally
                 // we'd emit diagnostics about why tabular formatting failed
                 // here.
-                write!(f, [format_verbatim_node(node.syntax())])?;
+                write!(f, [format_r_verbatim_node(node.syntax())])?;
                 return Ok(());
             }
         }
