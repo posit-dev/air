@@ -5,11 +5,11 @@ use air_r_syntax::RSyntaxToken;
 use biome_formatter::Format;
 use biome_formatter::FormatResult;
 use biome_formatter::prelude::syntax_token_cow_slice;
-use biome_formatter::trivia::format_replaced;
 use std::borrow::Cow;
 
 use crate::RFormatter;
 use crate::context::RFormatContext;
+use crate::trivia::format_replaced;
 
 /// Helper utility for formatting a string literal token
 ///

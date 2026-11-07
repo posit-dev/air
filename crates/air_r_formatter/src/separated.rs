@@ -31,10 +31,11 @@ where
     }
 }
 
-type RFormatSeparatedIter<Node> = FormatSeparatedIter<
+type RFormatSeparatedIter<Node, C> = FormatSeparatedIter<
     AstSeparatedListElementsIterator<RLanguage, Node>,
     Node,
     RFormatSeparatedElementRule<Node>,
+    C,
 >;
 
 /// AST Separated list formatting extension methods
@@ -47,11 +48,16 @@ pub(crate) trait FormatAstSeparatedListExtension:
     /// created by calling the `separator_factory` function.
     /// The last trailing separator in the list will only be printed
     /// if the outer group breaks.
-    fn format_separated(&self, separator: &'static str) -> RFormatSeparatedIter<Self::Node> {
+    fn format_separated(
+        &self,
+        separator: &'static str,
+    ) -> RFormatSeparatedIter<Self::Node, RFormatContext> {
         RFormatSeparatedIter::new(
             self.elements(),
             separator,
             RFormatSeparatedElementRule { node: PhantomData },
+            on_skipped,
+            on_removed,
         )
     }
 }
