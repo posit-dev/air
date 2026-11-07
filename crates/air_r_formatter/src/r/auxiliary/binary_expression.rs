@@ -20,7 +20,6 @@ use air_r_syntax::RWhileStatement;
 use biome_formatter::FormatRuleWithOptions;
 use biome_formatter::format_args;
 use biome_formatter::prelude::dynamic_text;
-use biome_formatter::trivia::format_replaced;
 use biome_formatter::write;
 use biome_rowan::AstNode;
 use biome_rowan::SyntaxResult;

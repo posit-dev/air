@@ -4,11 +4,12 @@ use air_r_syntax::RSyntaxToken;
 use biome_formatter::FormatLanguage;
 use biome_formatter::FormatOwnedWithRule;
 use biome_formatter::FormatRefWithRule;
-use biome_formatter::FormatToken;
 use biome_formatter::Formatted;
 use biome_formatter::TransformSourceMap;
 use biome_formatter::comments::Comments;
 use biome_formatter::prelude::*;
+use biome_formatter::trivia::FormatToken;
+use biome_formatter::trivia::format_skipped_token_trivia;
 use biome_formatter::write;
 use biome_rowan::AstNode;
 
@@ -34,6 +35,7 @@ mod prelude;
 mod r;
 pub(crate) mod separated;
 mod string_literal;
+mod trivia;
 mod verbatim;
 
 #[rustfmt::skip]
@@ -276,21 +278,45 @@ where
 }
 
 /// Format implementation specific to R tokens.
-pub(crate) type FormatRSyntaxToken = FormatToken<RFormatContext>;
+#[derive(Debug, Default)]
+pub(crate) struct FormatRSyntaxToken;
+
+impl FormatRule<RSyntaxToken> for FormatRSyntaxToken {
+    type Context = RFormatContext;
+
+    fn fmt(&self, token: &RSyntaxToken, f: &mut Formatter<Self::Context>) -> FormatResult<()> {
+        f.state_mut().track_token(token);
+
+        self.format_skipped_token_trivia(token, f)?;
+        self.format_trimmed_token_trivia(token, f)?;
+
+        Ok(())
+    }
+}
+
+impl FormatToken<RLanguage, RFormatContext> for FormatRSyntaxToken {
+    fn format_skipped_token_trivia(
+        &self,
+        token: &RSyntaxToken,
+        f: &mut Formatter<RFormatContext>,
+    ) -> FormatResult<()> {
+        format_skipped_token_trivia(token).fmt(f)
+    }
+}
 
 impl AsFormat<RFormatContext> for RSyntaxToken {
-    type Format<'a> = FormatRefWithRule<'a, RSyntaxToken, FormatRSyntaxToken>;
+    type Format<'a> = FormatRefWithRule<'a, Self, FormatRSyntaxToken>;
 
     fn format(&self) -> Self::Format<'_> {
-        FormatRefWithRule::new(self, FormatRSyntaxToken::default())
+        FormatRefWithRule::new(self, FormatRSyntaxToken)
     }
 }
 
 impl IntoFormat<RFormatContext> for RSyntaxToken {
-    type Format = FormatOwnedWithRule<RSyntaxToken, FormatRSyntaxToken>;
+    type Format = FormatOwnedWithRule<Self, FormatRSyntaxToken>;
 
     fn into_format(self) -> Self::Format {
-        FormatOwnedWithRule::new(self, FormatRSyntaxToken::default())
+        FormatOwnedWithRule::new(self, FormatRSyntaxToken)
     }
 }
 
