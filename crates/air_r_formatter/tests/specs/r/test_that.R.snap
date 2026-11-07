@@ -39,7 +39,6 @@ test_that(
 test_that(identity("description that is super long and actually exceeds the line limit but we arent going to break!"), {
 	1 + 1
 })
-
 ```
 
 

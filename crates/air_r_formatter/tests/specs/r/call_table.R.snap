@@ -465,7 +465,6 @@ rowwiseDT(
 
 # Only headers
 rowwiseDT(x =, y =)
-
 ```
 
 

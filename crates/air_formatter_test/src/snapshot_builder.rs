@@ -48,7 +48,6 @@ impl<'a> SnapshotBuilder<'a> {
         writeln!(self.snapshot).unwrap();
         self.write_extension();
         self.snapshot.push_str(input);
-        writeln!(self.snapshot).unwrap();
         writeln!(self.snapshot, "```").unwrap();
         writeln!(self.snapshot).unwrap();
         writeln!(self.snapshot).unwrap();

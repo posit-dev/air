@@ -39,7 +39,6 @@ name = mtcars |>
     argument_that_is_quite_long = argument_that_is_quite_long,
     argument_that_is_quite_long = argument_that_is_quite_long
   )
-
 ```
 
 

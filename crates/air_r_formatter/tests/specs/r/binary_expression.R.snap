@@ -684,7 +684,6 @@ y ~ x1 + x2 +
 # The comment actually forces expansion
 y ~ x1 + x2 + # comment1
   x3 # comment2
-
 ```
 
 
