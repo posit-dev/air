@@ -352,7 +352,7 @@ fn generate_formatter(repo: &GitRepo, language_kind: LanguageKind) {
                     type Context = #formatter_context_ident;
 
                     fn fmt(&self, node: &#node_id, f: &mut #formatter_ident) -> FormatResult<()> {
-                        format_verbatim_node(node.syntax()).fmt(f)
+                        format_r_verbatim_node(node.syntax()).fmt(f)
                     }
                 }
             },
@@ -368,7 +368,7 @@ fn generate_formatter(repo: &GitRepo, language_kind: LanguageKind) {
 
                     impl FormatNodeRule<#node_id> for #format_id {
                         fn fmt_fields(&self, node: &#node_id, f: &mut #formatter_ident) -> FormatResult<()> {
-                            format_verbatim_node(node.syntax()).fmt(f)
+                            format_r_verbatim_node(node.syntax()).fmt(f)
                         }
                     }
                 }

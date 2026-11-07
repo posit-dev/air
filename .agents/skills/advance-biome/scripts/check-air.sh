@@ -15,7 +15,9 @@
 #   2  The script couldn't run at all (bad input, unexpected changes, ...).
 #
 # With --pin, the files git tracks must have no changes other than Cargo.toml
-# and Cargo.lock. New files git doesn't track yet are fine. When the script
+# and Cargo.lock. New files git doesn't track yet are fine. Cargo.lock is reset
+# to the committed version first, then only the libraries Cargo reports as
+# conflicting with the new Biome commit are bumped. When the script
 # finishes, it puts back the tracked files the checks touched and removes only
 # the new files the checks created, so the next try starts clean. Cargo.toml
 # and Cargo.lock keep their changes, so Air stays pointed at the commit you
@@ -70,6 +72,10 @@ if [ -n "$pin" ]; then
 
   untracked_before=$(git ls-files --others --exclude-standard | sort)
 
+  # Start every try from the committed lock file, so libraries bumped for an
+  # earlier (possibly newer) try don't leak into this one
+  git checkout -q HEAD -- Cargo.lock
+
   perl -pi -e 's{(git = "https://github.com/biomejs/biome", rev = ")[0-9a-f]+(")}{${1}'"$pin"'${2}}g' Cargo.toml
 
   # Make sure every Biome line got the new commit. If one is written in a
@@ -89,6 +95,30 @@ if [ -n "$pin" ]; then
       done
   }
   trap restore EXIT
+
+  # Biome often raises the minimum version of a shared crates.io library, and
+  # Cargo won't move a locked library on its own. That isn't something Air needs
+  # to fix, so bump only the libraries Cargo names as conflicting. A bare
+  # `cargo update` would update everything, so it's never run without `-p`.
+  bumps=()
+  resolved=""
+  for _ in $(seq 1 50); do
+    if [ ${#bumps[@]} -eq 0 ]; then
+      out=$(cargo metadata --format-version 1 2>&1 >/dev/null) && { resolved=yes; break; }
+    else
+      out=$(cargo update "${bumps[@]}" 2>&1) && { resolved=yes; break; }
+    fi
+    crate=$(printf '%s\n' "$out" |
+      grep -o 'previously selected package `[^`]*`' | head -n 1 |
+      sed -E 's/.*`([^ ]+) v([^`]+)`/\1@\2/')
+    if [ -z "$crate" ] || [[ " ${bumps[*]} " == *" $crate "* ]]; then
+      printf '%s\n' "$out" | tail -n 20
+      could_not_run "Cargo.lock can't be resolved for this Biome commit"
+    fi
+    echo "Bumping $crate in Cargo.lock, because Biome needs a newer version"
+    bumps+=(-p "$crate")
+  done
+  [ -n "$resolved" ] || could_not_run "too many Cargo.lock conflicts to bump"
 
   # Don't write `.snap.new` files while searching, nobody will look at them
   export INSTA_UPDATE=no
