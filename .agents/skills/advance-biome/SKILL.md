@@ -77,6 +77,8 @@ bash <this skill's folder>/scripts/check-air.sh --pin <full commit>
 
 Each try can take many minutes, the first one most of all, because Biome has to be built. Give it a time limit of at least 30 minutes.
 
+Biome often starts needing a newer version of some shared library (for example `cfg-if` or `camino`), and Cargo won't raise the version in Air's `Cargo.lock` by itself. That doesn't count as a breaking change. With `--pin`, the script resets `Cargo.lock`, bumps only the libraries Cargo says conflict (it prints a "Bumping ..." line for each), and keeps those bumps with the pin. Don't ask the user about this. Do mention the bumped libraries in "What I changed in Air". If the lock file still can't be worked out, the script says COULD NOT RUN. Look at why before going on.
+
 Before you believe a "NEEDS AIR CHANGES", read the log and make sure Biome caused it. A Biome cause looks like a build error that mentions a `biome_` package, or a test whose expected output changed. Things like a lost network connection or a test that fails at random are not Biome's fault. If in doubt, run the same try again.
 
 How to search:
