@@ -8,62 +8,62 @@ disable-model-invocation: true
 
 ## What this is for
 
-Air borrows a lot of code from another project called Biome. Air doesn't follow Biome's latest version on its own. Instead, `Cargo.toml` names one exact Biome commit, and Air uses Biome exactly as it was at that moment. This skill calls that commit "the pin".
+Air uses code from another project called Biome. `Cargo.toml` names one exact Biome commit, and Air uses Biome as it was at that moment. We call that commit "the pin".
 
-Biome keeps changing, and Air has fallen thousands of changes behind. Catching up all at once would be one huge change that nobody could review. So we catch up in small steps:
+Air is thousands of Biome changes behind. Catching up all at once would be too big to review, so each run takes one small step:
 
-1. Move the pin forward as far as it can go, until we reach a Biome change that Air can't handle as-is. This skill calls that one "the breaking change".
-2. Stop there, and fix Air so it works with the breaking change.
-3. Explain the fix to the user in plain words, so they can review it and open a pull request.
+1. Move the pin forward until we hit a Biome change Air can't handle. We call it "the breaking change".
+2. Fix Air so it works with the breaking change.
+3. Explain the fix in plain words, so the user can review it and open a pull request.
 
-The user runs this skill again after each pull request is merged, until Air has caught up.
+The user runs this again after each pull request is merged.
 
 ## Rules
 
-- Don't commit and don't push. The user reviews the work and commits it.
-- Fix only the breaking change. Don't clean up anything else.
-- Never accept a change in how Air formats R code just to make tests pass. If the breaking change makes Air format R code differently, stop and show the user a before-and-after example.
-- If the right fix isn't clear, or would be large, stop and ask the user. Don't guess.
-- Everything you tell the user follows "Step 5: Tell the user" below.
+- Don't commit or push. The user does that.
+- Only fix the breaking change, and catch up the copied code in Step 5. Don't clean up anything else.
+- When copying Biome code, keep Biome's names, comments, and layout. Only swap in Air's language name, and only differ where Air's style rules or newer Rust require it.
+- Never accept a change in how Air formats R code just to make tests pass. Stop and show the user a before-and-after example.
+- If the right fix is unclear or large, stop and ask. Don't guess.
+- Talk to the user the way Step 6 says.
 
 ## Step 1: Get ready
 
-Run these from the Air folder. `origin` is the copy of Air on GitHub at posit-dev/air.
+Run these from the Air folder. `origin` is Air on GitHub (posit-dev/air).
 
-1. Check for unsaved work. `git status --short --untracked-files=no` should print nothing. If it prints anything, stop and ask the user what to do with it. New files that git isn't tracking yet are fine to leave alone.
-2. Get the latest Air: `git fetch origin`
-3. Check for a leftover branch. If `git branch --list feature/advance-biome` prints anything, it's probably from last time. Stop and ask the user whether to delete it.
-4. Make the new branch from the latest `main` on GitHub. `--no-track` means the branch isn't linked to `main`, so pushing it later makes a new branch on GitHub instead of going to `main`.
+1. `git status --short --untracked-files=no` should print nothing. If it does, stop and ask the user what to do. Untracked files are fine.
+2. `git fetch origin`
+3. If `git branch --list feature/advance-biome` prints anything, it's left over from last time. Stop and ask whether to delete it.
+4. Make the branch. `--no-track` stops a later push from going to `main`:
    ```
    git switch --no-track -c feature/advance-biome origin/main
    ```
-5. Find the pin. Every Biome line in `Cargo.toml` should name the same commit, so this should print exactly one line:
+5. Find the pin. This should print exactly one line. If not, stop and ask:
    ```
    grep -o 'biomejs/biome", rev = "[0-9a-f]*"' Cargo.toml | sort -u
    ```
-   If it prints more than one, stop and ask the user.
 
 ## Step 2: Get Biome's history
 
-Download Biome's history into a temporary folder. Use your scratch folder if you have one. Below, `<temp>` means that folder. The download skips file contents until they're needed, so it takes seconds:
+Below, `<temp>` is your scratch folder. This download skips file contents, so it takes seconds:
 
 ```
 git clone --quiet --filter=blob:none --no-checkout https://github.com/biomejs/biome.git <temp>/biome
 ```
 
-Then write down every change made on Biome's main line since the pin, oldest first, one per line:
+List every change on Biome's main line since the pin, oldest first:
 
 ```
 git -C <temp>/biome log --first-parent --reverse --format='%H %cs %s' <pin>..origin/main > <temp>/candidates.txt
 ```
 
-`--first-parent` keeps us on Biome's main line. Now and then Biome lands a big batch of changes at once, which shows up as a line like "Merge pull request #1234 from biomejs/next". That whole batch counts as one line here.
+`--first-parent` treats a big batch of changes (a line like "Merge pull request #1234 from biomejs/next") as one line.
 
-If the file is empty, Air is already caught up. Tell the user and stop.
+If the file is empty, Air is caught up. Tell the user and stop.
 
 ## Step 3: Find the breaking change
 
-[scripts/check-air.sh](scripts/check-air.sh) does one try. It points Air at a Biome commit, runs the same checks Air's GitHub checks run, and ends with one line saying how it went:
+[scripts/check-air.sh](scripts/check-air.sh) does one try. It points Air at a Biome commit, runs Air's checks, and ends with one line:
 
 ```
 bash <this skill's folder>/scripts/check-air.sh --pin <full commit>
@@ -73,53 +73,51 @@ bash <this skill's folder>/scripts/check-air.sh --pin <full commit>
 |---|---|
 | `RESULT: WORKS` | Air is fine with this commit. |
 | `RESULT: NEEDS AIR CHANGES` | Something failed. The log it names says what. |
-| `RESULT: COULD NOT RUN` | The script hit a problem before checking anything. Fix that and try again. |
+| `RESULT: COULD NOT RUN` | The script broke before checking anything. Fix that and try again. |
 
-Each try can take many minutes, the first one most of all, because Biome has to be built. Give it a time limit of at least 30 minutes.
+A try can take many minutes, the first one most of all. Give it at least 30 minutes.
 
-Biome often starts needing a newer version of some shared library (for example `cfg-if` or `camino`), and Cargo won't raise the version in Air's `Cargo.lock` by itself. That doesn't count as a breaking change. With `--pin`, the script resets `Cargo.lock`, bumps only the libraries Cargo says conflict (it prints a "Bumping ..." line for each), and keeps those bumps with the pin. Don't ask the user about this. Do mention the bumped libraries in "What I changed in Air". If the lock file still can't be worked out, the script says COULD NOT RUN. Look at why before going on.
+Biome often needs a newer version of some shared library (like `cfg-if`), and Cargo won't bump it in `Cargo.lock` on its own. That isn't a breaking change. The script bumps just those libraries and prints a "Bumping ..." line for each. Don't ask the user about it, but list the bumps in "What I changed in Air". If the script still says COULD NOT RUN, find out why before going on.
 
-Before you believe a "NEEDS AIR CHANGES", read the log and make sure Biome caused it. A Biome cause looks like a build error that mentions a `biome_` package, or a test whose expected output changed. Things like a lost network connection or a test that fails at random are not Biome's fault. If in doubt, run the same try again.
+Before you trust a "NEEDS AIR CHANGES", check the log to make sure Biome caused it: a build error mentioning a `biome_` package, or a test whose expected output changed. A dropped network connection or a flaky test doesn't count. If in doubt, run the same try again.
 
 How to search:
 
-1. Try the newest commit first, the last line of `candidates.txt`. If it works, Air can jump straight to the newest Biome. Keep that pin, skip Step 4, and tell the user Air has caught up.
-2. Otherwise, narrow it down by halving. The pin works and the newest commit doesn't, so the breaking change is somewhere in between. Try the commit halfway between the newest one that worked and the oldest one that failed. If it works, the breaking change is later. If it fails, the breaking change is that one or earlier. Keep halving until you find two neighbors in the list: one that works, and the very next one that fails. With about 3,000 lines, this takes about 12 tries.
+1. Try the newest commit (last line of `candidates.txt`) first. If it works, keep that pin, skip Step 4, and tell the user Air has caught up.
+2. Otherwise, halve. Try the commit halfway between the newest one that worked and the oldest one that failed. Keep halving until you find a commit that works right before one that fails. About 3,000 lines takes about 12 tries. This works because once Biome breaks something, every later commit stays broken.
+3. Show the user a table of every try (line number, commit, result) as you go, so an interrupted search can pick up where it left off.
 
-   This works because once Biome changes something Air relies on, that change stays in every later version.
-3. Keep a small table of every try (line number, commit, result) and show it to the user as you go. If something interrupts the search, the table lets it pick up where it left off.
-
-The first commit that fails is the breaking change. Air has to end up pinned to it. If your last try was a different commit, run the script once more with `--pin <breaking change>`, and expect it to say NEEDS AIR CHANGES.
+The first commit that fails is the breaking change, and Air must end up pinned to it. If your last try was a different commit, run `--pin <breaking change>` once more. Expect NEEDS AIR CHANGES.
 
 ## Step 4: Understand and fix
 
 Find out what the breaking change did and why:
 
-- Its description and the files it touched: `git -C <temp>/biome show --stat <commit>`
-- What it changed in the Biome parts Air uses. Air uses the `biome_` packages listed in Air's `Cargo.lock`, which live in Biome's `crates/` folder: `git -C <temp>/biome show <commit> -- crates/biome_rowan crates/biome_formatter`, and so on.
-- The description usually ends with a pull request number like `(#1234)`. Read https://github.com/biomejs/biome/pull/1234 to learn why Biome made the change.
-- If it's one of the big batches from `biomejs/next`, look inside the batch for the change that matters: `git -C <temp>/biome log --oneline <commit>^1..<commit>^2 -- crates/biome_rowan crates/biome_formatter`, and so on. Air stays pinned to the batch, but tell the user which change inside it caused the problem.
+- What it says and which files it touched: `git -C <temp>/biome show --stat <commit>`
+- What it changed in the parts Air uses (the `biome_` packages in Air's `Cargo.lock`): `git -C <temp>/biome show <commit> -- crates/biome_rowan crates/biome_formatter ...`
+- Why: the description usually ends with `(#1234)`. Read https://github.com/biomejs/biome/pull/1234.
+- If it's a big batch from `biomejs/next`, find the change inside it that matters: `git -C <temp>/biome log --oneline <commit>^1..<commit>^2 -- crates/biome_rowan ...`. Keep the pin on the batch, but tell the user which change caused the problem.
 
 Common kinds of breaking changes:
 
 | What Biome did | What Air usually needs |
 |---|---|
-| Renamed, moved, or removed something Air uses | Update Air to the new name or the new way of doing it. |
-| Started needing a newer version of Rust | Raise `channel` in `rust-toolchain.toml` and `rust-version` in `Cargo.toml`. |
-| Changed how messages or errors are printed | Update Air's saved test output, after checking the new output makes sense. |
-| Changed how formatting decisions are made | This may change how Air formats R code. See the rules at the top. |
+| Renamed, moved, or removed something Air uses | Switch Air to the new name or new way. |
+| Needs a newer Rust | Raise `channel` in `rust-toolchain.toml` and `rust-version` in `Cargo.toml`. |
+| Prints messages or errors differently | Update Air's saved test output, once the new output looks right. |
+| Makes formatting decisions differently | Air may format R code differently. See the rules at the top. |
 
-Some of Air's code is written by a program instead of by hand: the files in `crates/air_r_syntax/src/generated/`, which come from `xtask/codegen/`. Don't edit the written-out files. Change the program in `xtask/codegen/` and rerun it with `just gen-grammar`.
+The files in `crates/air_r_syntax/src/generated/` are written by a program in `xtask/codegen/`. Don't edit them. Change the program and rerun `just gen-grammar`.
 
-Many of Air's tests compare against saved output. When saved output needs updating, `just test-insta` followed by `cargo insta accept` updates the formatter's saved output, and `just test-snapshot-accept` updates the parser's. Look at what changed before you keep it.
+Many tests compare against saved output. To update it: `just test-insta` then `cargo insta accept` for the formatter, `just test-snapshot-accept` for the parser. Look at what changed before keeping it.
 
-After making the fix, check Air as it is now. Leave out `--pin` this time:
+Then check Air as it is now, without `--pin`:
 
 ```
 bash <this skill's folder>/scripts/check-air.sh
 ```
 
-Repeat until it says `RESULT: WORKS`. If you can't get there, stop and tell the user what's still failing.
+Repeat until `RESULT: WORKS`. If you can't get there, stop and tell the user what's still failing.
 
 Before moving on, confirm:
 
@@ -128,21 +126,63 @@ Before moving on, confirm:
 - [ ] `check-air.sh` without `--pin` says `RESULT: WORKS`
 - [ ] Nothing is committed
 
-## Step 5: Tell the user
+## Step 5: Catch up code Air copied from Biome
 
-Write the summary in plain language, as if explaining to a smart friend who has never seen Air's or Biome's code. Use short sentences. Avoid technical terms. If one can't be avoided, explain it in a few words right where it appears. Keep the whole summary short, about 15 lines or fewer.
+Some Air code is a copy of Biome code, not something Air gets from Biome's packages. When Biome fixes a bug in its version, Air still builds, so Step 3 never notices. This step keeps the copies from falling behind.
+
+Don't mark copies with comments in Air's files. The list lives here:
+
+| Air file | Biome file |
+|---|---|
+| `crates/air_r_formatter/src/verbatim.rs` | `crates/biome_json_formatter/src/verbatim.rs` |
+| `FormatNodeRule` and `FormatBogusNodeRule` in `crates/air_r_formatter/src/lib.rs` | The same traits in `crates/biome_json_formatter/src/lib.rs` |
+| `crates/air_r_formatter/src/joiner_ext.rs` (in part) | `crates/biome_formatter/src/comments/builder.rs` |
+| `crates/air_formatter_test/src/snapshot_builder.rs`, `spec.rs`, `check_reformat.rs` | The same files in `crates/biome_formatter_test/src/` |
+| `crates/aether_lsp_utils/src/proto.rs`, `proto/from_proto.rs`, `proto/to_proto.rs` | `crates/biome_lsp_converters/src/lib.rs`, `from_proto.rs`, `to_proto.rs` |
+| `text_non_whitespace_range` in `crates/lsp/src/handlers_format.rs` | The same function in `crates/biome_formatter/src/lib.rs` |
+| `crates/biome_ungrammar/` (Air keeps its own copy, so the pin never moves it) | `crates/biome_ungrammar/` |
+| `xtask/codegen/src/` (in part; `r_kinds_src.rs` is Air's own) | `xtask/codegen/src/` |
+
+After catching up `xtask/codegen/` or `crates/biome_ungrammar/`, rerun `just gen-grammar`. If the files in `generated/` change, mention it in the summary.
+
+If Biome moves or renames one of these files, follow it (`git -C <temp>/biome log --follow`) and update the table. If you find a copy that isn't listed, or the fix creates a new one, add a row and tell the user.
+
+For each copy, see what Biome changed between the old pin (Step 1) and the new pin:
+
+```
+git -C <temp>/biome log --format='%h %cs %s' <old pin>..<new pin> -- <biome file>
+git -C <temp>/biome diff <old pin> <new pin> -- <biome file>
+```
+
+If the breaking change made Air copy a new file, copy it as it was at the new pin. Then run the same `log` with `<new pin>..origin/main` to see what Biome changed in it later.
+
+Sort each change:
+
+| Kind of change | What to do |
+|---|---|
+| Bug fix or behavior change that works at the current pin | Bring it over. |
+| Only comments, typos, or names | Bring it over. |
+| Needs something the current pin doesn't have yet | Skip it. A later run will catch it as a breaking change. |
+| Changes how Air formats R code | Stop and show the user a before-and-after example. |
+| Doesn't fit Air (like JSON-only syntax) | Skip it, and say why in the summary. |
+
+Then compare each copy with Biome's version. The only differences left should be the language name, Air's import style, and changes you skipped on purpose. Run `check-air.sh` (without `--pin`) again and make sure it still says `RESULT: WORKS`.
+
+## Step 6: Tell the user
+
+Write like you're explaining to a smart friend who has never seen Air's or Biome's code. Use short sentences and everyday words. If you have to use a technical term, explain it in a few words right there. About 15 lines or fewer.
 
 Use these headings, in this order:
 
-- **Where we are:** Which Biome commit Air uses now, its date, and a link like https://github.com/biomejs/biome/commit/<commit>. How many lines of `candidates.txt` we moved past, and how many are left. Count what's left with `git -C <temp>/biome rev-list --count --first-parent <breaking change>..origin/main`.
-- **What Biome changed:** One to three sentences, with a link to Biome's pull request.
+- **Where we are:** The Biome commit Air uses now, its date, and a link like https://github.com/biomejs/biome/commit/<commit>. How many lines of `candidates.txt` we moved past, and how many are left (`git -C <temp>/biome rev-list --count --first-parent <breaking change>..origin/main`).
+- **What Biome changed:** One to three sentences, with a link to the pull request.
 - **Why Air cared:** One or two sentences.
-- **What I changed in Air:** Each file you changed, with one plain sentence about why.
+- **What I changed in Air:** Each changed file, with one plain sentence about why. Include copies caught up in Step 5, and Biome changes you skipped on purpose.
 - **How I checked:** Usually "All of Air's checks pass."
-- **Worth a closer look:** Anything you're unsure about, or anything Air users might notice. Write "Nothing" if there isn't anything.
+- **Worth a closer look:** Anything you're unsure about, or anything Air users might notice. Otherwise "Nothing".
 - **Suggested pull request title:** One line.
 
-Here's a made-up example of the style to aim for:
+A made-up example:
 
 > **Where we are:** Air now uses Biome from July 21, 2025 (link). That's 41 Biome changes further along than before, with 3,033 still to go.
 >
