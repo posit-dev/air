@@ -174,7 +174,6 @@ if (TRUE) 1+1 # hi
 
 # This should be formatted
 if (1+1) 1+1 # fmt: skip
-
 ```
 
 

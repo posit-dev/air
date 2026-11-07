@@ -16,7 +16,6 @@ x |>
 # Fits on one line, flatten
 x <-
   1 + 1
-
 ```
 
 

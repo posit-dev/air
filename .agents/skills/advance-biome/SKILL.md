@@ -137,7 +137,7 @@ Don't mark copies with comments in Air's files. The list lives here:
 | `crates/air_r_formatter/src/verbatim.rs` | `crates/biome_json_formatter/src/verbatim.rs` |
 | `FormatNodeRule` and `FormatBogusNodeRule` in `crates/air_r_formatter/src/lib.rs` | The same traits in `crates/biome_json_formatter/src/lib.rs` |
 | `crates/air_r_formatter/src/joiner_ext.rs` (in part) | `crates/biome_formatter/src/comments/builder.rs` |
-| `crates/air_formatter_test/src/snapshot_builder.rs`, `spec.rs`, `check_reformat.rs` | The same files in `crates/biome_formatter_test/src/` |
+| `crates/air_formatter_test/src/snapshot_builder.rs`, `spec.rs`, `check_reformat.rs` (intentional difference: Air's `with_input()` doesn't add a newline after the input, so the Input section matches the file byte for byte, like the Output section does) | The same files in `crates/biome_formatter_test/src/` |
 | `crates/aether_lsp_utils/src/proto.rs`, `proto/from_proto.rs`, `proto/to_proto.rs` | `crates/biome_lsp_converters/src/lib.rs`, `from_proto.rs`, `to_proto.rs` |
 | `text_non_whitespace_range` in `crates/lsp/src/handlers_format.rs` | The same function in `crates/biome_formatter/src/lib.rs` |
 | `crates/biome_ungrammar/` (Air keeps its own copy, so the pin never moves it) | `crates/biome_ungrammar/` |
