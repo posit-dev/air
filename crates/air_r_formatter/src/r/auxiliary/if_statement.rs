@@ -312,17 +312,17 @@ impl Format<RFormatContext> for FormatIfBody<'_> {
                 BracedStatements::Force => write!(
                     f,
                     [
-                        text("{"),
+                        token("{"),
                         block_indent(&format_args![&node.format()]),
-                        text("}")
+                        token("}")
                     ]
                 ),
                 BracedStatements::IfGroupBreaks => write!(
                     f,
                     [
-                        if_group_breaks(&text("{")),
+                        if_group_breaks(&token("{")),
                         soft_block_indent(&format_args![&node.format()]),
-                        if_group_breaks(&text("}"))
+                        if_group_breaks(&token("}"))
                     ]
                 ),
             },

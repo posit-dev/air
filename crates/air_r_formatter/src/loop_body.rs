@@ -23,9 +23,9 @@ impl Format<RFormatContext> for FormatLoopBody<'_> {
             write!(
                 f,
                 [
-                    text("{"),
+                    token("{"),
                     block_indent(&format_args![&self.node.format()]),
-                    text("}")
+                    token("}")
                 ]
             )
         }

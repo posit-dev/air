@@ -101,7 +101,7 @@ impl FormatRCallArguments {
 
                     // Format the value
                     match &arg_data.kind {
-                        ArgKind::Other { text } => {
+                        ArgKind::Other { text: arg_text } => {
                             let arg_syntax = arg_data.node.syntax();
 
                             // Suppression comments do nothing inside a table
@@ -115,8 +115,8 @@ impl FormatRCallArguments {
                             // because a `text("")` after a `Space` will prevent
                             // the latter from being considered trailing by the
                             // printer, and won't be removed if trailing.
-                            if !text.is_empty() {
-                                write!(f, [dynamic_text(text, 0.into())])?;
+                            if !arg_text.is_empty() {
+                                write!(f, [text(arg_text, 0.into())])?;
                             }
 
                             format_trailing_comments(arg_syntax).fmt(f)?;
@@ -506,7 +506,7 @@ impl ArgKind {
 /// Apply padding with incompressible whitespace
 fn write_spaces(count: usize, f: &mut RFormatter) -> FormatResult<()> {
     if count > 0 {
-        write!(f, [dynamic_text(&" ".repeat(count), 0.into())])?;
+        write!(f, [text(&" ".repeat(count), 0.into())])?;
     }
     Ok(())
 }
