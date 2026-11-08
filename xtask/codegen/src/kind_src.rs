@@ -1,4 +1,4 @@
-use crate::language_kind::{LanguageKind, LANGUAGE_PREFIXES};
+use crate::language_kind::{LANGUAGE_PREFIXES, LanguageKind};
 use quote::format_ident;
 use std::collections::BTreeMap;
 

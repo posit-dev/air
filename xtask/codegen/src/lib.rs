@@ -17,7 +17,7 @@ mod termcolorful;
 use bpaf::Bpaf;
 use std::path::Path;
 
-use xtask::{glue::fs2, Mode, Result};
+use xtask::{Mode, Result, glue::fs2};
 
 pub use self::ast::generate_ast;
 pub use self::formatter::generate_formatters;
@@ -42,10 +42,10 @@ pub fn update(path: &Path, contents: &str, mode: &Mode) -> Result<UpdateResult> 
     }
 
     eprintln!("updating {}", path.display());
-    if let Some(parent) = path.parent() {
-        if !parent.exists() {
-            fs2::create_dir_all(parent)?;
-        }
+    if let Some(parent) = path.parent()
+        && !parent.exists()
+    {
+        fs2::create_dir_all(parent)?;
     }
     fs2::write(path, contents)?;
     Ok(UpdateResult::Updated)
