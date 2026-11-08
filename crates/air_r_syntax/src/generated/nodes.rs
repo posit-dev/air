@@ -3852,20 +3852,20 @@ impl AstNode for AnyRArgumentName {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            AnyRArgumentName::RDotDotI(it) => &it.syntax,
-            AnyRArgumentName::RDots(it) => &it.syntax,
-            AnyRArgumentName::RIdentifier(it) => &it.syntax,
-            AnyRArgumentName::RNullExpression(it) => &it.syntax,
-            AnyRArgumentName::RStringValue(it) => &it.syntax,
+            AnyRArgumentName::RDotDotI(it) => it.syntax(),
+            AnyRArgumentName::RDots(it) => it.syntax(),
+            AnyRArgumentName::RIdentifier(it) => it.syntax(),
+            AnyRArgumentName::RNullExpression(it) => it.syntax(),
+            AnyRArgumentName::RStringValue(it) => it.syntax(),
         }
     }
     fn into_syntax(self) -> SyntaxNode {
         match self {
-            AnyRArgumentName::RDotDotI(it) => it.syntax,
-            AnyRArgumentName::RDots(it) => it.syntax,
-            AnyRArgumentName::RIdentifier(it) => it.syntax,
-            AnyRArgumentName::RNullExpression(it) => it.syntax,
-            AnyRArgumentName::RStringValue(it) => it.syntax,
+            AnyRArgumentName::RDotDotI(it) => it.into_syntax(),
+            AnyRArgumentName::RDots(it) => it.into_syntax(),
+            AnyRArgumentName::RIdentifier(it) => it.into_syntax(),
+            AnyRArgumentName::RNullExpression(it) => it.into_syntax(),
+            AnyRArgumentName::RStringValue(it) => it.into_syntax(),
         }
     }
 }
@@ -3883,11 +3883,11 @@ impl std::fmt::Debug for AnyRArgumentName {
 impl From<AnyRArgumentName> for SyntaxNode {
     fn from(n: AnyRArgumentName) -> SyntaxNode {
         match n {
-            AnyRArgumentName::RDotDotI(it) => it.into(),
-            AnyRArgumentName::RDots(it) => it.into(),
-            AnyRArgumentName::RIdentifier(it) => it.into(),
-            AnyRArgumentName::RNullExpression(it) => it.into(),
-            AnyRArgumentName::RStringValue(it) => it.into(),
+            AnyRArgumentName::RDotDotI(it) => it.into_syntax(),
+            AnyRArgumentName::RDots(it) => it.into_syntax(),
+            AnyRArgumentName::RIdentifier(it) => it.into_syntax(),
+            AnyRArgumentName::RNullExpression(it) => it.into_syntax(),
+            AnyRArgumentName::RStringValue(it) => it.into_syntax(),
         }
     }
 }
@@ -4135,63 +4135,63 @@ impl AstNode for AnyRExpression {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            AnyRExpression::RBinaryExpression(it) => &it.syntax,
-            AnyRExpression::RBogusExpression(it) => &it.syntax,
-            AnyRExpression::RBracedStatements(it) => &it.syntax,
-            AnyRExpression::RBreakExpression(it) => &it.syntax,
-            AnyRExpression::RCall(it) => &it.syntax,
-            AnyRExpression::RDotDotI(it) => &it.syntax,
-            AnyRExpression::RDots(it) => &it.syntax,
-            AnyRExpression::RExtractExpression(it) => &it.syntax,
-            AnyRExpression::RFalseExpression(it) => &it.syntax,
-            AnyRExpression::RForStatement(it) => &it.syntax,
-            AnyRExpression::RFunctionDefinition(it) => &it.syntax,
-            AnyRExpression::RIdentifier(it) => &it.syntax,
-            AnyRExpression::RIfStatement(it) => &it.syntax,
-            AnyRExpression::RInfExpression(it) => &it.syntax,
-            AnyRExpression::RNaExpression(it) => &it.syntax,
-            AnyRExpression::RNamespaceExpression(it) => &it.syntax,
-            AnyRExpression::RNanExpression(it) => &it.syntax,
-            AnyRExpression::RNextExpression(it) => &it.syntax,
-            AnyRExpression::RNullExpression(it) => &it.syntax,
-            AnyRExpression::RParenthesizedExpression(it) => &it.syntax,
-            AnyRExpression::RRepeatStatement(it) => &it.syntax,
-            AnyRExpression::RSubset(it) => &it.syntax,
-            AnyRExpression::RSubset2(it) => &it.syntax,
-            AnyRExpression::RTrueExpression(it) => &it.syntax,
-            AnyRExpression::RUnaryExpression(it) => &it.syntax,
-            AnyRExpression::RWhileStatement(it) => &it.syntax,
+            AnyRExpression::RBinaryExpression(it) => it.syntax(),
+            AnyRExpression::RBogusExpression(it) => it.syntax(),
+            AnyRExpression::RBracedStatements(it) => it.syntax(),
+            AnyRExpression::RBreakExpression(it) => it.syntax(),
+            AnyRExpression::RCall(it) => it.syntax(),
+            AnyRExpression::RDotDotI(it) => it.syntax(),
+            AnyRExpression::RDots(it) => it.syntax(),
+            AnyRExpression::RExtractExpression(it) => it.syntax(),
+            AnyRExpression::RFalseExpression(it) => it.syntax(),
+            AnyRExpression::RForStatement(it) => it.syntax(),
+            AnyRExpression::RFunctionDefinition(it) => it.syntax(),
+            AnyRExpression::RIdentifier(it) => it.syntax(),
+            AnyRExpression::RIfStatement(it) => it.syntax(),
+            AnyRExpression::RInfExpression(it) => it.syntax(),
+            AnyRExpression::RNaExpression(it) => it.syntax(),
+            AnyRExpression::RNamespaceExpression(it) => it.syntax(),
+            AnyRExpression::RNanExpression(it) => it.syntax(),
+            AnyRExpression::RNextExpression(it) => it.syntax(),
+            AnyRExpression::RNullExpression(it) => it.syntax(),
+            AnyRExpression::RParenthesizedExpression(it) => it.syntax(),
+            AnyRExpression::RRepeatStatement(it) => it.syntax(),
+            AnyRExpression::RSubset(it) => it.syntax(),
+            AnyRExpression::RSubset2(it) => it.syntax(),
+            AnyRExpression::RTrueExpression(it) => it.syntax(),
+            AnyRExpression::RUnaryExpression(it) => it.syntax(),
+            AnyRExpression::RWhileStatement(it) => it.syntax(),
             AnyRExpression::AnyRValue(it) => it.syntax(),
         }
     }
     fn into_syntax(self) -> SyntaxNode {
         match self {
-            AnyRExpression::RBinaryExpression(it) => it.syntax,
-            AnyRExpression::RBogusExpression(it) => it.syntax,
-            AnyRExpression::RBracedStatements(it) => it.syntax,
-            AnyRExpression::RBreakExpression(it) => it.syntax,
-            AnyRExpression::RCall(it) => it.syntax,
-            AnyRExpression::RDotDotI(it) => it.syntax,
-            AnyRExpression::RDots(it) => it.syntax,
-            AnyRExpression::RExtractExpression(it) => it.syntax,
-            AnyRExpression::RFalseExpression(it) => it.syntax,
-            AnyRExpression::RForStatement(it) => it.syntax,
-            AnyRExpression::RFunctionDefinition(it) => it.syntax,
-            AnyRExpression::RIdentifier(it) => it.syntax,
-            AnyRExpression::RIfStatement(it) => it.syntax,
-            AnyRExpression::RInfExpression(it) => it.syntax,
-            AnyRExpression::RNaExpression(it) => it.syntax,
-            AnyRExpression::RNamespaceExpression(it) => it.syntax,
-            AnyRExpression::RNanExpression(it) => it.syntax,
-            AnyRExpression::RNextExpression(it) => it.syntax,
-            AnyRExpression::RNullExpression(it) => it.syntax,
-            AnyRExpression::RParenthesizedExpression(it) => it.syntax,
-            AnyRExpression::RRepeatStatement(it) => it.syntax,
-            AnyRExpression::RSubset(it) => it.syntax,
-            AnyRExpression::RSubset2(it) => it.syntax,
-            AnyRExpression::RTrueExpression(it) => it.syntax,
-            AnyRExpression::RUnaryExpression(it) => it.syntax,
-            AnyRExpression::RWhileStatement(it) => it.syntax,
+            AnyRExpression::RBinaryExpression(it) => it.into_syntax(),
+            AnyRExpression::RBogusExpression(it) => it.into_syntax(),
+            AnyRExpression::RBracedStatements(it) => it.into_syntax(),
+            AnyRExpression::RBreakExpression(it) => it.into_syntax(),
+            AnyRExpression::RCall(it) => it.into_syntax(),
+            AnyRExpression::RDotDotI(it) => it.into_syntax(),
+            AnyRExpression::RDots(it) => it.into_syntax(),
+            AnyRExpression::RExtractExpression(it) => it.into_syntax(),
+            AnyRExpression::RFalseExpression(it) => it.into_syntax(),
+            AnyRExpression::RForStatement(it) => it.into_syntax(),
+            AnyRExpression::RFunctionDefinition(it) => it.into_syntax(),
+            AnyRExpression::RIdentifier(it) => it.into_syntax(),
+            AnyRExpression::RIfStatement(it) => it.into_syntax(),
+            AnyRExpression::RInfExpression(it) => it.into_syntax(),
+            AnyRExpression::RNaExpression(it) => it.into_syntax(),
+            AnyRExpression::RNamespaceExpression(it) => it.into_syntax(),
+            AnyRExpression::RNanExpression(it) => it.into_syntax(),
+            AnyRExpression::RNextExpression(it) => it.into_syntax(),
+            AnyRExpression::RNullExpression(it) => it.into_syntax(),
+            AnyRExpression::RParenthesizedExpression(it) => it.into_syntax(),
+            AnyRExpression::RRepeatStatement(it) => it.into_syntax(),
+            AnyRExpression::RSubset(it) => it.into_syntax(),
+            AnyRExpression::RSubset2(it) => it.into_syntax(),
+            AnyRExpression::RTrueExpression(it) => it.into_syntax(),
+            AnyRExpression::RUnaryExpression(it) => it.into_syntax(),
+            AnyRExpression::RWhileStatement(it) => it.into_syntax(),
             AnyRExpression::AnyRValue(it) => it.into_syntax(),
         }
     }
@@ -4232,33 +4232,33 @@ impl std::fmt::Debug for AnyRExpression {
 impl From<AnyRExpression> for SyntaxNode {
     fn from(n: AnyRExpression) -> SyntaxNode {
         match n {
-            AnyRExpression::AnyRValue(it) => it.into(),
-            AnyRExpression::RBinaryExpression(it) => it.into(),
-            AnyRExpression::RBogusExpression(it) => it.into(),
-            AnyRExpression::RBracedStatements(it) => it.into(),
-            AnyRExpression::RBreakExpression(it) => it.into(),
-            AnyRExpression::RCall(it) => it.into(),
-            AnyRExpression::RDotDotI(it) => it.into(),
-            AnyRExpression::RDots(it) => it.into(),
-            AnyRExpression::RExtractExpression(it) => it.into(),
-            AnyRExpression::RFalseExpression(it) => it.into(),
-            AnyRExpression::RForStatement(it) => it.into(),
-            AnyRExpression::RFunctionDefinition(it) => it.into(),
-            AnyRExpression::RIdentifier(it) => it.into(),
-            AnyRExpression::RIfStatement(it) => it.into(),
-            AnyRExpression::RInfExpression(it) => it.into(),
-            AnyRExpression::RNaExpression(it) => it.into(),
-            AnyRExpression::RNamespaceExpression(it) => it.into(),
-            AnyRExpression::RNanExpression(it) => it.into(),
-            AnyRExpression::RNextExpression(it) => it.into(),
-            AnyRExpression::RNullExpression(it) => it.into(),
-            AnyRExpression::RParenthesizedExpression(it) => it.into(),
-            AnyRExpression::RRepeatStatement(it) => it.into(),
-            AnyRExpression::RSubset(it) => it.into(),
-            AnyRExpression::RSubset2(it) => it.into(),
-            AnyRExpression::RTrueExpression(it) => it.into(),
-            AnyRExpression::RUnaryExpression(it) => it.into(),
-            AnyRExpression::RWhileStatement(it) => it.into(),
+            AnyRExpression::AnyRValue(it) => it.into_syntax(),
+            AnyRExpression::RBinaryExpression(it) => it.into_syntax(),
+            AnyRExpression::RBogusExpression(it) => it.into_syntax(),
+            AnyRExpression::RBracedStatements(it) => it.into_syntax(),
+            AnyRExpression::RBreakExpression(it) => it.into_syntax(),
+            AnyRExpression::RCall(it) => it.into_syntax(),
+            AnyRExpression::RDotDotI(it) => it.into_syntax(),
+            AnyRExpression::RDots(it) => it.into_syntax(),
+            AnyRExpression::RExtractExpression(it) => it.into_syntax(),
+            AnyRExpression::RFalseExpression(it) => it.into_syntax(),
+            AnyRExpression::RForStatement(it) => it.into_syntax(),
+            AnyRExpression::RFunctionDefinition(it) => it.into_syntax(),
+            AnyRExpression::RIdentifier(it) => it.into_syntax(),
+            AnyRExpression::RIfStatement(it) => it.into_syntax(),
+            AnyRExpression::RInfExpression(it) => it.into_syntax(),
+            AnyRExpression::RNaExpression(it) => it.into_syntax(),
+            AnyRExpression::RNamespaceExpression(it) => it.into_syntax(),
+            AnyRExpression::RNanExpression(it) => it.into_syntax(),
+            AnyRExpression::RNextExpression(it) => it.into_syntax(),
+            AnyRExpression::RNullExpression(it) => it.into_syntax(),
+            AnyRExpression::RParenthesizedExpression(it) => it.into_syntax(),
+            AnyRExpression::RRepeatStatement(it) => it.into_syntax(),
+            AnyRExpression::RSubset(it) => it.into_syntax(),
+            AnyRExpression::RSubset2(it) => it.into_syntax(),
+            AnyRExpression::RTrueExpression(it) => it.into_syntax(),
+            AnyRExpression::RUnaryExpression(it) => it.into_syntax(),
+            AnyRExpression::RWhileStatement(it) => it.into_syntax(),
         }
     }
 }
@@ -4314,18 +4314,18 @@ impl AstNode for AnyRForVariable {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            AnyRForVariable::RBogusForVariable(it) => &it.syntax,
-            AnyRForVariable::RDotDotI(it) => &it.syntax,
-            AnyRForVariable::RDots(it) => &it.syntax,
-            AnyRForVariable::RIdentifier(it) => &it.syntax,
+            AnyRForVariable::RBogusForVariable(it) => it.syntax(),
+            AnyRForVariable::RDotDotI(it) => it.syntax(),
+            AnyRForVariable::RDots(it) => it.syntax(),
+            AnyRForVariable::RIdentifier(it) => it.syntax(),
         }
     }
     fn into_syntax(self) -> SyntaxNode {
         match self {
-            AnyRForVariable::RBogusForVariable(it) => it.syntax,
-            AnyRForVariable::RDotDotI(it) => it.syntax,
-            AnyRForVariable::RDots(it) => it.syntax,
-            AnyRForVariable::RIdentifier(it) => it.syntax,
+            AnyRForVariable::RBogusForVariable(it) => it.into_syntax(),
+            AnyRForVariable::RDotDotI(it) => it.into_syntax(),
+            AnyRForVariable::RDots(it) => it.into_syntax(),
+            AnyRForVariable::RIdentifier(it) => it.into_syntax(),
         }
     }
 }
@@ -4342,10 +4342,10 @@ impl std::fmt::Debug for AnyRForVariable {
 impl From<AnyRForVariable> for SyntaxNode {
     fn from(n: AnyRForVariable) -> SyntaxNode {
         match n {
-            AnyRForVariable::RBogusForVariable(it) => it.into(),
-            AnyRForVariable::RDotDotI(it) => it.into(),
-            AnyRForVariable::RDots(it) => it.into(),
-            AnyRForVariable::RIdentifier(it) => it.into(),
+            AnyRForVariable::RBogusForVariable(it) => it.into_syntax(),
+            AnyRForVariable::RDotDotI(it) => it.into_syntax(),
+            AnyRForVariable::RDots(it) => it.into_syntax(),
+            AnyRForVariable::RIdentifier(it) => it.into_syntax(),
         }
     }
 }
@@ -4401,18 +4401,18 @@ impl AstNode for AnyRParameterName {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            AnyRParameterName::RBogusParameterName(it) => &it.syntax,
-            AnyRParameterName::RDotDotI(it) => &it.syntax,
-            AnyRParameterName::RDots(it) => &it.syntax,
-            AnyRParameterName::RIdentifier(it) => &it.syntax,
+            AnyRParameterName::RBogusParameterName(it) => it.syntax(),
+            AnyRParameterName::RDotDotI(it) => it.syntax(),
+            AnyRParameterName::RDots(it) => it.syntax(),
+            AnyRParameterName::RIdentifier(it) => it.syntax(),
         }
     }
     fn into_syntax(self) -> SyntaxNode {
         match self {
-            AnyRParameterName::RBogusParameterName(it) => it.syntax,
-            AnyRParameterName::RDotDotI(it) => it.syntax,
-            AnyRParameterName::RDots(it) => it.syntax,
-            AnyRParameterName::RIdentifier(it) => it.syntax,
+            AnyRParameterName::RBogusParameterName(it) => it.into_syntax(),
+            AnyRParameterName::RDotDotI(it) => it.into_syntax(),
+            AnyRParameterName::RDots(it) => it.into_syntax(),
+            AnyRParameterName::RIdentifier(it) => it.into_syntax(),
         }
     }
 }
@@ -4429,10 +4429,10 @@ impl std::fmt::Debug for AnyRParameterName {
 impl From<AnyRParameterName> for SyntaxNode {
     fn from(n: AnyRParameterName) -> SyntaxNode {
         match n {
-            AnyRParameterName::RBogusParameterName(it) => it.into(),
-            AnyRParameterName::RDotDotI(it) => it.into(),
-            AnyRParameterName::RDots(it) => it.into(),
-            AnyRParameterName::RIdentifier(it) => it.into(),
+            AnyRParameterName::RBogusParameterName(it) => it.into_syntax(),
+            AnyRParameterName::RDotDotI(it) => it.into_syntax(),
+            AnyRParameterName::RDots(it) => it.into_syntax(),
+            AnyRParameterName::RIdentifier(it) => it.into_syntax(),
         }
     }
 }
@@ -4493,20 +4493,20 @@ impl AstNode for AnyRSelector {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            AnyRSelector::RBogusSelector(it) => &it.syntax,
-            AnyRSelector::RDotDotI(it) => &it.syntax,
-            AnyRSelector::RDots(it) => &it.syntax,
-            AnyRSelector::RIdentifier(it) => &it.syntax,
-            AnyRSelector::RStringValue(it) => &it.syntax,
+            AnyRSelector::RBogusSelector(it) => it.syntax(),
+            AnyRSelector::RDotDotI(it) => it.syntax(),
+            AnyRSelector::RDots(it) => it.syntax(),
+            AnyRSelector::RIdentifier(it) => it.syntax(),
+            AnyRSelector::RStringValue(it) => it.syntax(),
         }
     }
     fn into_syntax(self) -> SyntaxNode {
         match self {
-            AnyRSelector::RBogusSelector(it) => it.syntax,
-            AnyRSelector::RDotDotI(it) => it.syntax,
-            AnyRSelector::RDots(it) => it.syntax,
-            AnyRSelector::RIdentifier(it) => it.syntax,
-            AnyRSelector::RStringValue(it) => it.syntax,
+            AnyRSelector::RBogusSelector(it) => it.into_syntax(),
+            AnyRSelector::RDotDotI(it) => it.into_syntax(),
+            AnyRSelector::RDots(it) => it.into_syntax(),
+            AnyRSelector::RIdentifier(it) => it.into_syntax(),
+            AnyRSelector::RStringValue(it) => it.into_syntax(),
         }
     }
 }
@@ -4524,11 +4524,11 @@ impl std::fmt::Debug for AnyRSelector {
 impl From<AnyRSelector> for SyntaxNode {
     fn from(n: AnyRSelector) -> SyntaxNode {
         match n {
-            AnyRSelector::RBogusSelector(it) => it.into(),
-            AnyRSelector::RDotDotI(it) => it.into(),
-            AnyRSelector::RDots(it) => it.into(),
-            AnyRSelector::RIdentifier(it) => it.into(),
-            AnyRSelector::RStringValue(it) => it.into(),
+            AnyRSelector::RBogusSelector(it) => it.into_syntax(),
+            AnyRSelector::RDotDotI(it) => it.into_syntax(),
+            AnyRSelector::RDots(it) => it.into_syntax(),
+            AnyRSelector::RIdentifier(it) => it.into_syntax(),
+            AnyRSelector::RStringValue(it) => it.into_syntax(),
         }
     }
 }
@@ -4567,14 +4567,14 @@ impl AstNode for AnyRStatement {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            AnyRStatement::REmptyStatement(it) => &it.syntax,
-            AnyRStatement::RExpressionStatement(it) => &it.syntax,
+            AnyRStatement::REmptyStatement(it) => it.syntax(),
+            AnyRStatement::RExpressionStatement(it) => it.syntax(),
         }
     }
     fn into_syntax(self) -> SyntaxNode {
         match self {
-            AnyRStatement::REmptyStatement(it) => it.syntax,
-            AnyRStatement::RExpressionStatement(it) => it.syntax,
+            AnyRStatement::REmptyStatement(it) => it.into_syntax(),
+            AnyRStatement::RExpressionStatement(it) => it.into_syntax(),
         }
     }
 }
@@ -4589,8 +4589,8 @@ impl std::fmt::Debug for AnyRStatement {
 impl From<AnyRStatement> for SyntaxNode {
     fn from(n: AnyRStatement) -> SyntaxNode {
         match n {
-            AnyRStatement::REmptyStatement(it) => it.into(),
-            AnyRStatement::RExpressionStatement(it) => it.into(),
+            AnyRStatement::REmptyStatement(it) => it.into_syntax(),
+            AnyRStatement::RExpressionStatement(it) => it.into_syntax(),
         }
     }
 }
@@ -4651,20 +4651,20 @@ impl AstNode for AnyRValue {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            AnyRValue::RBogusValue(it) => &it.syntax,
-            AnyRValue::RComplexValue(it) => &it.syntax,
-            AnyRValue::RDoubleValue(it) => &it.syntax,
-            AnyRValue::RIntegerValue(it) => &it.syntax,
-            AnyRValue::RStringValue(it) => &it.syntax,
+            AnyRValue::RBogusValue(it) => it.syntax(),
+            AnyRValue::RComplexValue(it) => it.syntax(),
+            AnyRValue::RDoubleValue(it) => it.syntax(),
+            AnyRValue::RIntegerValue(it) => it.syntax(),
+            AnyRValue::RStringValue(it) => it.syntax(),
         }
     }
     fn into_syntax(self) -> SyntaxNode {
         match self {
-            AnyRValue::RBogusValue(it) => it.syntax,
-            AnyRValue::RComplexValue(it) => it.syntax,
-            AnyRValue::RDoubleValue(it) => it.syntax,
-            AnyRValue::RIntegerValue(it) => it.syntax,
-            AnyRValue::RStringValue(it) => it.syntax,
+            AnyRValue::RBogusValue(it) => it.into_syntax(),
+            AnyRValue::RComplexValue(it) => it.into_syntax(),
+            AnyRValue::RDoubleValue(it) => it.into_syntax(),
+            AnyRValue::RIntegerValue(it) => it.into_syntax(),
+            AnyRValue::RStringValue(it) => it.into_syntax(),
         }
     }
 }
@@ -4682,11 +4682,11 @@ impl std::fmt::Debug for AnyRValue {
 impl From<AnyRValue> for SyntaxNode {
     fn from(n: AnyRValue) -> SyntaxNode {
         match n {
-            AnyRValue::RBogusValue(it) => it.into(),
-            AnyRValue::RComplexValue(it) => it.into(),
-            AnyRValue::RDoubleValue(it) => it.into(),
-            AnyRValue::RIntegerValue(it) => it.into(),
-            AnyRValue::RStringValue(it) => it.into(),
+            AnyRValue::RBogusValue(it) => it.into_syntax(),
+            AnyRValue::RComplexValue(it) => it.into_syntax(),
+            AnyRValue::RDoubleValue(it) => it.into_syntax(),
+            AnyRValue::RIntegerValue(it) => it.into_syntax(),
+            AnyRValue::RStringValue(it) => it.into_syntax(),
         }
     }
 }
