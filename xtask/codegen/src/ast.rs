@@ -3,15 +3,15 @@
 
 use std::vec;
 
+use crate::Mode;
 use crate::generate_node_factory::generate_node_factory;
 use crate::generate_nodes_mut::generate_nodes_mut;
 use crate::generate_syntax_factory::generate_syntax_factory;
 use crate::kind_src::{
     AstEnumSrc, AstListSeparatorConfiguration, AstListSrc, AstNodeSrc, AstSrc, Field, TokenKind,
 };
-use crate::language_kind::{LanguageKind, ALL_LANGUAGE_KIND};
-use crate::termcolorful::{println_string_with_fg_color, Color};
-use crate::Mode;
+use crate::language_kind::{ALL_LANGUAGE_KIND, LanguageKind};
+use crate::termcolorful::{Color, println_string_with_fg_color};
 use crate::{
     generate_macros::generate_macros, generate_nodes::generate_nodes,
     generate_syntax_kinds::generate_syntax_kinds, update,
@@ -19,7 +19,7 @@ use crate::{
 use biome_string_case::Case;
 use biome_ungrammar::{Grammar, Rule, Token};
 use std::str::FromStr;
-use xtask::{project_root, Result};
+use xtask::{Result, project_root};
 
 // these node won't generate any code
 pub const SYNTAX_ELEMENT_TYPE: &str = "SyntaxElement";
@@ -346,9 +346,11 @@ struct CommaList<'a> {
 fn handle_comma_list<'a>(grammar: &'a Grammar, rules: &[Rule]) -> Option<CommaList<'a>> {
     // Does it match (T * ',')?
     let (node, repeat, trailing_separator) = match rules {
-        [Rule::Node(node), Rule::Rep(repeat), Rule::Opt(trailing_separator)] => {
-            (node, repeat, Some(trailing_separator))
-        }
+        [
+            Rule::Node(node),
+            Rule::Rep(repeat),
+            Rule::Opt(trailing_separator),
+        ] => (node, repeat, Some(trailing_separator)),
         [Rule::Node(node), Rule::Rep(repeat)] => (node, repeat, None),
         _ => return None,
     };

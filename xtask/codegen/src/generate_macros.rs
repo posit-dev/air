@@ -1,6 +1,6 @@
 use super::kind_src::AstSrc;
-use crate::language_kind::LanguageKind;
 use crate::Result;
+use crate::language_kind::LanguageKind;
 use biome_string_case::Case;
 use quote::{format_ident, quote};
 

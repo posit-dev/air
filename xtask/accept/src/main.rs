@@ -1,12 +1,12 @@
 use std::fs;
 
+use air_r_parser_tests::Document;
 use air_r_parser_tests::check;
 use air_r_parser_tests::corpus;
-use air_r_parser_tests::Document;
+use xtask::Result;
 use xtask::anyhow;
 use xtask::project_root;
 use xtask::pushd;
-use xtask::Result;
 
 fn main() -> Result<()> {
     let _d = pushd(project_root());
