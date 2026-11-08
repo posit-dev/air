@@ -22,8 +22,9 @@ use air_r_syntax::RSyntaxNode;
 use air_r_syntax::RSyntaxToken;
 
 use biome_formatter::FormatRuleWithOptions;
+use biome_formatter::format_element::BestFittingVariants;
 use biome_formatter::separated::TrailingSeparator;
-use biome_formatter::{VecBuffer, format_args, format_element, write};
+use biome_formatter::{VecBuffer, format_args, write};
 use biome_rowan::{AstSeparatedElement, AstSeparatedList, SyntaxResult};
 use itertools::Itertools;
 
@@ -321,7 +322,7 @@ impl RCallLikeArguments {
         // First write the most expanded variant because it needs `arguments`.
         let most_expanded = {
             let mut buffer = VecBuffer::new(f.state_mut());
-            buffer.write_element(FormatElement::Tag(Tag::StartEntry))?;
+            buffer.write_element(FormatElement::Tag(Tag::StartBestFittingEntry))?;
 
             write!(
                 buffer,
@@ -335,7 +336,7 @@ impl RCallLikeArguments {
                 }]
             )?;
 
-            buffer.write_element(FormatElement::Tag(Tag::EndEntry))?;
+            buffer.write_element(FormatElement::Tag(Tag::EndBestFittingEntry))?;
             buffer.into_vec()
         };
 
@@ -376,7 +377,7 @@ impl RCallLikeArguments {
         let most_flat = {
             let snapshot = f.state_snapshot();
             let mut buffer = VecBuffer::new(f.state_mut());
-            buffer.write_element(FormatElement::Tag(Tag::StartEntry))?;
+            buffer.write_element(FormatElement::Tag(Tag::StartBestFittingEntry))?;
 
             let result = write!(
                 buffer,
@@ -404,21 +405,21 @@ impl RCallLikeArguments {
                 f.restore_state_snapshot(snapshot);
 
                 let mut most_expanded_iter = most_expanded.into_iter();
-                // Skip over the Start/EndEntry items.
+                // Skip over the StartBestFittingEntry/EndBestFittingEntry items.
                 most_expanded_iter.next();
                 most_expanded_iter.next_back();
 
                 return f.write_elements(most_expanded_iter);
             }
 
-            buffer.write_element(FormatElement::Tag(Tag::EndEntry))?;
-            buffer.into_vec().into_boxed_slice()
+            buffer.write_element(FormatElement::Tag(Tag::EndBestFittingEntry))?;
+            buffer.into_vec()
         };
 
         // Write the second most flat variant that now forces the group of the first/last argument to expand.
         let middle_variant = {
             let mut buffer = VecBuffer::new(f.state_mut());
-            buffer.write_element(FormatElement::Tag(Tag::StartEntry))?;
+            buffer.write_element(FormatElement::Tag(Tag::StartBestFittingEntry))?;
 
             write!(
                 buffer,
@@ -447,8 +448,8 @@ impl RCallLikeArguments {
                 ]
             )?;
 
-            buffer.write_element(FormatElement::Tag(Tag::EndEntry))?;
-            buffer.into_vec().into_boxed_slice()
+            buffer.write_element(FormatElement::Tag(Tag::EndBestFittingEntry))?;
+            buffer.into_vec()
         };
 
         let variants = if grouped_breaks {
@@ -456,10 +457,15 @@ impl RCallLikeArguments {
             // since we already know that it won't be fitting on a single line. We can
             // also go ahead and signal that we will be expanding.
             write!(f, [expand_parent()])?;
-            vec![middle_variant, most_expanded.into_boxed_slice()]
+            let mut variants = middle_variant;
+            variants.extend(most_expanded);
+            variants
         } else {
             // Otherwise we best fit between all variants
-            vec![most_flat, middle_variant, most_expanded.into_boxed_slice()]
+            let mut variants = most_flat;
+            variants.extend(middle_variant);
+            variants.extend(most_expanded);
+            variants
         };
 
         // SAFETY: Safe because variants is guaranteed to contain >=2 entries:
@@ -467,9 +473,10 @@ impl RCallLikeArguments {
         // * middle
         // * most expanded
         // ... and best fitting only requires the most flat/and expanded.
+        // Each entry is delimited by StartBestFittingEntry/EndBestFittingEntry tags.
         unsafe {
             f.write_element(FormatElement::BestFitting(
-                format_element::BestFittingElement::from_vec_unchecked(variants),
+                BestFittingVariants::from_vec_unchecked(variants),
             ))
         }
     }

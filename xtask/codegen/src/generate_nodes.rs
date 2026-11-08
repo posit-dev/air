@@ -408,7 +408,9 @@ pub fn generate_nodes(ast: &AstSrc, language_kind: LanguageKind) -> Result<Strin
                         .find(|e| &e.name == *current_enum)
                         .is_some_and(|node| node.fields.iter().any(|field| field.is_unordered()));
 
-                    if variant_is_enum.is_some() || variant_is_dynamic {
+                    let variant_is_list = ast.is_list(current_enum);
+
+                    if variant_is_enum.is_some() || variant_is_dynamic || variant_is_list {
                         quote! {
                             #variant_name::cast(syntax)?
                         }
@@ -531,10 +533,10 @@ pub fn generate_nodes(ast: &AstSrc, language_kind: LanguageKind) -> Result<Strin
                 .map(|_| {
                     (
                         quote! {
-                            &it.syntax
+                            it.syntax()
                         },
                         quote! {
-                            it.syntax
+                            it.into_syntax()
                         },
                     )
                 })
@@ -614,7 +616,7 @@ pub fn generate_nodes(ast: &AstSrc, language_kind: LanguageKind) -> Result<Strin
                         fn from(n: #name) -> SyntaxNode {
                             match n {
                                 #(
-                                #name::#all_variant_names(it) => it.into(),
+                                #name::#all_variant_names(it) => it.into_syntax(),
                                 )*
                             }
                         }
