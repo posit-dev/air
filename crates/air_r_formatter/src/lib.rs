@@ -343,6 +343,7 @@ impl FormatLanguage for RFormatLanguage {
         self,
         root: &RSyntaxNode,
         source_map: Option<TransformSourceMap>,
+        _delegate_fmt_embedded_nodes: bool,
     ) -> Self::Context {
         let comments = Comments::from_node(root, &RCommentStyle, source_map.as_ref());
         RFormatContext::new(self.options, comments).with_source_map(source_map)
@@ -356,5 +357,5 @@ pub fn format_node(
     options: RFormatOptions,
     root: &RSyntaxNode,
 ) -> FormatResult<Formatted<RFormatContext>> {
-    biome_formatter::format_node(root, RFormatLanguage::new(options))
+    biome_formatter::format_node(root, RFormatLanguage::new(options), false)
 }

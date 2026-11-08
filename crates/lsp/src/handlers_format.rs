@@ -156,6 +156,18 @@ pub(crate) fn document_range_formatting(
 
     // Remove last hard break line from our artifical statement list
     format_text.pop();
+
+    // The output of `format_sub_tree()` includes the leading whitespace (i.e.
+    // the first line's indentation). We need to drop this to avoid indenting
+    // the first line twice.
+    //
+    // Note that this would all be much simpler if we could find a way to use
+    // biome's `format_range()` directly, as it handles this slicing more
+    // correctly for us using the first token's source marker. The only thing
+    // the printer can emit before that first token is indentation, so trimming
+    // like this is equivalent for the time being.
+    let format_text = format_text.trim_start_matches([' ', '\t']).to_string();
+
     let edits = to_proto::replace_range_edit(
         format_range,
         format_text,

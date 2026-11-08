@@ -36,6 +36,7 @@ impl From<biome_formatter::LineEnding> for LineEnding {
             biome_formatter::LineEnding::Lf => LineEnding::Lf,
             biome_formatter::LineEnding::Crlf => LineEnding::Crlf,
             biome_formatter::LineEnding::Cr => panic!("Unsupported `Cr` line endings."),
+            biome_formatter::LineEnding::Auto => panic!("Unsupported `Auto` line endings."),
         }
     }
 }

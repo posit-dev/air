@@ -22,7 +22,7 @@ pub trait TestFormatLanguage {
         language: Self::FormatLanguage,
         node: &SyntaxNode<Self::SyntaxLanguage>,
     ) -> FormatResult<Formatted<Self::Context>> {
-        biome_formatter::format_node(node, language)
+        biome_formatter::format_node(node, language, false)
     }
 
     fn format_range(
