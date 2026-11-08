@@ -122,18 +122,18 @@ impl Format<RFormatContext> for FormatFunctionBody<'_> {
                     write!(
                         f,
                         [
-                            text("{"),
+                            token("{"),
                             block_indent(&format_args![&node.format()]),
-                            text("}")
+                            token("}")
                         ]
                     )
                 } else {
                     write!(
                         f,
                         [
-                            if_group_breaks(&text("{")),
+                            if_group_breaks(&token("{")),
                             soft_block_indent(&format_args![&node.format()]),
-                            if_group_breaks(&text("}"))
+                            if_group_breaks(&token("}"))
                         ]
                     )
                 }

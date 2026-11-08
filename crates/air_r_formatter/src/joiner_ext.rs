@@ -63,11 +63,11 @@ where
                     // empty lines down to one, and then we force one more newline in.
                     // Note that if empty lines follow the element rather than
                     // precede it, this compression will not work as expected.
-                    EmptyLines::Double =>
-                    {
+                    EmptyLines::Double => {
                         #[allow(clippy::comparison_chain)]
                         if n_lines > 2 {
-                            write!(self.fmt, [empty_line(), text("\n")])?;
+                            // TODO(biome): Use `text("\n", None)` when it becomes available
+                            write!(self.fmt, [empty_line(), text("\n", 0.into())])?;
                         } else if n_lines == 2 {
                             write!(self.fmt, [empty_line()])?;
                         } else {

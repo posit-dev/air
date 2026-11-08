@@ -23,14 +23,14 @@ air_r_syntax = { path = "./crates/air_r_syntax" }
 air_r_test_macros = { path = "./crates/air_r_test_macros" }
 anyhow = "1.0.104"
 assert_matches = "1.5.0"
-biome_console = { git = "https://github.com/biomejs/biome", rev = "3ea8cbde164a822fbf7fe88aa02eedf1ac9688f5" }
-biome_diagnostics = { git = "https://github.com/biomejs/biome", rev = "3ea8cbde164a822fbf7fe88aa02eedf1ac9688f5" }
-biome_formatter = { git = "https://github.com/biomejs/biome", rev = "3ea8cbde164a822fbf7fe88aa02eedf1ac9688f5" }
-biome_line_index = { git = "https://github.com/biomejs/biome", rev = "3ea8cbde164a822fbf7fe88aa02eedf1ac9688f5" }
-biome_parser = { git = "https://github.com/biomejs/biome", rev = "3ea8cbde164a822fbf7fe88aa02eedf1ac9688f5" }
-biome_rowan = { git = "https://github.com/biomejs/biome", rev = "3ea8cbde164a822fbf7fe88aa02eedf1ac9688f5" }
-biome_string_case = { git = "https://github.com/biomejs/biome", rev = "3ea8cbde164a822fbf7fe88aa02eedf1ac9688f5" }
-biome_text_size = { git = "https://github.com/biomejs/biome", rev = "3ea8cbde164a822fbf7fe88aa02eedf1ac9688f5" }
+biome_console = { git = "https://github.com/biomejs/biome", rev = "0b28f5f47aa968bd2511224679ae1cfbcf708fd7" }
+biome_diagnostics = { git = "https://github.com/biomejs/biome", rev = "0b28f5f47aa968bd2511224679ae1cfbcf708fd7" }
+biome_formatter = { git = "https://github.com/biomejs/biome", rev = "0b28f5f47aa968bd2511224679ae1cfbcf708fd7" }
+biome_line_index = { git = "https://github.com/biomejs/biome", rev = "0b28f5f47aa968bd2511224679ae1cfbcf708fd7" }
+biome_parser = { git = "https://github.com/biomejs/biome", rev = "0b28f5f47aa968bd2511224679ae1cfbcf708fd7" }
+biome_rowan = { git = "https://github.com/biomejs/biome", rev = "0b28f5f47aa968bd2511224679ae1cfbcf708fd7" }
+biome_string_case = { git = "https://github.com/biomejs/biome", rev = "0b28f5f47aa968bd2511224679ae1cfbcf708fd7" }
+biome_text_size = { git = "https://github.com/biomejs/biome", rev = "0b28f5f47aa968bd2511224679ae1cfbcf708fd7" }
 biome_ungrammar = { path = "./crates/biome_ungrammar" }
 bpaf = { version = "0.9.15", features = ["derive"] }
 bytes = "1.12.1"

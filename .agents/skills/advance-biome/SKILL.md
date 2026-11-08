@@ -107,6 +107,14 @@ Common kinds of breaking changes:
 | Prints messages or errors differently | Update Air's saved test output, once the new output looks right. |
 | Makes formatting decisions differently | Air may format R code differently. See the rules at the top. |
 
+### Changes we already know are coming
+
+Some breaking changes are already known, and we've decided ahead of time how Air should handle them. If the breaking change is one of these, follow the plan here. Tell the user in "Worth a closer look" that you did. Delete the row once its pull request is merged.
+
+| Biome change | What happens | What to do |
+|---|---|---|
+| "introduce the SourcePosition element" (https://github.com/biomejs/biome/pull/8012, commit `2be02648a090153a93cf71fb63ef68feefd495c2`) | `text()` takes a second argument that says where in the user's file the text came from. Some text Air writes, like an extra newline or padding spaces, doesn't come from the file at all. Air used to fill in `0.into()` ("the start of the file") for those, because it had no better choice. Now Biome takes `Option<TextSize>`, so `None` can mean "made up by the formatter". Air's `0.into()` calls won't build anymore. | Don't just wrap them as `Some(0.into())`. That keeps the old fib about where the text came from. Use `None` for text the formatter made up. Use `Some(...)` only for real positions in the file (like `operator.text_trimmed_range().start()` in `binary_expression.rs`). Find every spot with `grep -rn '0.into()' crates/air_r_formatter`. Today they're in `joiner_ext.rs` and `call_arguments_table.rs`. |
+
 The files in `crates/air_r_syntax/src/generated/` are written by a program in `xtask/codegen/`. Don't edit them. Change the program and rerun `just gen-grammar`.
 
 Many tests compare against saved output. To update it: `just test-insta` then `cargo insta accept` for the formatter, `just test-snapshot-accept` for the parser. Look at what changed before keeping it.

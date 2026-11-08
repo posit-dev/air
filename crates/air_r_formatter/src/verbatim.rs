@@ -13,7 +13,7 @@ use biome_formatter::format_element::tag::VerbatimKind;
 use biome_formatter::formatter::Formatter;
 use biome_formatter::normalize_newlines;
 use biome_formatter::prelude::Tag;
-use biome_formatter::prelude::dynamic_text;
+use biome_formatter::prelude::text;
 use biome_formatter::trivia::FormatLeadingComments;
 use biome_formatter::trivia::FormatTrailingComments;
 use biome_rowan::AstNode;
@@ -145,7 +145,7 @@ impl Format<RFormatContext> for FormatRVerbatimNode<'_> {
             },
         );
 
-        dynamic_text(
+        text(
             &normalize_newlines(&original_source, LINE_TERMINATORS),
             verbatim_text_start,
         )
