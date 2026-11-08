@@ -4,6 +4,7 @@ use crate::parser::RParser;
 use air_r_syntax::RRoot;
 use air_r_syntax::RSyntaxNode;
 use biome_parser::AnyParse;
+use biome_parser::NodeParse;
 use biome_parser::diagnostic::ParseDiagnostic;
 use biome_rowan::AstNode;
 use biome_rowan::NodeCache;
@@ -75,7 +76,7 @@ impl RParse {
 
 impl From<RParse> for AnyParse {
     fn from(parse: RParse) -> Self {
-        Self::new(parse.root, parse.diagnostics)
+        NodeParse::new(parse.root, parse.diagnostics).into()
     }
 }
 
