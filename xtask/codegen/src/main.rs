@@ -8,15 +8,18 @@ fn main() -> Result<()> {
     let result = task_command().fallback_to_usage().run();
 
     match result {
-        TaskCommand::Formatter => {
-            generate_formatters();
+        TaskCommand::Formatter {
+            allow_dirty,
+            allow_staged,
+        } => {
+            generate_formatters(allow_dirty, allow_staged);
         }
         TaskCommand::Grammar(language_list) => {
             generate_ast(Overwrite, language_list)?;
         }
         TaskCommand::All => {
             generate_ast(Overwrite, vec![])?;
-            generate_formatters();
+            generate_formatters(false, false);
         }
     }
 
