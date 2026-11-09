@@ -255,6 +255,7 @@ impl<'src> Lexer<'src> for RLexer<'src> {
             current_kind,
             current_flags,
             after_line_break,
+            after_whitespace: _,
             unicode_bom_length,
             diagnostics_pos,
         } = checkpoint;
@@ -341,12 +342,16 @@ impl<'src> ReLexer<'src> for RLexer<'src> {
 
 impl<'src> LexerWithCheckpoint<'src> for RLexer<'src> {
     fn checkpoint(&self) -> LexerCheckpoint<Self::Kind> {
+        // Unused in Air
+        let after_whitespace = false;
+
         LexerCheckpoint {
             position: self.text_position(),
             current_start: self.current_start,
             current_kind: self.current_kind,
             current_flags: self.current_flags,
             after_line_break: self.after_line_break,
+            after_whitespace,
             unicode_bom_length: self.unicode_bom_length,
             diagnostics_pos: self.diagnostics.len() as u32,
         }
