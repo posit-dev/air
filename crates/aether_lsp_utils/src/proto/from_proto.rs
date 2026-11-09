@@ -52,6 +52,10 @@ pub fn text_range(
 ) -> anyhow::Result<biome_text_size::TextRange> {
     let start = offset_from_position(range.start, line_index, position_encoding)?;
     let end = offset_from_position(range.end, line_index, position_encoding)?;
+    anyhow::ensure!(
+        start <= end,
+        "Invalid range: start offset ({start:?}) > end offset ({end:?}) for {range:?}"
+    );
     Ok(biome_text_size::TextRange::new(start, end))
 }
 

@@ -14,8 +14,8 @@ use biome_formatter::formatter::Formatter;
 use biome_formatter::normalize_newlines;
 use biome_formatter::prelude::Tag;
 use biome_formatter::prelude::text;
-use biome_formatter::trivia::FormatLeadingComments;
-use biome_formatter::trivia::FormatTrailingComments;
+use biome_formatter::trivia::format_leading_comments_from_slice;
+use biome_formatter::trivia::format_trailing_comments_from_slice;
 use biome_rowan::AstNode;
 use biome_rowan::Direction;
 use biome_rowan::SyntaxElement;
@@ -109,7 +109,10 @@ impl Format<RFormatContext> for FormatRVerbatimNode<'_> {
             let (outside_trimmed_range, in_trimmed_range) =
                 leading_comments.split_at(outside_trimmed_range);
 
-            biome_formatter::write!(f, [FormatLeadingComments::Comments(outside_trimmed_range)])?;
+            biome_formatter::write!(
+                f,
+                [format_leading_comments_from_slice(outside_trimmed_range)]
+            )?;
 
             for comment in in_trimmed_range {
                 comment.mark_formatted();
@@ -172,7 +175,10 @@ impl Format<RFormatContext> for FormatRVerbatimNode<'_> {
                 comment.mark_formatted();
             }
 
-            biome_formatter::write!(f, [FormatTrailingComments::Comments(outside_trimmed_range)])?;
+            biome_formatter::write!(
+                f,
+                [format_trailing_comments_from_slice(outside_trimmed_range)]
+            )?;
         }
 
         f.write_element(FormatElement::Tag(Tag::EndVerbatim))
