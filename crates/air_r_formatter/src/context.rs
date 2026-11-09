@@ -210,6 +210,14 @@ impl FormatOptions for RFormatOptions {
         self.line_ending.into()
     }
 
+    fn trailing_newline(&self) -> biome_formatter::TrailingNewline {
+        // I doubt we end up wanting to expose this in its exact form to users.
+        // - If `true`, biome doesn't do anything.
+        // - If `false`, `biome_formatter` calls `strip_trailing_newlines()`
+        //   after all printing is done. This removes ALL trailing newlines.
+        biome_formatter::TrailingNewline::from(true)
+    }
+
     fn as_print_options(&self) -> PrinterOptions {
         PrinterOptions::from(self)
     }

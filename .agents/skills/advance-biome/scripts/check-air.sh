@@ -111,6 +111,15 @@ if [ -n "$pin" ]; then
     crate=$(printf '%s\n' "$out" |
       grep -o 'previously selected package `[^`]*`' | head -n 1 |
       sed -E 's/.*`([^ ]+) v([^`]+)`/\1@\2/')
+    # Sometimes the "previously selected" version is the newer one Biome wants,
+    # not the one in Cargo.lock. Then bump the locked version Cargo reports.
+    if [ -n "$crate" ] &&
+      ! grep -A1 "^name = \"${crate%@*}\"$" Cargo.lock | grep -q "^version = \"${crate#*@}\"$"; then
+      locked=$(printf '%s\n' "$out" |
+        grep -o 'versions that meet the requirements `[^`]*` (locked to [^)]*)' | head -n 1 |
+        sed -E 's/.*\(locked to ([^)]+)\)/\1/')
+      [ -n "$locked" ] && crate="${crate%@*}@$locked"
+    fi
     if [ -z "$crate" ] || [[ " ${bumps[*]} " == *" $crate "* ]]; then
       printf '%s\n' "$out" | tail -n 20
       could_not_run "Cargo.lock can't be resolved for this Biome commit"

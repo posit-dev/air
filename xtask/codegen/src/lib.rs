@@ -64,7 +64,13 @@ pub fn to_capitalized(s: &str) -> String {
 pub enum TaskCommand {
     /// Generates formatters for each language
     #[bpaf(command)]
-    Formatter,
+    Formatter {
+        #[bpaf(long("allow-dirty"))]
+        allow_dirty: bool,
+
+        #[bpaf(long("allow-staged"))]
+        allow_staged: bool,
+    },
     /// Transforms ungram files into AST
     #[bpaf(command)]
     Grammar(Vec<String>),
