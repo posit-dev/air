@@ -165,4 +165,33 @@ mod tests {
             "Unterminated backtick-quoted name."
         );
     }
+
+    /// Biome's tree sink caps tree depth so dropping a deep tree can't overflow
+    /// the stack, https://github.com/biomejs/biome/pull/11368
+    ///
+    /// A left-associative chain is built in the Pratt loop, not by recursion,
+    /// so it reaches the tree sink without the parser itself overflowing. The
+    /// thread's stack is fixed so the test fails the same way everywhere.
+    #[test]
+    fn parse_reports_depth_limit() {
+        let source = format!("{}a", "a+".repeat(50_000));
+
+        std::thread::Builder::new()
+            .stack_size(2 * 1024 * 1024)
+            .spawn(move || {
+                let parse = parse(&source, RParserOptions::default());
+                assert_eq!(parse.syntax().to_string(), source);
+                assert_eq!(parse.tree().statements().len(), 1);
+
+                assert!(parse.has_errors());
+                assert_eq!(parse.diagnostics().len(), 1);
+                assert_eq!(
+                    PrintDescription(&parse.diagnostics()[0]).to_string(),
+                    "Syntax nesting exceeds maximum depth of 3072."
+                );
+            })
+            .expect("can create thread")
+            .join()
+            .expect("parse must complete");
+    }
 }
