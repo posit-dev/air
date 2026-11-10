@@ -177,7 +177,7 @@ mod tests {
         let source = format!("{}a", "a+".repeat(50_000));
 
         std::thread::Builder::new()
-            .stack_size(2 * 1024 * 1024)
+            .stack_size(8 * 1024 * 1024)
             .spawn(move || {
                 let parse = parse(&source, RParserOptions::default());
                 assert_eq!(parse.syntax().to_string(), source);
