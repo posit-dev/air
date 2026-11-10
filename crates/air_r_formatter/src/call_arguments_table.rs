@@ -5,7 +5,8 @@ use air_r_syntax::{
     RIntegerValue, RLanguage, RSyntaxToken, RUnaryExpression,
 };
 
-use biome_formatter::{FormatElement, RemoveSoftLinesBuffer, format_args, write};
+use biome_formatter::rowan::FormatElement;
+use biome_formatter::{RemoveSoftLinesBuffer, format_args, write};
 use biome_rowan::{AstSeparatedElement, AstSeparatedList};
 
 const DOT_WIDTH: usize = 1;

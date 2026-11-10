@@ -1,4 +1,5 @@
-use biome_formatter::{CstFormatContext, FormatLanguage, FormatResult, Formatted, Printed};
+use biome_formatter::rowan::Printed;
+use biome_formatter::{CstFormatContext, FormatLanguage, FormatResult, Formatted};
 use biome_parser::AnyParse;
 use biome_rowan::Language;
 use biome_rowan::{SyntaxNode, TextRange};

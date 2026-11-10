@@ -7,7 +7,7 @@ use biome_formatter::FormatRefWithRule;
 use biome_formatter::Formatted;
 use biome_formatter::TransformSourceMap;
 use biome_formatter::comments::Comments;
-use biome_formatter::prelude::*;
+use biome_formatter::rowan::prelude::*;
 use biome_formatter::trivia::FormatToken;
 use biome_formatter::trivia::format_skipped_token_trivia;
 use biome_formatter::write;

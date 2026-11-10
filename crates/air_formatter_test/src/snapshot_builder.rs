@@ -1,4 +1,4 @@
-use biome_formatter::Printed;
+use biome_formatter::rowan::Printed;
 use biome_parser::AnyParse;
 use std::ffi::OsStr;
 use std::fmt;

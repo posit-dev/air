@@ -9,6 +9,10 @@ jobs:
     runs-on: ${{ matrix.this.runner }}
     timeout-minutes: 30
 
+    env:
+      # TODO: Remove after https://github.com/biomejs/biome/issues/13071
+      CARGO_NET_GIT_FETCH_WITH_CLI: "true"
+
     strategy:
       matrix:
         this:
@@ -18,6 +22,10 @@ jobs:
             runner: windows-11-arm
 
     steps:
+      # TODO: Remove after https://github.com/biomejs/biome/issues/13071
+      - name: "Enable git long paths"
+        run: git config --global core.longpaths true
+
       - uses: actions/checkout@v7
 
       - name: "Install rust toolchain (rust-toolchain.toml)"
