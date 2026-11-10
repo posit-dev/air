@@ -258,9 +258,11 @@ fn fmt_left_assignment_operator(
 ) -> FormatResult<()> {
     match f.options().assignment_style() {
         AssignmentStyle::Arrow => match left_assignment_kind {
-            LeftAssignmentKind::Equal => {
-                format_replaced(operator, &text("<-", operator.text_trimmed_range().start())).fmt(f)
-            }
+            LeftAssignmentKind::Equal => format_replaced(
+                operator,
+                &text("<-", Some(operator.text_trimmed_range().start())),
+            )
+            .fmt(f),
             LeftAssignmentKind::Arrow => {
                 // Already matches style
                 operator.format().fmt(f)
@@ -273,8 +275,11 @@ fn fmt_left_assignment_operator(
             }
             LeftAssignmentKind::Arrow => {
                 if can_normalize_to_equal(node) {
-                    format_replaced(operator, &text("=", operator.text_trimmed_range().start()))
-                        .fmt(f)
+                    format_replaced(
+                        operator,
+                        &text("=", Some(operator.text_trimmed_range().start())),
+                    )
+                    .fmt(f)
                 } else {
                     operator.format().fmt(f)
                 }

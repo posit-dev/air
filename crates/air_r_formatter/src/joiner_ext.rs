@@ -1,4 +1,4 @@
-use biome_formatter::{Format, FormatResult, prelude::*, write};
+use biome_formatter::{Format, FormatContext, FormatResult, prelude::*, write};
 use biome_rowan::{Language, SyntaxNode};
 
 /// The maximum number of empty lines allowed between elements
@@ -42,6 +42,7 @@ impl<'fmt, 'buf, Separator, Context> JoinNodesBuilderExt<'fmt, 'buf, Separator, 
 impl<Separator, Context> JoinNodesBuilderExt<'_, '_, Separator, Context>
 where
     Separator: Format<Context>,
+    Context: FormatContext,
 {
     /// Adds a new node with the specified formatted content to the output, respecting any new lines
     /// that appear before the node in the input source.
@@ -63,11 +64,11 @@ where
                     // empty lines down to one, and then we force one more newline in.
                     // Note that if empty lines follow the element rather than
                     // precede it, this compression will not work as expected.
-                    EmptyLines::Double => {
+                    EmptyLines::Double =>
+                    {
                         #[allow(clippy::comparison_chain)]
                         if n_lines > 2 {
-                            // TODO(biome): Use `text("\n", None)` when it becomes available
-                            write!(self.fmt, [empty_line(), text("\n", 0.into())])?;
+                            write!(self.fmt, [empty_line(), text("\n", None)])?;
                         } else if n_lines == 2 {
                             write!(self.fmt, [empty_line()])?;
                         } else {
