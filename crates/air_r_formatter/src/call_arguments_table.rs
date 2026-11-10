@@ -116,7 +116,7 @@ impl FormatRCallArguments {
                             // the latter from being considered trailing by the
                             // printer, and won't be removed if trailing.
                             if !arg_text.is_empty() {
-                                write!(f, [text(arg_text, 0.into())])?;
+                                write!(f, [text(arg_text, None)])?;
                             }
 
                             format_trailing_comments(arg_syntax).fmt(f)?;
@@ -506,7 +506,7 @@ impl ArgKind {
 /// Apply padding with incompressible whitespace
 fn write_spaces(count: usize, f: &mut RFormatter) -> FormatResult<()> {
     if count > 0 {
-        write!(f, [text(&" ".repeat(count), 0.into())])?;
+        write!(f, [text(&" ".repeat(count), None)])?;
     }
     Ok(())
 }

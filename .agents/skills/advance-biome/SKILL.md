@@ -144,11 +144,12 @@ Don't mark copies with comments in Air's files. The list lives here:
 | Air file | Biome file |
 |---|---|
 | `crates/air_r_formatter/src/verbatim.rs` | `crates/biome_json_formatter/src/verbatim.rs` |
-| `FormatNodeRule`, `FormatBogusNodeRule`, and `FormatRSyntaxToken` in `crates/air_r_formatter/src/lib.rs` | `FormatNodeRule`, `FormatBogusNodeRule`, and `FormatJsonSyntaxToken` in `crates/biome_json_formatter/src/lib.rs` |
+| `AsFormat`, `IntoFormat`, `FormatNodeRule`, `FormatBogusNodeRule`, and `FormatRSyntaxToken` in `crates/air_r_formatter/src/lib.rs` | `AsFormat`, `IntoFormat`, `FormatNodeRule`, `FormatBogusNodeRule`, and `FormatJsonSyntaxToken` in `crates/biome_json_formatter/src/lib.rs` |
 | `crates/air_r_formatter/src/trivia.rs` (keeps only the helpers Air uses, like Biome's other formatters) | `crates/biome_json_formatter/src/trivia.rs` |
 | `crates/air_r_formatter/src/separated.rs` | `crates/biome_json_formatter/src/separated.rs` |
 | `crates/air_r_formatter/src/joiner_ext.rs` (in part) | `crates/biome_formatter/src/comments/builder.rs` |
 | `crates/air_formatter_test/src/snapshot_builder.rs`, `spec.rs`, `check_reformat.rs` (intentional difference: Air's `with_input()` doesn't add a newline after the input, so the Input section matches the file byte for byte, like the Output section does) | The same files in `crates/biome_formatter_test/src/` |
+| `TestFormatLanguage` in `crates/air_formatter_test/src/lib.rs` (intentional difference: Air's `format_node()` calls `biome_formatter::format_node()`, which leaves source maps off, not `format_node_with_source_map_generation(.., SourceMapGeneration::Enabled)`. Air's spec tests use it for their main output, so it should match how Air really formats. Biome's spec tests go through its workspace API instead.) | `TestFormatLanguage` in `crates/biome_formatter_test/src/lib.rs` |
 | `crates/aether_lsp_utils/src/proto.rs`, `proto/from_proto.rs`, `proto/to_proto.rs` | `crates/biome_lsp_converters/src/lib.rs`, `from_proto.rs`, `to_proto.rs` |
 | `text_non_whitespace_range` in `crates/lsp/src/handlers_format.rs` | The same function in `crates/biome_formatter/src/lib.rs` |
 | `crates/biome_ungrammar/` (Air keeps its own copy, so the pin never moves it) | `crates/biome_ungrammar/` |
