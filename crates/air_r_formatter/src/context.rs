@@ -7,6 +7,7 @@ use biome_formatter::FormatContext;
 use biome_formatter::FormatOptions;
 use biome_formatter::TransformSourceMap;
 use biome_formatter::printer::PrinterOptions;
+use biome_formatter::rowan::RowanSource;
 use settings::AssignmentStyle;
 use settings::IndentStyle;
 use settings::IndentWidth;
@@ -47,6 +48,7 @@ impl RFormatContext {
 
 impl FormatContext for RFormatContext {
     type Options = RFormatOptions;
+    type Source = RowanSource;
 
     fn options(&self) -> &Self::Options {
         &self.options
