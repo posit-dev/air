@@ -1,0 +1,40 @@
+---
+source: crates/air_formatter_test/src/snapshot_builder.rs
+info: r/directives/biome-ignore-all-not.R
+---
+# Input
+
+```R
+# biome-ignore-all format: not supported
+
+# Biome's own suppression comments are not supported in R files.
+# Air uses `# fmt: skip file` instead.
+
+1+1
+```
+
+
+=============================
+
+# Outputs
+
+## Output 1
+
+-----
+Indent style: Space
+Indent width: 2
+Line ending: LF
+Line width: 80
+Persistent line breaks: Respect
+Assignment style: Arrow
+Table: fcase, rowwiseDT, tribble
+-----
+
+```R
+# biome-ignore-all format: not supported
+
+# Biome's own suppression comments are not supported in R files.
+# Air uses `# fmt: skip file` instead.
+
+1 + 1
+```

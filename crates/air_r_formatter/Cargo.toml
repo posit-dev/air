@@ -16,6 +16,7 @@ publish = false
 air_r_syntax = { workspace = true }
 biome_formatter = { workspace = true }
 biome_rowan = { workspace = true }
+biome_suppression = { workspace = true }
 comments = { workspace = true }
 itertools = { workspace = true }
 line_ending = { workspace = true }

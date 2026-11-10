@@ -25,6 +25,7 @@ use biome_formatter::write;
 use biome_rowan::AstNode;
 use biome_rowan::Direction;
 use biome_rowan::SyntaxTriviaPieceComments;
+use biome_suppression::SuppressionKind;
 
 use crate::prelude::*;
 
@@ -53,21 +54,40 @@ pub struct RCommentStyle;
 impl CommentStyle for RCommentStyle {
     type Language = RLanguage;
 
-    /// Must never be called!
+    /// Always returns `None`!
     ///
-    /// Would be called by [biome_formatter::Comments::is_suppressed()], i.e. by a call
-    /// to `f.comments().is_suppressed()`. We can't use that, as it uses
-    /// [biome_formatter::Comments::leading_dangling_trailing_comments()] and will check
-    /// all three styles of comments for suppression. In Air, we only allow suppression
-    /// on leading comments.
+    /// This is an override for biome's
+    /// [biome_formatter::comments::CommentStyle::suppression_kind()]. In biome,
+    /// the `CommentsBuilderVisitor` calls this once per comment to determine
+    /// the comment's [SuppressionKind], which is mostly a purely text based
+    /// check on the comment, and stores the kind. The builder then marks
+    /// whatever node is associated with the comment's `CommentPlacement` as
+    /// suppressed, regardless of whether the comment is leading, trailing, or
+    /// dangling on that node. Global suppression works somewhat similarly.
     ///
-    /// If you are writing your own `is_suppressed()` method for a [FormatNodeRule], you
-    /// instead want [crate::CommentDirectives::has_skip_directive()] to check if a node
-    /// should be suppressed, combined with an explicit call to
-    /// [biome_formatter::Comments::mark_suppression_checked()] to acknowledge that you've
-    /// checked that node.
-    fn is_suppression(_text: &str) -> bool {
-        unreachable!("You want `CommentDirectives::has_skip_directive()` instead");
+    /// Later, each formatter's `FormatNodeRule::is_suppressed()` and
+    /// `FormatNodeRule::is_global_suppressed()` just query
+    /// [biome_formatter::comments::Comments::is_suppressed()] and
+    /// [biome_formatter::comments::Comments::is_global_suppressed()] for the
+    /// node in question, which uses the builder's markers to quickly look it up
+    /// without reparsing the comment.
+    ///
+    /// This doesn't work for us because we only allow suppression comments on
+    /// leading comments, and only on specific kinds of nodes. Luckily,
+    /// `FormatNodeRule::is_suppressed()` and
+    /// `FormatNodeRule::is_global_suppressed()` are still the real hooks for
+    /// this from the formatter's perspective, so we basically just opt out of
+    /// this builder behavior by returning `None` from here for all comments,
+    /// even if some are actually suppression comments.
+    ///
+    /// The real handling of suppression comments is in
+    /// [crate::FormatNodeRule::is_suppressed()] and
+    /// [crate::FormatNodeRule::is_global_suppressed()].
+    fn suppression_kind(
+        &self,
+        _comment: &DecoratedComment<Self::Language>,
+    ) -> Option<SuppressionKind> {
+        None
     }
 
     fn get_comment_kind(_comment: &SyntaxTriviaPieceComments<RLanguage>) -> CommentKind {

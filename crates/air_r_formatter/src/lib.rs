@@ -220,6 +220,7 @@ where
 
     /// Returns `true` if the node is suppressed and should use the same formatting as in the source document.
     fn is_suppressed(&self, node: &N, f: &RFormatter) -> bool {
+        // f.comments().is_suppressed(node.syntax())
         let node = node.syntax();
         let comments = f.comments();
         comments.mark_suppression_checked(node);
@@ -227,12 +228,13 @@ where
     }
 
     /// Returns `true` if the node has a global suppression comment and should use the same formatting as in the source document.
-    ///
-    /// TODO: Consider using this once we've caught up to biomejs/biome#11840
-    /// (where it was rewritten) instead of `root.rs`'s `is_suppressed()`
-    /// override.
     fn is_global_suppressed(&self, node: &N, f: &RFormatter) -> bool {
-        f.comments().is_global_suppressed(node.syntax())
+        // f.comments().is_global_suppressed(node.syntax())
+        let node = node.syntax();
+        let comments = f.comments();
+        comments.mark_suppression_checked(node);
+        // We handle global suppression via an `is_suppressed()` override on `FormatRRoot`
+        false
     }
 
     /// Formats a suppressed node
