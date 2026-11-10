@@ -23,14 +23,15 @@ air_r_syntax = { path = "./crates/air_r_syntax" }
 air_r_test_macros = { path = "./crates/air_r_test_macros" }
 anyhow = "1.0.104"
 assert_matches = "1.5.0"
-biome_console = { git = "https://github.com/biomejs/biome", rev = "2be02648a090153a93cf71fb63ef68feefd495c2" }
-biome_diagnostics = { git = "https://github.com/biomejs/biome", rev = "2be02648a090153a93cf71fb63ef68feefd495c2" }
-biome_formatter = { git = "https://github.com/biomejs/biome", rev = "2be02648a090153a93cf71fb63ef68feefd495c2" }
-biome_line_index = { git = "https://github.com/biomejs/biome", rev = "2be02648a090153a93cf71fb63ef68feefd495c2" }
-biome_parser = { git = "https://github.com/biomejs/biome", rev = "2be02648a090153a93cf71fb63ef68feefd495c2" }
-biome_rowan = { git = "https://github.com/biomejs/biome", rev = "2be02648a090153a93cf71fb63ef68feefd495c2" }
-biome_string_case = { git = "https://github.com/biomejs/biome", rev = "2be02648a090153a93cf71fb63ef68feefd495c2" }
-biome_text_size = { git = "https://github.com/biomejs/biome", rev = "2be02648a090153a93cf71fb63ef68feefd495c2" }
+biome_console = { git = "https://github.com/biomejs/biome", rev = "807f81a3215b641dfb801e1ddf09d3499d99c4d0" }
+biome_diagnostics = { git = "https://github.com/biomejs/biome", rev = "807f81a3215b641dfb801e1ddf09d3499d99c4d0" }
+biome_formatter = { git = "https://github.com/biomejs/biome", rev = "807f81a3215b641dfb801e1ddf09d3499d99c4d0" }
+biome_line_index = { git = "https://github.com/biomejs/biome", rev = "807f81a3215b641dfb801e1ddf09d3499d99c4d0" }
+biome_parser = { git = "https://github.com/biomejs/biome", rev = "807f81a3215b641dfb801e1ddf09d3499d99c4d0" }
+biome_rowan = { git = "https://github.com/biomejs/biome", rev = "807f81a3215b641dfb801e1ddf09d3499d99c4d0" }
+biome_string_case = { git = "https://github.com/biomejs/biome", rev = "807f81a3215b641dfb801e1ddf09d3499d99c4d0" }
+biome_suppression = { git = "https://github.com/biomejs/biome", rev = "807f81a3215b641dfb801e1ddf09d3499d99c4d0" }
+biome_text_size = { git = "https://github.com/biomejs/biome", rev = "807f81a3215b641dfb801e1ddf09d3499d99c4d0" }
 biome_ungrammar = { path = "./crates/biome_ungrammar" }
 bpaf = { version = "0.9.15", features = ["derive"] }
 bytes = "1.12.1"
