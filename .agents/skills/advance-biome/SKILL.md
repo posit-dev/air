@@ -10,13 +10,13 @@ disable-model-invocation: true
 
 Air uses code from another project called Biome. `Cargo.toml` names one exact Biome commit, and Air uses Biome as it was at that moment. We call that commit "the pin".
 
-Air is thousands of Biome changes behind. Catching up all at once would be too big to review, so each run takes one small step:
+Biome keeps changing, so Air falls behind over time. Moving the pin a long way at once can bring in too many changes to review, so each run takes one small step:
 
 1. Move the pin forward until we hit a Biome change Air can't handle. We call it "the breaking change".
 2. Fix Air so it works with the breaking change.
 3. Explain the fix in plain words, so the user can review it and open a pull request.
 
-The user runs this again after each pull request is merged.
+If nothing breaks, the run just moves the pin to Biome's newest commit and Air is caught up. If something does break, the user runs this again after the pull request is merged, until Air is caught up.
 
 ## Rules
 
@@ -84,7 +84,7 @@ Before you trust a "NEEDS AIR CHANGES", check the log to make sure Biome caused 
 How to search:
 
 1. Try the newest commit (last line of `candidates.txt`) first. If it works, keep that pin, skip Step 4, and tell the user Air has caught up.
-2. Otherwise, halve. Try the commit halfway between the newest one that worked and the oldest one that failed. Keep halving until you find a commit that works right before one that fails. About 3,000 lines takes about 12 tries. This works because once Biome breaks something, every later commit stays broken.
+2. Otherwise, halve. Try the commit halfway between the newest one that worked and the oldest one that failed. Keep halving until you find a commit that works right before one that fails. Each try cuts the list in half, so even 1,000 lines takes only about 10 tries. This works because once Biome breaks something, every later commit stays broken.
 3. Show the user a table of every try (line number, commit, result) as you go, so an interrupted search can pick up where it left off.
 
 The first commit that fails is the breaking change, and Air must end up pinned to it. If your last try was a different commit, run `--pin <breaking change>` once more. Expect NEEDS AIR CHANGES.
@@ -225,7 +225,7 @@ Use these headings, in this order:
 
 A made-up example:
 
-> **Where we are:** Air now uses Biome from July 21, 2025 (link). That's 41 Biome changes further along than before, with 3,033 still to go.
+> **Where we are:** Air now uses Biome from July 21, 2025 (link). That's 41 Biome changes further along than before, with 12 still to go.
 >
 > **What Biome changed:** Biome changed how it stores small pieces of text, to use less memory (link to the pull request). Because of that, a tool Air uses to read the text of a piece of code now gives the text back in a different form.
 >
