@@ -23,15 +23,15 @@ air_r_syntax = { path = "./crates/air_r_syntax" }
 air_r_test_macros = { path = "./crates/air_r_test_macros" }
 anyhow = "1.0.104"
 assert_matches = "1.5.0"
-biome_console = { git = "https://github.com/biomejs/biome", rev = "109ab7f1b383cb261d13f5da7e294aee6f13831f" }
-biome_diagnostics = { git = "https://github.com/biomejs/biome", rev = "109ab7f1b383cb261d13f5da7e294aee6f13831f" }
-biome_formatter = { git = "https://github.com/biomejs/biome", rev = "109ab7f1b383cb261d13f5da7e294aee6f13831f" }
-biome_line_index = { git = "https://github.com/biomejs/biome", rev = "109ab7f1b383cb261d13f5da7e294aee6f13831f" }
-biome_parser = { git = "https://github.com/biomejs/biome", rev = "109ab7f1b383cb261d13f5da7e294aee6f13831f" }
-biome_rowan = { git = "https://github.com/biomejs/biome", rev = "109ab7f1b383cb261d13f5da7e294aee6f13831f" }
-biome_string_case = { git = "https://github.com/biomejs/biome", rev = "109ab7f1b383cb261d13f5da7e294aee6f13831f" }
-biome_suppression = { git = "https://github.com/biomejs/biome", rev = "109ab7f1b383cb261d13f5da7e294aee6f13831f" }
-biome_text_size = { git = "https://github.com/biomejs/biome", rev = "109ab7f1b383cb261d13f5da7e294aee6f13831f" }
+biome_console = { git = "https://github.com/biomejs/biome", rev = "bd9faae50e48d17a8ac908029e6729f39b665e61" }
+biome_diagnostics = { git = "https://github.com/biomejs/biome", rev = "bd9faae50e48d17a8ac908029e6729f39b665e61" }
+biome_formatter = { git = "https://github.com/biomejs/biome", rev = "bd9faae50e48d17a8ac908029e6729f39b665e61" }
+biome_line_index = { git = "https://github.com/biomejs/biome", rev = "bd9faae50e48d17a8ac908029e6729f39b665e61" }
+biome_parser = { git = "https://github.com/biomejs/biome", rev = "bd9faae50e48d17a8ac908029e6729f39b665e61" }
+biome_rowan = { git = "https://github.com/biomejs/biome", rev = "bd9faae50e48d17a8ac908029e6729f39b665e61" }
+biome_string_case = { git = "https://github.com/biomejs/biome", rev = "bd9faae50e48d17a8ac908029e6729f39b665e61" }
+biome_suppression = { git = "https://github.com/biomejs/biome", rev = "bd9faae50e48d17a8ac908029e6729f39b665e61" }
+biome_text_size = { git = "https://github.com/biomejs/biome", rev = "bd9faae50e48d17a8ac908029e6729f39b665e61" }
 biome_ungrammar = { path = "./crates/biome_ungrammar" }
 bpaf = { version = "0.9.15", features = ["derive"] }
 bytes = "1.12.1"
