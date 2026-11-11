@@ -1,7 +1,6 @@
 use case::CaseExt;
 use globwalk::{GlobWalker, GlobWalkerBuilder};
 use proc_macro::TokenStream;
-use proc_macro_error::*;
 use proc_macro2::Span;
 use quote::*;
 use std::{
@@ -243,12 +242,13 @@ impl syn::parse::Parse for Arguments {
 }
 
 #[proc_macro]
-#[proc_macro_error]
 pub fn gen_tests(input: TokenStream) -> TokenStream {
     let args = syn::parse_macro_input!(input as Arguments);
 
     match args.generate() {
         Ok(tokens) => tokens,
-        Err(e) => abort!(e, "{}", e),
+        Err(e) => syn::Error::new(Span::call_site(), e)
+            .to_compile_error()
+            .into(),
     }
 }

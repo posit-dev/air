@@ -58,7 +58,6 @@ lsp_test = { path = "./crates/lsp_test" }
 memchr = "2.7.4"
 path-absolutize = "3.1.1"
 proc-macro2 = "1.0.86"
-proc-macro-error = "1.0.4"
 quote = "1.0.37"
 rustc-hash = "2.1.0"
 schemars = "1.2.3"
