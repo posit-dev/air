@@ -175,7 +175,7 @@
 		"which": "^7.0.0"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.6.4",
+		"@biomejs/biome": "2.6.6",
 		"@types/fs-extra": "^11.0.4",
 		"@types/mocha": "^10.0.9",
 		"@types/node": "20.x",
