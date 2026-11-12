@@ -647,6 +647,135 @@ fn(
 fn(x, {{ var }})
 
 # ------------------------------------------------------------------------
+# Groupable multiline strings - https://github.com/posit-dev/air/issues/380
+
+fn("
+  this
+  that
+")
+
+fn('
+  this
+  that
+')
+
+fn("this
+  that")
+
+fn("
+  this
+  that"
+)
+
+fn("this
+  that"
+)
+
+sql(glue("(
+  SELECT ARRAY_TO_STRING(ARRAY_AGG(id), ':')
+  FROM UNNEST(users) AS id
+  WHERE id IN {ids} AND NOT id = author_id
+)"))
+
+# Trailing multiline string in multi-argument call
+DBI::dbGetQuery(con, "
+  SELECT *
+  FROM table
+")
+
+# Named trailing multiline string
+fn(name = "multiline
+  string")
+
+fn(arg, name = "multiline
+  string")
+
+# Raw multiline strings
+fn(r"(
+this
+that
+)")
+
+fn(R"-(
+this
+that
+)-")
+
+# Persistent line break prevents grouping
+fn(
+  "this"
+)
+
+fn(
+  "this
+  that"
+)
+
+fn(
+  "
+  this
+  that
+  "
+)
+
+fn(
+  r"(
+this
+that
+)"
+)
+
+# Single line string exceeding line length expands rather than grouping
+fn("a really really really really really really really really really long string")
+
+# Leading multiline string in multi-argument call
+fn("multiline
+  string", arg)
+
+fn("
+  SELECT *
+  FROM table
+  ", timeout = 120)
+
+fn(query = "
+  SELECT *
+  FROM table
+  ", timeout = 120)
+
+# Leading multiline string with trailing arguments on new lines
+fn("
+  SELECT *
+  FROM table
+  ",
+  "2h",
+  timeout = 120
+)
+
+# Leading multiline string exceeding line length on closing line expands
+fn("multiline
+  string", a_really_really_really_really_really_really_really_really_long_argument)
+
+# Middle multiline string expands all arguments
+fn(arg1, "multiline
+  string", arg2)
+
+# Comments prevent grouping
+fn(
+  # comment
+  "multiline
+  string"
+)
+
+fn("multiline
+  string" # comment
+)
+
+fn("multiline
+  string"
+  # comment
+)
+
+# ------------------------------------------------------------------------
 # Empty lines between arguments
 
 # 1 full empty line between sequential arguments is respected
