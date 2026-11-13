@@ -21,11 +21,12 @@ pub(crate) fn parse_parenthesized_expression(p: &mut RParser) -> CompletedMarker
     });
 
     if !p.eat(T![')']) {
-        p.error(diagnostics::expected_closing_token(
+        p.error(diagnostics::unterminated_scope(
             p,
-            T![')'],
             T!['('],
             open_range,
+            T![')'],
+            p.cur_range(),
         ));
     }
 

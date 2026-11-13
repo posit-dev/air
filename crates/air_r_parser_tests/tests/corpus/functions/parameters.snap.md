@@ -950,19 +950,27 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+test.R:1:9 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × Expected `)` but instead found the end of the file.
+  × This `(` is missing a closing `)`.
+
+  > 1 │ function(a
+      │         ^
+    2 │
+
+  i Expected `)` but instead found the end of the file.
 
     1 │ function(a
   > 2 │
       │
 
-  i This `(` is unclosed.
+test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  > 1 │ function(a
-      │         ^
-    2 │
+  × Expected a function body but instead found the end of the file.
+
+    1 │ function(a
+  > 2 │
+      │
 ```
 
 ```r
@@ -998,19 +1006,27 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+test.R:1:2 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × Expected `)` but instead found the end of the file.
+  × This `(` is missing a closing `)`.
+
+  > 1 │ \(x
+      │  ^
+    2 │
+
+  i Expected `)` but instead found the end of the file.
 
     1 │ \(x
   > 2 │
       │
 
-  i This `(` is unclosed.
+test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  > 1 │ \(x
-      │  ^
-    2 │
+  × Expected a function body but instead found the end of the file.
+
+    1 │ \(x
+  > 2 │
+      │
 ```
 
 A closer that belongs to someone else ends the list without being consumed
@@ -1086,35 +1102,53 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:1:11 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+test.R:1:9 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × Expected `)` but instead found `}`.
+  × This `(` is missing a closing `)`.
+
+  > 1 │ function(a} 1
+      │         ^
+    2 │ function(a] 1
+    3 │
+
+  i Expected `)` but instead found `}`.
 
   > 1 │ function(a} 1
       │           ^
     2 │ function(a] 1
     3 │
 
-  i This `(` is unclosed.
+test.R:1:11 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected a function body but instead found '}'.
 
   > 1 │ function(a} 1
-      │         ^
+      │           ^
     2 │ function(a] 1
+    3 │
+
+test.R:2:9 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × This `(` is missing a closing `)`.
+
+    1 │ function(a} 1
+  > 2 │ function(a] 1
+      │         ^
+    3 │
+
+  i Expected `)` but instead found `]`.
+
+    1 │ function(a} 1
+  > 2 │ function(a] 1
+      │           ^
     3 │
 
 test.R:2:11 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × Expected `)` but instead found `]`.
+  × Expected a function body but instead found ']'.
 
     1 │ function(a} 1
   > 2 │ function(a] 1
       │           ^
-    3 │
-
-  i This `(` is unclosed.
-
-    1 │ function(a} 1
-  > 2 │ function(a] 1
-      │         ^
     3 │
 ```

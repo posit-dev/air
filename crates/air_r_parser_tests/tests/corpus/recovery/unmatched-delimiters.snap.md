@@ -142,21 +142,21 @@ test.R:2:2 parse ━━━━━━━━━━━━━━━━━━━━━
       │  ^
     3 │
 
-test.R:3:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × Expected `}` but instead found the end of the file.
-
-    1 │ # Parenthesis is "not valid" so it isn't matched as a closer for the `{`
-    2 │ {)
-  > 3 │
-      │
-
-  i This `{` is unclosed.
+  × This `{` is missing a closing `}`.
 
     1 │ # Parenthesis is "not valid" so it isn't matched as a closer for the `{`
   > 2 │ {)
       │ ^
     3 │
+
+  i Expected `}` but instead found the end of the file.
+
+    1 │ # Parenthesis is "not valid" so it isn't matched as a closer for the `{`
+    2 │ {)
+  > 3 │
+      │
 ```
 
 ## Opening parenthesis, closing brace [error]
@@ -198,6 +198,34 @@ test.R:1:2 parse ━━━━━━━━━━━━━━━━━━━━━
   > 1 │ (}
       │  ^
     2 │
+
+test.R:1:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × This `(` is missing a closing `)`.
+
+  > 1 │ (}
+      │ ^
+    2 │
+
+  i Expected `)` but instead found `}`.
+
+  > 1 │ (}
+      │  ^
+    2 │
+
+test.R:1:2 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected a newline or a `;` between two expressions.
+
+  > 1 │ (}
+      │  ^
+    2 │
+
+  i The first expression ends here.
+
+  > 1 │ (}
+      │ ^
+    2 │
 ```
 
 ## Opening parenthesis, closing bracket [error]
@@ -238,6 +266,34 @@ test.R:1:2 parse ━━━━━━━━━━━━━━━━━━━━━
 
   > 1 │ (]
       │  ^
+    2 │
+
+test.R:1:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × This `(` is missing a closing `)`.
+
+  > 1 │ (]
+      │ ^
+    2 │
+
+  i Expected `)` but instead found `]`.
+
+  > 1 │ (]
+      │  ^
+    2 │
+
+test.R:1:2 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected a newline or a `;` between two expressions.
+
+  > 1 │ (]
+      │  ^
+    2 │
+
+  i The first expression ends here.
+
+  > 1 │ (]
+      │ ^
     2 │
 ```
 
@@ -285,18 +341,32 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:1:5 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+test.R:1:2 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × Expected `]]` but instead found `]`.
+  × This `[[` is missing a closing `]]`.
+
+  > 1 │ x[[2]
+      │  ^^
+    2 │
+
+  i Expected `]]` but instead found `]`.
 
   > 1 │ x[[2]
       │     ^
     2 │
 
-  i This `[[` is unclosed.
+test.R:1:5 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected a newline or a `;` between two expressions.
 
   > 1 │ x[[2]
-      │  ^^
+      │     ^
+    2 │
+
+  i The first expression ends here.
+
+  > 1 │ x[[2]
+      │ ^^^^
     2 │
 ```
 
@@ -350,18 +420,18 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:1:7 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+test.R:1:4 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × Expected `]]` but instead found `]`.
-
-  > 1 │ x[y[[2]
-      │       ^
-    2 │
-
-  i This `[[` is unclosed.
+  × This `[[` is missing a closing `]]`.
 
   > 1 │ x[y[[2]
       │    ^^
+    2 │
+
+  i Expected `]]` but instead found `]`.
+
+  > 1 │ x[y[[2]
+      │       ^
     2 │
 ```
 
@@ -415,19 +485,19 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+test.R:1:2 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × Expected `]]` but instead found the end of the file.
-
-    1 │ x[[y[2]
-  > 2 │
-      │
-
-  i This `[[` is unclosed.
+  × This `[[` is missing a closing `]]`.
 
   > 1 │ x[[y[2]
       │  ^^
     2 │
+
+  i Expected `]]` but instead found the end of the file.
+
+    1 │ x[[y[2]
+  > 2 │
+      │
 ```
 
 ## Opening bracket2 and bracket, unmatched closing bracket [error]
@@ -488,18 +558,32 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:1:8 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+test.R:1:2 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × Expected `]]` but instead found `]`.
+  × This `[[` is missing a closing `]]`.
+
+  > 1 │ x[[y[2]]
+      │  ^^
+    2 │
+
+  i Expected `]]` but instead found `]`.
 
   > 1 │ x[[y[2]]
       │        ^
     2 │
 
-  i This `[[` is unclosed.
+test.R:1:8 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected a newline or a `;` between two expressions.
 
   > 1 │ x[[y[2]]
-      │  ^^
+      │        ^
+    2 │
+
+  i The first expression ends here.
+
+  > 1 │ x[[y[2]]
+      │ ^^^^^^^
     2 │
 ```
 
@@ -539,19 +623,19 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+test.R:1:2 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × Expected `)` but instead found the end of the file.
-
-    1 │ f(a
-  > 2 │
-      │
-
-  i This `(` is unclosed.
+  × This `(` is missing a closing `)`.
 
   > 1 │ f(a
       │  ^
     2 │
+
+  i Expected `)` but instead found the end of the file.
+
+    1 │ f(a
+  > 2 │
+      │
 ```
 
 ```r
@@ -591,19 +675,19 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+test.R:1:2 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × Expected `)` but instead found the end of the file.
-
-    1 │ f(a=
-  > 2 │
-      │
-
-  i This `(` is unclosed.
+  × This `(` is missing a closing `)`.
 
   > 1 │ f(a=
       │  ^
     2 │
+
+  i Expected `)` but instead found the end of the file.
+
+    1 │ f(a=
+  > 2 │
+      │
 ```
 
 ## Opening bracket, cut off by the end of the file [error]
@@ -642,19 +726,19 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+test.R:1:2 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × Expected `]` but instead found the end of the file.
-
-    1 │ x[1
-  > 2 │
-      │
-
-  i This `[` is unclosed.
+  × This `[` is missing a closing `]`.
 
   > 1 │ x[1
       │  ^
     2 │
+
+  i Expected `]` but instead found the end of the file.
+
+    1 │ x[1
+  > 2 │
+      │
 ```
 
 ## Opening parenthesis of a condition, cut off by the end of the file [error]
@@ -688,19 +772,27 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+test.R:1:4 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × Expected `)` but instead found the end of the file.
+  × This `(` is missing a closing `)`.
+
+  > 1 │ if (x
+      │    ^
+    2 │
+
+  i Expected `)` but instead found the end of the file.
 
     1 │ if (x
   > 2 │
       │
 
-  i This `(` is unclosed.
+test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  > 1 │ if (x
-      │    ^
-    2 │
+  × Expected an if body but instead found the end of the file.
+
+    1 │ if (x
+  > 2 │
+      │
 ```
 
 ```r
@@ -729,19 +821,27 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+test.R:1:7 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × Expected `)` but instead found the end of the file.
+  × This `(` is missing a closing `)`.
+
+  > 1 │ while (x
+      │       ^
+    2 │
+
+  i Expected `)` but instead found the end of the file.
 
     1 │ while (x
   > 2 │
       │
 
-  i This `(` is unclosed.
+test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  > 1 │ while (x
-      │       ^
-    2 │
+  × Expected a loop body but instead found the end of the file.
+
+    1 │ while (x
+  > 2 │
+      │
 ```
 
 ```r
@@ -774,19 +874,27 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+test.R:1:5 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × Expected `)` but instead found the end of the file.
+  × This `(` is missing a closing `)`.
+
+  > 1 │ for (i in x
+      │     ^
+    2 │
+
+  i Expected `)` but instead found the end of the file.
 
     1 │ for (i in x
   > 2 │
       │
 
-  i This `(` is unclosed.
+test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  > 1 │ for (i in x
-      │     ^
-    2 │
+  × Expected a loop body but instead found the end of the file.
+
+    1 │ for (i in x
+  > 2 │
+      │
 ```
 
 ## Missing both parentheses of a condition [error]

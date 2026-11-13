@@ -25,11 +25,12 @@ pub(crate) fn parse_if_statement(p: &mut RParser) -> CompletedMarker {
 
     if !p.eat(T![')']) {
         if has_open {
-            p.error(diagnostics::expected_closing_token(
+            p.error(diagnostics::unterminated_scope(
                 p,
-                T![')'],
                 T!['('],
                 open_range,
+                T![')'],
+                p.cur_range(),
             ));
         } else {
             p.error(diagnostics::expected_token(p, T![')']));

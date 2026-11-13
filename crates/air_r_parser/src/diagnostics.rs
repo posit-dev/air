@@ -54,6 +54,35 @@ pub(crate) fn unterminated_string(open: TextRange, eof: TextRange) -> ParseDiagn
     )
 }
 
+/// An unterminated `(`, `[`, `[[`, or `{`
+pub(crate) fn unterminated_scope(
+    p: &RParser,
+    open: RSyntaxKind,
+    open_range: TextRange,
+    close: RSyntaxKind,
+    current_range: TextRange,
+) -> ParseDiagnostic {
+    let open = open.to_string().expect("Expected token to be punctuation.");
+    let close = close
+        .to_string()
+        .expect("Expected token to be punctuation.");
+
+    let detail = if p.source().text().text_len() <= current_range.start() {
+        format!("Expected `{close}` but instead found the end of the file.")
+    } else {
+        format!(
+            "Expected `{close}` but instead found `{text}`.",
+            text = p.text(current_range)
+        )
+    };
+
+    ParseDiagnostic::new(
+        format!("This `{open}` is missing a closing `{close}`."),
+        open_range,
+    )
+    .with_detail(current_range, detail)
+}
+
 pub(crate) fn expected_expression(p: &RParser, range: TextRange) -> ParseDiagnostic {
     expected_node("expression", range, p)
 }
@@ -190,32 +219,6 @@ pub(crate) fn expected_token(p: &RParser, kind: RSyntaxKind) -> ParseDiagnostic 
             p.cur_range(),
         )
     }
-}
-
-/// Like [expected_token()], but also points at the opening delimiter that
-/// `kind` was supposed to close
-pub(crate) fn expected_closing_token(
-    p: &RParser,
-    kind: RSyntaxKind,
-    open_kind: RSyntaxKind,
-    open_range: TextRange,
-) -> ParseDiagnostic {
-    let expected = kind.to_string().expect("Expected token to be punctuation.");
-    let open = open_kind
-        .to_string()
-        .expect("Expected token to be punctuation.");
-
-    let message = if p.cur() == T![EOF] {
-        format!("Expected `{expected}` but instead found the end of the file.")
-    } else {
-        format!(
-            "Expected `{expected}` but instead found `{text}`.",
-            text = p.cur_text()
-        )
-    };
-
-    ParseDiagnostic::new(message, p.cur_range())
-        .with_detail(open_range, format!("This `{open}` is unclosed."))
 }
 
 /// Like [biome_parser::diagnostic::expected_node()], but without the duplicative hint

@@ -462,19 +462,35 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:1:7 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+test.R:1:2 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × Expected `]]` but instead found `]`.
+  × This `[[` is missing a closing `]]`.
+
+  > 1 │ x[["a"]
+      │  ^^
+    2 │ ]
+    3 │
+
+  i Expected `]]` but instead found `]`.
 
   > 1 │ x[["a"]
       │       ^
     2 │ ]
     3 │
 
-  i This `[[` is unclosed.
+test.R:1:7 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected a newline or a `;` between two expressions.
 
   > 1 │ x[["a"]
-      │  ^^
+      │       ^
+    2 │ ]
+    3 │
+
+  i The first expression ends here.
+
+  > 1 │ x[["a"]
+      │ ^^^^^^
     2 │ ]
     3 │
 
