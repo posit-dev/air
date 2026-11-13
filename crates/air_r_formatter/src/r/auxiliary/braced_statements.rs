@@ -330,18 +330,25 @@ fn fmt_curly_curly(node: &RCurlyCurly, f: &mut RFormatter) -> FormatResult<()> {
     // - We push comments between the `{ {` as leading on the first `{`
     // - We push comments between the `} }` as trailing on the second `}`
     // - We remove the inner `;` of `}; }`, for idempotence and to match Air generally
+    // - The leading and trailing comments of `statement_inner` are written
+    //   outside of the `group()`. They are line comments, which would otherwise
+    //   force the group to expand. On the next pass they are no longer between
+    //   the `{ {` or `} }` and get attached outside the curly-curly, so the
+    //   group would then stay flat, which isn't idempotent (#541).
     write!(
         f,
-        [group(&format_args![
+        [
             format_leading_comments(statement_inner),
-            outer_l_curly_token.format(),
-            inner_l_curly_token.format(),
-            soft_space_or_block_indent(&statements.format()),
-            inner_r_curly_token.format(),
-            semicolon_token.as_ref().map(format_removed),
-            outer_r_curly_token.format(),
+            group(&format_args![
+                outer_l_curly_token.format(),
+                inner_l_curly_token.format(),
+                soft_space_or_block_indent(&statements.format()),
+                inner_r_curly_token.format(),
+                semicolon_token.as_ref().map(format_removed),
+                outer_r_curly_token.format(),
+            ]),
             format_trailing_comments(statement_inner),
-        ])]
+        ]
     )
 }
 

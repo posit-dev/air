@@ -148,6 +148,18 @@ fn(
 # C10
 )
 
+# Trailing comment between the inner and outer `}` (#541)
+fn({{ x } # c
+})
+
+# Trailing comment after both `}}`
+fn({{ x }} # c
+)
+
+# Leading comment between the outer and inner `{`
+fn({ # c
+{ x }})
+
 # Not curly-curly, not a symbol
 fn({{ 1 }})
 fn({{ (var) }})
