@@ -2809,15 +2809,232 @@ test.R:2:6 parse ━━━━━━━━━━━━━━━━━━━━━
   > 2 │ fn(a b c)
       │      ^
     3 │
+```
 
-test.R:2:8 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## A missing closing parenthesis doesn't cause an error cascade [error]
 
-  × Expected `,` but instead found `c`.
+Only the first missing comma issue is reported.
 
-    1 │ fn(a b)
-  > 2 │ fn(a b c)
-      │        ^
-    3 │
+```r
+out <- fn(x
+names <- names(out)
+loc <- which(out)
+out
+```
+
+```cst
+RRoot {
+    bom_token: missing (optional),
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RBinaryExpression {
+                left: RIdentifier {
+                    name_token: IDENT@0..4 "out" [] [Whitespace(" ")],
+                },
+                operator: ASSIGN@4..7 "<-" [] [Whitespace(" ")],
+                right: RCall {
+                    function: RIdentifier {
+                        name_token: IDENT@7..9 "fn" [] [],
+                    },
+                    arguments: RCallArguments {
+                        l_paren_token: L_PAREN@9..10 "(" [] [],
+                        items: RArgumentList [
+                            RArgument {
+                                name_clause: missing (optional),
+                                value: RIdentifier {
+                                    name_token: IDENT@10..11 "x" [] [],
+                                },
+                            },
+                            missing separator,
+                            RArgument {
+                                name_clause: missing (optional),
+                                value: RBinaryExpression {
+                                    left: RIdentifier {
+                                        name_token: IDENT@11..18 "names" [Newline("\n")] [Whitespace(" ")],
+                                    },
+                                    operator: ASSIGN@18..21 "<-" [] [Whitespace(" ")],
+                                    right: RCall {
+                                        function: RIdentifier {
+                                            name_token: IDENT@21..26 "names" [] [],
+                                        },
+                                        arguments: RCallArguments {
+                                            l_paren_token: L_PAREN@26..27 "(" [] [],
+                                            items: RArgumentList [
+                                                RArgument {
+                                                    name_clause: missing (optional),
+                                                    value: RIdentifier {
+                                                        name_token: IDENT@27..30 "out" [] [],
+                                                    },
+                                                },
+                                            ],
+                                            r_paren_token: R_PAREN@30..31 ")" [] [],
+                                        },
+                                    },
+                                },
+                            },
+                            missing separator,
+                            RArgument {
+                                name_clause: missing (optional),
+                                value: RBinaryExpression {
+                                    left: RIdentifier {
+                                        name_token: IDENT@31..36 "loc" [Newline("\n")] [Whitespace(" ")],
+                                    },
+                                    operator: ASSIGN@36..39 "<-" [] [Whitespace(" ")],
+                                    right: RCall {
+                                        function: RIdentifier {
+                                            name_token: IDENT@39..44 "which" [] [],
+                                        },
+                                        arguments: RCallArguments {
+                                            l_paren_token: L_PAREN@44..45 "(" [] [],
+                                            items: RArgumentList [
+                                                RArgument {
+                                                    name_clause: missing (optional),
+                                                    value: RIdentifier {
+                                                        name_token: IDENT@45..48 "out" [] [],
+                                                    },
+                                                },
+                                            ],
+                                            r_paren_token: R_PAREN@48..49 ")" [] [],
+                                        },
+                                    },
+                                },
+                            },
+                            missing separator,
+                            RArgument {
+                                name_clause: missing (optional),
+                                value: RIdentifier {
+                                    name_token: IDENT@49..53 "out" [Newline("\n")] [],
+                                },
+                            },
+                        ],
+                        r_paren_token: missing (required),
+                    },
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@53..54 "" [Newline("\n")] [],
+}
+```
+
+```diagnostics
+test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected `,` but instead found `names`.
+
+    1 │ out <- fn(x
+  > 2 │ names <- names(out)
+      │ ^^^^^
+    3 │ loc <- which(out)
+    4 │ out
+
+test.R:1:10 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × This `(` is missing a closing `)`.
+
+  > 1 │ out <- fn(x
+      │          ^
+    2 │ names <- names(out)
+    3 │ loc <- which(out)
+
+  i Expected `)` but instead found the end of the file.
+
+    3 │ loc <- which(out)
+    4 │ out
+  > 5 │
+      │
+```
+
+```r
+outer(inner(x
+  y
+  z)
+```
+
+```cst
+RRoot {
+    bom_token: missing (optional),
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RCall {
+                function: RIdentifier {
+                    name_token: IDENT@0..5 "outer" [] [],
+                },
+                arguments: RCallArguments {
+                    l_paren_token: L_PAREN@5..6 "(" [] [],
+                    items: RArgumentList [
+                        RArgument {
+                            name_clause: missing (optional),
+                            value: RCall {
+                                function: RIdentifier {
+                                    name_token: IDENT@6..11 "inner" [] [],
+                                },
+                                arguments: RCallArguments {
+                                    l_paren_token: L_PAREN@11..12 "(" [] [],
+                                    items: RArgumentList [
+                                        RArgument {
+                                            name_clause: missing (optional),
+                                            value: RIdentifier {
+                                                name_token: IDENT@12..13 "x" [] [],
+                                            },
+                                        },
+                                        missing separator,
+                                        RArgument {
+                                            name_clause: missing (optional),
+                                            value: RIdentifier {
+                                                name_token: IDENT@13..17 "y" [Newline("\n"), Whitespace("  ")] [],
+                                            },
+                                        },
+                                        missing separator,
+                                        RArgument {
+                                            name_clause: missing (optional),
+                                            value: RIdentifier {
+                                                name_token: IDENT@17..21 "z" [Newline("\n"), Whitespace("  ")] [],
+                                            },
+                                        },
+                                    ],
+                                    r_paren_token: R_PAREN@21..22 ")" [] [],
+                                },
+                            },
+                        },
+                    ],
+                    r_paren_token: missing (required),
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@22..23 "" [Newline("\n")] [],
+}
+```
+
+```diagnostics
+test.R:2:3 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected `,` but instead found `y`.
+
+    1 │ outer(inner(x
+  > 2 │   y
+      │   ^
+    3 │   z)
+    4 │
+
+test.R:1:6 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × This `(` is missing a closing `)`.
+
+  > 1 │ outer(inner(x
+      │      ^
+    2 │   y
+    3 │   z)
+
+  i Expected `)` but instead found the end of the file.
+
+    2 │   y
+    3 │   z)
+  > 4 │
+      │
 ```
 
 ## An argument value that starts no expression [error]

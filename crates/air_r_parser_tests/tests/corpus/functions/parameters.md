@@ -62,6 +62,12 @@ Reporting the separator without consuming anything keeps both potential paramete
 function(a b) x
 ```
 
+Only the first missing comma in a list is reported
+
+```r
+function(a b c d) x
+```
+
 ## A default with no value [error]
 
 The default is required once an `=` is written (r-lib/tree-sitter-r#161).

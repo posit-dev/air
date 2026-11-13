@@ -861,6 +861,73 @@ test.R:1:12 parse ━━━━━━━━━━━━━━━━━━━━�
     2 │
 ```
 
+Only the first missing comma in a list is reported
+
+```r
+function(a b c d) x
+```
+
+```cst
+RRoot {
+    bom_token: missing (optional),
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RFunctionDefinition {
+                name: FUNCTION_KW@0..8 "function" [] [],
+                parameters: RParameters {
+                    l_paren_token: L_PAREN@8..9 "(" [] [],
+                    items: RParameterList [
+                        RParameter {
+                            name: RIdentifier {
+                                name_token: IDENT@9..11 "a" [] [Whitespace(" ")],
+                            },
+                            default: missing (optional),
+                        },
+                        missing separator,
+                        RParameter {
+                            name: RIdentifier {
+                                name_token: IDENT@11..13 "b" [] [Whitespace(" ")],
+                            },
+                            default: missing (optional),
+                        },
+                        missing separator,
+                        RParameter {
+                            name: RIdentifier {
+                                name_token: IDENT@13..15 "c" [] [Whitespace(" ")],
+                            },
+                            default: missing (optional),
+                        },
+                        missing separator,
+                        RParameter {
+                            name: RIdentifier {
+                                name_token: IDENT@15..16 "d" [] [],
+                            },
+                            default: missing (optional),
+                        },
+                    ],
+                    r_paren_token: R_PAREN@16..18 ")" [] [Whitespace(" ")],
+                },
+                body: RIdentifier {
+                    name_token: IDENT@18..19 "x" [] [],
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@19..20 "" [Newline("\n")] [],
+}
+```
+
+```diagnostics
+test.R:1:12 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected `,` but instead found `b`.
+
+  > 1 │ function(a b c d) x
+      │            ^
+    2 │
+```
+
 ## A default with no value [error]
 
 The default is required once an `=` is written (r-lib/tree-sitter-r#161).
