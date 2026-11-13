@@ -83,15 +83,20 @@ fn parse_parameter_list(p: &mut RParser) {
     let parameter_list = p.start();
     let mut progress = ParserProgress::default();
     let mut first = true;
+    let mut reported_missing_comma = false;
 
     while !p.at_ts(PARAMETER_LIST_ENDS) {
         if first {
             first = false;
         } else {
             // Either a `,` that introduces the next parameter, or a missing one
-            // that we report without consuming and let the next parameter start
-            // where we already are
-            p.expect(T![,]);
+            // that we report without consuming (at most once, otherwise it can
+            // cascade) and let the next parameter start where we already are
+            let missing_comma = !p.eat(T![,]);
+            if missing_comma && !reported_missing_comma {
+                p.error(diagnostics::expected_token(p, T![,]));
+                reported_missing_comma = true;
+            }
         }
 
         progress.assert_progressing(p);

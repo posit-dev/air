@@ -198,6 +198,23 @@ fn(a b)
 fn(a b c)
 ```
 
+## A missing closing parenthesis doesn't cause an error cascade [error]
+
+Only the first missing comma issue is reported.
+
+```r
+out <- fn(x
+names <- names(out)
+loc <- which(out)
+out
+```
+
+```r
+outer(inner(x
+  y
+  z)
+```
+
 ## An argument value that starts no expression [error]
 
 Diagnostic should be about the faulty expression, not a comma
