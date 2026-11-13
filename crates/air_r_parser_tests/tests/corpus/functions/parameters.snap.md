@@ -958,11 +958,11 @@ test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━
   > 2 │
       │
 
-  i The file ends here.
+  i This `(` is unclosed.
 
-    1 │ function(a
-  > 2 │
-      │
+  > 1 │ function(a
+      │         ^
+    2 │
 ```
 
 ```r
@@ -1006,11 +1006,11 @@ test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━
   > 2 │
       │
 
-  i The file ends here.
+  i This `(` is unclosed.
 
-    1 │ \(x
-  > 2 │
-      │
+  > 1 │ \(x
+      │  ^
+    2 │
 ```
 
 A closer that belongs to someone else ends the list without being consumed
@@ -1095,6 +1095,13 @@ test.R:1:11 parse ━━━━━━━━━━━━━━━━━━━━�
     2 │ function(a] 1
     3 │
 
+  i This `(` is unclosed.
+
+  > 1 │ function(a} 1
+      │         ^
+    2 │ function(a] 1
+    3 │
+
 test.R:2:11 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   × Expected `)` but instead found `]`.
@@ -1102,5 +1109,12 @@ test.R:2:11 parse ━━━━━━━━━━━━━━━━━━━━�
     1 │ function(a} 1
   > 2 │ function(a] 1
       │           ^
+    3 │
+
+  i This `(` is unclosed.
+
+    1 │ function(a} 1
+  > 2 │ function(a] 1
+      │         ^
     3 │
 ```

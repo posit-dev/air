@@ -151,12 +151,12 @@ test.R:3:1 parse ━━━━━━━━━━━━━━━━━━━━━
   > 3 │
       │
 
-  i The file ends here.
+  i This `{` is unclosed.
 
     1 │ # Parenthesis is "not valid" so it isn't matched as a closer for the `{`
-    2 │ {)
-  > 3 │
-      │
+  > 2 │ {)
+      │ ^
+    3 │
 ```
 
 ## Opening parenthesis, closing brace [error]
@@ -292,6 +292,12 @@ test.R:1:5 parse ━━━━━━━━━━━━━━━━━━━━━
   > 1 │ x[[2]
       │     ^
     2 │
+
+  i This `[[` is unclosed.
+
+  > 1 │ x[[2]
+      │  ^^
+    2 │
 ```
 
 ## Opening bracket and bracket2, unmatched closing bracket [error]
@@ -350,6 +356,12 @@ test.R:1:7 parse ━━━━━━━━━━━━━━━━━━━━━
 
   > 1 │ x[y[[2]
       │       ^
+    2 │
+
+  i This `[[` is unclosed.
+
+  > 1 │ x[y[[2]
+      │    ^^
     2 │
 ```
 
@@ -411,11 +423,11 @@ test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━
   > 2 │
       │
 
-  i The file ends here.
+  i This `[[` is unclosed.
 
-    1 │ x[[y[2]
-  > 2 │
-      │
+  > 1 │ x[[y[2]
+      │  ^^
+    2 │
 ```
 
 ## Opening bracket2 and bracket, unmatched closing bracket [error]
@@ -483,6 +495,12 @@ test.R:1:8 parse ━━━━━━━━━━━━━━━━━━━━━
   > 1 │ x[[y[2]]
       │        ^
     2 │
+
+  i This `[[` is unclosed.
+
+  > 1 │ x[[y[2]]
+      │  ^^
+    2 │
 ```
 
 ## An argument name cut off by the end of the file [error]
@@ -529,11 +547,11 @@ test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━
   > 2 │
       │
 
-  i The file ends here.
+  i This `(` is unclosed.
 
-    1 │ f(a
-  > 2 │
-      │
+  > 1 │ f(a
+      │  ^
+    2 │
 ```
 
 ```r
@@ -581,9 +599,337 @@ test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━
   > 2 │
       │
 
-  i The file ends here.
+  i This `(` is unclosed.
 
-    1 │ f(a=
+  > 1 │ f(a=
+      │  ^
+    2 │
+```
+
+## Opening bracket, cut off by the end of the file [error]
+
+```r
+x[1
+```
+
+```cst
+RRoot {
+    bom_token: missing (optional),
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RSubset {
+                function: RIdentifier {
+                    name_token: IDENT@0..1 "x" [] [],
+                },
+                arguments: RSubsetArguments {
+                    l_brack_token: L_BRACK@1..2 "[" [] [],
+                    items: RArgumentList [
+                        RArgument {
+                            name_clause: missing (optional),
+                            value: RDoubleValue {
+                                value_token: R_DOUBLE_LITERAL@2..3 "1" [] [],
+                            },
+                        },
+                    ],
+                    r_brack_token: missing (required),
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@3..4 "" [Newline("\n")] [],
+}
+```
+
+```diagnostics
+test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected `]` but instead found the end of the file.
+
+    1 │ x[1
   > 2 │
       │
+
+  i This `[` is unclosed.
+
+  > 1 │ x[1
+      │  ^
+    2 │
+```
+
+## Opening parenthesis of a condition, cut off by the end of the file [error]
+
+The diagnostic for the missing `)` points back at the `(` it should close.
+
+```r
+if (x
+```
+
+```cst
+RRoot {
+    bom_token: missing (optional),
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RIfStatement {
+                if_token: IF_KW@0..3 "if" [] [Whitespace(" ")],
+                l_paren_token: L_PAREN@3..4 "(" [] [],
+                condition: RIdentifier {
+                    name_token: IDENT@4..5 "x" [] [],
+                },
+                r_paren_token: missing (required),
+                consequence: missing (required),
+                else_clause: missing (optional),
+            },
+            semicolon_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@5..6 "" [Newline("\n")] [],
+}
+```
+
+```diagnostics
+test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected `)` but instead found the end of the file.
+
+    1 │ if (x
+  > 2 │
+      │
+
+  i This `(` is unclosed.
+
+  > 1 │ if (x
+      │    ^
+    2 │
+```
+
+```r
+while (x
+```
+
+```cst
+RRoot {
+    bom_token: missing (optional),
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RWhileStatement {
+                while_token: WHILE_KW@0..6 "while" [] [Whitespace(" ")],
+                l_paren_token: L_PAREN@6..7 "(" [] [],
+                condition: RIdentifier {
+                    name_token: IDENT@7..8 "x" [] [],
+                },
+                r_paren_token: missing (required),
+                body: missing (required),
+            },
+            semicolon_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@8..9 "" [Newline("\n")] [],
+}
+```
+
+```diagnostics
+test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected `)` but instead found the end of the file.
+
+    1 │ while (x
+  > 2 │
+      │
+
+  i This `(` is unclosed.
+
+  > 1 │ while (x
+      │       ^
+    2 │
+```
+
+```r
+for (i in x
+```
+
+```cst
+RRoot {
+    bom_token: missing (optional),
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RForStatement {
+                for_token: FOR_KW@0..4 "for" [] [Whitespace(" ")],
+                l_paren_token: L_PAREN@4..5 "(" [] [],
+                variable: RIdentifier {
+                    name_token: IDENT@5..7 "i" [] [Whitespace(" ")],
+                },
+                in_token: IN_KW@7..10 "in" [] [Whitespace(" ")],
+                sequence: RIdentifier {
+                    name_token: IDENT@10..11 "x" [] [],
+                },
+                r_paren_token: missing (required),
+                body: missing (required),
+            },
+            semicolon_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@11..12 "" [Newline("\n")] [],
+}
+```
+
+```diagnostics
+test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected `)` but instead found the end of the file.
+
+    1 │ for (i in x
+  > 2 │
+      │
+
+  i This `(` is unclosed.
+
+  > 1 │ for (i in x
+      │     ^
+    2 │
+```
+
+## Missing both parentheses of a condition [error]
+
+With no `(` there is nothing to point back at, so the missing `)` is reported
+on its own.
+
+```r
+if x y
+```
+
+```cst
+RRoot {
+    bom_token: missing (optional),
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RIfStatement {
+                if_token: IF_KW@0..3 "if" [] [Whitespace(" ")],
+                l_paren_token: missing (required),
+                condition: RIdentifier {
+                    name_token: IDENT@3..5 "x" [] [Whitespace(" ")],
+                },
+                r_paren_token: missing (required),
+                consequence: RIdentifier {
+                    name_token: IDENT@5..6 "y" [] [],
+                },
+                else_clause: missing (optional),
+            },
+            semicolon_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@6..7 "" [Newline("\n")] [],
+}
+```
+
+```diagnostics
+test.R:1:4 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected `(` but instead found `x`.
+
+  > 1 │ if x y
+      │    ^
+    2 │
+
+test.R:1:6 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected `)` but instead found `y`.
+
+  > 1 │ if x y
+      │      ^
+    2 │
+```
+
+```r
+while x y
+```
+
+```cst
+RRoot {
+    bom_token: missing (optional),
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RWhileStatement {
+                while_token: WHILE_KW@0..6 "while" [] [Whitespace(" ")],
+                l_paren_token: missing (required),
+                condition: RIdentifier {
+                    name_token: IDENT@6..8 "x" [] [Whitespace(" ")],
+                },
+                r_paren_token: missing (required),
+                body: RIdentifier {
+                    name_token: IDENT@8..9 "y" [] [],
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@9..10 "" [Newline("\n")] [],
+}
+```
+
+```diagnostics
+test.R:1:7 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected `(` but instead found `x`.
+
+  > 1 │ while x y
+      │       ^
+    2 │
+
+test.R:1:9 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected `)` but instead found `y`.
+
+  > 1 │ while x y
+      │         ^
+    2 │
+```
+
+```r
+for i in x y
+```
+
+```cst
+RRoot {
+    bom_token: missing (optional),
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RForStatement {
+                for_token: FOR_KW@0..4 "for" [] [Whitespace(" ")],
+                l_paren_token: missing (required),
+                variable: RIdentifier {
+                    name_token: IDENT@4..6 "i" [] [Whitespace(" ")],
+                },
+                in_token: IN_KW@6..9 "in" [] [Whitespace(" ")],
+                sequence: RIdentifier {
+                    name_token: IDENT@9..11 "x" [] [Whitespace(" ")],
+                },
+                r_paren_token: missing (required),
+                body: RIdentifier {
+                    name_token: IDENT@11..12 "y" [] [],
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@12..13 "" [Newline("\n")] [],
+}
+```
+
+```diagnostics
+test.R:1:5 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected `(` but instead found `i`.
+
+  > 1 │ for i in x y
+      │     ^
+    2 │
+
+test.R:1:12 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected `)` but instead found `y`.
+
+  > 1 │ for i in x y
+      │            ^
+    2 │
 ```

@@ -11,14 +11,23 @@ use biome_parser::Parser;
 
 pub(crate) fn parse_parenthesized_expression(p: &mut RParser) -> CompletedMarker {
     debug_assert!(p.at(T!['(']));
-
     let m = p.start();
+    let open_range = p.cur_range();
+
     p.with_scope(Scope::Parenthesis, |p| {
         p.bump(T!['(']);
         parse_expression(p, BindingPower::LOWEST, BinaryEqualsAssign::Allow)
             .or_add_diagnostic(p, diagnostics::expected_expression);
     });
-    p.expect(T![')']);
+
+    if !p.eat(T![')']) {
+        p.error(diagnostics::expected_closing_token(
+            p,
+            T![')'],
+            T!['('],
+            open_range,
+        ));
+    }
 
     m.complete(p, R_PARENTHESIZED_EXPRESSION)
 }

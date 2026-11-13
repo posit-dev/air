@@ -173,7 +173,6 @@ pub(crate) fn expected_token(p: &RParser, kind: RSyntaxKind) -> ParseDiagnostic 
             format!("Expected `{expected}` but instead found the end of the file."),
             p.cur_range(),
         )
-        .with_detail(p.cur_range(), "The file ends here.")
     } else if expected == EOF_STR {
         ParseDiagnostic::new(
             format!(
@@ -191,6 +190,32 @@ pub(crate) fn expected_token(p: &RParser, kind: RSyntaxKind) -> ParseDiagnostic 
             p.cur_range(),
         )
     }
+}
+
+/// Like [expected_token()], but also points at the opening delimiter that
+/// `kind` was supposed to close
+pub(crate) fn expected_closing_token(
+    p: &RParser,
+    kind: RSyntaxKind,
+    open_kind: RSyntaxKind,
+    open_range: TextRange,
+) -> ParseDiagnostic {
+    let expected = kind.to_string().expect("Expected token to be punctuation.");
+    let open = open_kind
+        .to_string()
+        .expect("Expected token to be punctuation.");
+
+    let message = if p.cur() == T![EOF] {
+        format!("Expected `{expected}` but instead found the end of the file.")
+    } else {
+        format!(
+            "Expected `{expected}` but instead found `{text}`.",
+            text = p.cur_text()
+        )
+    };
+
+    ParseDiagnostic::new(message, p.cur_range())
+        .with_detail(open_range, format!("This `{open}` is unclosed."))
 }
 
 /// Like [biome_parser::diagnostic::expected_node()], but without the duplicative hint

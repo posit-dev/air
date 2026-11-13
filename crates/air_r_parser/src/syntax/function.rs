@@ -47,11 +47,22 @@ pub(crate) fn parse_function_definition(p: &mut RParser, kind: RSyntaxKind) -> C
 
 fn parse_parameters(p: &mut RParser) {
     let m = p.start();
+    let open_range = p.cur_range();
+
     p.with_scope(Scope::Parenthesis, |p| {
         p.bump(T!['(']);
         parse_parameter_list(p);
     });
-    p.expect(T![')']);
+
+    if !p.eat(T![')']) {
+        p.error(diagnostics::expected_closing_token(
+            p,
+            T![')'],
+            T!['('],
+            open_range,
+        ));
+    }
+
     m.complete(p, R_PARAMETERS);
 }
 
