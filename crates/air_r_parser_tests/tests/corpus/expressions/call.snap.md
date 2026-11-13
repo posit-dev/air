@@ -3120,12 +3120,32 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:1:4 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+test.R:1:3 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × Expected `)` but instead found `}`.
+  × This `(` is missing a closing `)`.
+
+  > 1 │ fn(}
+      │   ^
+    2 │
+
+  i Expected `)` but instead found `}`.
 
   > 1 │ fn(}
       │    ^
+    2 │
+
+test.R:1:4 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected a newline or a `;` between two expressions.
+
+  > 1 │ fn(}
+      │    ^
+    2 │
+
+  i The first expression ends here.
+
+  > 1 │ fn(}
+      │ ^^^
     2 │
 ```
 
@@ -3171,12 +3191,32 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:1:5 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+test.R:1:3 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × Expected `)` but instead found `}`.
+  × This `(` is missing a closing `)`.
+
+  > 1 │ fn(a}
+      │   ^
+    2 │
+
+  i Expected `)` but instead found `}`.
 
   > 1 │ fn(a}
       │     ^
+    2 │
+
+test.R:1:5 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected a newline or a `;` between two expressions.
+
+  > 1 │ fn(a}
+      │     ^
+    2 │
+
+  i The first expression ends here.
+
+  > 1 │ fn(a}
+      │ ^^^^
     2 │
 ```
 

@@ -758,13 +758,6 @@ test.R:8:1 parse ━━━━━━━━━━━━━━━━━━━━━
     7 │ foo:::if
   > 8 │
       │
-
-  i The file ends here.
-
-    6 │ foo::if
-    7 │ foo:::if
-  > 8 │
-      │
 ```
 
 ## Dollar, at, namespace, namespace internal with newline before operator [error]

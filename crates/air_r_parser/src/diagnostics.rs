@@ -54,6 +54,35 @@ pub(crate) fn unterminated_string(open: TextRange, eof: TextRange) -> ParseDiagn
     )
 }
 
+/// An unterminated `(`, `[`, `[[`, or `{`
+pub(crate) fn unterminated_scope(
+    p: &RParser,
+    open: RSyntaxKind,
+    open_range: TextRange,
+    close: RSyntaxKind,
+    current_range: TextRange,
+) -> ParseDiagnostic {
+    let open = open.to_string().expect("Expected token to be punctuation.");
+    let close = close
+        .to_string()
+        .expect("Expected token to be punctuation.");
+
+    let detail = if p.source().text().text_len() <= current_range.start() {
+        format!("Expected `{close}` but instead found the end of the file.")
+    } else {
+        format!(
+            "Expected `{close}` but instead found `{text}`.",
+            text = p.text(current_range)
+        )
+    };
+
+    ParseDiagnostic::new(
+        format!("This `{open}` is missing a closing `{close}`."),
+        open_range,
+    )
+    .with_detail(current_range, detail)
+}
+
 pub(crate) fn expected_expression(p: &RParser, range: TextRange) -> ParseDiagnostic {
     expected_node("expression", range, p)
 }
@@ -173,7 +202,6 @@ pub(crate) fn expected_token(p: &RParser, kind: RSyntaxKind) -> ParseDiagnostic 
             format!("Expected `{expected}` but instead found the end of the file."),
             p.cur_range(),
         )
-        .with_detail(p.cur_range(), "The file ends here.")
     } else if expected == EOF_STR {
         ParseDiagnostic::new(
             format!(

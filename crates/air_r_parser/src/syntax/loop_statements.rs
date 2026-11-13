@@ -37,9 +37,10 @@ const FOR_VARIABLE_ENDS: TokenSet<RSyntaxKind> =
 pub(crate) fn parse_for_statement(p: &mut RParser) -> CompletedMarker {
     let m = p.start();
     p.bump(T![for]);
+    let open_range = p.cur_range();
 
-    p.with_scope(Scope::Parenthesis, |p| {
-        p.expect(T!['(']);
+    let has_open = p.with_scope(Scope::Parenthesis, |p| {
+        let has_open = p.expect(T!['(']);
         parse_for_variable(p)
             .or_recover_with_token_set(
                 p,
@@ -50,8 +51,22 @@ pub(crate) fn parse_for_statement(p: &mut RParser) -> CompletedMarker {
         p.expect(T![in]);
         parse_expression(p, BindingPower::LOWEST, BinaryEqualsAssign::Deny)
             .or_add_diagnostic(p, diagnostics::expected_for_sequence);
+        has_open
     });
-    p.expect(T![')']);
+
+    if !p.eat(T![')']) {
+        if has_open {
+            p.error(diagnostics::unterminated_scope(
+                p,
+                T!['('],
+                open_range,
+                T![')'],
+                p.cur_range(),
+            ));
+        } else {
+            p.error(diagnostics::expected_token(p, T![')']));
+        };
+    }
 
     parse_body_expression(p).or_add_diagnostic(p, diagnostics::expected_loop_body);
 
@@ -71,13 +86,28 @@ fn parse_for_variable(p: &mut RParser) -> ParsedSyntax {
 pub(crate) fn parse_while_statement(p: &mut RParser) -> CompletedMarker {
     let m = p.start();
     p.bump(T![while]);
+    let open_range = p.cur_range();
 
-    p.with_scope(Scope::Parenthesis, |p| {
-        p.expect(T!['(']);
+    let has_open = p.with_scope(Scope::Parenthesis, |p| {
+        let has_open = p.expect(T!['(']);
         parse_expression(p, BindingPower::LOWEST, BinaryEqualsAssign::Deny)
             .or_add_diagnostic(p, diagnostics::expected_condition);
+        has_open
     });
-    p.expect(T![')']);
+
+    if !p.eat(T![')']) {
+        if has_open {
+            p.error(diagnostics::unterminated_scope(
+                p,
+                T!['('],
+                open_range,
+                T![')'],
+                p.cur_range(),
+            ));
+        } else {
+            p.error(diagnostics::expected_token(p, T![')']));
+        };
+    }
 
     parse_body_expression(p).or_add_diagnostic(p, diagnostics::expected_loop_body);
 

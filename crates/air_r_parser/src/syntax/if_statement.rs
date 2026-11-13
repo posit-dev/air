@@ -14,13 +14,28 @@ use biome_parser::Parser;
 pub(crate) fn parse_if_statement(p: &mut RParser) -> CompletedMarker {
     let m = p.start();
     p.bump(T![if]);
+    let open_range = p.cur_range();
 
-    p.with_scope(Scope::Parenthesis, |p| {
-        p.expect(T!['(']);
+    let has_open = p.with_scope(Scope::Parenthesis, |p| {
+        let has_open = p.expect(T!['(']);
         parse_expression(p, BindingPower::LOWEST, BinaryEqualsAssign::Deny)
             .or_add_diagnostic(p, diagnostics::expected_condition);
+        has_open
     });
-    p.expect(T![')']);
+
+    if !p.eat(T![')']) {
+        if has_open {
+            p.error(diagnostics::unterminated_scope(
+                p,
+                T!['('],
+                open_range,
+                T![')'],
+                p.cur_range(),
+            ));
+        } else {
+            p.error(diagnostics::expected_token(p, T![')']));
+        };
+    }
 
     // The consequence and the alternative have the same limitation as a loop
     // body: treated like any other expression, but `?` comes before them in the

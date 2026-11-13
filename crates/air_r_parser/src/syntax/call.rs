@@ -37,36 +37,57 @@ use biome_parser::token_set;
 
 pub(crate) fn parse_call_expression(p: &mut RParser, lhs: CompletedMarker) -> CompletedMarker {
     let m = lhs.precede(p);
-
     let arguments = p.start();
+    let open_range = p.cur_range();
+
     p.with_scope(Scope::Parenthesis, |p| {
         p.bump(T!['(']);
         parse_argument_list(p);
     });
-    p.expect(T![')']);
-    arguments.complete(p, R_CALL_ARGUMENTS);
 
+    if !p.eat(T![')']) {
+        p.error(diagnostics::unterminated_scope(
+            p,
+            T!['('],
+            open_range,
+            T![')'],
+            p.cur_range(),
+        ));
+    }
+
+    arguments.complete(p, R_CALL_ARGUMENTS);
     m.complete(p, R_CALL)
 }
 
 pub(crate) fn parse_subset_expression(p: &mut RParser, lhs: CompletedMarker) -> CompletedMarker {
     let m = lhs.precede(p);
-
     let arguments = p.start();
+    let open_range = p.cur_range();
+
     p.with_scope(Scope::Bracket, |p| {
         p.bump(T!['[']);
         parse_argument_list(p);
     });
-    p.expect(T![']']);
-    arguments.complete(p, R_SUBSET_ARGUMENTS);
 
+    if !p.eat(T![']']) {
+        p.error(diagnostics::unterminated_scope(
+            p,
+            T!['['],
+            open_range,
+            T![']'],
+            p.cur_range(),
+        ));
+    }
+
+    arguments.complete(p, R_SUBSET_ARGUMENTS);
     m.complete(p, R_SUBSET)
 }
 
 pub(crate) fn parse_subset2_expression(p: &mut RParser, lhs: CompletedMarker) -> CompletedMarker {
     let m = lhs.precede(p);
-
     let arguments = p.start();
+    let open_range = p.cur_range();
+
     p.with_scope(Scope::Bracket2, |p| {
         // Purposefully bump inside `with_scope()`. Bumping lexes the next
         // token after this one, and the context for how two back to back `]`
@@ -76,20 +97,29 @@ pub(crate) fn parse_subset2_expression(p: &mut RParser, lhs: CompletedMarker) ->
         p.bump(T!["[["]);
         parse_argument_list(p);
     });
-    // Similarly, we `expect()` (bump + assert) outside the scope so that a
-    // potential future `]` can't be affected by a now closed Bracket2 scope
-    p.expect(T!["]]"]);
-    arguments.complete(p, R_SUBSET2_ARGUMENTS);
 
+    // Similarly, we `eat()` outside the scope so that a potential future `]`
+    // can't be affected by a now closed Bracket2 scope
+    if !p.eat(T!["]]"]) {
+        p.error(diagnostics::unterminated_scope(
+            p,
+            T!["[["],
+            open_range,
+            T!["]]"],
+            p.cur_range(),
+        ));
+    }
+
+    arguments.complete(p, R_SUBSET2_ARGUMENTS);
     m.complete(p, R_SUBSET2)
 }
 
 /// What ends an argument list
 ///
 /// Any closing delimiter, not just the one the caller opened. We don't consume
-/// it, we return from here. The caller's `expect()` on the closing delimiter
-/// reports a diagnostic, which still doesn't consume, and the delimiter
-/// survives (ideally to be consumed by its actual owner).
+/// it, we return from here. The caller's failed `eat()` of the closing
+/// delimiter reports a diagnostic without consuming, and the delimiter survives
+/// (ideally to be consumed by its actual owner).
 const ARGUMENT_LIST_ENDS: TokenSet<RSyntaxKind> =
     token_set![T![EOF], T![')'], T![']'], T!["]]"], T!['}']];
 
