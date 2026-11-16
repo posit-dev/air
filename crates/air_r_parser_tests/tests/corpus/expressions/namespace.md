@@ -126,6 +126,22 @@ a()::b
 a():::b
 ```
 
+## Call with an error on the left of `::` [error]
+
+There are two errors here:
+
+- Missing comma before `b`
+- Non-name lhs
+
+The missing comma one is reported first at column 6. The non-name lhs is
+detected later, and reports at column 1. We insert it specially to ensure that
+the non-name lhs parse diagnostic still shows up first in the diagnostics list,
+since the diagnostics list must be sorted on span starts.
+
+```r
+fn(a b)::x
+```
+
 ## Namespace newline is significant only outside parens
 
 ```r

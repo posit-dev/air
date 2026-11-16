@@ -78,6 +78,61 @@ impl<'src> RParser<'src> {
         let diagnostics = merge_diagnostics(lexer_diagnostics, parse_diagnostics);
         (events, trivia, diagnostics)
     }
+
+    /// Like [Parser::error()], but for when the new diagnostic's location isn't
+    /// guaranteed to trail after the existing diagnostics
+    ///
+    /// For example, the missing `)` diagnostic here is only known once we reach
+    /// `}`, after we've emitted the missing `,` diagnostic on `b`. That's
+    /// typically fine, but the missing `)` diagnostic's location points at the
+    /// opening `(` since that makes the most sense for the user, and would be
+    /// out of order without this.
+    ///
+    /// ```r
+    /// {
+    ///   fn(a
+    ///   b
+    /// }
+    /// ```
+    ///
+    /// Diagnostics must be kept in order while parsing because:
+    /// - [Parser::error()] deduplicates against the most recent diagnostic
+    /// - [merge_diagnostics()] expects sorted diagnostics vectors
+    /// - The tree-sink's potential `report_depth_limit()` diagnostic inserts
+    ///   with `partition_point()`, which assumes the diagnostics vector is
+    ///   sorted
+    pub(crate) fn error_in_order(&mut self, err: impl ToDiagnostic<Self>) {
+        let err = err.into_diagnostic(self);
+
+        let Some(span) = err.span() else {
+            // Diagnostics without a span are pushed to the back
+            self.error(err);
+            return;
+        };
+
+        let start = span.start();
+        let diagnostics = self.context().diagnostics();
+
+        let index = diagnostics.partition_point(|diagnostic| {
+            diagnostic.span().is_some_and(|span| span.start() <= start)
+        });
+
+        if index == diagnostics.len() {
+            // Turns out this `err` goes at the end anyways
+            self.error(err);
+            return;
+        }
+
+        // Pop off the diagnostics that we reinsert after `err`
+        let diagnostics = diagnostics[index..].to_vec();
+        self.context_mut().truncate_diagnostics(index);
+
+        // Insert `err` at the back, then reinsert popped diagnostics
+        self.error(err);
+        for diagnostic in diagnostics {
+            self.error(diagnostic);
+        }
+    }
 }
 
 impl<'src> Parser for RParser<'src> {

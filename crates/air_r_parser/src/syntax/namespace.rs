@@ -18,7 +18,7 @@ pub(crate) fn parse_namespace_expression(
 
     // `::` and `:::` restrict their left operand as well, and it is already parsed
     if !AnyRSelector::can_cast(lhs.kind(p)) {
-        p.error(diagnostics::expected_lhs_selector(
+        p.error_in_order(diagnostics::expected_lhs_selector(
             kind,
             kind_range,
             lhs.range(p),

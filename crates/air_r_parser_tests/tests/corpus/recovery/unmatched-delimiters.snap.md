@@ -133,15 +133,6 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:2:2 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × Expected an expression but instead found ')'.
-
-    1 │ # Parenthesis is "not valid" so it isn't matched as a closer for the `{`
-  > 2 │ {)
-      │  ^
-    3 │
-
 test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   × This `{` is missing a closing `}`.
@@ -157,6 +148,15 @@ test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━
     2 │ {)
   > 3 │
       │
+
+test.R:2:2 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected an expression but instead found ')'.
+
+    1 │ # Parenthesis is "not valid" so it isn't matched as a closer for the `{`
+  > 2 │ {)
+      │  ^
+    3 │
 ```
 
 ## Opening parenthesis, closing brace [error]
@@ -191,14 +191,6 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:1:2 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × Expected an expression but instead found '}'.
-
-  > 1 │ (}
-      │  ^
-    2 │
-
 test.R:1:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   × This `(` is missing a closing `)`.
@@ -215,16 +207,10 @@ test.R:1:1 parse ━━━━━━━━━━━━━━━━━━━━━
 
 test.R:1:2 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × Expected a newline or a `;` between two expressions.
+  × Expected an expression but instead found '}'.
 
   > 1 │ (}
       │  ^
-    2 │
-
-  i The first expression ends here.
-
-  > 1 │ (}
-      │ ^
     2 │
 ```
 
@@ -260,14 +246,6 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:1:2 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × Expected an expression but instead found ']'.
-
-  > 1 │ (]
-      │  ^
-    2 │
-
 test.R:1:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   × This `(` is missing a closing `)`.
@@ -284,16 +262,10 @@ test.R:1:1 parse ━━━━━━━━━━━━━━━━━━━━━
 
 test.R:1:2 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  × Expected a newline or a `;` between two expressions.
+  × Expected an expression but instead found ']'.
 
   > 1 │ (]
       │  ^
-    2 │
-
-  i The first expression ends here.
-
-  > 1 │ (]
-      │ ^
     2 │
 ```
 

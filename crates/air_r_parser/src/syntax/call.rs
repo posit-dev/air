@@ -46,7 +46,7 @@ pub(crate) fn parse_call_expression(p: &mut RParser, lhs: CompletedMarker) -> Co
     });
 
     if !p.eat(T![')']) {
-        p.error(diagnostics::unterminated_scope(
+        p.error_in_order(diagnostics::unterminated_scope(
             p,
             T!['('],
             open_range,
@@ -70,7 +70,7 @@ pub(crate) fn parse_subset_expression(p: &mut RParser, lhs: CompletedMarker) -> 
     });
 
     if !p.eat(T![']']) {
-        p.error(diagnostics::unterminated_scope(
+        p.error_in_order(diagnostics::unterminated_scope(
             p,
             T!['['],
             open_range,
@@ -101,7 +101,7 @@ pub(crate) fn parse_subset2_expression(p: &mut RParser, lhs: CompletedMarker) ->
     // Similarly, we `eat()` outside the scope so that a potential future `]`
     // can't be affected by a now closed Bracket2 scope
     if !p.eat(T!["]]"]) {
-        p.error(diagnostics::unterminated_scope(
+        p.error_in_order(diagnostics::unterminated_scope(
             p,
             T!["[["],
             open_range,

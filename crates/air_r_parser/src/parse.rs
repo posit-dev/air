@@ -63,7 +63,7 @@ impl RParse {
         &self.diagnostics
     }
 
-    /// Every diagnostic the parser emitted, consuming the result
+    /// Every diagnostic the parser emitted, in source order, consuming the result
     pub fn into_diagnostics(self) -> Vec<ParseDiagnostic> {
         self.diagnostics
     }
