@@ -56,7 +56,7 @@ pub(crate) fn parse_for_statement(p: &mut RParser) -> CompletedMarker {
 
     if !p.eat(T![')']) {
         if has_open {
-            p.error(diagnostics::unterminated_scope(
+            p.error_in_order(diagnostics::unterminated_scope(
                 p,
                 T!['('],
                 open_range,
@@ -97,7 +97,7 @@ pub(crate) fn parse_while_statement(p: &mut RParser) -> CompletedMarker {
 
     if !p.eat(T![')']) {
         if has_open {
-            p.error(diagnostics::unterminated_scope(
+            p.error_in_order(diagnostics::unterminated_scope(
                 p,
                 T!['('],
                 open_range,

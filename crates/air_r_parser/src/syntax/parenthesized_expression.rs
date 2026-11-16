@@ -21,7 +21,7 @@ pub(crate) fn parse_parenthesized_expression(p: &mut RParser) -> CompletedMarker
     });
 
     if !p.eat(T![')']) {
-        p.error(diagnostics::unterminated_scope(
+        p.error_in_order(diagnostics::unterminated_scope(
             p,
             T!['('],
             open_range,

@@ -1432,6 +1432,92 @@ test.R:1:1 parse ━━━━━━━━━━━━━━━━━━━━━
     2 │
 ```
 
+## Call with an error on the left of `::` [error]
+
+There are two errors here:
+
+- Missing comma before `b`
+- Non-name lhs
+
+The missing comma one is reported first at column 6. The non-name lhs is
+detected later, and reports at column 1. We insert it specially to ensure that
+the non-name lhs parse diagnostic still shows up first in the diagnostics list,
+since the diagnostics list must be sorted on span starts.
+
+```r
+fn(a b)::x
+```
+
+```cst
+RRoot {
+    bom_token: missing (optional),
+    statements: RStatementList [
+        RExpressionStatement {
+            expression: RNamespaceExpression {
+                left: RBogusSelector {
+                    items: [
+                        RCall {
+                            function: RIdentifier {
+                                name_token: IDENT@0..2 "fn" [] [],
+                            },
+                            arguments: RCallArguments {
+                                l_paren_token: L_PAREN@2..3 "(" [] [],
+                                items: RArgumentList [
+                                    RArgument {
+                                        name_clause: missing (optional),
+                                        value: RIdentifier {
+                                            name_token: IDENT@3..5 "a" [] [Whitespace(" ")],
+                                        },
+                                    },
+                                    missing separator,
+                                    RArgument {
+                                        name_clause: missing (optional),
+                                        value: RIdentifier {
+                                            name_token: IDENT@5..6 "b" [] [],
+                                        },
+                                    },
+                                ],
+                                r_paren_token: R_PAREN@6..7 ")" [] [],
+                            },
+                        },
+                    ],
+                },
+                operator: COLON2@7..9 "::" [] [],
+                right: RIdentifier {
+                    name_token: IDENT@9..10 "x" [] [],
+                },
+            },
+            semicolon_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@10..11 "" [Newline("\n")] [],
+}
+```
+
+```diagnostics
+test.R:1:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected a name.
+
+  > 1 │ fn(a b)::x
+      │ ^^^^^^^
+    2 │
+
+  i `::` requires a name on the left.
+
+  > 1 │ fn(a b)::x
+      │        ^^
+    2 │
+
+test.R:1:6 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected `,` but instead found `b`.
+
+  > 1 │ fn(a b)::x
+      │      ^
+    2 │
+```
+
 ## Namespace newline is significant only outside parens
 
 ```r

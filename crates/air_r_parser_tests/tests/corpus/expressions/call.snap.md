@@ -2919,16 +2919,6 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × Expected `,` but instead found `names`.
-
-    1 │ out <- fn(x
-  > 2 │ names <- names(out)
-      │ ^^^^^
-    3 │ loc <- which(out)
-    4 │ out
-
 test.R:1:10 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   × This `(` is missing a closing `)`.
@@ -2944,6 +2934,16 @@ test.R:1:10 parse ━━━━━━━━━━━━━━━━━━━━�
     4 │ out
   > 5 │
       │
+
+test.R:2:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected `,` but instead found `names`.
+
+    1 │ out <- fn(x
+  > 2 │ names <- names(out)
+      │ ^^^^^
+    3 │ loc <- which(out)
+    4 │ out
 ```
 
 ```r
@@ -3010,16 +3010,6 @@ RRoot {
 ```
 
 ```diagnostics
-test.R:2:3 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × Expected `,` but instead found `y`.
-
-    1 │ outer(inner(x
-  > 2 │   y
-      │   ^
-    3 │   z)
-    4 │
-
 test.R:1:6 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   × This `(` is missing a closing `)`.
@@ -3035,6 +3025,16 @@ test.R:1:6 parse ━━━━━━━━━━━━━━━━━━━━━
     3 │   z)
   > 4 │
       │
+
+test.R:2:3 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Expected `,` but instead found `y`.
+
+    1 │ outer(inner(x
+  > 2 │   y
+      │   ^
+    3 │   z)
+    4 │
 ```
 
 ## An argument value that starts no expression [error]
